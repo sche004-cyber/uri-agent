@@ -8,14 +8,18 @@ import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'services/app_state.dart';
 import 'services/app_state_scope.dart';
-import 'services/mock_uri_client.dart';
+import 'services/http_uri_client.dart';
 import 'theme/uri_theme.dart';
 import 'widgets/app_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final appState = AppState(client: MockUriClient());
+  // Talks to the real uri_core backend (uvicorn uri_core.app.server:app)
+  // for `ask`; see HttpUriClient's class doc for what still falls back
+  // to mock behaviour. Widget/unit tests build their own AppState with
+  // MockUriClient directly and are unaffected by this.
+  final appState = AppState(client: HttpUriClient());
   // Resolve any previously persisted onboarding/preferences before the
   // first frame, so a returning user never sees onboarding flash by.
   await appState.loadPersistedPreferences();

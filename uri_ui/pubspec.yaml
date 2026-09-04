@@ -39,6 +39,7 @@ dependencies:
   # completion and behaviour-changing preferences on this device — not a
   # backend, and nothing sensitive is stored here.
   shared_preferences: ^2.3.3
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
