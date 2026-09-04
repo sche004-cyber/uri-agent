@@ -233,3 +233,13 @@ class AuditTrail:
 
     def for_workflow(self, workflow_id: str) -> List[AuditEvent]:
         return self.store.query(workflow_id=workflow_id)
+
+    def all_events(
+        self, event_type: Optional[str] = None
+    ) -> List[AuditEvent]:
+        """
+        Every recorded event, optionally narrowed to one event_type.
+        Read-only - callers must not mutate the returned list's
+        AuditEvent instances or rely on aliasing to self.store.
+        """
+        return self.store.query(event_type=event_type)

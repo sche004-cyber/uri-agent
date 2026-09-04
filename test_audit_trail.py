@@ -280,6 +280,43 @@ class AuditTrailFacadeTests(unittest.TestCase):
 
         self.assertEqual(trail.for_session("anything"), [])
 
+    def test_all_events_returns_every_recorded_event(self):
+
+        trail = AuditTrail()
+
+        first = trail.record(
+            event_type="skill_router_shadow_evaluation",
+            status="shadow_completed",
+            session_id="s1",
+        )
+
+        second = trail.record(
+            event_type="model_reasoning_shadow_evaluation",
+            status="proposal_ready",
+            session_id="s2",
+        )
+
+        self.assertEqual(trail.all_events(), [first, second])
+
+    def test_all_events_can_be_filtered_by_event_type(self):
+
+        trail = AuditTrail()
+
+        trail.record(
+            event_type="skill_router_shadow_evaluation",
+            status="shadow_completed",
+        )
+
+        model_event = trail.record(
+            event_type="model_reasoning_shadow_evaluation",
+            status="proposal_ready",
+        )
+
+        self.assertEqual(
+            trail.all_events(event_type="model_reasoning_shadow_evaluation"),
+            [model_event],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
