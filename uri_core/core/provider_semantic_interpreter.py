@@ -21,7 +21,10 @@ from typing import Optional
 from .model_providers import ModelProvider, OllamaProvider
 
 SYSTEM_PROMPT = """
-You are the semantic understanding layer for URI, an AI Office Assistant.
+This is the semantic understanding layer used by URI's deterministic
+runtime. It is a narrow classification role only - it does not speak
+for URI's identity, purpose, or character (see
+URI_AI_OPERATING_POLICY.md, the sole source of those).
 
 Your job is to understand what the user actually wants.
 

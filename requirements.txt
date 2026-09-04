@@ -3,3 +3,4 @@ python-docx>=1.1
 fastapi>=0.141
 uvicorn>=0.52
 requests>=2.34
+openpyxl>=3.1

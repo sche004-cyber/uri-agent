@@ -24,6 +24,9 @@ from uri_core.core.model_providers import OllamaProvider
 from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
 from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
 from uri_core.core.orchestrator import UriOrchestrator
+from uri_core.core.personalization_context import (
+    build_personalization_context,
+)
 from uri_core.core.portable_paths import (
     PortablePathValidationError,
     migrate_legacy_file_if_needed,
@@ -34,7 +37,11 @@ from uri_core.core.user_memory import (
     MemoryStore,
     MemoryValidationError,
 )
-from uri_core.core.user_profile import UserProfile, UserProfileStore
+from uri_core.core.user_profile import (
+    UserProfile,
+    UserProfileStore,
+    UserProfileValidationError,
+)
 
 # One orchestrator instance for the process lifetime, matching how the
 # existing PyQt prototype uses it — session state lives inside
@@ -50,10 +57,21 @@ from uri_core.core.user_profile import UserProfile, UserProfileStore
 # plan/execution, and already catches any failure (Ollama unreachable,
 # timeout, malformed response) into a "shadow_failed" status rather
 # than raising.
+#
+# enable_response_narrative=True is this milestone's one explicit
+# opt-in: UriOrchestrator defaults it to False specifically so every
+# existing test/caller keeps its exact prior behaviour (see
+# orchestrator.py's __init__ comment) - this server is the one place
+# that turns the live conversational surface on, matching how the
+# model-reasoning shadow was already turned on here rather than as a
+# class default. response.narrative stays additive - see
+# _draft_narrative_safely - so this does not change what /ask returns
+# for any client not yet reading that field.
 _orchestrator = UriOrchestrator(
     model_reasoning_gateway=ModelReasoningGateway(
         model_callable=OllamaReasoningAdapter()
-    )
+    ),
+    enable_response_narrative=True,
 )
 
 # Identity/profile/memory/growth stores, constructed once for the
@@ -255,9 +273,25 @@ def health() -> dict:
 
 @app.post("/ask")
 def ask(payload: AskRequest) -> dict:
+    # Bounded personalization (Milestone 8A): only the confirmed
+    # profile and consent-eligible memory (never pending_confirmation,
+    # never growth/XP - see personalization_context.py) is assembled
+    # here, at the HTTP boundary, using the same user-scoped stores
+    # every other endpoint already reads - never inside
+    # UriOrchestrator itself, preserving its existing zero-coupling to
+    # profile/memory (see Milestone 5-7's structural boundary tests).
+    # This can only ever influence how a response is *phrased* (see
+    # _draft_narrative_safely) - it is never read by capability
+    # selection, approval, or execution.
+    personalization_context = build_personalization_context(
+        _user_profile_store.load_or_create(),
+        _memory_store.list_all(),
+    )
+
     result = _orchestrator.process_user_input(
         session_id=payload.session_id,
         user_text=payload.text,
+        personalization_context=personalization_context,
     )
 
     # UriOrchestrator's raw dict also carries shadow-evaluation internals
@@ -266,6 +300,12 @@ def ask(payload: AskRequest) -> dict:
     # and unrelated tool metadata. No screen in the Flutter client uses
     # any of that, so it is not relayed over this boundary. Only the
     # fields the client contract actually consumes cross the wire.
+    #
+    # "narrative" is additive/shadow-rollout (Milestone 8A) - present
+    # only when drafting+validation both succeeded; absent (None)
+    # otherwise, in which case "response" (the pre-existing,
+    # deterministic template/tool-output field, unchanged) remains the
+    # only text a client has ever needed to render.
     return {
         "status": result.get("status"),
         "session_id": result.get("session_id"),
@@ -273,6 +313,7 @@ def ask(payload: AskRequest) -> dict:
         "semantic_analysis": result.get("semantic_analysis"),
         "execution": result.get("execution"),
         "response": result.get("response"),
+        "narrative": result.get("narrative"),
     }
 
 
@@ -283,19 +324,30 @@ def approve(payload: ApprovalDecisionRequest) -> dict:
     (Milestone 7) and, only if the deterministic ApprovalGate accepts
     it (matching action_id/capability/session/arguments, not expired,
     not already decided), executes it immediately and returns the
-    execution result. Establishes the backend contract Flutter's
-    UriClient.approve(turnId)/TurnStage.awaitingApproval already
-    anticipates (see uri_ui/lib/services/uri_client.dart) - Flutter
-    itself is not wired to this endpoint yet.
+    execution result. Backs Flutter's real
+    UriClient.approve(turnId)/TurnStage.awaitingApproval flow (see
+    uri_ui/lib/services/http_uri_client.dart).
 
     Nothing here can be satisfied by model output: action_id must
     already exist as a real ApprovalStore record created by
     ApprovalGate.execute_tool() during a prior /ask call.
+
+    Bounded personalization (same discipline as POST /ask - see
+    build_personalization_context) is passed through so the
+    additive/shadow-rolled-out "narrative" field (Milestone 8A) can
+    explain this decision's real outcome in URI's voice too, not only
+    the initial proposal.
     """
+    personalization_context = build_personalization_context(
+        _user_profile_store.load_or_create(),
+        _memory_store.list_all(),
+    )
+
     return _orchestrator.decide_action(
         action_id=payload.action_id,
         approved=True,
         session_id=payload.session_id,
+        personalization_context=personalization_context,
     )
 
 
@@ -306,11 +358,50 @@ def cancel(payload: ApprovalDecisionRequest) -> dict:
     action is marked rejected and never executes. See POST /approve's
     docstring for the same contract notes.
     """
+    personalization_context = build_personalization_context(
+        _user_profile_store.load_or_create(),
+        _memory_store.list_all(),
+    )
+
     return _orchestrator.decide_action(
         action_id=payload.action_id,
         approved=False,
         session_id=payload.session_id,
+        personalization_context=personalization_context,
     )
+
+
+@app.get("/tasks")
+def tasks() -> dict:
+    """
+    Read-only: every proposed action still awaiting a user decision,
+    across all sessions - the backend for a cross-session "Tasks" view
+    (UI prototype phase 1). Never mutates anything - approving or
+    rejecting stays exclusively POST /approve / POST /cancel, exactly
+    like every other read endpoint in this file never doubles as a
+    write path.
+    """
+    pending = _orchestrator.approval_gate.approval_store.list_pending()
+
+    task_list = []
+
+    for action in pending:
+        descriptor = _capability_registry.describe_status(
+            action.capability_id
+        )
+
+        task_list.append(
+            {
+                "action_id": action.action_id,
+                "capability_id": action.capability_id,
+                "description": descriptor.description if descriptor else "",
+                "risk": descriptor.risk if descriptor else "unknown",
+                "session_id": action.session_id,
+                "created_at": action.created_at,
+            }
+        )
+
+    return {"tasks": task_list}
 
 
 @app.get("/audit/shadow-comparison")
@@ -372,14 +463,23 @@ def update_profile(payload: ProfileUpdateRequest) -> dict:
     Unauthenticated, same trust level as every other endpoint here
     today - there is exactly one ambient profile per install, so this
     is equivalent in scope to /ask already being unauthenticated.
+
+    communication_style/autonomy_level/focus_areas are validated
+    (enum-constrained, length-capped, credential-shape rejected - see
+    user_profile.py's _validate_profile_fields) before being saved -
+    this stopped being optional hygiene once profile data started
+    reaching a model prompt via personalization_context.py.
     """
-    updated = _user_profile_store.save(
-        UserProfile(
-            communication_style=payload.communication_style,
-            autonomy_level=payload.autonomy_level,
-            focus_areas=list(payload.focus_areas),
+    try:
+        updated = _user_profile_store.save(
+            UserProfile(
+                communication_style=payload.communication_style,
+                autonomy_level=payload.autonomy_level,
+                focus_areas=list(payload.focus_areas),
+            )
         )
-    )
+    except UserProfileValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
     _record_growth_event_safely("profile_updated")
 

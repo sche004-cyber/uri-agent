@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/activity_event.dart';
 import '../models/connection.dart';
+import '../models/task_item.dart';
 import '../models/user_preferences.dart';
 import '../models/uri_turn.dart';
 import 'preferences_store.dart';
@@ -29,10 +30,12 @@ class AppState extends ChangeNotifier {
   final List<UriTurn> conversation = <UriTurn>[];
   List<ServiceConnection> connections = <ServiceConnection>[];
   List<ActivityEvent> activity = <ActivityEvent>[];
+  List<TaskItem> tasks = <TaskItem>[];
   HomeSummary? homeSummary;
 
   bool isLoadingHome = false;
   bool isSendingAsk = false;
+  bool isLoadingTasks = false;
 
   /// Loads any previously persisted preferences from this device,
   /// replacing whatever [preferences] was constructed with. Call once,
@@ -128,5 +131,29 @@ class AppState extends ChangeNotifier {
       conversation[index] = updated;
     }
     notifyListeners();
+  }
+
+  Future<void> loadTasks() async {
+    isLoadingTasks = true;
+    notifyListeners();
+    tasks = await _client.listTasks();
+    isLoadingTasks = false;
+    notifyListeners();
+  }
+
+  /// Approves a task by id (see [TaskItem.id]) — a separate flow from
+  /// [approve] (which operates on the current Ask URI conversation)
+  /// since a task may belong to a different session this client never
+  /// held a [UriTurn] for. Reloads [tasks] from the backend afterwards
+  /// so the list reflects reality rather than being guessed at
+  /// client-side.
+  Future<void> approveTask(String actionId) async {
+    await _client.approve(actionId);
+    await loadTasks();
+  }
+
+  Future<void> cancelTask(String actionId) async {
+    await _client.cancel(actionId);
+    await loadTasks();
   }
 }

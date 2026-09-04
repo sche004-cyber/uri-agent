@@ -12,6 +12,7 @@ import unittest
 from uri_core.core.approval_gate import ApprovalGate
 from uri_core.core.approval_store import ApprovalStore
 from uri_core.core.capability_registry import CapabilityRegistry
+from uri_core.core.model_providers.base import ModelResponse
 from uri_core.core.orchestrator import UriOrchestrator
 from uri_core.core.skill_memory import SkillMemory
 
@@ -24,7 +25,21 @@ class _FixedSemanticInterpreter:
         return self._result
 
 
-def _orchestrator_with_temp_registry(semantic_result: dict, entries: dict):
+class _FakeDraftingProvider:
+    def __init__(self, content="URI has completed this action."):
+        self.content = content
+        self.calls = []
+
+    def complete(self, *, system, user, temperature=0.0, max_tokens=None):
+        self.calls.append({"system": system, "user": user})
+        return ModelResponse(
+            content=self.content, model="fake", provider="fake"
+        )
+
+
+def _orchestrator_with_temp_registry(
+    semantic_result: dict, entries: dict, **orchestrator_kwargs
+):
     temp_dir = tempfile.TemporaryDirectory()
     registry_path = os.path.join(
         temp_dir.name, "capabilities_registry.json"
@@ -41,6 +56,7 @@ def _orchestrator_with_temp_registry(semantic_result: dict, entries: dict):
         semantic_interpreter=_FixedSemanticInterpreter(semantic_result),
         enable_model_reasoning_shadow=False,
         enable_skill_router_shadow=False,
+        **orchestrator_kwargs,
     )
 
     # Rewire the orchestrator's capability_planner/approval_gate to the
@@ -196,6 +212,180 @@ class ApprovalRequiredCapabilityEndToEndTests(unittest.TestCase):
         self.assertEqual(
             second["execution"]["status"], "awaiting_approval"
         )
+
+
+class DecideActionNarrativeTests(unittest.TestCase):
+    """Issue 3: decide_action (POST /approve, POST /cancel) gets the
+    same additive narrative treatment process_user_input already has
+    - the actual completion, not just the initial proposal, can be
+    explained in URI's voice instead of only ever showing raw tool
+    output."""
+
+    def _setup(self, provider=None, **kwargs):
+        orchestrator, temp_dir = _orchestrator_with_temp_registry(
+            {
+                "task_type": "document drafting",
+                "domain": "administrative",
+                "goal": "prepare a note",
+                "requested_output": "office note",
+                "entities": ["office note"],
+            },
+            {
+                "draft_institutional_note": {
+                    "file_path": (
+                        "uri_core/tools/draft_institutional_note.py"
+                    ),
+                    "class_name": "InstitutionalNoteDraftCmp",
+                    "method": "generate",
+                    "approval_requirement": "user_approval_required",
+                    "risk": "controlled",
+                }
+            },
+            enable_response_narrative=True,
+            response_drafting_provider=provider or _FakeDraftingProvider(),
+            **kwargs,
+        )
+        self.addCleanup(temp_dir.cleanup)
+        return orchestrator
+
+    def test_narrative_absent_when_disabled(self):
+        orchestrator, temp_dir = _orchestrator_with_temp_registry(
+            {
+                "task_type": "document drafting",
+                "domain": "administrative",
+                "goal": "prepare a note",
+                "requested_output": "office note",
+                "entities": ["office note"],
+            },
+            {
+                "draft_institutional_note": {
+                    "file_path": (
+                        "uri_core/tools/draft_institutional_note.py"
+                    ),
+                    "class_name": "InstitutionalNoteDraftCmp",
+                    "method": "generate",
+                    "approval_requirement": "user_approval_required",
+                }
+            },
+        )
+        self.addCleanup(temp_dir.cleanup)
+
+        proposal = orchestrator.process_user_input(
+            session_id="s1", user_text="draft a note"
+        )
+        action_id = proposal["response"]["action_id"]
+
+        decision = orchestrator.decide_action(
+            action_id=action_id, approved=True, session_id="s1"
+        )
+
+        self.assertIn("narrative", decision)
+        self.assertIsNone(decision["narrative"])
+
+    def test_approved_decision_gets_a_narrative(self):
+        orchestrator = self._setup(
+            provider=_FakeDraftingProvider(
+                content="I've drafted the note as requested."
+            )
+        )
+
+        proposal = orchestrator.process_user_input(
+            session_id="s1", user_text="draft a note"
+        )
+        action_id = proposal["response"]["action_id"]
+
+        decision = orchestrator.decide_action(
+            action_id=action_id, approved=True, session_id="s1"
+        )
+
+        self.assertEqual(decision["status"], "success")
+        self.assertEqual(
+            decision["narrative"], "I've drafted the note as requested."
+        )
+
+    def test_cancelled_decision_gets_a_narrative_too(self):
+        orchestrator = self._setup(
+            provider=_FakeDraftingProvider(
+                content="No problem - I won't proceed with that."
+            )
+        )
+
+        proposal = orchestrator.process_user_input(
+            session_id="s1", user_text="draft a note"
+        )
+        action_id = proposal["response"]["action_id"]
+
+        decision = orchestrator.decide_action(
+            action_id=action_id, approved=False, session_id="s1"
+        )
+
+        self.assertEqual(decision["status"], "cancelled")
+        self.assertEqual(
+            decision["narrative"], "No problem - I won't proceed with that."
+        )
+
+    def test_original_request_text_reaches_the_drafting_call(self):
+        provider = _FakeDraftingProvider()
+        orchestrator = self._setup(provider=provider)
+
+        proposal = orchestrator.process_user_input(
+            session_id="s1", user_text="draft a note about the budget"
+        )
+        action_id = proposal["response"]["action_id"]
+
+        orchestrator.decide_action(
+            action_id=action_id, approved=True, session_id="s1"
+        )
+
+        payload = provider.calls[-1]["user"]
+        self.assertIn("draft a note about the budget", payload)
+
+    def test_invalid_action_id_still_returns_a_narrative_key(self):
+        orchestrator = self._setup()
+
+        decision = orchestrator.decide_action(
+            action_id="fabricated-id", approved=True, session_id="s1"
+        )
+
+        self.assertEqual(decision["status"], "error")
+        self.assertIn("narrative", decision)
+
+    def test_drafting_failure_on_decide_falls_back_cleanly(self):
+
+        class _RaisingProvider:
+            def complete(self, **kwargs):
+                raise ConnectionError("no ollama")
+
+        orchestrator = self._setup(provider=_RaisingProvider())
+
+        proposal = orchestrator.process_user_input(
+            session_id="s1", user_text="draft a note"
+        )
+        action_id = proposal["response"]["action_id"]
+
+        decision = orchestrator.decide_action(
+            action_id=action_id, approved=True, session_id="s1"
+        )
+
+        self.assertEqual(decision["status"], "success")
+        self.assertIsNone(decision["narrative"])
+
+    def test_approval_gate_itself_remains_untouched_by_this_addition(self):
+        # ApprovalGate.decide() itself must still return exactly what
+        # it always did - the narrative is layered on by
+        # UriOrchestrator.decide_action(), not by ApprovalGate.
+        orchestrator = self._setup()
+
+        proposal = orchestrator.process_user_input(
+            session_id="s1", user_text="draft a note"
+        )
+        action_id = proposal["response"]["action_id"]
+
+        raw_gate_result = orchestrator.approval_gate.decide(
+            action_id=action_id, approved=True, session_id="s1"
+        )
+
+        self.assertNotIn("narrative", raw_gate_result)
 
 
 if __name__ == "__main__":

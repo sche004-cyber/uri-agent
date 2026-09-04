@@ -22,6 +22,16 @@ from uri_core.core.fact_manager import update_fact
 from uri_core.core.model_reasoning_gateway import (
     ModelReasoningGateway
 )
+from uri_core.core.response_drafting import (
+    DraftRequest,
+    ResponseDraftingError,
+    condense_known_gaps,
+    draft_response
+)
+from uri_core.core.response_validation import (
+    ResponseValidationError,
+    validate_drafted_response
+)
 from uri_core.core.skill_evaluator import SkillEvaluator
 from uri_core.core.context_budget import ContextBudget
 from uri_core.core.audit_trail import AuditTrail
@@ -45,7 +55,9 @@ class UriOrchestrator:
         enable_skill_router_shadow=True,
         skill_registry_path="uri_workspace/skill_registry.json",
         semantic_interpreter=None,
-        approval_gate=None
+        approval_gate=None,
+        enable_response_narrative=False,
+        response_drafting_provider=None
     ):
 
         self.prompt_builder = PromptBuilder()
@@ -164,6 +176,26 @@ class UriOrchestrator:
                 capability_registry=self.capability_registry,
                 audit_trail=self.audit_trail,
             )
+
+        # ------------------------------------------------------
+        # Live conversational response drafting (Milestone 8A).
+        #
+        # Defaults OFF: unlike enable_model_reasoning_shadow/
+        # enable_skill_router_shadow (both default True, established
+        # long before this milestone), this stays an explicit opt-in
+        # so every existing orchestrator test/caller keeps its exact
+        # prior behaviour with no new network dependency and no new
+        # audit events, unless a caller (see server.py) deliberately
+        # turns it on. When on, drafting/validation only ever runs
+        # after process_user_input's capability_selected/
+        # planning_required branches have already fully decided the
+        # outcome - see _draft_narrative_safely - and any failure
+        # (unreachable model, empty draft, failed validation) falls
+        # back to the existing deterministic response untouched.
+        # ------------------------------------------------------
+
+        self.enable_response_narrative = enable_response_narrative
+        self.response_drafting_provider = response_drafting_provider
 
     # ==========================================================
     # SKILL REGISTRY LOADING
@@ -418,6 +450,120 @@ class UriOrchestrator:
                 "error":
                     str(exc)
             }
+
+    # ==========================================================
+    # LIVE RESPONSE NARRATIVE (Milestone 8A)
+    # ==========================================================
+
+    def _draft_narrative_safely(
+        self,
+        user_text,
+        response,
+        personalization_context,
+        session_id
+    ):
+        """Attempts to add response["narrative"] - additive only,
+        never replaces response["execution"]/response["response"].
+        Never raises: any failure (disabled, unreachable model, empty
+        draft, failed claim-consistency validation) simply means no
+        narrative is added, and the existing deterministic response
+        (already fully built by the caller before this runs) is
+        exactly what the caller returns - the pre-Milestone-8A
+        fallback that is never removed.
+
+        outcome is built only from response["execution"]/
+        response["response"] - fields the deterministic runtime has
+        already fully decided by the time this is called. The model
+        drafting this text is never given, and never asked to decide,
+        anything the runtime hasn't already settled.
+        """
+
+        if not self.enable_response_narrative:
+            return
+
+        try:
+
+            policy_text = self.model_reasoning_gateway.load_policy()
+
+            plan = response.get("plan")
+
+            outcome = {
+                "execution": response.get("execution"),
+                "response": response.get("response"),
+                # The real evidence for "why can't URI do this" (see
+                # capability_planner.py's _known_gaps() /
+                # CapabilityRegistry.known_gaps()) - without this, the
+                # drafting model has no grounded information about a
+                # missing capability and previously free-associated
+                # troubleshooting advice instead. See
+                # response_validation.py's evidence-proportional
+                # length check, which uses this same field.
+                "known_gaps": (
+                    condense_known_gaps(plan.get("known_gaps"))
+                    if isinstance(plan, dict)
+                    else None
+                ),
+            }
+
+            draft = draft_response(
+                DraftRequest(
+                    user_text=user_text,
+                    outcome=outcome,
+                    personalization=personalization_context,
+                    policy_text=policy_text,
+                ),
+                provider=self.response_drafting_provider,
+            )
+
+            validated = validate_drafted_response(draft, outcome)
+
+        except (ResponseDraftingError, ResponseValidationError) as exc:
+
+            self._record_narrative_audit_safely(
+                session_id=session_id,
+                status="narrative_rejected",
+                reason=str(exc),
+            )
+
+            return
+
+        except Exception as exc:
+
+            self._record_narrative_audit_safely(
+                session_id=session_id,
+                status="narrative_failed",
+                reason=str(exc),
+            )
+
+            return
+
+        response["narrative"] = validated
+
+        self._record_narrative_audit_safely(
+            session_id=session_id,
+            status="narrative_accepted",
+        )
+
+    def _record_narrative_audit_safely(
+        self, session_id, status, reason=None
+    ):
+        """Never raises - matches every other audit-recording helper
+        in this codebase (see _record_growth_event_safely,
+        ApprovalGate._record_audit_safely)."""
+
+        try:
+
+            metadata = {"reason": reason[:200]} if reason else {}
+
+            self.audit_trail.record(
+                event_type="response_narrative",
+                status=status,
+                session_id=session_id,
+                metadata=metadata,
+            )
+
+        except Exception:
+            return
 
     # ==========================================================
     # SKILL ROUTER SHADOW
@@ -1283,7 +1429,8 @@ class UriOrchestrator:
     def process_user_input(
         self,
         session_id: str,
-        user_text: str
+        user_text: str,
+        personalization_context: dict = None
     ) -> dict:
 
         try:
@@ -1441,27 +1588,44 @@ class UriOrchestrator:
             }
 
             # --------------------------------------------------
-            # Learned workflow remains deterministic.
+            # Capability selection.
+            #
+            # A learned skill only ever accelerates/confirms WHICH
+            # capability to use - it must never substitute for
+            # actually invoking it. "Learned" and "executed
+            # successfully now" are not the same thing: reusing the
+            # exact same capability_selected branch below (approval
+            # gate, dispatcher, narrative, re-learning on success) is
+            # what guarantees a learned skill is always genuinely
+            # re-executed, and always still goes through approval if
+            # the capability requires it, rather than short-circuiting
+            # past both. A stale/renamed learned tool_name correctly
+            # surfaces the dispatcher's real "URI lacks the
+            # capability" error instead of a false "recognized"
+            # message, for the same reason.
+            #
+            # IMPORTANT:
+            # The model proposal is NOT used here yet.
             # --------------------------------------------------
 
             if learned_skill:
 
-                response["execution"] = {
+                plan = {
                     "status":
-                        "workflow_recalled",
+                        "capability_selected",
 
-                    "source":
-                        "skill_memory",
-
-                    "tool":
+                    "tool_name":
                         learned_skill.get(
                             "tool_name"
                         ),
 
-                    "workflow":
-                        learned_skill.get(
-                            "workflow"
-                        ),
+                    "reason":
+                        "Matched a previously learned workflow for "
+                        "this task type/domain; still executed and "
+                        "authorized like a fresh selection.",
+
+                    "source":
+                        "skill_memory",
 
                     "success_count":
                         learned_skill.get(
@@ -1470,34 +1634,13 @@ class UriOrchestrator:
                         )
                 }
 
-                response["response"] = {
-                    "message":
-                        "URI recognized this as a previously learned workflow.",
+            else:
 
-                    "workflow":
-                        learned_skill.get(
-                            "workflow"
-                        )
-                }
-
-                self._persist_session(
-                    session_id
+                plan = (
+                    self.capability_planner.plan(
+                        semantic_result
+                    )
                 )
-
-                return response
-
-            # --------------------------------------------------
-            # Existing deterministic capability planner.
-            #
-            # IMPORTANT:
-            # The model proposal is NOT used here yet.
-            # --------------------------------------------------
-
-            plan = (
-                self.capability_planner.plan(
-                    semantic_result
-                )
-            )
 
             response["plan"] = plan
 
@@ -1568,6 +1711,13 @@ class UriOrchestrator:
                         tool_name=
                             tool_name
                     )
+
+                self._draft_narrative_safely(
+                    user_text=user_text,
+                    response=response,
+                    personalization_context=personalization_context,
+                    session_id=session_id
+                )
 
                 self._persist_session(
                     session_id
@@ -1703,6 +1853,13 @@ class UriOrchestrator:
                         )
                 }
 
+                self._draft_narrative_safely(
+                    user_text=user_text,
+                    response=response,
+                    personalization_context=personalization_context,
+                    session_id=session_id
+                )
+
                 return response
 
             response["execution"] = {
@@ -1743,27 +1900,64 @@ class UriOrchestrator:
         self,
         action_id: str,
         approved: bool,
-        session_id=None
+        session_id=None,
+        personalization_context: dict = None
     ) -> dict:
         """The only entry point for recording a real user decision on
         a proposed action (Milestone 7). Never called from within
         process_user_input itself - only from an explicit, separate
         caller (see server.py's POST /approve / POST /cancel) - so a
         single conversational turn can never approve its own proposal.
-        Delegates entirely to self.approval_gate.decide(), which fails
+        The actual decision is delegated entirely to
+        self.approval_gate.decide(), unmodified - it still fails
         closed on any invalid, missing, expired, or mismatched
-        approval; this method adds no further logic of its own beyond
-        being the one orchestrator-level surface server.py talks to,
-        matching how server.py already only ever calls
-        process_user_input() rather than reaching into orchestrator
-        internals directly.
+        approval, and ApprovalGate itself remains completely unaware
+        of drafting/model_providers (see its own boundary tests).
+
+        Milestone 8A addition: attempts the same additive,
+        shadow-rolled-out response.narrative process_user_input
+        already produces (see _draft_narrative_safely, reused
+        unchanged here) so an approved/cancelled/failed decision gets
+        the same explanatory treatment an initial proposal does,
+        instead of only ever showing raw tool output. user_text for
+        the drafting call comes from the original proposal's stored
+        arguments (ApprovalStore already has this - no new
+        client-facing field needed). Always present in the returned
+        dict (None when narrative is disabled or fails), matching
+        POST /ask's existing contract.
         """
 
-        return self.approval_gate.decide(
-            action_id=action_id,
-            approved=approved,
+        proposed = self.approval_gate.approval_store.get(action_id)
+
+        original_request_text = (
+            proposed.arguments.get("request_text", "")
+            if proposed is not None
+            else ""
+        )
+
+        result = dict(
+            self.approval_gate.decide(
+                action_id=action_id,
+                approved=approved,
+                session_id=session_id,
+            )
+        )
+
+        narrative_context = {
+            "execution": {"status": result.get("status")},
+            "response": result,
+        }
+
+        self._draft_narrative_safely(
+            user_text=original_request_text,
+            response=narrative_context,
+            personalization_context=personalization_context,
             session_id=session_id,
         )
+
+        result["narrative"] = narrative_context.get("narrative")
+
+        return result
 
     # ==========================================================
     # LEGACY COMPATIBILITY METHODS

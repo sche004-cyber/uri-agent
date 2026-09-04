@@ -58,6 +58,20 @@ class TurnCard extends StatelessWidget {
               Text(turn.understanding!, style: theme.textTheme.bodyMedium),
             ],
 
+            // ---- failed: the technical detail, always shown ----
+            //
+            // Previously never rendered anywhere - a failed turn with
+            // no understanding text (e.g. the model backend itself
+            // was unreachable, so no narrative was ever attempted)
+            // showed only the red "Failed" pill above and nothing
+            // else. failureReason is shown regardless of whether
+            // understanding is also present, since it's the specific
+            // technical detail rather than a restatement of it.
+            if (turn.stage == TurnStage.failed && turn.failureReason != null) ...[
+              const SizedBox(height: UriSpace.sm),
+              _FailureBlock(reason: turn.failureReason!),
+            ],
+
             // ---- blocked: needs a connection first ----
             if (turn.stage == TurnStage.needsConnection) ...[
               const SizedBox(height: UriSpace.md),
@@ -81,6 +95,40 @@ class TurnCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _FailureBlock extends StatelessWidget {
+  const _FailureBlock({required this.reason});
+
+  final String reason;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(UriSpace.md),
+      decoration: BoxDecoration(
+        color: UriColors.dangerSoft,
+        borderRadius: BorderRadius.circular(UriRadius.sm),
+        border: Border.all(color: UriColors.danger.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.error_outline_rounded, size: 16, color: UriColors.danger),
+          const SizedBox(width: UriSpace.xs),
+          Expanded(
+            child: Text(
+              reason,
+              style: theme.textTheme.bodyMedium?.copyWith(color: UriColors.danger),
+            ),
+          ),
+        ],
       ),
     );
   }

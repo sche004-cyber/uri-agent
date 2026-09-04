@@ -248,6 +248,115 @@ class CapabilityAuthorityBoundaryTests(unittest.TestCase):
 
         self.assertNotIn("self.dispatcher.execute_tool", source)
 
+    # ------------------------------------------------------------
+    # Milestone 8A (Live Conversational Surface) invariants.
+    # ------------------------------------------------------------
+
+    def test_response_drafting_never_imports_execution_or_approval_modules(
+        self,
+    ):
+        # The drafting model only ever explains an already-decided
+        # outcome - it must have no path to anything that could decide
+        # or authorize one.
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "response_drafting.py")
+        )
+
+        offending = {
+            name
+            for name in imports
+            if any(
+                fragment in name
+                for fragment in (
+                    "capability_planner",
+                    "dispatcher",
+                    "approval_store",
+                    "approval_gate",
+                )
+            )
+        }
+
+        self.assertEqual(offending, set())
+
+    def test_response_validation_never_imports_execution_or_approval_modules(
+        self,
+    ):
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "response_validation.py")
+        )
+
+        offending = {
+            name
+            for name in imports
+            if any(
+                fragment in name
+                for fragment in (
+                    "capability_planner",
+                    "dispatcher",
+                    "approval_store",
+                    "approval_gate",
+                )
+            )
+        }
+
+        self.assertEqual(offending, set())
+
+    def test_personalization_context_never_imports_execution_or_approval_modules(
+        self,
+    ):
+        imports = _imported_module_names(
+            os.path.join(
+                "uri_core", "core", "personalization_context.py"
+            )
+        )
+
+        offending = {
+            name
+            for name in imports
+            if any(
+                fragment in name
+                for fragment in (
+                    "capability_planner",
+                    "dispatcher",
+                    "approval_store",
+                    "approval_gate",
+                )
+            )
+        }
+
+        self.assertEqual(offending, set())
+
+    def test_personalization_context_never_imports_growth_ledger(self):
+        # Growth/XP is cosmetic and must never become a personalization
+        # signal - see personalization_context.py's module docstring.
+        imports = _imported_module_names(
+            os.path.join(
+                "uri_core", "core", "personalization_context.py"
+            )
+        )
+
+        self.assertNotIn("uri_core.core.growth_ledger", imports)
+
+    def test_capability_planner_dispatcher_never_import_response_modules(
+        self,
+    ):
+        # Symmetric check: the deterministic selection/execution path
+        # must have no path back into drafting/validation either.
+        for relative_path in (
+            os.path.join("uri_core", "core", "capability_planner.py"),
+            os.path.join("uri_core", "core", "dispatcher.py"),
+        ):
+            imports = _imported_module_names(relative_path)
+
+            offending = {
+                name
+                for name in imports
+                if "response_drafting" in name
+                or "response_validation" in name
+            }
+
+            self.assertEqual(offending, set(), relative_path)
+
 
 if __name__ == "__main__":
     unittest.main()

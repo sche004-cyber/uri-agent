@@ -140,6 +140,53 @@ class ApprovalGateApprovalRequiredTests(unittest.TestCase):
         self.assertIn("action_id", result)
         self.assertEqual(self.dispatcher.calls, [])
 
+    def test_awaiting_approval_response_includes_registry_description(
+        self,
+    ):
+        # Issue 4: a client needs something better than the raw
+        # tool_name to show the user - the registry's own
+        # human-readable description.
+        registry = _registry(
+            self.temp_dir.name,
+            {
+                "pc_system_optimization": {
+                    "file_path": "x.py",
+                    "class_name": "X",
+                    "method": "run",
+                    "approval_requirement": "user_approval_required",
+                    "risk": "high",
+                    "description": "Optimize this device's performance.",
+                }
+            },
+        )
+        gate = ApprovalGate(
+            dispatcher=self.dispatcher,
+            capability_registry=registry,
+            approval_store=self.approval_store,
+            audit_trail=self.audit,
+        )
+
+        result = gate.execute_tool(
+            "pc_system_optimization", session_id="s1", request_text="x"
+        )
+
+        self.assertEqual(
+            result["description"], "Optimize this device's performance."
+        )
+
+    def test_awaiting_approval_description_defaults_safely_when_unavailable(
+        self,
+    ):
+        # The existing setUp's registry entry has no "description"
+        # field - must degrade to CapabilityDescriptor's own existing
+        # unknown-safe default ("") rather than raise or guess a
+        # value, consistent with capability_registry.py's discipline.
+        result = self.gate.execute_tool(
+            "pc_system_optimization", session_id="s1", request_text="x"
+        )
+
+        self.assertEqual(result["description"], "")
+
     def test_no_decision_ever_recorded_means_execution_stays_blocked(
         self,
     ):

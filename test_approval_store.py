@@ -329,6 +329,75 @@ class ApprovalStoreConsumeTests(unittest.TestCase):
             json.dump(data, file)
 
 
+class ApprovalStoreListPendingTests(unittest.TestCase):
+
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.storage_path = os.path.join(
+            self.temp_dir.name, "approvals.json"
+        )
+        self.store = ApprovalStore(storage_path=self.storage_path)
+
+    def tearDown(self):
+        self.temp_dir.cleanup()
+
+    def _backdate(self, action_id: str, minutes: int) -> None:
+        with open(self.storage_path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        stale = (
+            datetime.now(timezone.utc) - timedelta(minutes=minutes)
+        ).isoformat()
+
+        for raw in data["actions"]:
+            if raw["action_id"] == action_id:
+                raw["created_at"] = stale
+
+        with open(self.storage_path, "w", encoding="utf-8") as file:
+            json.dump(data, file)
+
+    def test_empty_store_returns_empty_list(self):
+        self.assertEqual(self.store.list_pending(), [])
+
+    def test_pending_action_is_included(self):
+        self.store.propose(capability_id="cap", arguments={})
+
+        pending = self.store.list_pending()
+
+        self.assertEqual(len(pending), 1)
+        self.assertEqual(pending[0].status, STATUS_PENDING)
+
+    def test_approved_action_is_excluded(self):
+        action = self.store.propose(capability_id="cap", arguments={})
+        self.store.decide(action.action_id, approved=True)
+
+        self.assertEqual(self.store.list_pending(), [])
+
+    def test_rejected_action_is_excluded(self):
+        action = self.store.propose(capability_id="cap", arguments={})
+        self.store.decide(action.action_id, approved=False)
+
+        self.assertEqual(self.store.list_pending(), [])
+
+    def test_expired_pending_action_is_excluded(self):
+        action = self.store.propose(capability_id="cap", arguments={})
+        self._backdate(action.action_id, minutes=20)
+
+        self.assertEqual(self.store.list_pending(), [])
+
+    def test_includes_actions_from_multiple_sessions(self):
+        self.store.propose(
+            capability_id="cap_a", arguments={}, session_id="s1"
+        )
+        self.store.propose(
+            capability_id="cap_b", arguments={}, session_id="s2"
+        )
+
+        pending = self.store.list_pending()
+
+        self.assertEqual(len(pending), 2)
+
+
 class ApprovalStoreFailClosedOnCorruptionTests(unittest.TestCase):
 
     def setUp(self):

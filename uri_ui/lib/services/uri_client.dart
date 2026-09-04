@@ -1,5 +1,6 @@
 import '../models/activity_event.dart';
 import '../models/connection.dart';
+import '../models/task_item.dart';
 import '../models/uri_turn.dart';
 
 /// The boundary between this Flutter client and URI's runtime.
@@ -47,6 +48,12 @@ abstract class UriClient {
 
   /// A short summary of recent + pending work for the Home screen.
   Future<HomeSummary> loadHomeSummary();
+
+  /// Every proposed action still awaiting a decision, across all
+  /// sessions — not only the current Ask URI conversation. Approve or
+  /// cancel a task the same way as any awaiting-approval turn: call
+  /// [approve]/[cancel] with [TaskItem.id].
+  Future<List<TaskItem>> listTasks();
 }
 
 /// Aggregate data the Home screen needs in one call.

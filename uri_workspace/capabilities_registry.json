@@ -5,14 +5,14 @@
       "file_path": "uri_core/tools/extract_student_records.py",
       "class_name": "StudentRecordExtractor",
       "method": "execute",
-      "description": "Retrieve a student's academic record (CGPA, semester, department, status) by roll number.",
+      "description": "Retrieve a student's academic record by roll number, searched from indexed institutional spreadsheets.",
       "status": "implemented",
       "availability": "available",
       "permissions": [],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
-      "limitations": "Currently returns simulated institutional data; not yet connected to a live student records database.",
+      "limitations": "Requires a roll number stated in the request and the indexed spreadsheet directory to be present; honestly reports 'not found' or 'records unavailable' rather than returning simulated data.",
       "interface": null
     },
     "fetch_drive_spreadsheet": {

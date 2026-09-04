@@ -145,6 +145,11 @@ class ApprovalGate:
             "action_id": proposed.action_id,
             "tool_name": tool_name,
             "risk": descriptor.risk if descriptor else "unknown",
+            # The registry's own human-readable description - see
+            # GET /tasks, which already joins the same way. Lets a
+            # client show something better than the raw tool_name as
+            # a title/subtitle (see http_uri_client.dart).
+            "description": descriptor.description if descriptor else None,
             "message": (
                 "This action requires your explicit approval before "
                 "URI can proceed."

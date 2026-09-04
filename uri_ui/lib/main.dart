@@ -6,6 +6,7 @@ import 'screens/connections/connections_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/settings/settings_screen.dart';
+import 'screens/tasks/tasks_screen.dart';
 import 'services/app_state.dart';
 import 'services/app_state_scope.dart';
 import 'services/http_uri_client.dart';
@@ -59,8 +60,9 @@ class UriApp extends StatelessWidget {
   }
 }
 
-/// The main, post-onboarding application: Home, Ask URI, Connections,
-/// Activity, and Settings behind one persistent navigation shell.
+/// The main, post-onboarding application: Home, Ask URI, Tasks,
+/// Connections, Activity, and Settings behind one persistent
+/// navigation shell.
 class UriHome extends StatelessWidget {
   const UriHome({super.key});
 
@@ -70,6 +72,7 @@ class UriHome extends StatelessWidget {
       sections: const [
         UriSection(label: 'Home', icon: Icons.dashboard_outlined, builder: _buildHome),
         UriSection(label: 'Ask URI', icon: Icons.auto_awesome_outlined, builder: _buildAsk),
+        UriSection(label: 'Tasks', icon: Icons.task_alt_outlined, builder: _buildTasks),
         UriSection(label: 'Connections', icon: Icons.hub_outlined, builder: _buildConnections),
         UriSection(label: 'Activity', icon: Icons.receipt_long_outlined, builder: _buildActivity),
         UriSection(label: 'Settings', icon: Icons.settings_outlined, builder: _buildSettings),
@@ -79,6 +82,7 @@ class UriHome extends StatelessWidget {
 
   static Widget _buildHome(BuildContext context) => const HomeScreen();
   static Widget _buildAsk(BuildContext context) => const AskUriScreen();
+  static Widget _buildTasks(BuildContext context) => const TasksScreen();
   static Widget _buildConnections(BuildContext context) => const ConnectionsScreen();
   static Widget _buildActivity(BuildContext context) => const ActivityScreen();
   static Widget _buildSettings(BuildContext context) => const SettingsScreen();

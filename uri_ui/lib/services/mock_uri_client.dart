@@ -1,5 +1,6 @@
 import '../models/activity_event.dart';
 import '../models/connection.dart';
+import '../models/task_item.dart';
 import '../models/uri_turn.dart';
 import 'uri_client.dart';
 
@@ -308,6 +309,42 @@ class MockUriClient implements UriClient {
       connectedServiceCount: connected,
       totalServiceCount: _connections.length,
     );
+  }
+
+  // ---------------------------------------------------------------
+  // Tasks
+  // ---------------------------------------------------------------
+
+  @override
+  Future<List<TaskItem>> listTasks() async {
+    await _latency();
+
+    return _turns.values
+        .where((turn) => turn.stage == TurnStage.awaitingApproval)
+        .map(
+          (turn) => TaskItem(
+            id: turn.id,
+            capabilityId: turn.proposedAction?.targetService ?? 'unknown',
+            description: turn.proposedAction?.description ?? '',
+            risk: _riskFromImpact(turn.proposedAction?.impact),
+            sessionId: 'mock-session',
+            createdAt: turn.timestamp,
+          ),
+        )
+        .toList();
+  }
+
+  String _riskFromImpact(ActionImpact? impact) {
+    switch (impact) {
+      case ActionImpact.routine:
+        return 'controlled';
+      case ActionImpact.notable:
+        return 'variable';
+      case ActionImpact.sensitive:
+        return 'high';
+      case null:
+        return 'unknown';
+    }
   }
 
   // ---------------------------------------------------------------

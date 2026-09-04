@@ -25,10 +25,31 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import List, Optional
 
+from uri_core.core.security_guards import (
+    MAX_METADATA_VALUE_LENGTH,
+    looks_like_credential_value,
+)
+
 SCHEMA_VERSION = "1.0"
 
 DEFAULT_COMMUNICATION_STYLE = "concise"
 DEFAULT_AUTONOMY_LEVEL = "askEveryTime"
+
+# Mirrors uri_ui/lib/models/user_preferences.dart's enums exactly - see
+# this module's docstring. Once profile data started reaching a model
+# prompt (see personalization_context.py), an unconstrained string
+# here became a real prompt-injection surface, not just a data-shape
+# nicety - hence the validation below, following user_memory.py's
+# exact discipline (reuse security_guards.py, never invent a second
+# credential/length check).
+VALID_COMMUNICATION_STYLES = {"formal", "concise", "conversational"}
+VALID_AUTONOMY_LEVELS = {"askEveryTime", "routineAutoApprove"}
+
+MAX_FOCUS_AREAS = 20
+
+
+class UserProfileValidationError(ValueError):
+    """Raised when profile input fails safety or shape validation."""
 
 
 def _now() -> str:
@@ -39,6 +60,49 @@ def _ensure_parent_dir(path: str) -> None:
     folder = os.path.dirname(path)
     if folder and not os.path.exists(folder):
         os.makedirs(folder, exist_ok=True)
+
+
+def _validate_profile_fields(
+    communication_style: str,
+    autonomy_level: str,
+    focus_areas: List[str],
+) -> None:
+
+    if communication_style not in VALID_COMMUNICATION_STYLES:
+        raise UserProfileValidationError(
+            f"Invalid communication_style: {communication_style!r}. "
+            f"Must be one of {sorted(VALID_COMMUNICATION_STYLES)}."
+        )
+
+    if autonomy_level not in VALID_AUTONOMY_LEVELS:
+        raise UserProfileValidationError(
+            f"Invalid autonomy_level: {autonomy_level!r}. Must be one "
+            f"of {sorted(VALID_AUTONOMY_LEVELS)}."
+        )
+
+    if len(focus_areas) > MAX_FOCUS_AREAS:
+        raise UserProfileValidationError(
+            f"focus_areas exceeds {MAX_FOCUS_AREAS} entries."
+        )
+
+    for area in focus_areas:
+
+        if not isinstance(area, str):
+            raise UserProfileValidationError(
+                "Each focus_areas entry must be a string."
+            )
+
+        if len(area) > MAX_METADATA_VALUE_LENGTH:
+            raise UserProfileValidationError(
+                f"focus_areas entry exceeds "
+                f"{MAX_METADATA_VALUE_LENGTH} characters."
+            )
+
+        if looks_like_credential_value(area):
+            raise UserProfileValidationError(
+                "focus_areas entry looks like a credential and is "
+                "not permitted in a profile."
+            )
 
 
 @dataclass(frozen=True)
@@ -77,6 +141,13 @@ class UserProfileStore:
         return profile
 
     def save(self, profile: UserProfile) -> UserProfile:
+
+        _validate_profile_fields(
+            profile.communication_style,
+            profile.autonomy_level,
+            list(profile.focus_areas),
+        )
+
         updated = UserProfile(
             communication_style=profile.communication_style,
             autonomy_level=profile.autonomy_level,

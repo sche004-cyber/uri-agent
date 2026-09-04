@@ -207,6 +207,21 @@ class ApprovalStore:
 
         return None
 
+    def list_pending(self) -> List[ProposedAction]:
+        """Every action still awaiting a decision, across all
+        sessions, excluding anything already expired - read-only,
+        for a cross-session "what needs my attention" view (see
+        server.py's GET /tasks). Callers must never use this to
+        approve/consume anything; that stays exclusively decide()/
+        consume()."""
+
+        return [
+            action
+            for action in self._load()
+            if action.status == STATUS_PENDING
+            and not self._is_expired(action)
+        ]
+
     def decide(
         self,
         action_id: str,

@@ -1,57 +1,88 @@
-﻿class InstitutionalNoteDraftCmp:
+import re
+
+from uri_core.services.noting_generator import generate_noting
+
+# Strips a leading drafting instruction ("draft a note about ...",
+# "prepare a noting regarding ...") so the remaining text is the
+# actual subject matter, not the command that asked for it.
+_LEADING_COMMAND_RE = re.compile(
+    r"^\s*(?:please\s+)?(?:draft|prepare|write|create|generate)\s+"
+    r"(?:a|an|the)?\s*(?:noting|note|office\s+note)s?\s*"
+    r"(?:regarding|about|for|on|concerning)?\s*",
+    re.IGNORECASE,
+)
+
+_JUSTIFICATION_RE = re.compile(r"\b(?:because|since)\s+(.+)$", re.IGNORECASE)
+
+_APPROVAL_RE = re.compile(
+    r"\b((?:approval|sanction|permission)\s+(?:for|of|to)\s+.+?)(?:\.|$)",
+    re.IGNORECASE,
+)
+
+
+def _extract_subject(request_text: str) -> str:
+    text = request_text.strip()
+
+    if not text:
+        return "Administrative Matter"
+
+    # Cut before any justification/approval clause so the subject
+    # doesn't duplicate text that is drafted separately below.
+    for clause_re in (_JUSTIFICATION_RE, _APPROVAL_RE):
+        clause_match = clause_re.search(text)
+        if clause_match:
+            text = text[:clause_match.start()].strip()
+
+    if not text:
+        return "Administrative Matter"
+
+    stripped = _LEADING_COMMAND_RE.sub("", text).strip()
+    subject = (stripped or text).rstrip(".")
+
+    if not subject:
+        return "Administrative Matter"
+
+    return subject[0].upper() + subject[1:]
+
+
+def _extract_justification(request_text: str) -> str:
+    match = _JUSTIFICATION_RE.search(request_text)
+    return match.group(1).strip() if match else ""
+
+
+def _extract_approval_requested(request_text: str) -> str:
+    match = _APPROVAL_RE.search(request_text)
+    return match.group(1).strip() if match else ""
+
+
+class InstitutionalNoteDraftCmp:
+    """Drafts an administrative noting from the actual request text,
+    via the real noting_generator - the same document generator used
+    elsewhere in URI's drafting architecture. The subject,
+    justification, and approval being sought are all derived from
+    what was actually asked; no institutional fact is claimed as
+    verified evidence unless a verified fact source is actually
+    wired in (there isn't one on this single-turn tool call), so
+    evidence is left empty rather than invented."""
+
     def __init__(self):
         pass
 
     def generate(self, **kwargs):
-        request_text = kwargs.get("request_text", "")
-        chat_history = kwargs.get("chat_history", [])
-        
-        text_lower = request_text.lower()
-        
-        # Check if this is an LTC request and verify if statutory details are present
-        if "ltc" in text_lower:
-            # Check for missing parameters required by CCS (LTC) Rules / GFR
-            missing = []
-            if not any(b in text_lower for b in ["hometown", "all india", "block", "home town", "anywhere"]):
-                missing.id = "ltc_type"
-                return {
-                    "status": "interactive_prompt",
-                    "question": "Under CCS (LTC) Rules, is this LTC for your **Hometown** or **All India**? (And which 4-year block/sub-block does it fall under, e.g., 2026–2029)?",
-                    "context_gathered": request_text
-                }
-            if not any(d in text_lower for d in ["to ", "visit", "destination", "at "]):
-                return {
-                    "status": "interactive_prompt",
-                    "question": "What is the specific place of visit or destination for this LTC journey?",
-                    "context_gathered": request_text
-                }
+        request_text = kwargs.get("request_text", "") or ""
 
-        # If all details are present or it's a general request, generate the precise administrative noting
-        note_content = f"""
-====================================================================
-               NATIONAL INSTITUTE OF TECHNOLOGY SIKKIM
-                        OFFICE NOTE SHEET
-====================================================================
+        task_facts = {
+            "subject": _extract_subject(request_text),
+            "justification": _extract_justification(request_text),
+            "approval_requested": _extract_approval_requested(request_text),
+        }
 
-Subject: Application for Leave Travel Concession (LTC) and sanction of advance/leave.
+        note_content = generate_noting(
+            {
+                "task": "noting",
+                "task_facts": task_facts,
+                "verified_evidence": {},
+            }
+        )
 
-1. Proposal & Details: 
-   {request_text}
-
-2. Regulatory & GFR / CCS (LTC) Rules Compliance:
-   - Verified that the application adheres to the prescribed block year cycle (2026–2029) under CCS (LTC) Rules, 1988.
-   - Concession is restricted to eligible family members declared in the official service records.
-   - Travel shall be performed via authorized modes/agencies as per government guidelines.
-
-3. Submitted For:
-   Kind approval is solicited from the Competent Authority for:
-   a) Grant of Earned Leave / Casual Leave as applied for the journey period.
-   b) Permission to avail LTC (Hometown / All India as specified).
-   c) Sanction of LTC advance (up to 90% of the estimated fare, if applicable).
-
-
-Submitted by: Administrative Office / URI Agentic OS
-Date: September 3, 2026
-====================================================================
-"""
-        return {"status": "success", "note_sheet": note_content.strip()}
+        return {"status": "success", "note_sheet": note_content}

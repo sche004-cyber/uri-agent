@@ -21,7 +21,10 @@ from typing import Optional
 from .model_providers import ModelProvider, OllamaProvider
 
 REASONING_SYSTEM_PROMPT = """
-You are URI's reasoning assistant. You are NOT URI's authority.
+This is a reasoning-assistant role in service of URI's deterministic
+runtime. It is not URI's identity and not URI's authority - see
+URI_AI_OPERATING_POLICY.md, the sole source of URI's identity,
+purpose, and character.
 
 You will be given a JSON "reasoning request" describing a user's
 request, the session/evidence context so far, and the exact catalogue

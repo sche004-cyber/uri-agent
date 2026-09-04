@@ -319,13 +319,18 @@ class EndToEndAuthoritativeFilesUnchangedTests(unittest.TestCase):
         self._original_enable_skill_router_shadow = (
             server._orchestrator.enable_skill_router_shadow
         )
+        self._original_enable_response_narrative = (
+            server._orchestrator.enable_response_narrative
+        )
 
         # /ask stays fast/deterministic and network-free - see
-        # _FixedSemanticInterpreter's docstring. Shadow paths disabled
-        # for the same reason (both would otherwise also reach out to
-        # Ollama); neither is part of what this test is proving.
+        # _FixedSemanticInterpreter's docstring. Shadow paths and
+        # response-narrative drafting disabled for the same reason
+        # (all three would otherwise also reach out to Ollama); none
+        # of them is part of what this test is proving.
         server._orchestrator.enable_model_reasoning_shadow = False
         server._orchestrator.enable_skill_router_shadow = False
+        server._orchestrator.enable_response_narrative = False
 
         server._memory_store = MemoryStore(
             storage_path=os.path.join(
@@ -364,6 +369,9 @@ class EndToEndAuthoritativeFilesUnchangedTests(unittest.TestCase):
         )
         server._orchestrator.enable_skill_router_shadow = (
             self._original_enable_skill_router_shadow
+        )
+        server._orchestrator.enable_response_narrative = (
+            self._original_enable_response_narrative
         )
         self.temp_dir.cleanup()
 

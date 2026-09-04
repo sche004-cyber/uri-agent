@@ -17,9 +17,10 @@ class ShellIndex {
   ShellIndex._();
   static const home = 0;
   static const ask = 1;
-  static const connections = 2;
-  static const activity = 3;
-  static const settings = 4;
+  static const tasks = 2;
+  static const connections = 3;
+  static const activity = 4;
+  static const settings = 5;
 }
 
 /// The persistent application shell: a sidebar on wide (desktop-first)

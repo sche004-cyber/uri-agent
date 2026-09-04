@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.pending_actions_outlined,
                         label: 'Pending approvals',
                         value: '${summary?.pendingApprovalCount ?? 0}',
-                        onTap: () => _goTo(ShellIndex.ask),
+                        onTap: () => _goTo(ShellIndex.tasks),
                         accent: (summary?.pendingApprovalCount ?? 0) > 0,
                       ),
                       _SummaryCard(
