@@ -347,5 +347,71 @@ class ModelReasoningGatewayTests(unittest.TestCase):
         )
 
 
+class ModelReasoningGatewayDefaultPolicyPathTests(unittest.TestCase):
+    """Regression test for a bug found while auditing the identity
+    architecture: the default policy_path pointed at a repo-root file
+    that did not exist (the real document lives under
+    URI_Model_Centric_Architecture_Docs/). load_policy() degrades to
+    an empty string on FileNotFoundError, so URI's own operating
+    policy/identity document was never actually included in a live
+    model request. These tests exercise the *default* (no override),
+    unlike every other test in this file, which always overrides
+    policy_path with a temp fixture."""
+
+    def test_default_policy_path_loads_the_real_operating_policy(self):
+        gateway = ModelReasoningGateway()
+
+        policy_text = gateway.load_policy()
+
+        self.assertNotEqual(policy_text, "")
+        self.assertIn("You are URI", policy_text)
+        self.assertIn("NIT Sikkim Administrative AI Assistant", policy_text)
+
+    def test_default_policy_text_reaches_the_built_reasoning_request(self):
+        gateway = ModelReasoningGateway()
+
+        request = gateway.build_reasoning_request("Prepare a note.")
+
+        self.assertIn("You are URI", request["system_policy"])
+
+    def test_policy_text_reaches_what_would_be_sent_to_the_model(self):
+        # No mocking of ModelReasoningGateway or the adapter's own
+        # logic - only the final network call is intercepted, by a
+        # spy standing in for OllamaProvider.complete(). Proves the
+        # real policy document's text actually flows all the way from
+        # disk, through the real (default) ModelReasoningGateway,
+        # through the real OllamaReasoningAdapter, into what would
+        # become the request body sent to Ollama.
+        from uri_core.core.model_reasoning_adapter import (
+            OllamaReasoningAdapter,
+        )
+        from uri_core.core.model_providers.base import ModelResponse
+
+        captured = {}
+
+        class _SpyProvider:
+            def complete(self, *, system, user, temperature=0.0, max_tokens=None):
+                captured["system"] = system
+                captured["user"] = user
+                return ModelResponse(
+                    content="{}", model="spy", provider="spy"
+                )
+
+        adapter = OllamaReasoningAdapter(provider=_SpyProvider())
+        gateway = ModelReasoningGateway(model_callable=adapter)
+
+        gateway.reason("Prepare a note about the insurance policy.")
+
+        self.assertIn("system", captured)
+        self.assertIn("user", captured)
+
+        # The full JSON request (including system_policy) is sent as
+        # the user message - see OllamaReasoningAdapter.__call__.
+        self.assertIn("You are URI", captured["user"])
+        self.assertIn(
+            "NIT Sikkim Administrative AI Assistant", captured["user"]
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

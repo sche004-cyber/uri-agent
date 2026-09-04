@@ -32,7 +32,10 @@ class ModelReasoningGateway:
 
     def __init__(
         self,
-        policy_path="URI_AI_OPERATING_POLICY.md",
+        policy_path=(
+            "URI_Model_Centric_Architecture_Docs/"
+            "URI_AI_OPERATING_POLICY.md"
+        ),
         registry_path="uri_workspace/capabilities_registry.json",
         model_callable: Optional[Callable[[str], Any]] = None,
     ):
