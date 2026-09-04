@@ -5,7 +5,9 @@ from dataclasses import asdict, is_dataclass
 
 from uri_core.core.prompt_builder import PromptBuilder
 from uri_core.core.dispatcher import ToolDispatcher
-from uri_core.core.semantic_interpreter import SemanticInterpreter
+from uri_core.core.provider_semantic_interpreter import (
+    ProviderSemanticInterpreter
+)
 from uri_core.core.skill_memory import SkillMemory
 from uri_core.core.capability_planner import CapabilityPlanner
 from uri_core.core.workflow_planner import WorkflowPlanner
@@ -39,14 +41,25 @@ class UriOrchestrator:
         context_budget=None,
         audit_trail=None,
         enable_skill_router_shadow=True,
-        skill_registry_path="uri_workspace/skill_registry.json"
+        skill_registry_path="uri_workspace/skill_registry.json",
+        semantic_interpreter=None
     ):
 
         self.prompt_builder = PromptBuilder()
 
         self.dispatcher = ToolDispatcher()
 
-        self.semantic_interpreter = SemanticInterpreter()
+        if semantic_interpreter is not None:
+
+            self.semantic_interpreter = (
+                semantic_interpreter
+            )
+
+        else:
+
+            self.semantic_interpreter = (
+                ProviderSemanticInterpreter()
+            )
 
         self.skill_memory = SkillMemory()
 
