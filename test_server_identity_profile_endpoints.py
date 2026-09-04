@@ -9,6 +9,7 @@ import unittest
 from fastapi.testclient import TestClient
 
 from uri_core.app import server
+from uri_core.core.growth_ledger import GrowthLedgerStore
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
 from uri_core.core.user_profile import UserProfileStore
 
@@ -28,6 +29,7 @@ class IdentityProfileEndpointTests(unittest.TestCase):
             server._device_identity_store
         )
         self._original_user_profile_store = server._user_profile_store
+        self._original_growth_ledger_store = server._growth_ledger_store
 
         server._user_identity_store = UserIdentityStore(
             storage_path=os.path.join(
@@ -44,6 +46,14 @@ class IdentityProfileEndpointTests(unittest.TestCase):
                 self.temp_dir.name, "user_profile.json"
             )
         )
+        # POST /profile now also records a growth event as a side
+        # effect (Milestone 4) - isolate that too, or these tests
+        # would write to the real uri_workspace/growth_ledger.json.
+        server._growth_ledger_store = GrowthLedgerStore(
+            storage_path=os.path.join(
+                self.temp_dir.name, "growth_ledger.json"
+            )
+        )
 
         self.client = TestClient(server.app)
 
@@ -53,6 +63,7 @@ class IdentityProfileEndpointTests(unittest.TestCase):
             self._original_device_identity_store
         )
         server._user_profile_store = self._original_user_profile_store
+        server._growth_ledger_store = self._original_growth_ledger_store
         self.temp_dir.cleanup()
 
     def test_identity_endpoint_returns_user_id_and_device_id(self):

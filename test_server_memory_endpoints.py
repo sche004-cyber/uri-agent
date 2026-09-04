@@ -9,6 +9,7 @@ import unittest
 from fastapi.testclient import TestClient
 
 from uri_core.app import server
+from uri_core.core.growth_ledger import GrowthLedgerStore
 from uri_core.core.user_memory import MemoryStore
 
 
@@ -18,10 +19,19 @@ class MemoryEndpointTests(unittest.TestCase):
         self.temp_dir = tempfile.TemporaryDirectory()
 
         self._original_memory_store = server._memory_store
+        self._original_growth_ledger_store = server._growth_ledger_store
 
         server._memory_store = MemoryStore(
             storage_path=os.path.join(
                 self.temp_dir.name, "user_memory.json"
+            )
+        )
+        # POST /memory now also records a growth event as a side
+        # effect (Milestone 4) - isolate that too, or these tests
+        # would write to the real uri_workspace/growth_ledger.json.
+        server._growth_ledger_store = GrowthLedgerStore(
+            storage_path=os.path.join(
+                self.temp_dir.name, "growth_ledger.json"
             )
         )
 
@@ -29,6 +39,7 @@ class MemoryEndpointTests(unittest.TestCase):
 
     def tearDown(self):
         server._memory_store = self._original_memory_store
+        server._growth_ledger_store = self._original_growth_ledger_store
         self.temp_dir.cleanup()
 
     def test_list_memory_starts_empty(self):

@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from uri_core.core.audit_comparison import build_shadow_comparison_report
+from uri_core.core.growth_ledger import GrowthLedgerStore
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
 from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
 from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
@@ -72,6 +73,27 @@ _user_identity_store = UserIdentityStore()
 _device_identity_store = DeviceIdentityStore()
 _user_profile_store = UserProfileStore()
 _memory_store = MemoryStore()
+
+# Growth ledger: see growth_ledger.py. Every event is recorded only as
+# a side effect of a real, already-succeeded user-driven write below
+# (POST /memory, POST /profile) - there is no public "add XP" surface,
+# and nothing here is ever read by _orchestrator or anything that
+# plans/authorizes/approves/executes.
+_growth_ledger_store = GrowthLedgerStore()
+
+
+def _record_growth_event_safely(
+    event_type: str, metadata: Optional[dict] = None
+) -> None:
+    """Never raises - a growth-ledger failure must never break the
+    real user-driven action it's downstream of. Mirrors
+    orchestrator.py's _record_skill_router_audit/
+    _record_model_reasoning_audit's own never-breaks-the-live-request
+    discipline."""
+    try:
+        _growth_ledger_store.record_event(event_type, metadata)
+    except Exception:
+        return
 
 
 class AskRequest(BaseModel):
@@ -207,6 +229,8 @@ def update_profile(payload: ProfileUpdateRequest) -> dict:
         )
     )
 
+    _record_growth_event_safely("profile_updated")
+
     return {
         "communication_style": updated.communication_style,
         "autonomy_level": updated.autonomy_level,
@@ -252,6 +276,10 @@ def add_memory(payload: MemoryWriteRequest) -> dict:
     except MemoryValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
+    _record_growth_event_safely(
+        "memory_recorded", {"category": entry.category}
+    )
+
     return _memory_entry_to_dict(entry)
 
 
@@ -285,3 +313,16 @@ def delete_memory(memory_id: str) -> dict:
         raise HTTPException(status_code=404, detail="Memory not found.")
 
     return {"deleted": True, "memory_id": memory_id}
+
+
+@app.get("/growth")
+def growth() -> dict:
+    """
+    Read-only summary: XP/level/achievements, always recomputed from
+    the append-only growth event history (see
+    growth_ledger.compute_summary - never a stored counter that could
+    drift). Level is cosmetic only - see growth_ledger.py's module
+    docstring. Nothing here is ever read by _orchestrator or anything
+    that plans, authorizes, approves, or executes.
+    """
+    return _growth_ledger_store.summary()
