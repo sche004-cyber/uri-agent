@@ -13,7 +13,8 @@ logic.
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
+from urllib.parse import urlparse
 
 
 class ProviderError(Exception):
@@ -51,6 +52,29 @@ DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "qwen3:14b"
 DEFAULT_TIMEOUT_SECONDS = 60.0
 
+# Self-knowledge status checks must stay cheap regardless of how long a
+# real completion is allowed to take (ModelProviderConfig.timeout_seconds
+# defaults to 60s) - reporting-only callers (see capability_registry.py,
+# server.py's GET /capabilities) need an answer quickly even when Ollama
+# is unreachable, not a 60s hang.
+DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS = 3.0
+
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
+
+
+def _location_from_base_url(base_url: str) -> str:
+    """"local" only for an actual loopback host in the configured URL -
+    never a guess. Anything else (a real hostname/IP, or a URL that
+    fails to parse a host at all) is "external": safer to under-claim
+    locality than to assume a remote server is local."""
+
+    try:
+        host = urlparse(base_url).hostname
+    except ValueError:
+        return "external"
+
+    return "local" if host in _LOCAL_HOSTS else "external"
+
 
 @dataclass(frozen=True)
 class ModelProviderConfig:
@@ -79,6 +103,35 @@ class ModelProviderConfig:
         )
 
 
+@dataclass(frozen=True)
+class ModelProviderStatus:
+    """Reporting-only self-knowledge about the model/provider currently
+    configured to power URI - see capability_registry.py and server.py's
+    GET /capabilities, the only places this is ever consumed.
+
+    Never treat any field here as authority, a capability grant, or an
+    approval signal - model identity/availability is informational
+    context for a human or a future reasoning layer to read, exactly
+    like growth_ledger.py's XP is informational and never read by
+    capability_planner.py/dispatcher.py. capability_planner.py and
+    dispatcher.py must never import this module or ModelProvider.
+
+    Unknown-safe by design: context_window is None rather than guessed
+    (Ollama does not cheaply expose this without an extra network call
+    this milestone deliberately does not make - see describe()'s
+    docstring), and available/detail always come from an actual,
+    cheap, timeout-bounded reachability check, never assumed True.
+    """
+
+    provider_name: str
+    model_name: str
+    location: str  # "local" | "external" - derived from config, never guessed
+    context_window: Optional[int]  # None when not reliably knowable
+    supports: Tuple[str, ...]  # what this provider's interface does, e.g. ("text",)
+    available: bool
+    detail: Optional[str] = None
+
+
 class ModelProvider(ABC):
     """Anything that can turn a (system, user) prompt pair into text."""
 
@@ -91,4 +144,13 @@ class ModelProvider(ABC):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
     ) -> ModelResponse:
+        raise NotImplementedError
+
+    @abstractmethod
+    def describe(self) -> ModelProviderStatus:
+        """Cheap, timeout-bounded, exception-safe self-knowledge about
+        this provider - must never call complete() or otherwise perform
+        a real model invocation, and must never raise: an unreachable
+        backend is a normal, expected describe() result
+        (available=False, detail explaining why), not an error."""
         raise NotImplementedError

@@ -4,8 +4,10 @@ from unittest.mock import MagicMock, patch
 import requests
 
 from uri_core.core.model_providers.base import (
+    DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS,
     ModelNotFoundError,
     ModelProviderConfig,
+    ModelProviderStatus,
     ModelResponse,
     ProviderResponseError,
     ProviderTimeoutError,
@@ -168,6 +170,127 @@ class OllamaProviderMockedTests(unittest.TestCase):
         ):
             with self.assertRaises(ProviderResponseError):
                 provider.complete(system="sys", user="hello")
+
+
+class OllamaProviderDescribeTests(unittest.TestCase):
+    """describe() must be cheap, timeout-bounded, and exception-safe -
+    never a real completion, never raising, always returning a
+    ModelProviderStatus even when Ollama is unreachable."""
+
+    def test_reachable_ollama_reports_available(self):
+        provider = OllamaProvider(config=_config())
+
+        response = MagicMock()
+        response.status_code = 200
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            return_value=response,
+        ) as mock_get:
+            status = provider.describe()
+
+        self.assertIsInstance(status, ModelProviderStatus)
+        self.assertTrue(status.available)
+        self.assertIsNone(status.detail)
+        self.assertEqual(status.provider_name, "ollama")
+        self.assertEqual(status.model_name, "qwen3:14b")
+        self.assertEqual(status.location, "local")
+        self.assertIsNone(status.context_window)
+        self.assertEqual(status.supports, ("text",))
+
+        _, kwargs = mock_get.call_args
+        self.assertLessEqual(
+            kwargs["timeout"], DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS
+        )
+
+    def test_never_calls_complete_endpoint(self):
+        provider = OllamaProvider(config=_config())
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post"
+        ) as mock_post, patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            return_value=MagicMock(status_code=200),
+        ):
+            provider.describe()
+
+        mock_post.assert_not_called()
+
+    def test_connection_error_reports_unavailable_not_raised(self):
+        provider = OllamaProvider(config=_config())
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            side_effect=requests.exceptions.ConnectionError(),
+        ):
+            status = provider.describe()
+
+        self.assertFalse(status.available)
+        self.assertIsNotNone(status.detail)
+
+    def test_timeout_reports_unavailable_not_raised(self):
+        provider = OllamaProvider(config=_config())
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            side_effect=requests.exceptions.Timeout(),
+        ):
+            status = provider.describe()
+
+        self.assertFalse(status.available)
+        self.assertIsNotNone(status.detail)
+
+    def test_non_200_reports_unavailable_not_raised(self):
+        provider = OllamaProvider(config=_config())
+
+        response = MagicMock()
+        response.status_code = 500
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            return_value=response,
+        ):
+            status = provider.describe()
+
+        self.assertFalse(status.available)
+        self.assertIsNotNone(status.detail)
+
+    def test_health_check_timeout_is_bounded_even_with_a_slow_config(self):
+        provider = OllamaProvider(
+            config=ModelProviderConfig(
+                base_url="http://localhost:11434",
+                model="qwen3:14b",
+                timeout_seconds=60.0,
+            )
+        )
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            return_value=MagicMock(status_code=200),
+        ) as mock_get:
+            provider.describe()
+
+        _, kwargs = mock_get.call_args
+        self.assertLessEqual(
+            kwargs["timeout"], DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS
+        )
+
+    def test_external_base_url_reports_external_location(self):
+        provider = OllamaProvider(
+            config=ModelProviderConfig(
+                base_url="http://remote-host:11434",
+                model="qwen3:14b",
+                timeout_seconds=5.0,
+            )
+        )
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            return_value=MagicMock(status_code=200),
+        ):
+            status = provider.describe()
+
+        self.assertEqual(status.location, "external")
 
 
 if __name__ == "__main__":

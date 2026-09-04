@@ -17,8 +17,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from uri_core.core.audit_comparison import build_shadow_comparison_report
+from uri_core.core.capability_registry import CapabilityRegistry
 from uri_core.core.growth_ledger import GrowthLedgerStore
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
+from uri_core.core.model_providers import OllamaProvider
 from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
 from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
 from uri_core.core.orchestrator import UriOrchestrator
@@ -87,6 +89,23 @@ _memory_store = MemoryStore()
 # and nothing here is ever read by _orchestrator or anything that
 # plans/authorizes/approves/executes.
 _growth_ledger_store = GrowthLedgerStore()
+
+# Capability self-knowledge (Milestone 6): reporting-only, same as the
+# growth ledger above. _capability_registry is also read by
+# _orchestrator.capability_planner (its gap-reporting path only - never
+# for selection, see capability_planner.py's _known_gaps()). Neither
+# this registry read nor _model_provider.describe() below ever
+# influences authorization, approval, or execution - GET /capabilities
+# is the only thing that combines them, purely for display.
+_capability_registry = CapabilityRegistry()
+
+# A distinct OllamaProvider instance from whatever _orchestrator's
+# semantic interpreter uses internally - deliberately not the same
+# object, so this reporting-only self-knowledge query can never become
+# entangled with the live request path. describe() is a cheap,
+# timeout-bounded health check, never a real completion - see
+# ModelProvider.describe's contract in model_providers/base.py.
+_model_provider = OllamaProvider()
 
 
 def _record_growth_event_safely(
@@ -417,3 +436,50 @@ def growth() -> dict:
     that plans, authorizes, approves, or executes.
     """
     return _growth_ledger_store.summary()
+
+
+@app.get("/capabilities")
+def capabilities() -> dict:
+    """
+    URI's self-knowledge: what it can currently do, what is merely
+    planned, and what model/provider is powering it right now - all
+    read-only, purely for display. See capability_registry.py and
+    model_providers/base.py's ModelProviderStatus for the invariant
+    this endpoint depends on: neither section here is ever consulted
+    by _orchestrator, capability_planner.py's selection logic, or
+    dispatcher.py to decide what is authorized, approved, or executed.
+
+    "model" reflects _model_provider.describe() - a cheap,
+    timeout-bounded reachability check, never a real completion, so
+    this endpoint stays fast even when the model backend is down
+    (available: false with a detail message, not an error).
+    """
+
+    model_status = _model_provider.describe()
+
+    return {
+        "model": {
+            "provider_name": model_status.provider_name,
+            "model_name": model_status.model_name,
+            "location": model_status.location,
+            "context_window": model_status.context_window,
+            "supports": list(model_status.supports),
+            "available": model_status.available,
+            "detail": model_status.detail,
+        },
+        "capabilities": [
+            {
+                "id": descriptor.id,
+                "description": descriptor.description,
+                "status": descriptor.status,
+                "availability": descriptor.availability,
+                "permissions": descriptor.permissions,
+                "approval_requirement": descriptor.approval_requirement,
+                "risk": descriptor.risk,
+                "platform": descriptor.platform,
+                "limitations": descriptor.limitations,
+                "interface": descriptor.interface,
+            }
+            for descriptor in _capability_registry.list_capabilities()
+        ],
+    }

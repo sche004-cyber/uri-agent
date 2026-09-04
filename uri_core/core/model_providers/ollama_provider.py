@@ -10,13 +10,16 @@ from typing import Optional
 import requests
 
 from .base import (
+    DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS,
     ModelNotFoundError,
     ModelProvider,
     ModelProviderConfig,
+    ModelProviderStatus,
     ModelResponse,
     ProviderResponseError,
     ProviderTimeoutError,
     ProviderUnavailableError,
+    _location_from_base_url,
 )
 
 
@@ -109,4 +112,63 @@ class OllamaProvider(ModelProvider):
             content=message["content"],
             model=data.get("model", self.config.model),
             provider="ollama",
+        )
+
+    def describe(self) -> ModelProviderStatus:
+        """A lightweight GET against Ollama's /api/tags - never a real
+        completion (see ModelProvider.describe's contract) - bounded to
+        DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS regardless of how long
+        config.timeout_seconds allows a real completion to take, so a
+        self-knowledge query never hangs waiting on the slower budget a
+        real request is allowed. context_window is always None: Ollama
+        does not expose this from /api/tags, and querying /api/show for
+        it would be a second network call this milestone's "keep it
+        cheap" requirement argues against making by default - left as
+        a documented future enhancement, not a guess."""
+
+        health_check_timeout = min(
+            self.config.timeout_seconds,
+            DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS,
+        )
+
+        available = False
+        detail = None
+
+        try:
+            response = requests.get(
+                f"{self.config.base_url.rstrip('/')}/api/tags",
+                timeout=health_check_timeout,
+            )
+
+            if response.status_code == 200:
+                available = True
+            else:
+                detail = (
+                    f"Ollama returned HTTP {response.status_code} at "
+                    f"{self.config.base_url}."
+                )
+
+        except requests.exceptions.Timeout:
+            detail = (
+                "Ollama did not respond within "
+                f"{health_check_timeout}s at {self.config.base_url}."
+            )
+
+        except requests.exceptions.ConnectionError:
+            detail = (
+                f"Could not reach Ollama at {self.config.base_url}. "
+                "Is it running?"
+            )
+
+        except requests.exceptions.RequestException as exc:
+            detail = f"Request to Ollama failed: {exc}"
+
+        return ModelProviderStatus(
+            provider_name="ollama",
+            model_name=self.config.model,
+            location=_location_from_base_url(self.config.base_url),
+            context_window=None,
+            supports=("text",),
+            available=available,
+            detail=detail,
         )

@@ -1,24 +1,77 @@
-﻿{
+{
+  "schema_version": "2.0",
   "active_tools": {
     "extract_student_records": {
       "file_path": "uri_core/tools/extract_student_records.py",
       "class_name": "StudentRecordExtractor",
-      "method": "execute"
+      "method": "execute",
+      "description": "Retrieve a student's academic record (CGPA, semester, department, status) by roll number.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": [],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "Currently returns simulated institutional data; not yet connected to a live student records database.",
+      "interface": null
     },
     "fetch_drive_spreadsheet": {
       "file_path": "uri_core/tools/fetch_drive_spreadsheet.py",
       "class_name": "DriveSpreadsheetFetcher",
-      "method": "fetch_rows"
+      "method": "fetch_rows",
+      "description": "Read rows from a Google Sheets spreadsheet by spreadsheet ID and range.",
+      "status": "implemented",
+      "availability": "unavailable_missing_dependency",
+      "permissions": ["google_drive_service_account"],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "No Google service-account credentials are configured at uri_workspace/credentials.json; falls back to mock data until they are.",
+      "interface": null
     },
     "draft_institutional_note": {
       "file_path": "uri_core/tools/draft_institutional_note.py",
       "class_name": "InstitutionalNoteDraftCmp",
-      "method": "generate"
+      "method": "generate",
+      "description": "Draft a concise NIT Sikkim administrative office noting from a request description.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": [],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "Drafting only; does not submit, approve, or file the noting anywhere.",
+      "interface": null
     },
     "draft_institutional_order": {
       "file_path": "uri_core/tools/draft_institutional_order.py",
       "class_name": "InstitutionalOrderDraftCmp",
-      "method": "generate"
+      "method": "generate",
+      "description": "Draft a formal NIT Sikkim administrative Office Order from a request description.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": [],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "Drafting only; does not issue, sign, or distribute the order.",
+      "interface": null
+    }
+  },
+  "planned_capabilities": {
+    "pc_system_optimization": {
+      "description": "Inspect and optimize this device's performance (e.g. startup programs, disk/temp cleanup, resource-heavy processes) with explicit user approval before any change.",
+      "status": "not_implemented",
+      "availability": "unavailable_missing_dependency",
+      "permissions": ["system_command_execution"],
+      "approval_requirement": "user_approval_required",
+      "risk": "high",
+      "platform": "windows_powershell",
+      "limitations": "No execution adapter exists yet; this entry exists so URI can explain the gap honestly rather than pretend the capability is available. See the Controlled Self-Development architecture (research -> propose -> approve -> test -> approve -> execute -> verify -> rollback) for how this would eventually be built - none of that pipeline exists yet either.",
+      "interface": {
+        "kind": "system_diagnostics",
+        "summary_fields": ["cpu_usage", "gpu_usage", "ram_usage", "temperature", "disk_usage"]
+      }
     }
   }
 }

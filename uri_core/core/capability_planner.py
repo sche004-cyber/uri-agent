@@ -1,6 +1,8 @@
 ﻿import json
 import os
 
+from uri_core.core.capability_registry import CapabilityRegistry
+
 
 class CapabilityPlanner:
     """
@@ -19,6 +21,9 @@ class CapabilityPlanner:
         registry_path="uri_workspace/capabilities_registry.json"
     ):
         self.registry_path = os.path.normpath(registry_path)
+        self.capability_registry = CapabilityRegistry(
+            registry_path=self.registry_path
+        )
 
     def _load_tools(self):
         try:
@@ -165,6 +170,30 @@ class CapabilityPlanner:
 
         return score
 
+    def _known_gaps(self) -> list:
+        """Informational only - never used for selection (see
+        CapabilityDescriptor.is_executable, which excludes every entry
+        this returns). A capability_registry read failure must never
+        break planning, so this degrades to an empty list rather than
+        raising, matching this codebase's existing
+        never-break-the-live-request discipline."""
+
+        try:
+            gaps = self.capability_registry.known_gaps()
+
+        except Exception:
+            return []
+
+        return [
+            {
+                "id": gap.id,
+                "description": gap.description,
+                "status": gap.status,
+                "limitations": gap.limitations,
+            }
+            for gap in gaps
+        ]
+
     def plan(
         self,
         semantic_result: dict
@@ -178,7 +207,8 @@ class CapabilityPlanner:
                 "status": "planning_required",
                 "tool_name": None,
                 "reason":
-                    "No registered capabilities are available."
+                    "No registered capabilities are available.",
+                "known_gaps": self._known_gaps()
             }
 
         candidates = []
@@ -205,7 +235,8 @@ class CapabilityPlanner:
                 "status": "planning_required",
                 "tool_name": None,
                 "reason":
-                    "URI understands the task but no registered capability confidently matches the required work."
+                    "URI understands the task but no registered capability confidently matches the required work.",
+                "known_gaps": self._known_gaps()
             }
 
         candidates.sort(
