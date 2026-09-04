@@ -1,3 +1,6 @@
+import json
+import os
+
 from dataclasses import asdict, is_dataclass
 
 from uri_core.core.prompt_builder import PromptBuilder
@@ -15,6 +18,9 @@ from uri_core.core.fact_manager import update_fact
 from uri_core.core.model_reasoning_gateway import (
     ModelReasoningGateway
 )
+from uri_core.core.skill_evaluator import SkillEvaluator
+from uri_core.core.context_budget import ContextBudget
+from uri_core.core.audit_trail import AuditTrail
 from uri_core.core.workflow_recovery import (
     WorkflowRecoveryValidator
 )
@@ -28,7 +34,12 @@ class UriOrchestrator:
     def __init__(
         self,
         model_reasoning_gateway=None,
-        enable_model_reasoning_shadow=True
+        enable_model_reasoning_shadow=True,
+        skill_evaluator=None,
+        context_budget=None,
+        audit_trail=None,
+        enable_skill_router_shadow=True,
+        skill_registry_path="uri_workspace/skill_registry.json"
     ):
 
         self.prompt_builder = PromptBuilder()
@@ -64,6 +75,95 @@ class UriOrchestrator:
             self.model_reasoning_gateway = (
                 ModelReasoningGateway()
             )
+
+        # ------------------------------------------------------
+        # Skill Router V1 shadow wiring.
+        #
+        # Observational only - see _run_skill_router_shadow.
+        # It never influences `plan` or `execution`.
+        # ------------------------------------------------------
+
+        self.enable_skill_router_shadow = (
+            enable_skill_router_shadow
+        )
+
+        self.audit_trail = (
+            audit_trail
+            if audit_trail is not None
+            else AuditTrail()
+        )
+
+        self._skill_registry_items = (
+            self._load_skill_registry_items(
+                skill_registry_path
+            )
+        )
+
+        if skill_evaluator is not None:
+
+            self.skill_evaluator = skill_evaluator
+
+        else:
+
+            self.skill_evaluator = SkillEvaluator(
+                registry_items=self._skill_registry_items
+            )
+
+        if context_budget is not None:
+
+            self.context_budget = context_budget
+
+        else:
+
+            self.context_budget = ContextBudget(
+                registry_items=self._skill_registry_items
+            )
+
+    # ==========================================================
+    # SKILL REGISTRY LOADING
+    # ==========================================================
+
+    def _load_skill_registry_items(
+        self,
+        registry_path
+    ):
+        """
+        Load the Skill Router V1 registry (uri_workspace/skill_registry.json).
+
+        Loaded once at construction, not per-request - the file is
+        ~300KB and its contents don't change during a session.
+
+        Missing or malformed registries degrade to an empty list so
+        the shadow path reports "no suitable capability" rather than
+        raising and disturbing the live request.
+        """
+
+        normalized_path = os.path.normpath(
+            registry_path
+        )
+
+        try:
+
+            with open(
+                normalized_path,
+                "r",
+                encoding="utf-8-sig"
+            ) as file:
+
+                registry = json.load(file)
+
+        except (
+            FileNotFoundError,
+            json.JSONDecodeError
+        ):
+            return []
+
+        items = registry.get("items", [])
+
+        if not isinstance(items, list):
+            return []
+
+        return items
 
     # ==========================================================
     # MODEL REASONING SHADOW
@@ -272,6 +372,145 @@ class UriOrchestrator:
                 "error":
                     str(exc)
             }
+
+    # ==========================================================
+    # SKILL ROUTER SHADOW
+    # ==========================================================
+
+    def _run_skill_router_shadow(
+        self,
+        user_text
+    ):
+        """
+        Run the Skill Router V1 (ContextBudget -> SkillEvaluator)
+        pipeline as a shadow evaluation only.
+
+        It cannot execute anything. It cannot replace the
+        deterministic CapabilityPlanner. Its result is attached to
+        the response for observability and recorded via AuditTrail
+        so the router's picks can be compared against
+        CapabilityPlanner's picks before any migration decision is
+        made.
+        """
+
+        if not self.enable_skill_router_shadow:
+
+            return {
+                "status":
+                    "shadow_disabled"
+            }
+
+        try:
+
+            context_budget_output = (
+                self.context_budget.build_context(
+                    request_text=user_text
+                )
+            )
+
+            result = (
+                self.skill_evaluator
+                .evaluate_from_context_budget(
+                    user_request=user_text,
+                    context_budget_output=
+                        context_budget_output
+                )
+            )
+
+            return {
+                "status":
+                    "shadow_completed",
+
+                "result":
+                    result
+            }
+
+        except Exception as exc:
+
+            return {
+                "status":
+                    "shadow_failed",
+
+                "error":
+                    str(exc)
+            }
+
+    def _record_skill_router_audit(
+        self,
+        session_id,
+        skill_router_shadow,
+        comparison_tool_name
+    ):
+        """
+        Record a single, small audit event comparing the Skill
+        Router V1 shadow's pick against the tool actually selected
+        on this turn (by SkillMemory or CapabilityPlanner).
+
+        Never raises - a failure to audit must not break the live
+        request the shadow is only observing.
+        """
+
+        try:
+
+            shadow_status = skill_router_shadow.get(
+                "status"
+            )
+
+            router_capability = None
+            router_destination = None
+
+            if shadow_status == "shadow_completed":
+
+                result = skill_router_shadow.get(
+                    "result",
+                    {}
+                )
+
+                best_match = result.get(
+                    "best_match"
+                )
+
+                if isinstance(best_match, dict):
+                    router_capability = best_match.get(
+                        "name"
+                    )
+
+                routing_recommendation = result.get(
+                    "routing_recommendation",
+                    {}
+                )
+
+                router_destination = (
+                    routing_recommendation.get(
+                        "destination"
+                    )
+                )
+
+            self.audit_trail.record(
+                event_type=
+                    "skill_router_shadow_evaluation",
+
+                status=shadow_status or "unknown",
+
+                session_id=session_id,
+
+                capability=router_capability,
+
+                metadata={
+                    "router_destination":
+                        str(router_destination),
+
+                    "planner_tool_name":
+                        str(comparison_tool_name),
+
+                    "agrees_with_planner":
+                        router_capability
+                        == comparison_tool_name
+                }
+            )
+
+        except Exception:
+            return
 
     # ==========================================================
     # EVIDENCE
@@ -996,9 +1235,36 @@ class UriOrchestrator:
                 )
             )
 
+            # --------------------------------------------------
+            # NEW:
+            # Run the Skill Router V1 (ContextBudget ->
+            # SkillEvaluator) pipeline as a shadow evaluation only.
+            #
+            # It cannot execute anything.
+            # It cannot replace the deterministic planner.
+            # --------------------------------------------------
+
+            skill_router_shadow = (
+                self._run_skill_router_shadow(
+                    user_text=user_text
+                )
+            )
+
             learned_skill = (
                 self.skill_memory.find_matching_skill(
                     semantic_result
+                )
+            )
+
+            self._record_skill_router_audit(
+                session_id=session_id,
+                skill_router_shadow=skill_router_shadow,
+                comparison_tool_name=(
+                    learned_skill.get("tool_name")
+                    if learned_skill
+                    else self.capability_planner.plan(
+                        semantic_result
+                    ).get("tool_name")
                 )
             )
 
@@ -1014,6 +1280,9 @@ class UriOrchestrator:
 
                 "model_reasoning":
                     model_reasoning,
+
+                "skill_router_shadow":
+                    skill_router_shadow,
 
                 "learned_skill":
                     learned_skill,
