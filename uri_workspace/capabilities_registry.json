@@ -1,0 +1,24 @@
+﻿{
+  "active_tools": {
+    "extract_student_records": {
+      "file_path": "uri_core/tools/extract_student_records.py",
+      "class_name": "StudentRecordExtractor",
+      "method": "execute"
+    },
+    "fetch_drive_spreadsheet": {
+      "file_path": "uri_core/tools/fetch_drive_spreadsheet.py",
+      "class_name": "DriveSpreadsheetFetcher",
+      "method": "fetch_rows"
+    },
+    "draft_institutional_note": {
+      "file_path": "uri_core/tools/draft_institutional_note.py",
+      "class_name": "InstitutionalNoteDraftCmp",
+      "method": "generate"
+    },
+    "draft_institutional_order": {
+      "file_path": "uri_core/tools/draft_institutional_order.py",
+      "class_name": "InstitutionalOrderDraftCmp",
+      "method": "generate"
+    }
+  }
+}

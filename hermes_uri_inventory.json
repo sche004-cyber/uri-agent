@@ -1,0 +1,2050 @@
+﻿{
+    "generated_at":  "2026-09-03T14:10:41.5947777+05:30",
+    "hermes_root":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes",
+    "python":  {
+                   "executable":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+                   "version":  "Python 3.13.15"
+               },
+    "uri_tools":  [
+                      {
+                          "name":  "agent_reach",
+                          "file":  "E:\\Chetan\\Uri Agent\\uri_prototype\\uri_core\\tools\\agent_reach.py"
+                      },
+                      {
+                          "name":  "defuddle_tool",
+                          "file":  "E:\\Chetan\\Uri Agent\\uri_prototype\\uri_core\\tools\\defuddle_tool.py"
+                      },
+                      {
+                          "name":  "draft_institutional_note",
+                          "file":  "E:\\Chetan\\Uri Agent\\uri_prototype\\uri_core\\tools\\draft_institutional_note.py"
+                      },
+                      {
+                          "name":  "draft_institutional_order",
+                          "file":  "E:\\Chetan\\Uri Agent\\uri_prototype\\uri_core\\tools\\draft_institutional_order.py"
+                      },
+                      {
+                          "name":  "extract_student_records",
+                          "file":  "E:\\Chetan\\Uri Agent\\uri_prototype\\uri_core\\tools\\extract_student_records.py"
+                      },
+                      {
+                          "name":  "fetch_drive_spreadsheet",
+                          "file":  "E:\\Chetan\\Uri Agent\\uri_prototype\\uri_core\\tools\\fetch_drive_spreadsheet.py"
+                      },
+                      {
+                          "name":  "tool_i_need_to_renew",
+                          "file":  "E:\\Chetan\\Uri Agent\\uri_prototype\\uri_core\\tools\\tool_i_need_to_renew.py"
+                      },
+                      {
+                          "name":  "tool_i_want_to_submit",
+                          "file":  "E:\\Chetan\\Uri Agent\\uri_prototype\\uri_core\\tools\\tool_i_want_to_submit.py"
+                      }
+                  ],
+    "hermes_skills":  [
+                          {
+                              "name":  "apple-notes",
+                              "category":  "apple",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\apple\\apple-notes\\SKILL.md",
+                              "size":  2394
+                          },
+                          {
+                              "name":  "apple-reminders",
+                              "category":  "apple",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\apple\\apple-reminders\\SKILL.md",
+                              "size":  3606
+                          },
+                          {
+                              "name":  "findmy",
+                              "category":  "apple",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\apple\\findmy\\SKILL.md",
+                              "size":  3709
+                          },
+                          {
+                              "name":  "imessage",
+                              "category":  "apple",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\apple\\imessage\\SKILL.md",
+                              "size":  2442
+                          },
+                          {
+                              "name":  "claude-code",
+                              "category":  "autonomous-ai-agents",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\autonomous-ai-agents\\claude-code\\SKILL.md",
+                              "size":  34281
+                          },
+                          {
+                              "name":  "codex",
+                              "category":  "autonomous-ai-agents",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\autonomous-ai-agents\\codex\\SKILL.md",
+                              "size":  5738
+                          },
+                          {
+                              "name":  "computer-use",
+                              "category":  "autonomous-ai-agents",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\autonomous-ai-agents\\computer-use\\SKILL.md",
+                              "size":  18599
+                          },
+                          {
+                              "name":  "hermes-agent",
+                              "category":  "autonomous-ai-agents",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\autonomous-ai-agents\\hermes-agent\\SKILL.md",
+                              "size":  13183
+                          },
+                          {
+                              "name":  "merge-reconciler",
+                              "category":  "autonomous-ai-agents",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\autonomous-ai-agents\\merge-reconciler\\SKILL.md",
+                              "size":  7606
+                          },
+                          {
+                              "name":  "opencode",
+                              "category":  "autonomous-ai-agents",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\autonomous-ai-agents\\opencode\\SKILL.md",
+                              "size":  7259
+                          },
+                          {
+                              "name":  "architecture-diagram",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\architecture-diagram\\SKILL.md",
+                              "size":  5830
+                          },
+                          {
+                              "name":  "ascii-art",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\ascii-art\\SKILL.md",
+                              "size":  10552
+                          },
+                          {
+                              "name":  "ascii-video",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\ascii-video\\SKILL.md",
+                              "size":  15011
+                          },
+                          {
+                              "name":  "baoyu-infographic",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\baoyu-infographic\\SKILL.md",
+                              "size":  10434
+                          },
+                          {
+                              "name":  "claude-design",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\claude-design\\SKILL.md",
+                              "size":  25117
+                          },
+                          {
+                              "name":  "comfyui",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\comfyui\\SKILL.md",
+                              "size":  24075
+                          },
+                          {
+                              "name":  "design-md",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\design-md\\SKILL.md",
+                              "size":  8477
+                          },
+                          {
+                              "name":  "excalidraw",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\excalidraw\\SKILL.md",
+                              "size":  7297
+                          },
+                          {
+                              "name":  "humanizer",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\humanizer\\SKILL.md",
+                              "size":  34463
+                          },
+                          {
+                              "name":  "manim-video",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\manim-video\\SKILL.md",
+                              "size":  12150
+                          },
+                          {
+                              "name":  "p5js",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\p5js\\SKILL.md",
+                              "size":  27534
+                          },
+                          {
+                              "name":  "popular-web-designs",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\popular-web-designs\\SKILL.md",
+                              "size":  9722
+                          },
+                          {
+                              "name":  "pretext",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\pretext\\SKILL.md",
+                              "size":  13959
+                          },
+                          {
+                              "name":  "sketch",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\sketch\\SKILL.md",
+                              "size":  9788
+                          },
+                          {
+                              "name":  "songwriting-and-ai-music",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\songwriting-and-ai-music\\SKILL.md",
+                              "size":  10963
+                          },
+                          {
+                              "name":  "touchdesigner-mcp",
+                              "category":  "creative",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\creative\\touchdesigner-mcp\\SKILL.md",
+                              "size":  15269
+                          },
+                          {
+                              "name":  "sdlc-review",
+                              "category":  "devops",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\devops\\sdlc-review\\SKILL.md",
+                              "size":  9073
+                          },
+                          {
+                              "name":  "email-inbox-triage",
+                              "category":  "email",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\email\\email-inbox-triage\\SKILL.md",
+                              "size":  4057
+                          },
+                          {
+                              "name":  "himalaya",
+                              "category":  "email",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\email\\himalaya\\SKILL.md",
+                              "size":  7272
+                          },
+                          {
+                              "name":  "codebase-inspection",
+                              "category":  "github",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\github\\codebase-inspection\\SKILL.md",
+                              "size":  3628
+                          },
+                          {
+                              "name":  "github-auth",
+                              "category":  "github",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\github\\github-auth\\SKILL.md",
+                              "size":  11949
+                          },
+                          {
+                              "name":  "github-code-review",
+                              "category":  "github",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\github\\github-code-review\\SKILL.md",
+                              "size":  13614
+                          },
+                          {
+                              "name":  "github-issue-to-pr",
+                              "category":  "github",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\github\\github-issue-to-pr\\SKILL.md",
+                              "size":  6058
+                          },
+                          {
+                              "name":  "github-issues",
+                              "category":  "github",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\github\\github-issues\\SKILL.md",
+                              "size":  9312
+                          },
+                          {
+                              "name":  "github-pr-workflow",
+                              "category":  "github",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\github\\github-pr-workflow\\SKILL.md",
+                              "size":  10034
+                          },
+                          {
+                              "name":  "github-repo-management",
+                              "category":  "github",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\github\\github-repo-management\\SKILL.md",
+                              "size":  13727
+                          },
+                          {
+                              "name":  "gif-search",
+                              "category":  "media",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\media\\gif-search\\SKILL.md",
+                              "size":  2720
+                          },
+                          {
+                              "name":  "songsee",
+                              "category":  "media",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\media\\songsee\\SKILL.md",
+                              "size":  2336
+                          },
+                          {
+                              "name":  "youtube-content",
+                              "category":  "media",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\media\\youtube-content\\SKILL.md",
+                              "size":  3538
+                          },
+                          {
+                              "name":  "evaluating-llms-harness",
+                              "category":  "mlops",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\mlops\\evaluation\\evaluating-llms-harness\\SKILL.md",
+                              "size":  12204
+                          },
+                          {
+                              "name":  "weights-and-biases",
+                              "category":  "mlops",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\mlops\\evaluation\\weights-and-biases\\SKILL.md",
+                              "size":  12676
+                          },
+                          {
+                              "name":  "huggingface-hub",
+                              "category":  "mlops",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\mlops\\huggingface-hub\\SKILL.md",
+                              "size":  3715
+                          },
+                          {
+                              "name":  "llama-cpp",
+                              "category":  "mlops",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\mlops\\inference\\llama-cpp\\SKILL.md",
+                              "size":  8880
+                          },
+                          {
+                              "name":  "serving-llms-vllm",
+                              "category":  "mlops",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\mlops\\inference\\serving-llms-vllm\\SKILL.md",
+                              "size":  9335
+                          },
+                          {
+                              "name":  "nit-sikkim-office-assistant",
+                              "category":  "nit-sikkim-office-assistant",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\nit-sikkim-office-assistant\\SKILL.md",
+                              "size":  7579
+                          },
+                          {
+                              "name":  "obsidian",
+                              "category":  "note-taking",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\note-taking\\obsidian\\SKILL.md",
+                              "size":  3092
+                          },
+                          {
+                              "name":  "airtable",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\airtable\\SKILL.md",
+                              "size":  11314
+                          },
+                          {
+                              "name":  "box",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\box\\SKILL.md",
+                              "size":  11697
+                          },
+                          {
+                              "name":  "document-to-action-items",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\document-to-action-items\\SKILL.md",
+                              "size":  3966
+                          },
+                          {
+                              "name":  "docx",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\docx\\SKILL.md",
+                              "size":  10395
+                          },
+                          {
+                              "name":  "google-workspace",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\google-workspace\\SKILL.md",
+                              "size":  13670
+                          },
+                          {
+                              "name":  "maps",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\maps\\SKILL.md",
+                              "size":  6705
+                          },
+                          {
+                              "name":  "meeting-action-items",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\meeting-action-items\\SKILL.md",
+                              "size":  3808
+                          },
+                          {
+                              "name":  "nano-pdf",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\nano-pdf\\SKILL.md",
+                              "size":  1605
+                          },
+                          {
+                              "name":  "notion",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\notion\\SKILL.md",
+                              "size":  14629
+                          },
+                          {
+                              "name":  "ocr-and-documents",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\ocr-and-documents\\SKILL.md",
+                              "size":  5784
+                          },
+                          {
+                              "name":  "pdf",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\pdf\\SKILL.md",
+                              "size":  12244
+                          },
+                          {
+                              "name":  "powerpoint",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\powerpoint\\SKILL.md",
+                              "size":  10781
+                          },
+                          {
+                              "name":  "product-price-monitor",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\product-price-monitor\\SKILL.md",
+                              "size":  4400
+                          },
+                          {
+                              "name":  "session-librarian",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\session-librarian\\SKILL.md",
+                              "size":  4827
+                          },
+                          {
+                              "name":  "teams-meeting-pipeline",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\teams-meeting-pipeline\\SKILL.md",
+                              "size":  6953
+                          },
+                          {
+                              "name":  "weekly-review-planning",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\weekly-review-planning\\SKILL.md",
+                              "size":  3975
+                          },
+                          {
+                              "name":  "xlsx",
+                              "category":  "productivity",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\productivity\\xlsx\\SKILL.md",
+                              "size":  9655
+                          },
+                          {
+                              "name":  "arxiv",
+                              "category":  "research",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\research\\arxiv\\SKILL.md",
+                              "size":  10075
+                          },
+                          {
+                              "name":  "blocked-page-recovery",
+                              "category":  "research",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\research\\blocked-page-recovery\\SKILL.md",
+                              "size":  5152
+                          },
+                          {
+                              "name":  "blogwatcher",
+                              "category":  "research",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\research\\blogwatcher\\SKILL.md",
+                              "size":  5111
+                          },
+                          {
+                              "name":  "competitor-news-monitor",
+                              "category":  "research",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\research\\competitor-news-monitor\\SKILL.md",
+                              "size":  4501
+                          },
+                          {
+                              "name":  "grounded-citations",
+                              "category":  "research",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\research\\grounded-citations\\SKILL.md",
+                              "size":  11231
+                          },
+                          {
+                              "name":  "llm-wiki",
+                              "category":  "research",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\research\\llm-wiki\\SKILL.md",
+                              "size":  20121
+                          },
+                          {
+                              "name":  "research-paper-writing",
+                              "category":  "research",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\research\\research-paper-writing\\SKILL.md",
+                              "size":  72170
+                          },
+                          {
+                              "name":  "openhue",
+                              "category":  "smart-home",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\smart-home\\openhue\\SKILL.md",
+                              "size":  2843
+                          },
+                          {
+                              "name":  "xurl",
+                              "category":  "social-media",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\social-media\\xurl\\SKILL.md",
+                              "size":  16345
+                          },
+                          {
+                              "name":  "dogfood",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\dogfood\\SKILL.md",
+                              "size":  6324
+                          },
+                          {
+                              "name":  "hermes-agent-skill-authoring",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\hermes-agent-skill-authoring\\SKILL.md",
+                              "size":  14438
+                          },
+                          {
+                              "name":  "inspecting-hermes-desktop-dom",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\inspecting-hermes-desktop-dom\\SKILL.md",
+                              "size":  6204
+                          },
+                          {
+                              "name":  "node-inspect-debugger",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\node-inspect-debugger\\SKILL.md",
+                              "size":  10894
+                          },
+                          {
+                              "name":  "plan",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\plan\\SKILL.md",
+                              "size":  8903
+                          },
+                          {
+                              "name":  "python-debugpy",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\python-debugpy\\SKILL.md",
+                              "size":  13347
+                          },
+                          {
+                              "name":  "requesting-code-review",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\requesting-code-review\\SKILL.md",
+                              "size":  8465
+                          },
+                          {
+                              "name":  "simplify-code",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\simplify-code\\SKILL.md",
+                              "size":  14702
+                          },
+                          {
+                              "name":  "spike",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\spike\\SKILL.md",
+                              "size":  8729
+                          },
+                          {
+                              "name":  "systematic-debugging",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\systematic-debugging\\SKILL.md",
+                              "size":  14065
+                          },
+                          {
+                              "name":  "test-driven-development",
+                              "category":  "software-development",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\skills\\software-development\\test-driven-development\\SKILL.md",
+                              "size":  10306
+                          }
+                      ],
+    "optional_skills":  [
+                            {
+                                "name":  "antigravity-cli",
+                                "category":  "autonomous-ai-agents",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\autonomous-ai-agents\\antigravity-cli\\SKILL.md",
+                                "size":  9485
+                            },
+                            {
+                                "name":  "blackbox",
+                                "category":  "autonomous-ai-agents",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\autonomous-ai-agents\\blackbox\\SKILL.md",
+                                "size":  5488
+                            },
+                            {
+                                "name":  "grok",
+                                "category":  "autonomous-ai-agents",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\autonomous-ai-agents\\grok\\SKILL.md",
+                                "size":  13722
+                            },
+                            {
+                                "name":  "honcho",
+                                "category":  "autonomous-ai-agents",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\autonomous-ai-agents\\honcho\\SKILL.md",
+                                "size":  19290
+                            },
+                            {
+                                "name":  "openhands",
+                                "category":  "autonomous-ai-agents",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\autonomous-ai-agents\\openhands\\SKILL.md",
+                                "size":  8300
+                            },
+                            {
+                                "name":  "evm",
+                                "category":  "blockchain",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\blockchain\\evm\\SKILL.md",
+                                "size":  8371
+                            },
+                            {
+                                "name":  "hyperliquid",
+                                "category":  "blockchain",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\blockchain\\hyperliquid\\SKILL.md",
+                                "size":  6925
+                            },
+                            {
+                                "name":  "solana",
+                                "category":  "blockchain",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\blockchain\\solana\\SKILL.md",
+                                "size":  6407
+                            },
+                            {
+                                "name":  "one-three-one-rule",
+                                "category":  "communication",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\communication\\one-three-one-rule\\SKILL.md",
+                                "size":  4579
+                            },
+                            {
+                                "name":  "audiocraft-audio-generation",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\audiocraft-audio-generation\\SKILL.md",
+                                "size":  16233
+                            },
+                            {
+                                "name":  "baoyu-article-illustrator",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\baoyu-article-illustrator\\SKILL.md",
+                                "size":  10131
+                            },
+                            {
+                                "name":  "baoyu-comic",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\baoyu-comic\\SKILL.md",
+                                "size":  14621
+                            },
+                            {
+                                "name":  "concept-diagrams",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\concept-diagrams\\SKILL.md",
+                                "size":  16463
+                            },
+                            {
+                                "name":  "creative-ideation",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\creative-ideation\\SKILL.md",
+                                "size":  10434
+                            },
+                            {
+                                "name":  "draw-your-font",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\draw-your-font\\SKILL.md",
+                                "size":  6978
+                            },
+                            {
+                                "name":  "heartmula",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\heartmula\\SKILL.md",
+                                "size":  6509
+                            },
+                            {
+                                "name":  "hyperframes",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\hyperframes\\SKILL.md",
+                                "size":  15650
+                            },
+                            {
+                                "name":  "kanban-video-orchestrator",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\kanban-video-orchestrator\\SKILL.md",
+                                "size":  9796
+                            },
+                            {
+                                "name":  "meme-generation",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\meme-generation\\SKILL.md",
+                                "size":  5388
+                            },
+                            {
+                                "name":  "pixel-art",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\pixel-art\\SKILL.md",
+                                "size":  7587
+                            },
+                            {
+                                "name":  "simple-english",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\simple-english\\SKILL.md",
+                                "size":  20542
+                            },
+                            {
+                                "name":  "social-media-content-calendar",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\social-media-content-calendar\\SKILL.md",
+                                "size":  3970
+                            },
+                            {
+                                "name":  "tldraw-offline",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\tldraw-offline\\SKILL.md",
+                                "size":  14991
+                            },
+                            {
+                                "name":  "unreal-mcp",
+                                "category":  "creative",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\creative\\unreal-mcp\\SKILL.md",
+                                "size":  13893
+                            },
+                            {
+                                "name":  "jupyter-notebook",
+                                "category":  "data-science",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\data-science\\jupyter-notebook\\SKILL.md",
+                                "size":  5984
+                            },
+                            {
+                                "name":  "actual-setup",
+                                "category":  "devops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\devops\\actual-setup\\SKILL.md",
+                                "size":  6767
+                            },
+                            {
+                                "name":  "docker-management",
+                                "category":  "devops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\devops\\docker-management\\SKILL.md",
+                                "size":  10426
+                            },
+                            {
+                                "name":  "hermes-s6-container-supervision",
+                                "category":  "devops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\devops\\hermes-s6-container-supervision\\SKILL.md",
+                                "size":  11991
+                            },
+                            {
+                                "name":  "inference-sh-cli",
+                                "category":  "devops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\devops\\inference-sh-cli\\SKILL.md",
+                                "size":  4489
+                            },
+                            {
+                                "name":  "pinggy-tunnel",
+                                "category":  "devops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\devops\\pinggy-tunnel\\SKILL.md",
+                                "size":  13545
+                            },
+                            {
+                                "name":  "watchers",
+                                "category":  "devops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\devops\\watchers\\SKILL.md",
+                                "size":  4500
+                            },
+                            {
+                                "name":  "adversarial-ux-test",
+                                "category":  "dogfood",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\dogfood\\adversarial-ux-test\\SKILL.md",
+                                "size":  8960
+                            },
+                            {
+                                "name":  "agentmail",
+                                "category":  "email",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\email\\agentmail\\SKILL.md",
+                                "size":  3126
+                            },
+                            {
+                                "name":  "3-statement-model",
+                                "category":  "finance",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\finance\\3-statement-model\\SKILL.md",
+                                "size":  21599
+                            },
+                            {
+                                "name":  "comps-analysis",
+                                "category":  "finance",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\finance\\comps-analysis\\SKILL.md",
+                                "size":  30930
+                            },
+                            {
+                                "name":  "dcf-model",
+                                "category":  "finance",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\finance\\dcf-model\\SKILL.md",
+                                "size":  49130
+                            },
+                            {
+                                "name":  "excel-author",
+                                "category":  "finance",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\finance\\excel-author\\SKILL.md",
+                                "size":  8818
+                            },
+                            {
+                                "name":  "lbo-model",
+                                "category":  "finance",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\finance\\lbo-model\\SKILL.md",
+                                "size":  16904
+                            },
+                            {
+                                "name":  "merger-model",
+                                "category":  "finance",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\finance\\merger-model\\SKILL.md",
+                                "size":  5297
+                            },
+                            {
+                                "name":  "polymarket",
+                                "category":  "finance",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\finance\\polymarket\\SKILL.md",
+                                "size":  2998
+                            },
+                            {
+                                "name":  "pptx-author",
+                                "category":  "finance",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\finance\\pptx-author\\SKILL.md",
+                                "size":  6416
+                            },
+                            {
+                                "name":  "stocks",
+                                "category":  "finance",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\finance\\stocks\\SKILL.md",
+                                "size":  2747
+                            },
+                            {
+                                "name":  "minecraft-modpack-server",
+                                "category":  "gaming",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\gaming\\minecraft-modpack-server\\SKILL.md",
+                                "size":  6628
+                            },
+                            {
+                                "name":  "pokemon-player",
+                                "category":  "gaming",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\gaming\\pokemon-player\\SKILL.md",
+                                "size":  8857
+                            },
+                            {
+                                "name":  "fitness-nutrition",
+                                "category":  "health",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\health\\fitness-nutrition\\SKILL.md",
+                                "size":  9822
+                            },
+                            {
+                                "name":  "neuroskill-bci",
+                                "category":  "health",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\health\\neuroskill-bci\\SKILL.md",
+                                "size":  16401
+                            },
+                            {
+                                "name":  "fastmcp",
+                                "category":  "mcp",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mcp\\fastmcp\\SKILL.md",
+                                "size":  8152
+                            },
+                            {
+                                "name":  "mcp-oauth-remote-gateway",
+                                "category":  "mcp",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mcp\\mcp-oauth-remote-gateway\\SKILL.md",
+                                "size":  23949
+                            },
+                            {
+                                "name":  "mcporter",
+                                "category":  "mcp",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mcp\\mcporter\\SKILL.md",
+                                "size":  3080
+                            },
+                            {
+                                "name":  "openclaw-migration",
+                                "category":  "migration",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\migration\\openclaw-migration\\SKILL.md",
+                                "size":  15786
+                            },
+                            {
+                                "name":  "accelerate",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\accelerate\\SKILL.md",
+                                "size":  9175
+                            },
+                            {
+                                "name":  "chroma",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\chroma\\SKILL.md",
+                                "size":  8945
+                            },
+                            {
+                                "name":  "clip",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\clip\\SKILL.md",
+                                "size":  6695
+                            },
+                            {
+                                "name":  "faiss",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\faiss\\SKILL.md",
+                                "size":  4818
+                            },
+                            {
+                                "name":  "flash-attention",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\flash-attention\\SKILL.md",
+                                "size":  10648
+                            },
+                            {
+                                "name":  "guidance",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\guidance\\SKILL.md",
+                                "size":  15280
+                            },
+                            {
+                                "name":  "huggingface-tokenizers",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\huggingface-tokenizers\\SKILL.md",
+                                "size":  13442
+                            },
+                            {
+                                "name":  "outlines",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\inference\\outlines\\SKILL.md",
+                                "size":  17327
+                            },
+                            {
+                                "name":  "instructor",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\instructor\\SKILL.md",
+                                "size":  16704
+                            },
+                            {
+                                "name":  "lambda-labs",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\lambda-labs\\SKILL.md",
+                                "size":  12011
+                            },
+                            {
+                                "name":  "llava",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\llava\\SKILL.md",
+                                "size":  7595
+                            },
+                            {
+                                "name":  "modal",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\modal\\SKILL.md",
+                                "size":  9023
+                            },
+                            {
+                                "name":  "segment-anything-model",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\models\\segment-anything-model\\SKILL.md",
+                                "size":  13358
+                            },
+                            {
+                                "name":  "nemo-curator",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\nemo-curator\\SKILL.md",
+                                "size":  10387
+                            },
+                            {
+                                "name":  "obliteratus",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\obliteratus\\SKILL.md",
+                                "size":  15482
+                            },
+                            {
+                                "name":  "peft",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\peft\\SKILL.md",
+                                "size":  11997
+                            },
+                            {
+                                "name":  "pinecone",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\pinecone\\SKILL.md",
+                                "size":  8528
+                            },
+                            {
+                                "name":  "pytorch-fsdp",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\pytorch-fsdp\\SKILL.md",
+                                "size":  2476
+                            },
+                            {
+                                "name":  "pytorch-lightning",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\pytorch-lightning\\SKILL.md",
+                                "size":  8971
+                            },
+                            {
+                                "name":  "qdrant",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\qdrant\\SKILL.md",
+                                "size":  13781
+                            },
+                            {
+                                "name":  "dspy",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\research\\dspy\\SKILL.md",
+                                "size":  15220
+                            },
+                            {
+                                "name":  "saelens",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\saelens\\SKILL.md",
+                                "size":  15003
+                            },
+                            {
+                                "name":  "simpo",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\simpo\\SKILL.md",
+                                "size":  5751
+                            },
+                            {
+                                "name":  "slime",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\slime\\SKILL.md",
+                                "size":  11467
+                            },
+                            {
+                                "name":  "stable-diffusion",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\stable-diffusion\\SKILL.md",
+                                "size":  12834
+                            },
+                            {
+                                "name":  "tensorrt-llm",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\tensorrt-llm\\SKILL.md",
+                                "size":  5064
+                            },
+                            {
+                                "name":  "torchtitan",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\torchtitan\\SKILL.md",
+                                "size":  10334
+                            },
+                            {
+                                "name":  "axolotl",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\training\\axolotl\\SKILL.md",
+                                "size":  4907
+                            },
+                            {
+                                "name":  "trl-fine-tuning",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\training\\trl-fine-tuning\\SKILL.md",
+                                "size":  13505
+                            },
+                            {
+                                "name":  "unsloth",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\training\\unsloth\\SKILL.md",
+                                "size":  2275
+                            },
+                            {
+                                "name":  "whisper",
+                                "category":  "mlops",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\mlops\\whisper\\SKILL.md",
+                                "size":  7244
+                            },
+                            {
+                                "name":  "mpp-agent",
+                                "category":  "payments",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\payments\\mpp-agent\\SKILL.md",
+                                "size":  5053
+                            },
+                            {
+                                "name":  "stripe-link-cli",
+                                "category":  "payments",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\payments\\stripe-link-cli\\SKILL.md",
+                                "size":  6752
+                            },
+                            {
+                                "name":  "stripe-projects",
+                                "category":  "payments",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\payments\\stripe-projects\\SKILL.md",
+                                "size":  4521
+                            },
+                            {
+                                "name":  "canvas",
+                                "category":  "productivity",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\productivity\\canvas\\SKILL.md",
+                                "size":  3228
+                            },
+                            {
+                                "name":  "here-now",
+                                "category":  "productivity",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\productivity\\here-now\\SKILL.md",
+                                "size":  8782
+                            },
+                            {
+                                "name":  "memento-flashcards",
+                                "category":  "productivity",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\productivity\\memento-flashcards\\SKILL.md",
+                                "size":  12984
+                            },
+                            {
+                                "name":  "shop",
+                                "category":  "productivity",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\productivity\\shop\\SKILL.md",
+                                "size":  16705
+                            },
+                            {
+                                "name":  "shopify",
+                                "category":  "productivity",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\productivity\\shopify\\SKILL.md",
+                                "size":  15159
+                            },
+                            {
+                                "name":  "siyuan",
+                                "category":  "productivity",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\productivity\\siyuan\\SKILL.md",
+                                "size":  9237
+                            },
+                            {
+                                "name":  "telephony",
+                                "category":  "productivity",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\productivity\\telephony\\SKILL.md",
+                                "size":  12796
+                            },
+                            {
+                                "name":  "bioinformatics",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\bioinformatics\\SKILL.md",
+                                "size":  13790
+                            },
+                            {
+                                "name":  "darwinian-evolver",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\darwinian-evolver\\SKILL.md",
+                                "size":  8481
+                            },
+                            {
+                                "name":  "domain-intel",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\domain-intel\\SKILL.md",
+                                "size":  4535
+                            },
+                            {
+                                "name":  "drug-discovery",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\drug-discovery\\SKILL.md",
+                                "size":  8925
+                            },
+                            {
+                                "name":  "duckduckgo-search",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\duckduckgo-search\\SKILL.md",
+                                "size":  8280
+                            },
+                            {
+                                "name":  "gitnexus-explorer",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\gitnexus-explorer\\SKILL.md",
+                                "size":  7143
+                            },
+                            {
+                                "name":  "osint-investigation",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\osint-investigation\\SKILL.md",
+                                "size":  11678
+                            },
+                            {
+                                "name":  "parallel-cli",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\parallel-cli\\SKILL.md",
+                                "size":  10852
+                            },
+                            {
+                                "name":  "pinecone-research",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\pinecone-research\\SKILL.md",
+                                "size":  3065
+                            },
+                            {
+                                "name":  "qmd",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\qmd\\SKILL.md",
+                                "size":  12922
+                            },
+                            {
+                                "name":  "scrapling",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\scrapling\\SKILL.md",
+                                "size":  8993
+                            },
+                            {
+                                "name":  "searxng-search",
+                                "category":  "research",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\research\\searxng-search\\SKILL.md",
+                                "size":  6744
+                            },
+                            {
+                                "name":  "1password",
+                                "category":  "security",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\security\\1password\\SKILL.md",
+                                "size":  4651
+                            },
+                            {
+                                "name":  "godmode",
+                                "category":  "security",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\security\\godmode\\SKILL.md",
+                                "size":  20103
+                            },
+                            {
+                                "name":  "oss-forensics",
+                                "category":  "security",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\security\\oss-forensics\\SKILL.md",
+                                "size":  19852
+                            },
+                            {
+                                "name":  "sherlock",
+                                "category":  "security",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\security\\sherlock\\SKILL.md",
+                                "size":  6021
+                            },
+                            {
+                                "name":  "unbroker",
+                                "category":  "security",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\security\\unbroker\\SKILL.md",
+                                "size":  25261
+                            },
+                            {
+                                "name":  "web-pentest",
+                                "category":  "security",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\security\\web-pentest\\SKILL.md",
+                                "size":  13090
+                            },
+                            {
+                                "name":  "ast-grep",
+                                "category":  "software-development",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\software-development\\ast-grep\\SKILL.md",
+                                "size":  13081
+                            },
+                            {
+                                "name":  "code-wiki",
+                                "category":  "software-development",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\software-development\\code-wiki\\SKILL.md",
+                                "size":  14131
+                            },
+                            {
+                                "name":  "rest-graphql-debug",
+                                "category":  "software-development",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\software-development\\rest-graphql-debug\\SKILL.md",
+                                "size":  15636
+                            },
+                            {
+                                "name":  "subagent-driven-development",
+                                "category":  "software-development",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\software-development\\subagent-driven-development\\SKILL.md",
+                                "size":  10705
+                            },
+                            {
+                                "name":  "cloudflare-temporary-deploy",
+                                "category":  "web-development",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\web-development\\cloudflare-temporary-deploy\\SKILL.md",
+                                "size":  7459
+                            },
+                            {
+                                "name":  "har-derived-api-client",
+                                "category":  "web-development",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\web-development\\har-derived-api-client\\SKILL.md",
+                                "size":  10336
+                            },
+                            {
+                                "name":  "page-agent",
+                                "category":  "web-development",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\web-development\\page-agent\\SKILL.md",
+                                "size":  8544
+                            },
+                            {
+                                "name":  "publish-site",
+                                "category":  "web-development",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\web-development\\publish-site\\SKILL.md",
+                                "size":  8642
+                            },
+                            {
+                                "name":  "yuanbao",
+                                "category":  "yuanbao",
+                                "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-skills\\yuanbao\\SKILL.md",
+                                "size":  3849
+                            }
+                        ],
+    "plugins":  [
+                    {
+                        "name":  "browserbase",
+                        "category":  "browser",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\browser\\browserbase\\plugin.yaml"
+                    },
+                    {
+                        "name":  "browser_use",
+                        "category":  "browser",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\browser\\browser_use\\plugin.yaml"
+                    },
+                    {
+                        "name":  "firecrawl",
+                        "category":  "browser",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\browser\\firecrawl\\plugin.yaml"
+                    },
+                    {
+                        "name":  "chronos",
+                        "category":  "cron_providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\cron_providers\\chronos\\plugin.yaml"
+                    },
+                    {
+                        "name":  "basic",
+                        "category":  "dashboard_auth",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\dashboard_auth\\basic\\plugin.yaml"
+                    },
+                    {
+                        "name":  "drain",
+                        "category":  "dashboard_auth",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\dashboard_auth\\drain\\plugin.yaml"
+                    },
+                    {
+                        "name":  "nous",
+                        "category":  "dashboard_auth",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\dashboard_auth\\nous\\plugin.yaml"
+                    },
+                    {
+                        "name":  "self_hosted",
+                        "category":  "dashboard_auth",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\dashboard_auth\\self_hosted\\plugin.yaml"
+                    },
+                    {
+                        "name":  "disk-cleanup",
+                        "category":  "disk-cleanup",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\disk-cleanup\\plugin.yaml"
+                    },
+                    {
+                        "name":  "google_meet",
+                        "category":  "google_meet",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\google_meet\\plugin.yaml"
+                    },
+                    {
+                        "name":  "deepinfra",
+                        "category":  "image_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\image_gen\\deepinfra\\plugin.yaml"
+                    },
+                    {
+                        "name":  "fal",
+                        "category":  "image_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\image_gen\\fal\\plugin.yaml"
+                    },
+                    {
+                        "name":  "krea",
+                        "category":  "image_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\image_gen\\krea\\plugin.yaml"
+                    },
+                    {
+                        "name":  "openai",
+                        "category":  "image_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\image_gen\\openai\\plugin.yaml"
+                    },
+                    {
+                        "name":  "openai-codex",
+                        "category":  "image_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\image_gen\\openai-codex\\plugin.yaml"
+                    },
+                    {
+                        "name":  "openrouter",
+                        "category":  "image_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\image_gen\\openrouter\\plugin.yaml"
+                    },
+                    {
+                        "name":  "xai",
+                        "category":  "image_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\image_gen\\xai\\plugin.yaml"
+                    },
+                    {
+                        "name":  "byterover",
+                        "category":  "memory",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\memory\\byterover\\plugin.yaml"
+                    },
+                    {
+                        "name":  "hindsight",
+                        "category":  "memory",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\memory\\hindsight\\plugin.yaml"
+                    },
+                    {
+                        "name":  "holographic",
+                        "category":  "memory",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\memory\\holographic\\plugin.yaml"
+                    },
+                    {
+                        "name":  "honcho",
+                        "category":  "memory",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\memory\\honcho\\plugin.yaml"
+                    },
+                    {
+                        "name":  "mem0",
+                        "category":  "memory",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\memory\\mem0\\plugin.yaml"
+                    },
+                    {
+                        "name":  "openviking",
+                        "category":  "memory",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\memory\\openviking\\plugin.yaml"
+                    },
+                    {
+                        "name":  "retaindb",
+                        "category":  "memory",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\memory\\retaindb\\plugin.yaml"
+                    },
+                    {
+                        "name":  "supermemory",
+                        "category":  "memory",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\memory\\supermemory\\plugin.yaml"
+                    },
+                    {
+                        "name":  "actual",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\actual\\plugin.yaml"
+                    },
+                    {
+                        "name":  "ai-gateway",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\ai-gateway\\plugin.yaml"
+                    },
+                    {
+                        "name":  "alibaba",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\alibaba\\plugin.yaml"
+                    },
+                    {
+                        "name":  "alibaba-coding-plan",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\alibaba-coding-plan\\plugin.yaml"
+                    },
+                    {
+                        "name":  "anthropic",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\anthropic\\plugin.yaml"
+                    },
+                    {
+                        "name":  "arcee",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\arcee\\plugin.yaml"
+                    },
+                    {
+                        "name":  "azure-foundry",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\azure-foundry\\plugin.yaml"
+                    },
+                    {
+                        "name":  "bedrock",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\bedrock\\plugin.yaml"
+                    },
+                    {
+                        "name":  "commandcode",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\commandcode\\plugin.yaml"
+                    },
+                    {
+                        "name":  "copilot",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\copilot\\plugin.yaml"
+                    },
+                    {
+                        "name":  "copilot-acp",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\copilot-acp\\plugin.yaml"
+                    },
+                    {
+                        "name":  "custom",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\custom\\plugin.yaml"
+                    },
+                    {
+                        "name":  "deepinfra",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\deepinfra\\plugin.yaml"
+                    },
+                    {
+                        "name":  "deepseek",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\deepseek\\plugin.yaml"
+                    },
+                    {
+                        "name":  "fireworks",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\fireworks\\plugin.yaml"
+                    },
+                    {
+                        "name":  "gemini",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\gemini\\plugin.yaml"
+                    },
+                    {
+                        "name":  "gmi",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\gmi\\plugin.yaml"
+                    },
+                    {
+                        "name":  "huggingface",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\huggingface\\plugin.yaml"
+                    },
+                    {
+                        "name":  "kilocode",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\kilocode\\plugin.yaml"
+                    },
+                    {
+                        "name":  "kimi-coding",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\kimi-coding\\plugin.yaml"
+                    },
+                    {
+                        "name":  "meta-ai",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\meta-ai\\plugin.yaml"
+                    },
+                    {
+                        "name":  "minimax",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\minimax\\plugin.yaml"
+                    },
+                    {
+                        "name":  "nous",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\nous\\plugin.yaml"
+                    },
+                    {
+                        "name":  "novita",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\novita\\plugin.yaml"
+                    },
+                    {
+                        "name":  "nvidia",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\nvidia\\plugin.yaml"
+                    },
+                    {
+                        "name":  "ollama-cloud",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\ollama-cloud\\plugin.yaml"
+                    },
+                    {
+                        "name":  "openai-codex",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\openai-codex\\plugin.yaml"
+                    },
+                    {
+                        "name":  "opencode-free",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\opencode-free\\plugin.yaml"
+                    },
+                    {
+                        "name":  "opencode-zen",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\opencode-zen\\plugin.yaml"
+                    },
+                    {
+                        "name":  "openrouter",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\openrouter\\plugin.yaml"
+                    },
+                    {
+                        "name":  "qwen-oauth",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\qwen-oauth\\plugin.yaml"
+                    },
+                    {
+                        "name":  "stepfun",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\stepfun\\plugin.yaml"
+                    },
+                    {
+                        "name":  "upstage",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\upstage\\plugin.yaml"
+                    },
+                    {
+                        "name":  "vertex",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\vertex\\plugin.yaml"
+                    },
+                    {
+                        "name":  "xai",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\xai\\plugin.yaml"
+                    },
+                    {
+                        "name":  "xiaomi",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\xiaomi\\plugin.yaml"
+                    },
+                    {
+                        "name":  "zai",
+                        "category":  "model-providers",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\model-providers\\zai\\plugin.yaml"
+                    },
+                    {
+                        "name":  "langfuse",
+                        "category":  "observability",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\observability\\langfuse\\plugin.yaml"
+                    },
+                    {
+                        "name":  "a2a",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\a2a\\plugin.yaml"
+                    },
+                    {
+                        "name":  "buzz",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\buzz\\plugin.yaml"
+                    },
+                    {
+                        "name":  "dingtalk",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\dingtalk\\plugin.yaml"
+                    },
+                    {
+                        "name":  "discord",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\discord\\plugin.yaml"
+                    },
+                    {
+                        "name":  "email",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\email\\plugin.yaml"
+                    },
+                    {
+                        "name":  "feishu",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\feishu\\plugin.yaml"
+                    },
+                    {
+                        "name":  "google_chat",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\google_chat\\plugin.yaml"
+                    },
+                    {
+                        "name":  "homeassistant",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\homeassistant\\plugin.yaml"
+                    },
+                    {
+                        "name":  "irc",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\irc\\plugin.yaml"
+                    },
+                    {
+                        "name":  "line",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\line\\plugin.yaml"
+                    },
+                    {
+                        "name":  "matrix",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\matrix\\plugin.yaml"
+                    },
+                    {
+                        "name":  "mattermost",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\mattermost\\plugin.yaml"
+                    },
+                    {
+                        "name":  "ntfy",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\ntfy\\plugin.yaml"
+                    },
+                    {
+                        "name":  "photon",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\photon\\plugin.yaml"
+                    },
+                    {
+                        "name":  "raft",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\raft\\plugin.yaml"
+                    },
+                    {
+                        "name":  "simplex",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\simplex\\plugin.yaml"
+                    },
+                    {
+                        "name":  "slack",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\slack\\plugin.yaml"
+                    },
+                    {
+                        "name":  "sms",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\sms\\plugin.yaml"
+                    },
+                    {
+                        "name":  "teams",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\teams\\plugin.yaml"
+                    },
+                    {
+                        "name":  "telegram",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\telegram\\plugin.yaml"
+                    },
+                    {
+                        "name":  "wecom",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\wecom\\plugin.yaml"
+                    },
+                    {
+                        "name":  "whatsapp",
+                        "category":  "platforms",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\platforms\\whatsapp\\plugin.yaml"
+                    },
+                    {
+                        "name":  "security-guidance",
+                        "category":  "security-guidance",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\security-guidance\\plugin.yaml"
+                    },
+                    {
+                        "name":  "spotify",
+                        "category":  "spotify",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\spotify\\plugin.yaml"
+                    },
+                    {
+                        "name":  "teams_pipeline",
+                        "category":  "teams_pipeline",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\teams_pipeline\\plugin.yaml"
+                    },
+                    {
+                        "name":  "deepinfra",
+                        "category":  "video_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\video_gen\\deepinfra\\plugin.yaml"
+                    },
+                    {
+                        "name":  "fal",
+                        "category":  "video_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\video_gen\\fal\\plugin.yaml"
+                    },
+                    {
+                        "name":  "xai",
+                        "category":  "video_gen",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\video_gen\\xai\\plugin.yaml"
+                    },
+                    {
+                        "name":  "brave_free",
+                        "category":  "web",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\web\\brave_free\\plugin.yaml"
+                    },
+                    {
+                        "name":  "ddgs",
+                        "category":  "web",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\web\\ddgs\\plugin.yaml"
+                    },
+                    {
+                        "name":  "exa",
+                        "category":  "web",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\web\\exa\\plugin.yaml"
+                    },
+                    {
+                        "name":  "firecrawl",
+                        "category":  "web",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\web\\firecrawl\\plugin.yaml"
+                    },
+                    {
+                        "name":  "keenable",
+                        "category":  "web",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\web\\keenable\\plugin.yaml"
+                    },
+                    {
+                        "name":  "parallel",
+                        "category":  "web",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\web\\parallel\\plugin.yaml"
+                    },
+                    {
+                        "name":  "searxng",
+                        "category":  "web",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\web\\searxng\\plugin.yaml"
+                    },
+                    {
+                        "name":  "tavily",
+                        "category":  "web",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\web\\tavily\\plugin.yaml"
+                    },
+                    {
+                        "name":  "xai",
+                        "category":  "web",
+                        "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\plugins\\web\\xai\\plugin.yaml"
+                    }
+                ],
+    "optional_mcps":  [
+                          {
+                              "name":  "airtable",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\airtable\\manifest.yaml"
+                          },
+                          {
+                              "name":  "algolia",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\algolia\\manifest.yaml"
+                          },
+                          {
+                              "name":  "alltrails",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\alltrails\\manifest.yaml"
+                          },
+                          {
+                              "name":  "amplitude",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\amplitude\\manifest.yaml"
+                          },
+                          {
+                              "name":  "asana",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\asana\\manifest.yaml"
+                          },
+                          {
+                              "name":  "atlassian",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\atlassian\\manifest.yaml"
+                          },
+                          {
+                              "name":  "attio",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\attio\\manifest.yaml"
+                          },
+                          {
+                              "name":  "aws-knowledge",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\aws-knowledge\\manifest.yaml"
+                          },
+                          {
+                              "name":  "betterstack",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\betterstack\\manifest.yaml"
+                          },
+                          {
+                              "name":  "buildkite",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\buildkite\\manifest.yaml"
+                          },
+                          {
+                              "name":  "calendly",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\calendly\\manifest.yaml"
+                          },
+                          {
+                              "name":  "canva",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\canva\\manifest.yaml"
+                          },
+                          {
+                              "name":  "circleci",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\circleci\\manifest.yaml"
+                          },
+                          {
+                              "name":  "clickup",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\clickup\\manifest.yaml"
+                          },
+                          {
+                              "name":  "close",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\close\\manifest.yaml"
+                          },
+                          {
+                              "name":  "cloudflare",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\cloudflare\\manifest.yaml"
+                          },
+                          {
+                              "name":  "cloudinary",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\cloudinary\\manifest.yaml"
+                          },
+                          {
+                              "name":  "comfy-cloud",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\comfy-cloud\\manifest.yaml"
+                          },
+                          {
+                              "name":  "context7",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\context7\\manifest.yaml"
+                          },
+                          {
+                              "name":  "craft",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\craft\\manifest.yaml"
+                          },
+                          {
+                              "name":  "datadog",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\datadog\\manifest.yaml"
+                          },
+                          {
+                              "name":  "deepwiki",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\deepwiki\\manifest.yaml"
+                          },
+                          {
+                              "name":  "dropbox",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\dropbox\\manifest.yaml"
+                          },
+                          {
+                              "name":  "figma",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\figma\\manifest.yaml"
+                          },
+                          {
+                              "name":  "fireflies",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\fireflies\\manifest.yaml"
+                          },
+                          {
+                              "name":  "gamma",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\gamma\\manifest.yaml"
+                          },
+                          {
+                              "name":  "gitlab",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\gitlab\\manifest.yaml"
+                          },
+                          {
+                              "name":  "globalping",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\globalping\\manifest.yaml"
+                          },
+                          {
+                              "name":  "grafana",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\grafana\\manifest.yaml"
+                          },
+                          {
+                              "name":  "hugging_face",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\hugging_face\\manifest.yaml"
+                          },
+                          {
+                              "name":  "indeed",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\indeed\\manifest.yaml"
+                          },
+                          {
+                              "name":  "intercom",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\intercom\\manifest.yaml"
+                          },
+                          {
+                              "name":  "kiwi",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\kiwi\\manifest.yaml"
+                          },
+                          {
+                              "name":  "klaviyo",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\klaviyo\\manifest.yaml"
+                          },
+                          {
+                              "name":  "linear",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\linear\\manifest.yaml"
+                          },
+                          {
+                              "name":  "microsoft-learn",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\microsoft-learn\\manifest.yaml"
+                          },
+                          {
+                              "name":  "miro",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\miro\\manifest.yaml"
+                          },
+                          {
+                              "name":  "mixpanel",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\mixpanel\\manifest.yaml"
+                          },
+                          {
+                              "name":  "monday",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\monday\\manifest.yaml"
+                          },
+                          {
+                              "name":  "motherduck",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\motherduck\\manifest.yaml"
+                          },
+                          {
+                              "name":  "n8n",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\n8n\\manifest.yaml"
+                          },
+                          {
+                              "name":  "neon",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\neon\\manifest.yaml"
+                          },
+                          {
+                              "name":  "netlify",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\netlify\\manifest.yaml"
+                          },
+                          {
+                              "name":  "notion",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\notion\\manifest.yaml"
+                          },
+                          {
+                              "name":  "paypal",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\paypal\\manifest.yaml"
+                          },
+                          {
+                              "name":  "plaid",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\plaid\\manifest.yaml"
+                          },
+                          {
+                              "name":  "postman",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\postman\\manifest.yaml"
+                          },
+                          {
+                              "name":  "prisma-postgres",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\prisma-postgres\\manifest.yaml"
+                          },
+                          {
+                              "name":  "railway",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\railway\\manifest.yaml"
+                          },
+                          {
+                              "name":  "robinhood",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\robinhood\\manifest.yaml"
+                          },
+                          {
+                              "name":  "semgrep",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\semgrep\\manifest.yaml"
+                          },
+                          {
+                              "name":  "sentry",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\sentry\\manifest.yaml"
+                          },
+                          {
+                              "name":  "square",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\square\\manifest.yaml"
+                          },
+                          {
+                              "name":  "strava",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\strava\\manifest.yaml"
+                          },
+                          {
+                              "name":  "stripe",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\stripe\\manifest.yaml"
+                          },
+                          {
+                              "name":  "supabase",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\supabase\\manifest.yaml"
+                          },
+                          {
+                              "name":  "todoist",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\todoist\\manifest.yaml"
+                          },
+                          {
+                              "name":  "trivago",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\trivago\\manifest.yaml"
+                          },
+                          {
+                              "name":  "twelve-data",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\twelve-data\\manifest.yaml"
+                          },
+                          {
+                              "name":  "twilio-docs",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\twilio-docs\\manifest.yaml"
+                          },
+                          {
+                              "name":  "unreal-engine",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\unreal-engine\\manifest.yaml"
+                          },
+                          {
+                              "name":  "vercel",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\vercel\\manifest.yaml"
+                          },
+                          {
+                              "name":  "webflow",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\webflow\\manifest.yaml"
+                          },
+                          {
+                              "name":  "wolfram",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\wolfram\\manifest.yaml"
+                          },
+                          {
+                              "name":  "wordpress-com",
+                              "path":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\hermes-agent\\optional-mcps\\wordpress-com\\manifest.yaml"
+                          }
+                      ],
+    "uv_tools":  [
+                     {
+                         "name":  "browser-use",
+                         "path":  "C:\\Users\\Chetan Sharma\\AppData\\Roaming\\uv\\tools\\browser-use",
+                         "modified":  "2026-08-29T11:05:05.0350367+05:30"
+                     }
+                 ],
+    "commands":  [
+                     {
+                         "Name":  "ActionsMcpHost.exe",
+                         "CommandType":  32,
+                         "Source":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\Microsoft\\WindowsApps\\ActionsMcpHost.exe"
+                     },
+                     {
+                         "Name":  "hermes.exe",
+                         "CommandType":  32,
+                         "Source":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\bin\\hermes.exe"
+                     },
+                     {
+                         "Name":  "hermes-acp.exe",
+                         "CommandType":  32,
+                         "Source":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\hermes\\bin\\hermes-acp.exe"
+                     },
+                     {
+                         "Name":  "ShellMcpServers.Packaging.exe",
+                         "CommandType":  32,
+                         "Source":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\Microsoft\\WindowsApps\\ShellMcpServers.Packaging.exe"
+                     },
+                     {
+                         "Name":  "WindowsPackageManagerMCPServer.exe",
+                         "CommandType":  32,
+                         "Source":  "C:\\Users\\Chetan Sharma\\AppData\\Local\\Microsoft\\WindowsApps\\WindowsPackageManagerMCPServer.exe"
+                     }
+                 ]
+}
