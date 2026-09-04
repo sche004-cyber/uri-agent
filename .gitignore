@@ -17,6 +17,7 @@ uri_workspace/sessions/
 # uri_core/core/identity.py for the user_id/device_id distinction.
 uri_workspace/portable_identity.json
 uri_workspace/device_identity.json
+uri_workspace/user_profile.json
 uri_workspace/skill_memory.json
 uri_workspace/uri_memory.json
 uri_workspace/friction_log.json
