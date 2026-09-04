@@ -116,7 +116,11 @@ class SkillEvaluatorV1:
             scored.append((score, item))
 
         scored.sort(key=lambda p: (-p[0], p[1].get('name', '').lower()))
-        selected = [item for _, item in scored if item.get('name')]
+        selected = [
+            dict(item, _eval_score=score)
+            for score, item in scored
+            if item.get('name')
+        ]
 
         best_candidate = selected[0] if selected else None
         return {
