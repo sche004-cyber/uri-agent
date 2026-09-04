@@ -474,6 +474,9 @@ class WorkflowCapabilityRouter:
         result = (
             self.dispatcher.execute_tool(
                 tool_name,
+                session_id=(
+                    getattr(self.session, "session_id", None)
+                ),
                 request_text=workflow.get(
                     "goal",
                     ""

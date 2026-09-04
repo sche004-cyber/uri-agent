@@ -158,6 +158,96 @@ class CapabilityAuthorityBoundaryTests(unittest.TestCase):
         self.assertNotIn("importlib", imports)
         self.assertNotIn("subprocess", imports)
 
+    # ------------------------------------------------------------
+    # Milestone 7 (Real Approval Gate) invariants.
+    # ------------------------------------------------------------
+
+    def test_capability_planner_never_imports_approval_modules(self):
+        # The model/planning layer may PROPOSE a tool_name; it must
+        # never be able to reach ApprovalStore/ApprovalGate and so can
+        # never create, decide, or consume an approval itself.
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "capability_planner.py")
+        )
+
+        offending = {
+            name
+            for name in imports
+            if "approval_store" in name or "approval_gate" in name
+        }
+
+        self.assertEqual(
+            offending,
+            set(),
+            "capability_planner.py must never import approval_store "
+            "or approval_gate - it may only propose a tool_name, "
+            "never grant or satisfy approval.",
+        )
+
+    def test_dispatcher_never_imports_approval_modules(self):
+        # ToolDispatcher stays a pure execution mechanism, unaware
+        # that a gate exists in front of it - see approval_gate.py's
+        # module docstring: the gate wraps the dispatcher, the
+        # dispatcher never wraps or knows about the gate.
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "dispatcher.py")
+        )
+
+        offending = {
+            name
+            for name in imports
+            if "approval_store" in name or "approval_gate" in name
+        }
+
+        self.assertEqual(offending, set())
+
+    def test_model_reasoning_gateway_never_imports_approval_modules(
+        self,
+    ):
+        # The shadow model-reasoning path must have no path to
+        # approval state either - it is observational only.
+        imports = _imported_module_names(
+            os.path.join(
+                "uri_core", "core", "model_reasoning_gateway.py"
+            )
+        )
+
+        offending = {
+            name
+            for name in imports
+            if "approval_store" in name or "approval_gate" in name
+        }
+
+        self.assertEqual(offending, set())
+
+    def test_approval_gate_never_imports_model_providers(self):
+        # Symmetric with the Milestone 6 invariant: approval decisions
+        # must never be influenced by, or influence, model identity.
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "approval_gate.py")
+        )
+
+        offending = {
+            name for name in imports if "model_providers" in name
+        }
+
+        self.assertEqual(offending, set())
+
+    def test_approval_gate_is_the_only_caller_of_dispatcher_in_orchestrator(
+        self,
+    ):
+        # orchestrator.py must never call self.dispatcher.execute_tool
+        # directly - every execution of a registered capability must
+        # go through self.approval_gate.execute_tool instead.
+        with open(
+            os.path.join("uri_core", "core", "orchestrator.py"),
+            "r",
+            encoding="utf-8-sig",
+        ) as file:
+            source = file.read()
+
+        self.assertNotIn("self.dispatcher.execute_tool", source)
+
 
 if __name__ == "__main__":
     unittest.main()

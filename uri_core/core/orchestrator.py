@@ -5,6 +5,8 @@ from dataclasses import asdict, is_dataclass
 
 from uri_core.core.prompt_builder import PromptBuilder
 from uri_core.core.dispatcher import ToolDispatcher
+from uri_core.core.approval_gate import ApprovalGate
+from uri_core.core.capability_registry import CapabilityRegistry
 from uri_core.core.provider_semantic_interpreter import (
     ProviderSemanticInterpreter
 )
@@ -42,7 +44,8 @@ class UriOrchestrator:
         audit_trail=None,
         enable_skill_router_shadow=True,
         skill_registry_path="uri_workspace/skill_registry.json",
-        semantic_interpreter=None
+        semantic_interpreter=None,
+        approval_gate=None
     ):
 
         self.prompt_builder = PromptBuilder()
@@ -130,6 +133,36 @@ class UriOrchestrator:
 
             self.context_budget = ContextBudget(
                 registry_items=self._skill_registry_items
+            )
+
+        # ------------------------------------------------------
+        # Real approval gate (Milestone 7).
+        #
+        # The ONE execution boundary self.dispatcher is ever called
+        # through - see process_user_input's capability_selected
+        # branch and _create_workflow_executor below, both of which
+        # now hand this gate (not self.dispatcher directly) to
+        # anything that needs to execute a registered capability.
+        # capability_planner.py/model reasoning may only ever propose
+        # a tool_name; this gate is the sole place that turns a
+        # CapabilityRegistry approval_requirement into a real,
+        # enforced block. Constructed last, after self.dispatcher and
+        # self.audit_trail already exist, so it can reuse both without
+        # reordering anything above.
+        # ------------------------------------------------------
+
+        self.capability_registry = CapabilityRegistry()
+
+        if approval_gate is not None:
+
+            self.approval_gate = approval_gate
+
+        else:
+
+            self.approval_gate = ApprovalGate(
+                dispatcher=self.dispatcher,
+                capability_registry=self.capability_registry,
+                audit_trail=self.audit_trail,
             )
 
     # ==========================================================
@@ -635,7 +668,7 @@ class UriOrchestrator:
             return self.workflow_executor
 
         router = WorkflowCapabilityRouter(
-            dispatcher=self.dispatcher,
+            dispatcher=self.approval_gate,
             session=session,
             evidence_processor=(
                 self._get_evidence_processor()
@@ -1486,8 +1519,9 @@ class UriOrchestrator:
                 )
 
                 dispatch_result = (
-                    self.dispatcher.execute_tool(
+                    self.approval_gate.execute_tool(
                         tool_name,
+                        session_id=session_id,
                         request_text=user_text
                     )
                 )
@@ -1704,6 +1738,32 @@ class UriOrchestrator:
                 "error":
                     str(exc)
             }
+
+    def decide_action(
+        self,
+        action_id: str,
+        approved: bool,
+        session_id=None
+    ) -> dict:
+        """The only entry point for recording a real user decision on
+        a proposed action (Milestone 7). Never called from within
+        process_user_input itself - only from an explicit, separate
+        caller (see server.py's POST /approve / POST /cancel) - so a
+        single conversational turn can never approve its own proposal.
+        Delegates entirely to self.approval_gate.decide(), which fails
+        closed on any invalid, missing, expired, or mismatched
+        approval; this method adds no further logic of its own beyond
+        being the one orchestrator-level surface server.py talks to,
+        matching how server.py already only ever calls
+        process_user_input() rather than reaching into orchestrator
+        internals directly.
+        """
+
+        return self.approval_gate.decide(
+            action_id=action_id,
+            approved=approved,
+            session_id=session_id,
+        )
 
     # ==========================================================
     # LEGACY COMPATIBILITY METHODS

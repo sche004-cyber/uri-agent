@@ -224,6 +224,11 @@ class MemoryWriteRequest(BaseModel):
     notes: Optional[str] = None
 
 
+class ApprovalDecisionRequest(BaseModel):
+    action_id: str
+    session_id: Optional[str] = None
+
+
 def _memory_entry_to_dict(entry: MemoryEntry) -> dict:
     # Flattened, minimal view - not a raw dump of MemoryEntry/Fact's
     # full internal shape (source, source_date, retrieved_date,
@@ -269,6 +274,43 @@ def ask(payload: AskRequest) -> dict:
         "execution": result.get("execution"),
         "response": result.get("response"),
     }
+
+
+@app.post("/approve")
+def approve(payload: ApprovalDecisionRequest) -> dict:
+    """
+    Records a real, explicit user approval for one proposed action
+    (Milestone 7) and, only if the deterministic ApprovalGate accepts
+    it (matching action_id/capability/session/arguments, not expired,
+    not already decided), executes it immediately and returns the
+    execution result. Establishes the backend contract Flutter's
+    UriClient.approve(turnId)/TurnStage.awaitingApproval already
+    anticipates (see uri_ui/lib/services/uri_client.dart) - Flutter
+    itself is not wired to this endpoint yet.
+
+    Nothing here can be satisfied by model output: action_id must
+    already exist as a real ApprovalStore record created by
+    ApprovalGate.execute_tool() during a prior /ask call.
+    """
+    return _orchestrator.decide_action(
+        action_id=payload.action_id,
+        approved=True,
+        session_id=payload.session_id,
+    )
+
+
+@app.post("/cancel")
+def cancel(payload: ApprovalDecisionRequest) -> dict:
+    """
+    Records an explicit user rejection for one proposed action - the
+    action is marked rejected and never executes. See POST /approve's
+    docstring for the same contract notes.
+    """
+    return _orchestrator.decide_action(
+        action_id=payload.action_id,
+        approved=False,
+        session_id=payload.session_id,
+    )
 
 
 @app.get("/audit/shadow-comparison")
