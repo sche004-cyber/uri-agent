@@ -9,6 +9,7 @@ Run with:
     uvicorn uri_core.app.server:app --reload --port 8000
 """
 
+from contextlib import asynccontextmanager
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
@@ -21,24 +22,17 @@ from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
 from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
 from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
 from uri_core.core.orchestrator import UriOrchestrator
+from uri_core.core.portable_paths import (
+    PortablePathValidationError,
+    migrate_legacy_file_if_needed,
+    user_scoped_path,
+)
 from uri_core.core.user_memory import (
     MemoryEntry,
     MemoryStore,
     MemoryValidationError,
 )
 from uri_core.core.user_profile import UserProfile, UserProfileStore
-
-app = FastAPI(title="URI API")
-
-# Flutter web (flutter run -d chrome/edge) serves from a dev-server
-# origin that isn't known ahead of time, so browser requests need CORS
-# enabled. This is a local development server, not a deployed service.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # One orchestrator instance for the process lifetime, matching how the
 # existing PyQt prototype uses it — session state lives inside
@@ -60,15 +54,28 @@ _orchestrator = UriOrchestrator(
     )
 )
 
-# Identity/profile stores, loaded once for the process lifetime like
-# _orchestrator above. Neither is wired into _orchestrator or into any
-# request UriOrchestrator handles - user_id/device_id/profile stay
-# entirely at this HTTP boundary this milestone. See
-# uri_core/core/identity.py and uri_core/core/user_profile.py: a
-# user_id carries no authentication or authorization meaning by
-# itself, and there is exactly one ambient profile per install (no
-# multi-user support exists yet, because no authentication exists
-# yet).
+# Identity/profile/memory/growth stores, constructed once for the
+# process lifetime like _orchestrator above. Neither is wired into
+# _orchestrator or into any request UriOrchestrator handles -
+# user_id/device_id/profile/memory/growth stay entirely at this HTTP
+# boundary. See uri_core/core/identity.py: a user_id carries no
+# authentication or authorization meaning by itself, and there is
+# exactly one ambient profile per install (no multi-user support
+# exists yet, because no authentication exists yet).
+#
+# Constructing these stores does no filesystem I/O by itself (each
+# store's __init__ only records its storage_path - see
+# user_profile.py/user_memory.py/growth_ledger.py). They start out
+# pointing at the legacy ambient paths used before this milestone, so
+# importing this module remains completely side-effect-free, exactly
+# as before. _initialize_user_scoped_stores() below - run only from
+# the app's lifespan startup handler, never at import - resolves this
+# install's user_id, migrates each legacy file into
+# uri_workspace/users/<user_id>/ exactly once, and then rewires these
+# same module globals to read/write there instead. If startup never
+# runs (nothing currently does that except a real `uvicorn ...` launch
+# or `with TestClient(app):`), these stores keep working exactly as
+# they did before this milestone, at the legacy ambient paths.
 _user_identity_store = UserIdentityStore()
 _device_identity_store = DeviceIdentityStore()
 _user_profile_store = UserProfileStore()
@@ -94,6 +101,90 @@ def _record_growth_event_safely(
         _growth_ledger_store.record_event(event_type, metadata)
     except Exception:
         return
+
+
+def _initialize_user_scoped_stores(
+    root: str = "uri_workspace/users",
+) -> None:
+    """Runs once, at real application startup (see _lifespan) - never
+    at module import. Resolves this install's durable user_id,
+    migrates each legacy ambient state file into its user-scoped
+    location exactly once (copy-only, idempotent, never overwrites an
+    existing user-scoped file - see portable_paths.py), then rewires
+    _user_profile_store/_memory_store/_growth_ledger_store to read and
+    write there instead. device_id/_device_identity_store is
+    deliberately untouched - it stays local-only, outside the
+    user-scoped tree, per identity.py's user_id/device_id distinction.
+
+    root is only overridden by tests, to keep this fully testable
+    against a temp directory without ever touching a real
+    uri_workspace/ install.
+
+    If user_id somehow fails strict validation (a corrupted or
+    hand-edited portable_identity.json - see
+    PortablePathValidationError), this degrades safely by leaving the
+    stores at whatever they already were (the legacy ambient paths on
+    first startup), matching every other store in this codebase's
+    existing "degrade rather than crash on corrupted local state"
+    discipline - it does not raise and does not prevent the server
+    from starting.
+    """
+    global _user_profile_store, _memory_store, _growth_ledger_store
+
+    user_id = _user_identity_store.load_or_create().user_id
+
+    legacy_stores = (
+        (_user_profile_store, "user_profile.json"),
+        (_memory_store, "user_memory.json"),
+        (_growth_ledger_store, "growth_ledger.json"),
+    )
+
+    try:
+        new_paths = {
+            filename: user_scoped_path(user_id, filename, root=root)
+            for _, filename in legacy_stores
+        }
+    except PortablePathValidationError:
+        return
+
+    for legacy_store, filename in legacy_stores:
+        migrate_legacy_file_if_needed(
+            legacy_store.storage_path, new_paths[filename]
+        )
+
+    _user_profile_store = UserProfileStore(
+        storage_path=new_paths["user_profile.json"]
+    )
+    _memory_store = MemoryStore(storage_path=new_paths["user_memory.json"])
+    _growth_ledger_store = GrowthLedgerStore(
+        storage_path=new_paths["growth_ledger.json"]
+    )
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    """FastAPI/Starlette lifespan: the one place explicit application
+    startup work belongs, as opposed to module import. Runs for a real
+    `uvicorn uri_core.app.server:app` launch and for
+    `with TestClient(app):`; does not run for a bare
+    `TestClient(app)` with no `with` block, which every existing test
+    in this repo uses - those tests are unaffected either way because
+    they already override the store globals directly in setUp()."""
+    _initialize_user_scoped_stores()
+    yield
+
+
+app = FastAPI(title="URI API", lifespan=_lifespan)
+
+# Flutter web (flutter run -d chrome/edge) serves from a dev-server
+# origin that isn't known ahead of time, so browser requests need CORS
+# enabled. This is a local development server, not a deployed service.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class AskRequest(BaseModel):

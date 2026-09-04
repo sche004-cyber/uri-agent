@@ -20,6 +20,7 @@ uri_workspace/device_identity.json
 uri_workspace/user_profile.json
 uri_workspace/user_memory.json
 uri_workspace/growth_ledger.json
+uri_workspace/users/
 uri_workspace/skill_memory.json
 uri_workspace/uri_memory.json
 uri_workspace/friction_log.json
