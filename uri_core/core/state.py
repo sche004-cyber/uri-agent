@@ -1,7 +1,7 @@
 ﻿import json
 import os
 from dataclasses import dataclass, field, asdict, is_dataclass
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from uri_core.core.facts import Fact
 
@@ -25,6 +25,15 @@ class SessionState:
     )
 
     historical_facts: Dict[str, object] = field(
+        default_factory=dict
+    )
+
+    # Full, append-only conflict history: for each fact name, every
+    # value that was ever superseded, in order. Unlike
+    # historical_facts above (kept for backward compatibility as a
+    # single most-recently-superseded slot per name), nothing here
+    # is ever overwritten.
+    fact_history: Dict[str, List[object]] = field(
         default_factory=dict
     )
 
@@ -235,6 +244,15 @@ class SessionManager:
                     session.historical_facts
                 ),
 
+            "fact_history":
+                self._serialize_fact_history(
+                    getattr(
+                        session,
+                        "fact_history",
+                        {}
+                    )
+                ),
+
             "last_question_field":
                 session.last_question_field,
 
@@ -357,6 +375,102 @@ class SessionManager:
 
         return restored
 
+    def _serialize_fact_history(
+        self,
+        history
+    ) -> dict:
+        """
+        Serializes fact_history: Dict[str, List[Fact]]. Reuses the
+        same per-item Fact/dataclass tagging as
+        _serialize_fact_collection, applied to each item in the
+        list rather than to a single value.
+        """
+
+        serialized = {}
+
+        for name, fact_list in history.items():
+
+            if not isinstance(fact_list, list):
+                continue
+
+            serialized[name] = [
+                self._serialize_single_fact(item)
+                for item in fact_list
+            ]
+
+        return serialized
+
+    def _serialize_single_fact(self, fact):
+
+        if isinstance(fact, Fact):
+
+            return {
+                "__type__": "Fact",
+                "data": asdict(fact)
+            }
+
+        if is_dataclass(fact):
+
+            return {
+                "__type__": "dataclass",
+                "data": asdict(fact)
+            }
+
+        return fact
+
+    def _deserialize_fact_history(
+        self,
+        history
+    ) -> dict:
+
+        restored = {}
+
+        if not isinstance(history, dict):
+            return restored
+
+        for name, items in history.items():
+
+            if not isinstance(items, list):
+                continue
+
+            restored_list = []
+
+            for value in items:
+
+                if (
+                    isinstance(value, dict)
+                    and value.get("__type__") == "Fact"
+                ):
+
+                    fact_data = value.get("data", {})
+
+                    try:
+
+                        restored_list.append(
+                            Fact(**fact_data)
+                        )
+
+                    except Exception:
+
+                        restored_list.append(fact_data)
+
+                elif (
+                    isinstance(value, dict)
+                    and value.get("__type__") == "dataclass"
+                ):
+
+                    restored_list.append(
+                        value.get("data", {})
+                    )
+
+                else:
+
+                    restored_list.append(value)
+
+            restored[name] = restored_list
+
+        return restored
+
     def _load_session(
         self,
         session_id: str
@@ -419,6 +533,15 @@ class SessionManager:
                 self._deserialize_fact_collection(
                     data.get(
                         "historical_facts",
+                        {}
+                    )
+                )
+            )
+
+            session.fact_history = (
+                self._deserialize_fact_history(
+                    data.get(
+                        "fact_history",
                         {}
                     )
                 )

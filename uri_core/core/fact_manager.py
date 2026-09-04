@@ -52,6 +52,15 @@ def update_fact(
             new_fact.name
         ] = previous_fact
 
+        # Full, append-only conflict history: unlike
+        # historical_facts (kept above for backward compatibility,
+        # holding only the most recently superseded value),
+        # fact_history preserves every prior value for this name -
+        # a second supersession never silently discards the first.
+        session.fact_history.setdefault(
+            new_fact.name, []
+        ).append(previous_fact)
+
         replaced = True
 
     session.current_facts[
@@ -134,6 +143,14 @@ def update_evidence_fact(
         session.historical_facts[
             fact.name
         ] = previous_fact
+
+        # See update_fact() above: fact_history is the full,
+        # append-only conflict record; historical_facts keeps only
+        # the most recent superseded value for backward
+        # compatibility.
+        session.fact_history.setdefault(
+            fact.name, []
+        ).append(previous_fact)
 
         replaced = True
 
