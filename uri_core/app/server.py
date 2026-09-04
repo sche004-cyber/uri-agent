@@ -9,17 +9,22 @@ Run with:
     uvicorn uri_core.app.server:app --reload --port 8000
 """
 
-from fastapi import FastAPI
+from typing import List, Optional
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-from typing import List
 
 from uri_core.core.audit_comparison import build_shadow_comparison_report
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
 from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
 from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
 from uri_core.core.orchestrator import UriOrchestrator
+from uri_core.core.user_memory import (
+    MemoryEntry,
+    MemoryStore,
+    MemoryValidationError,
+)
 from uri_core.core.user_profile import UserProfile, UserProfileStore
 
 app = FastAPI(title="URI API")
@@ -66,6 +71,7 @@ _orchestrator = UriOrchestrator(
 _user_identity_store = UserIdentityStore()
 _device_identity_store = DeviceIdentityStore()
 _user_profile_store = UserProfileStore()
+_memory_store = MemoryStore()
 
 
 class AskRequest(BaseModel):
@@ -77,6 +83,32 @@ class ProfileUpdateRequest(BaseModel):
     communication_style: str
     autonomy_level: str
     focus_areas: List[str] = []
+
+
+class MemoryWriteRequest(BaseModel):
+    category: str
+    content: str
+    confidence: Optional[float] = None
+    notes: Optional[str] = None
+
+
+def _memory_entry_to_dict(entry: MemoryEntry) -> dict:
+    # Flattened, minimal view - not a raw dump of MemoryEntry/Fact's
+    # full internal shape (source, source_date, retrieved_date,
+    # evidence_ids, verified/verified_by/verified_at aren't exposed
+    # here), matching the same "only what the client contract needs"
+    # discipline /ask's response already follows.
+    return {
+        "memory_id": entry.memory_id,
+        "category": entry.category,
+        "consent": entry.consent,
+        "content": entry.fact.value,
+        "confidence": entry.fact.confidence,
+        "notes": entry.fact.notes,
+        "status": entry.fact.status,
+        "created_at": entry.created_at,
+        "updated_at": entry.updated_at,
+    }
 
 
 @app.get("/health")
@@ -181,3 +213,75 @@ def update_profile(payload: ProfileUpdateRequest) -> dict:
         "focus_areas": updated.focus_areas,
         "updated_at": updated.updated_at,
     }
+
+
+@app.get("/memory")
+def list_memory() -> dict:
+    """
+    Every memory this install holds, including any pending proposals
+    (labelled by their consent field) - visible to the user for
+    review. Nothing in this milestone ever creates a
+    pending_confirmation entry; see user_memory.py.
+
+    Whole-store listing doubles as this milestone's export mechanism -
+    no separate export endpoint yet.
+    """
+    return {
+        "memories": [
+            _memory_entry_to_dict(entry)
+            for entry in _memory_store.list_all()
+        ]
+    }
+
+
+@app.post("/memory")
+def add_memory(payload: MemoryWriteRequest) -> dict:
+    """
+    The user explicitly asking URI to remember something -
+    consent="user_provided" always, set unconditionally by MemoryStore
+    itself, never taken from the request body. There is no path in
+    this milestone for URI/the model to write a memory on its own.
+    """
+    try:
+        entry = _memory_store.add(
+            category=payload.category,
+            content=payload.content,
+            confidence=payload.confidence,
+            notes=payload.notes,
+        )
+    except MemoryValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    return _memory_entry_to_dict(entry)
+
+
+@app.put("/memory/{memory_id}")
+def update_memory(memory_id: str, payload: MemoryWriteRequest) -> dict:
+    """Whole-entry replace (edit), same pattern as POST /profile.
+    consent is preserved, not editable via this endpoint."""
+    try:
+        updated = _memory_store.update(
+            memory_id,
+            category=payload.category,
+            content=payload.content,
+            confidence=payload.confidence,
+            notes=payload.notes,
+        )
+    except MemoryValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Memory not found.")
+
+    return _memory_entry_to_dict(updated)
+
+
+@app.delete("/memory/{memory_id}")
+def delete_memory(memory_id: str) -> dict:
+    """Real, complete removal - not a soft-delete/hide flag."""
+    deleted = _memory_store.delete(memory_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Memory not found.")
+
+    return {"deleted": True, "memory_id": memory_id}
