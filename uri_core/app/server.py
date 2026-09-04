@@ -13,6 +13,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
+from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
 from uri_core.core.orchestrator import UriOrchestrator
 
 app = FastAPI(title="URI API")
@@ -31,7 +33,21 @@ app.add_middleware(
 # existing PyQt prototype uses it — session state lives inside
 # UriOrchestrator.session_manager, keyed by the session_id each request
 # supplies, not by HTTP connection.
-_orchestrator = UriOrchestrator()
+#
+# The model-reasoning shadow is wired to Ollama/qwen3:14b here, at the
+# application boundary, rather than as UriOrchestrator's own default -
+# every other test/caller that constructs UriOrchestrator() with no
+# args keeps the previous, network-free model_callable=None behaviour.
+# The shadow remains strictly observational: UriOrchestrator's existing
+# _run_model_reasoning_shadow (unmodified) already never lets it affect
+# plan/execution, and already catches any failure (Ollama unreachable,
+# timeout, malformed response) into a "shadow_failed" status rather
+# than raising.
+_orchestrator = UriOrchestrator(
+    model_reasoning_gateway=ModelReasoningGateway(
+        model_callable=OllamaReasoningAdapter()
+    )
+)
 
 
 class AskRequest(BaseModel):

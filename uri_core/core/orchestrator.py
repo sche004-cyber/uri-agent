@@ -525,6 +525,92 @@ class UriOrchestrator:
         except Exception:
             return
 
+    def _record_model_reasoning_audit(
+        self,
+        session_id,
+        model_reasoning_shadow,
+        comparison_tool_name
+    ):
+        """
+        Record a single, small audit event comparing the model
+        reasoning shadow's proposed capability against the tool
+        actually selected on this turn (by SkillMemory or
+        CapabilityPlanner) - mirrors _record_skill_router_audit,
+        the same pattern already used to compare Skill Router V1's
+        shadow pick.
+
+        Nothing is recorded when the shadow had no model configured
+        (model_reasoning_gateway.model_callable is None - the
+        default everywhere except where a real ModelProvider-backed
+        callable has been explicitly wired in). There is no proposal
+        to compare in that case, so a comparison event would only be
+        noise.
+
+        Never raises - a failure to audit must not break the live
+        request the shadow is only observing.
+        """
+
+        try:
+
+            shadow_status = model_reasoning_shadow.get(
+                "status"
+            )
+
+            if shadow_status != "shadow_completed":
+                return
+
+            result = model_reasoning_shadow.get(
+                "result",
+                {}
+            )
+
+            model_proposal_status = result.get(
+                "status"
+            )
+
+            if model_proposal_status == "model_not_configured":
+                return
+
+            model_capability = None
+
+            proposal = result.get(
+                "proposal"
+            )
+
+            if isinstance(proposal, dict):
+
+                action = proposal.get(
+                    "action"
+                )
+
+                if isinstance(action, dict):
+                    model_capability = action.get(
+                        "capability"
+                    )
+
+            self.audit_trail.record(
+                event_type=
+                    "model_reasoning_shadow_evaluation",
+
+                status=model_proposal_status or "unknown",
+
+                session_id=session_id,
+
+                capability=model_capability,
+
+                metadata={
+                    "planner_tool_name":
+                        str(comparison_tool_name),
+
+                    "agrees_with_planner":
+                        model_capability
+                        == comparison_tool_name
+                }
+            )
+
+        except Exception:
+            return
+
     # ==========================================================
     # EVIDENCE
     # ==========================================================
@@ -1269,16 +1355,24 @@ class UriOrchestrator:
                 )
             )
 
+            comparison_tool_name = (
+                learned_skill.get("tool_name")
+                if learned_skill
+                else self.capability_planner.plan(
+                    semantic_result
+                ).get("tool_name")
+            )
+
             self._record_skill_router_audit(
                 session_id=session_id,
                 skill_router_shadow=skill_router_shadow,
-                comparison_tool_name=(
-                    learned_skill.get("tool_name")
-                    if learned_skill
-                    else self.capability_planner.plan(
-                        semantic_result
-                    ).get("tool_name")
-                )
+                comparison_tool_name=comparison_tool_name
+            )
+
+            self._record_model_reasoning_audit(
+                session_id=session_id,
+                model_reasoning_shadow=model_reasoning,
+                comparison_tool_name=comparison_tool_name
             )
 
             response = {
