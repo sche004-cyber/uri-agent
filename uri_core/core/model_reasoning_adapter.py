@@ -78,6 +78,21 @@ evaluation: {"satisfied": true|false, "reason": "..."} - REQUIRED
       action and workflow both null and say so honestly in "reason" -
       that is a valid, complete answer, not a failure to respond.
 
+pending_proposal is present ONLY on a follow-up call for the SAME
+request you already reasoned about once, before anything has
+executed - {"action": {...}} or {"workflow": {...}}, in exactly the
+shape you yourself would return. It is the plan you already
+formulated, being handed back to you now that the fuller session,
+evidence, capability, and preference context above is available for
+you to reconsider it against. This is NOT evaluating a real result
+(see attempt_history for that) - nothing has run yet. Genuinely
+reconsider pending_proposal in light of everything given: you may
+confirm it (return the same action/workflow again), modify or replace
+it (return a different action/workflow), or decide the request cannot
+yet be acted on responsibly (return a clarification, with action and
+workflow both null). Do not restate it unexamined just because it was
+already proposed once.
+
 Return ONLY a single valid JSON object with these keys. Every key is
 optional - use null (or omit facts/entirely leave a key out) if you
 have nothing useful for it:

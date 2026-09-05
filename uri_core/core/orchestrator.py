@@ -443,7 +443,8 @@ class UriOrchestrator:
         session_id,
         personalization_context,
         attempt_history=None,
-        learned_skill=None
+        learned_skill=None,
+        pending_proposal=None
     ):
         """Runs ModelReasoningGateway.reason() and returns its result
         wrapped with a status of its own (see below). Despite the
@@ -490,6 +491,14 @@ class UriOrchestrator:
         THIS request - see model_reasoning_adapter.py's prompt. Never
         used on the follow-up evaluation calls within
         _continue_brain_evaluation_loop, only on a turn's first call.
+
+        Milestone 13 Part 1: pending_proposal, when given, asks the
+        Brain to reconsider a plan it already formulated for this SAME
+        request against this same fuller context, before anything has
+        executed - see _run_pre_execution_sanity_check, the only
+        caller that passes it. Omitted (None) everywhere else,
+        including the turn's own first call and the post-execution
+        _continue_brain_evaluation_loop, both unaffected.
         """
 
         if not self.enable_model_reasoning_shadow:
@@ -572,7 +581,8 @@ class UriOrchestrator:
                         )
                     ),
                     query_context=query_context,
-                    attempt_history=attempt_history
+                    attempt_history=attempt_history,
+                    pending_proposal=pending_proposal
                 )
             )
 
@@ -1030,6 +1040,232 @@ class UriOrchestrator:
 
         except Exception:
             return None
+
+    def _model_clarification(
+        self,
+        model_reasoning
+    ):
+        """Extracts a usable {"question": str} clarification from
+        _run_model_reasoning's result, or None when there is none to
+        use. Mirrors _model_evaluation's exact discipline - a None
+        return always means "nothing usable," never "the Brain said
+        no." Never raises."""
+
+        try:
+
+            if model_reasoning.get("status") != "reasoning_completed":
+                return None
+
+            result = model_reasoning.get("result", {})
+
+            if result.get("status") != "proposal_ready":
+                return None
+
+            proposal = result.get("proposal")
+
+            if not isinstance(proposal, dict):
+                return None
+
+            clarification = proposal.get("clarification")
+
+            if not isinstance(clarification, dict):
+                return None
+
+            question = clarification.get("question")
+
+            if not isinstance(question, str) or not question.strip():
+                return None
+
+            return {"question": question}
+
+        except Exception:
+            return None
+
+    def _describe_model_proposal(
+        self,
+        capability,
+        workflow
+    ):
+        """Builds the {"action": {...}} or {"workflow": {...}} shape a
+        capability/workflow proposal is handed back to the Brain in -
+        deliberately the exact same shape the Brain's own output
+        contract already uses (see REASONING_SYSTEM_PROMPT's "action"/
+        "workflow" keys), so a pending_proposal reads as "the plan you
+        already proposed," not a new, unfamiliar structure. capability
+        and workflow are mutually exclusive, exactly as
+        _model_proposed_capability/_model_proposed_workflow already
+        guarantee for any single reasoning result. Returns None when
+        neither is given. Never raises."""
+
+        try:
+
+            if capability is not None:
+                return {"action": {"capability": capability}}
+
+            if workflow is not None:
+                return {"workflow": workflow}
+
+            return None
+
+        except Exception:
+            return None
+
+    def _run_pre_execution_sanity_check(
+        self,
+        user_text,
+        session,
+        session_id,
+        personalization_context,
+        learned_skill,
+        model_capability_proposal,
+        model_workflow_proposal
+    ):
+        """Milestone 13 Part 1 - the canonical loop's pre-execution
+        step: gives the Brain one explicit opportunity to reconsider
+        its own already-formulated plan against the same full session/
+        evidence/capability/personalization context, before anything
+        executes. URI's only role here is to present the Brain's own
+        prior proposal back to it (see _describe_model_proposal) inside
+        a fresh, otherwise-ordinary reasoning call (pending_proposal -
+        see _run_model_reasoning) and relay whatever the Brain decides
+        into the exact same validated extraction path
+        (_model_proposed_capability/_model_proposed_workflow/
+        _model_clarification) any other proposal already goes through.
+        URI never judges whether the Brain's plan is intellectually
+        correct, and never distinguishes "confirmed" from "modified"
+        from "replaced" - all three simply mean "use whatever the
+        Brain now says," exactly as if this were the Brain's first and
+        only proposal.
+
+        Returns:
+        - {"status": "revised_or_confirmed", "model_reasoning": ...}
+          when the Brain returned a usable action or workflow (whether
+          identical to the original or genuinely different - URI does
+          not distinguish the two).
+        - {"status": "clarification_needed", "clarification":
+          {"question": ...}, "model_reasoning": ...} when the Brain
+          decided more information is needed instead.
+        - {"status": "unavailable", "model_reasoning": ...} when this
+          second call itself produced nothing usable (reasoning
+          disabled/unreachable/malformed) - the caller must keep the
+          ORIGINAL proposal unchanged in this case, never discard an
+          already-valid Brain decision because the sanity check itself
+          could not run.
+
+        Never raises: any unexpected shape is treated as
+        "unavailable," the same safe default as everywhere else this
+        codebase reasons about the Brain's output.
+        """
+
+        try:
+
+            pending_proposal = self._describe_model_proposal(
+                model_capability_proposal, model_workflow_proposal
+            )
+
+            model_reasoning = self._run_model_reasoning(
+                user_text=user_text,
+                session=session,
+                session_id=session_id,
+                personalization_context=personalization_context,
+                attempt_history=None,
+                learned_skill=learned_skill,
+                pending_proposal=pending_proposal,
+            )
+
+            new_capability = self._model_proposed_capability(
+                model_reasoning
+            )
+            new_workflow = self._model_proposed_workflow(
+                model_reasoning
+            )
+
+            if new_capability is not None or new_workflow is not None:
+                return {
+                    "status": "revised_or_confirmed",
+                    "model_reasoning": model_reasoning,
+                }
+
+            clarification = self._model_clarification(model_reasoning)
+
+            if clarification is not None:
+                return {
+                    "status": "clarification_needed",
+                    "clarification": clarification,
+                    "model_reasoning": model_reasoning,
+                }
+
+            return {
+                "status": "unavailable",
+                "model_reasoning": model_reasoning,
+            }
+
+        except Exception:
+            return {
+                "status": "unavailable",
+                "model_reasoning": model_reasoning
+                if "model_reasoning" in locals()
+                else None,
+            }
+
+    def _apply_clarification_pause(
+        self,
+        response,
+        question,
+        stage
+    ):
+        """Milestone 13 Part 1: pauses a turn on the Brain's own
+        decision that more information is needed, before anything
+        executes - reused for both an initial-call clarification (no
+        plan was ever formulated) and a pre-execution sanity-check
+        clarification (a plan was formulated, then the Brain decided
+        against acting on it once given fuller context). Mirrors the
+        same "waiting_for_input" pause vocabulary WorkflowExecutor
+        already uses elsewhere in this class, so callers/UI treat it
+        exactly like any other pause. stage is a plain, human-readable
+        label ("initial_reasoning" or "pre_execution_check") for
+        transparency only - it changes nothing about how the pause
+        itself is handled. Never raises."""
+
+        response["plan"] = {
+            "status": "clarification_needed",
+            "tool_name": None,
+            "reason": question,
+            "source": "model_reasoning",
+        }
+
+        response["execution"] = {
+            "status": "waiting_for_input",
+            "message": question,
+        }
+
+        response["clarification"] = {
+            "question": question,
+            "stage": stage,
+        }
+
+        return response
+
+    def _record_pre_execution_sanity_check_audit(
+        self,
+        session_id,
+        outcome
+    ):
+        """Honest bookkeeping for one pre-execution sanity check -
+        mirrors _record_brain_reevaluation_audit's exact discipline.
+        Never raises."""
+
+        try:
+
+            self.audit_trail.record(
+                event_type="pre_execution_sanity_check",
+                status=outcome,
+                session_id=session_id,
+                metadata={"outcome": outcome},
+            )
+
+        except Exception:
+            return
 
     def _build_model_workflow(
         self,
@@ -2925,11 +3161,14 @@ class UriOrchestrator:
             # pure, re-checked again inside the planning_required
             # branch below where the actual workflow is built) purely
             # to decide priority, not to build anything yet.
-            model_workflow_proposal_present = (
+            model_workflow_proposal = (
                 self._model_proposed_workflow(
                     model_reasoning
                 )
-                is not None
+            )
+
+            model_workflow_proposal_present = (
+                model_workflow_proposal is not None
             )
 
             self._record_skill_router_audit(
@@ -2979,6 +3218,114 @@ class UriOrchestrator:
                 "response":
                     None
             }
+
+            # --------------------------------------------------
+            # Milestone 13 Part 1: pre-execution Brain sanity check.
+            #
+            # Canonical loop: BRAIN FORMULATES PLAN -> URI PROVIDES
+            # RELEVANT CONTEXT -> URI asks BRAIN "is this really what
+            # the user needs?" -> BRAIN RE-EVALUATES -> BRAIN CONFIRMS/
+            # MODIFIES/REPLACES -> URI EXECUTES. Only runs when the
+            # Brain actually formulated a plan (a single capability or
+            # a workflow) on its first call - a Brain proposal of
+            # nothing at all is unaffected, falling through to the
+            # existing learned-skill/CapabilityPlanner/WorkflowPlanner
+            # path exactly as before this milestone. Nothing has
+            # executed yet at this point either way - this only
+            # decides which proposal execution will use.
+            # --------------------------------------------------
+
+            if (
+                model_capability_proposal is not None
+                or model_workflow_proposal_present
+            ):
+
+                pre_execution_check = (
+                    self._run_pre_execution_sanity_check(
+                        user_text=user_text,
+                        session=session,
+                        session_id=session_id,
+                        personalization_context=personalization_context,
+                        learned_skill=learned_skill,
+                        model_capability_proposal=model_capability_proposal,
+                        model_workflow_proposal=model_workflow_proposal,
+                    )
+                )
+
+                self._record_pre_execution_sanity_check_audit(
+                    session_id=session_id,
+                    outcome=pre_execution_check["status"],
+                )
+
+                response["pre_execution_check"] = {
+                    "outcome": pre_execution_check["status"],
+                }
+
+                if pre_execution_check["status"] == "revised_or_confirmed":
+
+                    # Whatever the Brain now says - confirmed unchanged
+                    # or genuinely modified/replaced - becomes the
+                    # proposal every downstream branch (single-action
+                    # or workflow-building) independently re-derives
+                    # from model_reasoning, with no further change
+                    # needed to any of that existing code.
+                    model_reasoning = pre_execution_check["model_reasoning"]
+                    response["model_reasoning"] = model_reasoning
+
+                    model_capability_proposal = (
+                        self._model_proposed_capability(model_reasoning)
+                    )
+                    model_workflow_proposal = (
+                        self._model_proposed_workflow(model_reasoning)
+                    )
+                    model_workflow_proposal_present = (
+                        model_workflow_proposal is not None
+                    )
+
+                elif pre_execution_check["status"] == "clarification_needed":
+
+                    question = (
+                        pre_execution_check["clarification"]["question"]
+                    )
+
+                    return self._apply_clarification_pause(
+                        response, question, stage="pre_execution_check"
+                    )
+
+                # "unavailable": the sanity check itself produced
+                # nothing usable - keep the ORIGINAL proposal exactly
+                # as first formulated, never discarding an
+                # already-valid Brain decision because this second
+                # call could not run.
+
+            else:
+
+                # Milestone 13 Part 1: the Brain's very FIRST call may
+                # already have decided it needs more information
+                # rather than formulating a plan at all (action and
+                # workflow both null, clarification given instead).
+                # Before this fix, that clarification was silently
+                # discarded and URI fell straight through to the
+                # deterministic CapabilityPlanner/WorkflowPlanner
+                # fallback, which could confidently select and execute
+                # a capability the Brain had explicitly said it did not
+                # yet have enough information to use responsibly - live
+                # testing surfaced exactly this (a missing roll number
+                # correctly flagged by the Brain, then silently
+                # overridden). The Brain's own "I need more
+                # information" decision is honored the same way
+                # regardless of which call it came from.
+                initial_clarification = self._model_clarification(
+                    model_reasoning
+                )
+
+                if initial_clarification is not None:
+
+                    return self._apply_clarification_pause(
+                        response,
+                        initial_clarification["question"],
+                        stage="initial_reasoning",
+                    )
 
             # --------------------------------------------------
             # Capability selection.

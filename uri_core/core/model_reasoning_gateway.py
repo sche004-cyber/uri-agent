@@ -107,6 +107,7 @@ class ModelReasoningGateway:
         evidence_context: Optional[dict] = None,
         query_context: Optional[dict] = None,
         attempt_history: Optional[list] = None,
+        pending_proposal: Optional[dict] = None,
     ) -> dict:
 
         capabilities = self.load_capabilities()
@@ -172,6 +173,22 @@ class ModelReasoningGateway:
                     capabilities
                 ),
 
+            # Milestone 13 Part 1 (canonical loop's pre-execution
+            # step): present only on the sanity-check call that
+            # follows an initial proposal, never on the initial call
+            # itself. {"action": {...}} or {"workflow": {...}}, in the
+            # exact same shape the model itself would return - see
+            # REASONING_SYSTEM_PROMPT for what the model is asked to
+            # do with it. None (the default) changes nothing about the
+            # pre-M13 request shape.
+            "pending_proposal":
+                pending_proposal
+                if isinstance(
+                    pending_proposal,
+                    dict,
+                )
+                else None,
+
             "instruction": (
                 "Reason about the user's objective and return a "
                 "structured URI model proposal. Do not execute anything. "
@@ -226,6 +243,7 @@ class ModelReasoningGateway:
         evidence_context: Optional[dict] = None,
         query_context: Optional[dict] = None,
         attempt_history: Optional[list] = None,
+        pending_proposal: Optional[dict] = None,
     ) -> dict:
 
         request = (
@@ -235,6 +253,7 @@ class ModelReasoningGateway:
                 evidence_context=evidence_context,
                 query_context=query_context,
                 attempt_history=attempt_history,
+                pending_proposal=pending_proposal,
             )
         )
 

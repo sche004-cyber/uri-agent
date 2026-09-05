@@ -176,11 +176,13 @@ class LearnedSkillIsAdvisoryTests(_IsolatedOrchestratorCase):
         self.assertEqual(len(dispatcher.calls), 1)
         self.assertEqual(dispatcher.calls[0][0], "extract_student_records")
 
-        # The Brain's own execution succeeded, so the Part 2
-        # re-evaluation loop makes one further (evaluation) call
+        # Milestone 13 Part 1 adds one pre-execution sanity-check call
+        # (which, keyed the same way by attempt_history length 0,
+        # simply reconfirms the same capability), and the Part 2
+        # re-evaluation loop then makes one further (evaluation) call
         # before honestly stopping (this fixture's model returns
-        # nothing evaluation-shaped on that second call).
-        self.assertEqual(len(captured_requests), 2)
+        # nothing evaluation-shaped on that call) - three calls total.
+        self.assertEqual(len(captured_requests), 3)
         self.assertFalse(result["brain_evaluation"]["satisfied"])
 
         # The learned skill was still genuinely offered to the Brain
@@ -344,8 +346,15 @@ class CrossTurnAttemptHistoryTests(_IsolatedOrchestratorCase):
             session_id="s1", user_text="no, that's not what I meant"
         )
 
-        self.assertEqual(len(captured_requests), 3)
-        second_turn_request = captured_requests[2]
+        # Milestone 13 Part 1: turn 1 now makes an extra pre-execution
+        # sanity-check call (which, keyed the same way by
+        # attempt_history length 0, simply reconfirms the same
+        # capability) before its post-execution evaluation call - so
+        # turn 1 is 2 calls, and turn 2's initial call (which proposes
+        # nothing usable here) is call 4, without a sanity check of its
+        # own (guarded on there being a proposal to reconsider).
+        self.assertEqual(len(captured_requests), 4)
+        second_turn_request = captured_requests[3]
         carried = second_turn_request.get("attempt_history")
         self.assertTrue(carried)
         self.assertEqual(
@@ -374,14 +383,22 @@ class CrossTurnAttemptHistoryTests(_IsolatedOrchestratorCase):
                 )
 
             if call_count["n"] == 2:
-                # Turn 1's own in-turn evaluation call - nothing
-                # evaluation-shaped, so this turn stops cleanly after
-                # its one execution (evaluation_unavailable) and
+                # Milestone 13 Part 1: turn 1's pre-execution sanity
+                # check - confirms the same capability, exactly as if
+                # the Brain had reconsidered and stood by it.
+                return json.dumps(
+                    {"action": {"capability": "extract_student_records"}}
+                )
+
+            if call_count["n"] == 3:
+                # Turn 1's own post-execution in-turn evaluation call -
+                # nothing evaluation-shaped, so this turn stops cleanly
+                # after its one execution (evaluation_unavailable) and
                 # carries its history forward, rather than continuing
                 # to a second action within the SAME turn.
                 return json.dumps({"objective": "not evaluation-shaped"})
 
-            if call_count["n"] == 3:
+            if call_count["n"] == 4:
                 # Turn 2's initial call: the carried attempt_history
                 # from turn 1 (its goal + real result) plus the user's
                 # new, rejecting message is real evidence - propose
@@ -403,9 +420,16 @@ class CrossTurnAttemptHistoryTests(_IsolatedOrchestratorCase):
                     }
                 )
 
-            # Turn 2's own in-turn evaluation call, after
-            # draft_institutional_note executed - satisfied this time,
-            # so turn 2 stops cleanly after its one new action.
+            if call_count["n"] == 5:
+                # Turn 2's pre-execution sanity check - confirms the
+                # newly-chosen capability.
+                return json.dumps(
+                    {"action": {"capability": "draft_institutional_note"}}
+                )
+
+            # Turn 2's own post-execution in-turn evaluation call,
+            # after draft_institutional_note executed - satisfied this
+            # time, so turn 2 stops cleanly after its one new action.
             return json.dumps(
                 {
                     "evaluation": {

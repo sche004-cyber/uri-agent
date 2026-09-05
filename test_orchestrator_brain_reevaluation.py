@@ -344,9 +344,12 @@ class ApprovalRequiredProtectedTests(_IsolatedOrchestratorCase):
 
         self.assertEqual(result["execution"]["status"], "awaiting_approval")
         self.assertEqual(fake_dispatcher.calls, [])
-        # Exactly one reasoning call (the initial proposal) - the loop
-        # must not have attempted a second, evaluation call.
-        self.assertEqual(call_count["n"], 1)
+        # Exactly two reasoning calls - the initial proposal and the
+        # Milestone 13 pre-execution sanity check (which confirms the
+        # same capability here, since this fixture always returns it)
+        # - the POST-execution evaluation loop must not have attempted
+        # a third, evaluation call, since nothing actually executed.
+        self.assertEqual(call_count["n"], 2)
         self.assertNotIn("brain_evaluation", result)
 
 
