@@ -10,14 +10,20 @@ Run with:
 """
 
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from uri_core.core.approval_gate import ApprovalGate
+from uri_core.core.approval_store import ApprovalStore
 from uri_core.core.audit_comparison import build_shadow_comparison_report
+from uri_core.core.audit_trail import AuditTrail
+from uri_core.core.auth_session import AuthSessionStore
 from uri_core.core.capability_registry import CapabilityRegistry
+from uri_core.core.dispatcher import ToolDispatcher
 from uri_core.core.growth_ledger import GrowthLedgerStore
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
 from uri_core.core.model_providers import OllamaProvider
@@ -31,6 +37,11 @@ from uri_core.core.portable_paths import (
     PortablePathValidationError,
     migrate_legacy_file_if_needed,
     user_scoped_path,
+)
+from uri_core.core.state import SessionManager
+from uri_core.core.user_accounts import (
+    UserAccountError,
+    UserAccountStore,
 )
 from uri_core.core.user_memory import (
     MemoryEntry,
@@ -125,17 +136,198 @@ _capability_registry = CapabilityRegistry()
 # ModelProvider.describe's contract in model_providers/base.py.
 _model_provider = OllamaProvider()
 
+# ------------------------------------------------------------------
+# Prototype 1 — multi-user identity + login foundation.
+#
+# _user_account_store is the install-wide login directory (username ->
+# account, see user_accounts.py) - ambient/global like
+# _capability_registry above, because it is the directory of who can
+# log in, not per-user state itself.
+#
+# _auth_session_store maps an opaque, in-memory login token to a
+# user_id (see auth_session.py) - a THIRD identifier, distinct from
+# user_id/device_id (identity.py) and from the conversation session_id
+# every /ask call already carries (state.py). Resetting the process
+# always requires logging in again; this is a deliberate prototype
+# simplification, not durable session persistence.
+#
+# Every endpoint below stays backward compatible with every existing,
+# unauthenticated test/caller: _resolve_authenticated_user_id returns
+# None when no Authorization header is sent at all, and _resolve_context
+# maps None to the pre-existing legacy ambient globals
+# (_user_profile_store/_memory_store/_growth_ledger_store/_orchestrator)
+# untouched above - so a request that never logs in behaves exactly as
+# it did before this milestone. Only a request that DOES present a
+# valid bearer token gets routed to that user_id's own isolated
+# context (see _get_user_context) - built lazily, once per user_id,
+# and cached for the process lifetime in _user_contexts below.
+# ------------------------------------------------------------------
+
+_user_account_store = UserAccountStore()
+_auth_session_store = AuthSessionStore()
+
+# Overridable only by tests (mirrors _initialize_user_scoped_stores's
+# own root parameter) so _build_user_context never has to touch the
+# real uri_workspace/users/ tree during an automated test run - every
+# other store in this codebase's test suite follows this same
+# tempfile.TemporaryDirectory() isolation discipline.
+_USER_STATE_ROOT = "uri_workspace/users"
+
+
+@dataclass
+class _UserContext:
+    """Everything one logged-in user_id's request needs, all pointed
+    at that user_id's own uri_workspace/users/<user_id>/ subtree (see
+    portable_paths.user_scoped_path) - profile, memory, growth ledger,
+    conversation sessions, and pending approvals. Nothing here is
+    shared with any other user_id's _UserContext; nothing here is
+    shared with the legacy ambient globals used when a request carries
+    no Authorization header."""
+
+    profile_store: UserProfileStore
+    memory_store: MemoryStore
+    growth_ledger_store: GrowthLedgerStore
+    orchestrator: UriOrchestrator
+
+
+_user_contexts: dict = {}
+
+
+def _build_user_context(user_id: str) -> _UserContext:
+    """Constructs a brand-new, fully isolated _UserContext for one
+    user_id. Called at most once per user_id per process lifetime -
+    see _get_user_context's cache. capability_registry is intentionally
+    the shared, global _capability_registry (static, read-only
+    configuration, not per-user secret data - identical to how every
+    _UserContext's orchestrator already shares the same
+    ModelReasoningGateway/OllamaReasoningAdapter shape the legacy
+    _orchestrator above uses); everything else - approval store,
+    session manager, profile/memory/growth stores - is constructed
+    fresh, pointed only at this user_id's own directory."""
+
+    profile_store = UserProfileStore(
+        storage_path=user_scoped_path(
+            user_id, "user_profile.json", root=_USER_STATE_ROOT
+        )
+    )
+    memory_store = MemoryStore(
+        storage_path=user_scoped_path(
+            user_id, "user_memory.json", root=_USER_STATE_ROOT
+        )
+    )
+    growth_ledger_store = GrowthLedgerStore(
+        storage_path=user_scoped_path(
+            user_id, "growth_ledger.json", root=_USER_STATE_ROOT
+        )
+    )
+
+    approval_store = ApprovalStore(
+        storage_path=user_scoped_path(
+            user_id, "approvals.json", root=_USER_STATE_ROOT
+        )
+    )
+    approval_gate = ApprovalGate(
+        dispatcher=ToolDispatcher(),
+        capability_registry=_capability_registry,
+        approval_store=approval_store,
+        audit_trail=AuditTrail(),
+    )
+
+    session_manager = SessionManager(
+        storage_path=user_scoped_path(
+            user_id, "sessions", root=_USER_STATE_ROOT
+        )
+    )
+
+    orchestrator = UriOrchestrator(
+        model_reasoning_gateway=ModelReasoningGateway(
+            model_callable=OllamaReasoningAdapter()
+        ),
+        enable_response_narrative=True,
+        approval_gate=approval_gate,
+        session_manager=session_manager,
+    )
+
+    return _UserContext(
+        profile_store=profile_store,
+        memory_store=memory_store,
+        growth_ledger_store=growth_ledger_store,
+        orchestrator=orchestrator,
+    )
+
+
+def _get_user_context(user_id: str) -> _UserContext:
+    if user_id not in _user_contexts:
+        _user_contexts[user_id] = _build_user_context(user_id)
+    return _user_contexts[user_id]
+
+
+def _resolve_context(user_id: Optional[str]) -> _UserContext:
+    """The one place every endpoint below picks which state to read/
+    write. user_id is None for a request with no (or no valid) login -
+    see _resolve_authenticated_user_id - in which case this returns
+    the pre-existing legacy ambient globals completely unchanged, so
+    every test/caller that predates login keeps working exactly as it
+    did before. A non-None user_id always returns that user_id's own
+    isolated _UserContext, never anything shared with another user_id
+    or with the legacy globals."""
+
+    if user_id is None:
+        return _UserContext(
+            profile_store=_user_profile_store,
+            memory_store=_memory_store,
+            growth_ledger_store=_growth_ledger_store,
+            orchestrator=_orchestrator,
+        )
+
+    return _get_user_context(user_id)
+
+
+def _resolve_authenticated_user_id(
+    authorization: Optional[str] = Header(default=None),
+) -> Optional[str]:
+    """FastAPI dependency: None when no Authorization header is sent
+    at all (preserves every existing endpoint's unauthenticated
+    behaviour exactly). Raises 401 - never silently falls back to the
+    legacy ambient state - when a header IS sent but is malformed,
+    unknown, or expired, since silently downgrading a bad token to
+    "no login" would let an expired/mistyped token quietly leak into
+    someone else's ambient session instead of failing visibly."""
+
+    if authorization is None:
+        return None
+
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=401,
+            detail="Authorization header must be 'Bearer <token>'.",
+        )
+
+    token = authorization[len("Bearer "):].strip()
+    user_id = _auth_session_store.resolve(token)
+
+    if user_id is None:
+        raise HTTPException(
+            status_code=401, detail="Invalid or expired session token."
+        )
+
+    return user_id
+
 
 def _record_growth_event_safely(
-    event_type: str, metadata: Optional[dict] = None
+    growth_ledger_store: GrowthLedgerStore,
+    event_type: str,
+    metadata: Optional[dict] = None,
 ) -> None:
     """Never raises - a growth-ledger failure must never break the
     real user-driven action it's downstream of. Mirrors
     orchestrator.py's _record_skill_router_audit/
     _record_model_reasoning_audit's own never-breaks-the-live-request
-    discipline."""
+    discipline. Takes the store explicitly (rather than reaching for
+    the legacy global) so it records to whichever user's context the
+    calling endpoint resolved via _resolve_context."""
     try:
-        _growth_ledger_store.record_event(event_type, metadata)
+        growth_ledger_store.record_event(event_type, metadata)
     except Exception:
         return
 
@@ -247,6 +439,16 @@ class ApprovalDecisionRequest(BaseModel):
     session_id: Optional[str] = None
 
 
+class SignupRequest(BaseModel):
+    username: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
 def _memory_entry_to_dict(entry: MemoryEntry) -> dict:
     # Flattened, minimal view - not a raw dump of MemoryEntry/Fact's
     # full internal shape (source, source_date, retrieved_date,
@@ -271,8 +473,106 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.post("/auth/signup")
+def signup(payload: SignupRequest) -> dict:
+    """
+    Prototype 1 (multi-user identity): creates a new login account and
+    a fresh, isolated user_id for it (see user_accounts.py) - never the
+    single ambient install-level user_id from GET /identity, which
+    predates login and is unrelated to any account. Auto-logs-in on
+    success (returns a real bearer token) so a client can go straight
+    from signup to an authenticated request without a second call.
+
+    Rejects a username that's already registered (case-insensitively)
+    or fails the username/password shape checks in user_accounts.py -
+    never overwrites an existing account.
+    """
+    try:
+        account = _user_account_store.create_account(
+            payload.username, payload.password
+        )
+    except UserAccountError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    token = _auth_session_store.create(account.user_id)
+
+    return {
+        "user_id": account.user_id,
+        "username": account.username,
+        "token": token,
+    }
+
+
+@app.post("/auth/login")
+def login(payload: LoginRequest) -> dict:
+    """
+    Verifies username + password against user_accounts.py's stored
+    PBKDF2 hash and, only on an exact match, issues a fresh bearer
+    token bound to that account's user_id. Returns 401 (never 404 or a
+    field-specific error) for both an unknown username and a wrong
+    password, so this endpoint can never be used to enumerate valid
+    usernames.
+    """
+    account = _user_account_store.authenticate(
+        payload.username, payload.password
+    )
+
+    if account is None:
+        raise HTTPException(
+            status_code=401, detail="Invalid username or password."
+        )
+
+    token = _auth_session_store.create(account.user_id)
+
+    return {
+        "user_id": account.user_id,
+        "username": account.username,
+        "token": token,
+    }
+
+
+@app.post("/auth/logout")
+def logout(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+    authorization: Optional[str] = Header(default=None),
+) -> dict:
+    """Revokes the presented token so it can never be resolved again.
+    Requires a currently-valid token (a request with no/invalid token
+    already fails via _resolve_authenticated_user_id before this body
+    runs)."""
+    if authorization is not None and authorization.startswith("Bearer "):
+        _auth_session_store.revoke(authorization[len("Bearer "):].strip())
+
+    return {"logged_out": True}
+
+
+@app.get("/auth/me")
+def auth_me(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Read-only: which user_id (if any) the presented token resolves
+    to right now - lets a client check whether it's still logged in
+    without side effects. authenticated is False (not a 401) when no
+    Authorization header was sent at all, since that's a normal,
+    supported "not logged in yet" state for every other endpoint in
+    this file."""
+    if user_id is None:
+        return {"authenticated": False, "user_id": None, "username": None}
+
+    account = _user_account_store.get_by_user_id(user_id)
+
+    return {
+        "authenticated": True,
+        "user_id": user_id,
+        "username": account.username if account is not None else None,
+    }
+
+
 @app.post("/ask")
-def ask(payload: AskRequest) -> dict:
+def ask(
+    payload: AskRequest,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     # Bounded personalization (Milestone 8A): only the confirmed
     # profile and consent-eligible memory (never pending_confirmation,
     # never growth/XP - see personalization_context.py) is assembled
@@ -283,12 +583,19 @@ def ask(payload: AskRequest) -> dict:
     # This can only ever influence how a response is *phrased* (see
     # _draft_narrative_safely) - it is never read by capability
     # selection, approval, or execution.
+    #
+    # Prototype 1 (multi-user identity): context resolves to the
+    # logged-in user_id's own isolated profile/memory/orchestrator
+    # when an Authorization header is present, and to the pre-existing
+    # legacy ambient globals otherwise - see _resolve_context.
+    context = _resolve_context(user_id)
+
     personalization_context = build_personalization_context(
-        _user_profile_store.load_or_create(),
-        _memory_store.list_all(),
+        context.profile_store.load_or_create(),
+        context.memory_store.list_all(),
     )
 
-    result = _orchestrator.process_user_input(
+    result = context.orchestrator.process_user_input(
         session_id=payload.session_id,
         user_text=payload.text,
         personalization_context=personalization_context,
@@ -318,7 +625,10 @@ def ask(payload: AskRequest) -> dict:
 
 
 @app.post("/approve")
-def approve(payload: ApprovalDecisionRequest) -> dict:
+def approve(
+    payload: ApprovalDecisionRequest,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """
     Records a real, explicit user approval for one proposed action
     (Milestone 7) and, only if the deterministic ApprovalGate accepts
@@ -332,18 +642,26 @@ def approve(payload: ApprovalDecisionRequest) -> dict:
     already exist as a real ApprovalStore record created by
     ApprovalGate.execute_tool() during a prior /ask call.
 
+    Prototype 1 (multi-user identity): resolves to the same per-user
+    context /ask used to propose this action (see _resolve_context) -
+    a logged-in user_id only ever reaches their own ApprovalStore, so
+    User A can never approve/consume an action_id that only exists in
+    User B's approvals.json.
+
     Bounded personalization (same discipline as POST /ask - see
     build_personalization_context) is passed through so the
     additive/shadow-rolled-out "narrative" field (Milestone 8A) can
     explain this decision's real outcome in URI's voice too, not only
     the initial proposal.
     """
+    context = _resolve_context(user_id)
+
     personalization_context = build_personalization_context(
-        _user_profile_store.load_or_create(),
-        _memory_store.list_all(),
+        context.profile_store.load_or_create(),
+        context.memory_store.list_all(),
     )
 
-    return _orchestrator.decide_action(
+    return context.orchestrator.decide_action(
         action_id=payload.action_id,
         approved=True,
         session_id=payload.session_id,
@@ -352,18 +670,24 @@ def approve(payload: ApprovalDecisionRequest) -> dict:
 
 
 @app.post("/cancel")
-def cancel(payload: ApprovalDecisionRequest) -> dict:
+def cancel(
+    payload: ApprovalDecisionRequest,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """
     Records an explicit user rejection for one proposed action - the
     action is marked rejected and never executes. See POST /approve's
-    docstring for the same contract notes.
+    docstring for the same contract notes, including per-user
+    isolation.
     """
+    context = _resolve_context(user_id)
+
     personalization_context = build_personalization_context(
-        _user_profile_store.load_or_create(),
-        _memory_store.list_all(),
+        context.profile_store.load_or_create(),
+        context.memory_store.list_all(),
     )
 
-    return _orchestrator.decide_action(
+    return context.orchestrator.decide_action(
         action_id=payload.action_id,
         approved=False,
         session_id=payload.session_id,
@@ -372,16 +696,24 @@ def cancel(payload: ApprovalDecisionRequest) -> dict:
 
 
 @app.get("/tasks")
-def tasks() -> dict:
+def tasks(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """
     Read-only: every proposed action still awaiting a user decision,
-    across all sessions - the backend for a cross-session "Tasks" view
-    (UI prototype phase 1). Never mutates anything - approving or
-    rejecting stays exclusively POST /approve / POST /cancel, exactly
-    like every other read endpoint in this file never doubles as a
-    write path.
+    across all of THIS user's sessions - the backend for a
+    cross-session "Tasks" view (UI prototype phase 1). Never mutates
+    anything - approving or rejecting stays exclusively POST /approve /
+    POST /cancel, exactly like every other read endpoint in this file
+    never doubles as a write path.
+
+    Prototype 1 (multi-user identity): a logged-in user_id only ever
+    sees pending actions from their own ApprovalStore (see
+    _resolve_context) - User A's /tasks list can never include an
+    action proposed under User B's login.
     """
-    pending = _orchestrator.approval_gate.approval_store.list_pending()
+    context = _resolve_context(user_id)
+    pending = context.orchestrator.approval_gate.approval_store.list_pending()
 
     task_list = []
 
@@ -444,9 +776,14 @@ def identity() -> dict:
 
 
 @app.get("/profile")
-def get_profile() -> dict:
-    """Read-only view of this install's single ambient user profile."""
-    profile = _user_profile_store.load_or_create()
+def get_profile(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Read-only view of the current user's profile - the logged-in
+    user's own when authenticated, the legacy single ambient profile
+    otherwise (see _resolve_context)."""
+    context = _resolve_context(user_id)
+    profile = context.profile_store.load_or_create()
 
     return {
         "communication_style": profile.communication_style,
@@ -457,12 +794,16 @@ def get_profile() -> dict:
 
 
 @app.post("/profile")
-def update_profile(payload: ProfileUpdateRequest) -> dict:
+def update_profile(
+    payload: ProfileUpdateRequest,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """
     Replaces the whole profile (no partial-patch semantics yet).
-    Unauthenticated, same trust level as every other endpoint here
-    today - there is exactly one ambient profile per install, so this
-    is equivalent in scope to /ask already being unauthenticated.
+    Prototype 1 (multi-user identity): writes to the logged-in user's
+    own profile store when authenticated, or the legacy single ambient
+    profile otherwise (see _resolve_context) - User A can never write
+    to User B's profile.json.
 
     communication_style/autonomy_level/focus_areas are validated
     (enum-constrained, length-capped, credential-shape rejected - see
@@ -470,8 +811,10 @@ def update_profile(payload: ProfileUpdateRequest) -> dict:
     this stopped being optional hygiene once profile data started
     reaching a model prompt via personalization_context.py.
     """
+    context = _resolve_context(user_id)
+
     try:
-        updated = _user_profile_store.save(
+        updated = context.profile_store.save(
             UserProfile(
                 communication_style=payload.communication_style,
                 autonomy_level=payload.autonomy_level,
@@ -481,7 +824,9 @@ def update_profile(payload: ProfileUpdateRequest) -> dict:
     except UserProfileValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
-    _record_growth_event_safely("profile_updated")
+    _record_growth_event_safely(
+        context.growth_ledger_store, "profile_updated"
+    )
 
     return {
         "communication_style": updated.communication_style,
@@ -492,34 +837,47 @@ def update_profile(payload: ProfileUpdateRequest) -> dict:
 
 
 @app.get("/memory")
-def list_memory() -> dict:
+def list_memory(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """
-    Every memory this install holds, including any pending proposals
-    (labelled by their consent field) - visible to the user for
-    review. Nothing in this milestone ever creates a
-    pending_confirmation entry; see user_memory.py.
+    Every memory the current user holds, including any pending
+    proposals (labelled by their consent field) - visible to the user
+    for review. Nothing in this milestone ever creates a
+    pending_confirmation entry; see user_memory.py. Prototype 1: a
+    logged-in user_id only ever sees their own memory store (see
+    _resolve_context) - User A can never list User B's memories.
 
     Whole-store listing doubles as this milestone's export mechanism -
     no separate export endpoint yet.
     """
+    context = _resolve_context(user_id)
+
     return {
         "memories": [
             _memory_entry_to_dict(entry)
-            for entry in _memory_store.list_all()
+            for entry in context.memory_store.list_all()
         ]
     }
 
 
 @app.post("/memory")
-def add_memory(payload: MemoryWriteRequest) -> dict:
+def add_memory(
+    payload: MemoryWriteRequest,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """
     The user explicitly asking URI to remember something -
     consent="user_provided" always, set unconditionally by MemoryStore
     itself, never taken from the request body. There is no path in
     this milestone for URI/the model to write a memory on its own.
+    Prototype 1: written to the logged-in user's own memory store when
+    authenticated (see _resolve_context).
     """
+    context = _resolve_context(user_id)
+
     try:
-        entry = _memory_store.add(
+        entry = context.memory_store.add(
             category=payload.category,
             content=payload.content,
             confidence=payload.confidence,
@@ -529,18 +887,29 @@ def add_memory(payload: MemoryWriteRequest) -> dict:
         raise HTTPException(status_code=400, detail=str(exc))
 
     _record_growth_event_safely(
-        "memory_recorded", {"category": entry.category}
+        context.growth_ledger_store,
+        "memory_recorded",
+        {"category": entry.category},
     )
 
     return _memory_entry_to_dict(entry)
 
 
 @app.put("/memory/{memory_id}")
-def update_memory(memory_id: str, payload: MemoryWriteRequest) -> dict:
+def update_memory(
+    memory_id: str,
+    payload: MemoryWriteRequest,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """Whole-entry replace (edit), same pattern as POST /profile.
-    consent is preserved, not editable via this endpoint."""
+    consent is preserved, not editable via this endpoint. Prototype 1:
+    resolved against the logged-in user's own memory store, so a
+    memory_id that only exists in another user's store correctly 404s
+    here rather than being found."""
+    context = _resolve_context(user_id)
+
     try:
-        updated = _memory_store.update(
+        updated = context.memory_store.update(
             memory_id,
             category=payload.category,
             content=payload.content,
@@ -557,9 +926,15 @@ def update_memory(memory_id: str, payload: MemoryWriteRequest) -> dict:
 
 
 @app.delete("/memory/{memory_id}")
-def delete_memory(memory_id: str) -> dict:
-    """Real, complete removal - not a soft-delete/hide flag."""
-    deleted = _memory_store.delete(memory_id)
+def delete_memory(
+    memory_id: str,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Real, complete removal - not a soft-delete/hide flag. Prototype
+    1: resolved against the logged-in user's own memory store (see
+    update_memory's docstring for the same cross-user 404 behaviour)."""
+    context = _resolve_context(user_id)
+    deleted = context.memory_store.delete(memory_id)
 
     if not deleted:
         raise HTTPException(status_code=404, detail="Memory not found.")
@@ -568,16 +943,21 @@ def delete_memory(memory_id: str) -> dict:
 
 
 @app.get("/growth")
-def growth() -> dict:
+def growth(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """
     Read-only summary: XP/level/achievements, always recomputed from
     the append-only growth event history (see
     growth_ledger.compute_summary - never a stored counter that could
     drift). Level is cosmetic only - see growth_ledger.py's module
     docstring. Nothing here is ever read by _orchestrator or anything
-    that plans, authorizes, approves, or executes.
+    that plans, authorizes, approves, or executes. Prototype 1: the
+    logged-in user's own growth ledger when authenticated (see
+    _resolve_context).
     """
-    return _growth_ledger_store.summary()
+    context = _resolve_context(user_id)
+    return context.growth_ledger_store.summary()
 
 
 @app.get("/capabilities")

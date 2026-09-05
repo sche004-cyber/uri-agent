@@ -23,6 +23,32 @@ import '../models/uri_turn.dart';
 /// request/response shapes a client is entitled to see. All of that
 /// stays owned by the Python runtime.
 abstract class UriClient {
+  /// True once this client holds a token from a successful login/signup
+  /// (see [login]/[signup]) that hasn't been [logout]-ed. Client
+  /// identity (which device/install this is) stays entirely separate
+  /// from this — see [HttpUriClient], which never mixes the two.
+  bool get isAuthenticated;
+
+  /// The username of the currently logged-in user, or null when
+  /// [isAuthenticated] is false.
+  String? get currentUsername;
+
+  /// Creates a new account for [username]/[password] and logs in as it
+  /// immediately on success — a fresh, isolated user_id is created
+  /// server-side (see uri_core/core/user_accounts.py); this is
+  /// prototype-only local authentication, not OAuth/Gmail/GitHub.
+  Future<AuthOutcome> signup(String username, String password);
+
+  /// Logs in as an existing account. Only ever proves which user_id
+  /// this client should now act as — it grants no capability beyond
+  /// selecting that user's own isolated URI state.
+  Future<AuthOutcome> login(String username, String password);
+
+  /// Ends the current login. After this, [isAuthenticated] is false
+  /// and every subsequent call behaves as an unauthenticated client
+  /// until [login]/[signup] succeeds again.
+  Future<void> logout();
+
   /// Ask URI to understand and, if appropriate, propose an action for
   /// [text]. Never executes anything by itself.
   Future<UriTurn> ask(String text);
@@ -54,6 +80,15 @@ abstract class UriClient {
   /// cancel a task the same way as any awaiting-approval turn: call
   /// [approve]/[cancel] with [TaskItem.id].
   Future<List<TaskItem>> listTasks();
+}
+
+/// Result of a [UriClient.login]/[UriClient.signup] attempt.
+class AuthOutcome {
+  const AuthOutcome.success() : success = true, message = null;
+  const AuthOutcome.failure(this.message) : success = false;
+
+  final bool success;
+  final String? message;
 }
 
 /// Aggregate data the Home screen needs in one call.

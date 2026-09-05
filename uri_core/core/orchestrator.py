@@ -57,7 +57,8 @@ class UriOrchestrator:
         semantic_interpreter=None,
         approval_gate=None,
         enable_response_narrative=False,
-        response_drafting_provider=None
+        response_drafting_provider=None,
+        session_manager=None
     ):
 
         self.prompt_builder = PromptBuilder()
@@ -82,7 +83,21 @@ class UriOrchestrator:
 
         self.workflow_planner = WorkflowPlanner()
 
-        self.session_manager = SessionManager()
+        # Prototype 1 (multi-user identity): accepting an injected
+        # SessionManager, rather than always constructing the default
+        # ambient uri_workspace/sessions one, is what lets server.py
+        # give each logged-in user_id their own conversation-state
+        # directory (see portable_paths.user_scoped_path) without this
+        # class knowing anything about users/auth - it stays exactly
+        # as unaware of identity as approval_gate already is (see this
+        # constructor's approval_gate parameter above). Every existing
+        # caller/test that constructs UriOrchestrator() with no args
+        # keeps the previous SessionManager() default behaviour.
+        self.session_manager = (
+            session_manager
+            if session_manager is not None
+            else SessionManager()
+        )
 
         self.evidence_processor = None
 

@@ -77,10 +77,13 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
 
-                const _SettingsSection(
+                _SettingsSection(
                   title: 'Account',
                   description: 'Sign-in and identity management.',
-                  child: _PlaceholderRow(label: 'Not available in this prototype'),
+                  child: _AccountRow(
+                    username: state.currentUsername,
+                    onLogOut: () => state.logout(),
+                  ),
                 ),
                 const _SettingsSection(
                   title: 'Privacy & data',
@@ -138,6 +141,43 @@ class _SettingsSection extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Prototype 1 (multi-user identity): shows which account is signed in
+/// on this device and lets it log out - the one way (besides closing
+/// and reopening at the login screen) to switch which user's isolated
+/// URI state this client acts as. Logging back in as a different
+/// account is the login screen's job, not this row's.
+class _AccountRow extends StatelessWidget {
+  const _AccountRow({required this.username, required this.onLogOut});
+
+  final String? username;
+  final VoidCallback onLogOut;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(UriSpace.md),
+      decoration: BoxDecoration(
+        color: UriColors.surfaceSunken,
+        borderRadius: BorderRadius.circular(UriRadius.sm),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.person_outline_rounded, size: 16, color: UriColors.inkFaint),
+          const SizedBox(width: UriSpace.sm),
+          Expanded(
+            child: Text(
+              username != null ? 'Signed in as $username' : 'Not signed in',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+          TextButton(onPressed: onLogOut, child: const Text('Log out')),
+        ],
       ),
     );
   }

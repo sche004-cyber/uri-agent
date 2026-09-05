@@ -28,6 +28,47 @@ class MockUriClient implements UriClient {
 
   String _nextId(String prefix) => '$prefix-${++_idCounter}';
 
+  // ---------------------------------------------------------------
+  // Auth — no real backend involved, just enough state for widget
+  // tests and the mock-only fallback paths to have something
+  // consistent to react to. Never used by HttpUriClient.
+  //
+  // Starts already "logged in" (as a placeholder user) rather than
+  // starting logged out - every existing widget test builds
+  // AppState(client: MockUriClient()) and expects to land straight on
+  // onboarding/Home with no login screen in the way, since real login
+  // is a property of the HTTP backend (see HttpUriClient), not of this
+  // offline stand-in. Call logout() explicitly in a test that wants to
+  // exercise the logged-out state against MockUriClient.
+  // ---------------------------------------------------------------
+
+  String? _username = 'demo-user';
+
+  @override
+  bool get isAuthenticated => _username != null;
+
+  @override
+  String? get currentUsername => _username;
+
+  @override
+  Future<AuthOutcome> signup(String username, String password) async {
+    await _latency(const Duration(milliseconds: 120));
+    _username = username;
+    return const AuthOutcome.success();
+  }
+
+  @override
+  Future<AuthOutcome> login(String username, String password) async {
+    await _latency(const Duration(milliseconds: 120));
+    _username = username;
+    return const AuthOutcome.success();
+  }
+
+  @override
+  Future<void> logout() async {
+    _username = null;
+  }
+
   void _seedConnections() {
     _connections.addAll(const [
       ServiceConnection(

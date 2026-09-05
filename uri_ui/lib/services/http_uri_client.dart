@@ -43,6 +43,15 @@ class HttpUriClient implements UriClient {
   final http.Client _http;
   final UriClient _fallback;
 
+  /// Prototype 1 (multi-user identity): set only by a successful
+  /// [login]/[signup], sent as `Authorization: Bearer <token>` on every
+  /// request that follows. Null means "not logged in" - those requests
+  /// still reach the backend exactly as before login existed (see
+  /// server.py's _resolve_authenticated_user_id), so this client keeps
+  /// working unauthenticated until a caller explicitly logs in.
+  String? _token;
+  String? _username;
+
   /// Every turn this client has produced, keyed by [UriTurn.id] —
   /// needed because POST /approve and POST /cancel return only the
   /// raw execution/decision result (see server.py), not a full turn
@@ -54,6 +63,86 @@ class HttpUriClient implements UriClient {
   static String _generateSessionId() =>
       'flutter-${DateTime.now().microsecondsSinceEpoch}';
 
+  Map<String, String> get _jsonHeaders {
+    final token = _token;
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  @override
+  bool get isAuthenticated => _token != null;
+
+  @override
+  String? get currentUsername => _username;
+
+  Future<AuthOutcome> _authenticate({
+    required String path,
+    required String username,
+    required String password,
+  }) async {
+    http.Response response;
+    try {
+      response = await _http
+          .post(
+            Uri.parse('$baseUrl$path'),
+            headers: const {'Content-Type': 'application/json'},
+            body: jsonEncode({'username': username, 'password': password}),
+          )
+          .timeout(const Duration(seconds: 15));
+    } catch (error) {
+      return AuthOutcome.failure('Could not reach the URI backend: $error');
+    }
+
+    Map<String, dynamic>? body;
+    try {
+      body = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      body = null;
+    }
+
+    if (response.statusCode != 200 || body == null || body['token'] == null) {
+      final detail = body?['detail']?.toString();
+      return AuthOutcome.failure(
+        detail ?? 'The URI backend rejected this request (HTTP ${response.statusCode}).',
+      );
+    }
+
+    _token = body['token'] as String;
+    _username = body['username'] as String? ?? username;
+    return const AuthOutcome.success();
+  }
+
+  @override
+  Future<AuthOutcome> signup(String username, String password) =>
+      _authenticate(path: '/auth/signup', username: username, password: password);
+
+  @override
+  Future<AuthOutcome> login(String username, String password) =>
+      _authenticate(path: '/auth/login', username: username, password: password);
+
+  @override
+  Future<void> logout() async {
+    final token = _token;
+    _token = null;
+    _username = null;
+    if (token == null) return;
+
+    try {
+      await _http
+          .post(
+            Uri.parse('$baseUrl/auth/logout'),
+            headers: {'Authorization': 'Bearer $token'},
+          )
+          .timeout(const Duration(seconds: 15));
+    } catch (_) {
+      // Local state is already cleared above; a failed revoke call on
+      // the way out must never block the user from appearing logged
+      // out in this client.
+    }
+  }
+
   @override
   Future<UriTurn> ask(String text) async {
     final id = 'turn-${DateTime.now().microsecondsSinceEpoch}';
@@ -64,7 +153,7 @@ class HttpUriClient implements UriClient {
       response = await _http
           .post(
             Uri.parse('$baseUrl/ask'),
-            headers: const {'Content-Type': 'application/json'},
+            headers: _jsonHeaders,
             body: jsonEncode({'session_id': _sessionId, 'text': text}),
           )
           .timeout(const Duration(seconds: 30));
@@ -228,7 +317,7 @@ class HttpUriClient implements UriClient {
       response = await _http
           .post(
             Uri.parse('$baseUrl/${approved ? 'approve' : 'cancel'}'),
-            headers: const {'Content-Type': 'application/json'},
+            headers: _jsonHeaders,
             body: jsonEncode({'action_id': actionId, 'session_id': _sessionId}),
           )
           .timeout(const Duration(seconds: 30));
@@ -317,7 +406,9 @@ class HttpUriClient implements UriClient {
   Future<List<TaskItem>> listTasks() async {
     http.Response response;
     try {
-      response = await _http.get(Uri.parse('$baseUrl/tasks')).timeout(const Duration(seconds: 30));
+      response = await _http
+          .get(Uri.parse('$baseUrl/tasks'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
     } catch (_) {
       return const [];
     }

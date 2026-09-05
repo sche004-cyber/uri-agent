@@ -6,7 +6,7 @@ import '../models/task_item.dart';
 import '../models/user_preferences.dart';
 import '../models/uri_turn.dart';
 import 'preferences_store.dart';
-import 'uri_client.dart';
+import 'uri_client.dart' show AuthOutcome, HomeSummary, UriClient;
 
 /// App-wide, UI-only state. Holds nothing that belongs to the runtime
 /// (no facts, no evidence, no authorization decisions) — only what the
@@ -36,6 +36,38 @@ class AppState extends ChangeNotifier {
   bool isLoadingHome = false;
   bool isSendingAsk = false;
   bool isLoadingTasks = false;
+
+  // ---------------------------------------------------------------
+  // Prototype 1 — multi-user identity + login foundation.
+  // ---------------------------------------------------------------
+
+  bool get isAuthenticated => _client.isAuthenticated;
+  String? get currentUsername => _client.currentUsername;
+
+  Future<AuthOutcome> login(String username, String password) async {
+    final outcome = await _client.login(username, password);
+    notifyListeners();
+    return outcome;
+  }
+
+  Future<AuthOutcome> signup(String username, String password) async {
+    final outcome = await _client.signup(username, password);
+    notifyListeners();
+    return outcome;
+  }
+
+  /// Logs out and clears every piece of state this client fetched
+  /// under the previous login - a returning/different user must never
+  /// still see the prior user's conversation, tasks, or home summary
+  /// left over in this in-memory UI state.
+  Future<void> logout() async {
+    await _client.logout();
+    conversation.clear();
+    tasks.clear();
+    homeSummary = null;
+    hasLoadedActivity = false;
+    notifyListeners();
+  }
 
   /// Loads any previously persisted preferences from this device,
   /// replacing whatever [preferences] was constructed with. Call once,

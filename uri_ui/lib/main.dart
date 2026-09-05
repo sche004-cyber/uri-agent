@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'screens/activity/activity_screen.dart';
 import 'screens/ask/ask_uri_screen.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/connections/connections_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -47,6 +48,16 @@ class UriApp extends StatelessWidget {
         home: ListenableBuilder(
           listenable: appState,
           builder: (context, _) {
+            // Prototype 1 (multi-user identity): login is the outermost
+            // gate, ahead of onboarding - which user's state onboarding
+            // and everything after it operates on is decided here,
+            // once, rather than by each screen guessing.
+            if (!appState.isAuthenticated) {
+              return LoginScreen(
+                onLogin: appState.login,
+                onSignup: appState.signup,
+              );
+            }
             if (!appState.preferences.completedOnboarding) {
               return OnboardingScreen(
                 onComplete: (answers) => appState.updatePreferences(answers),
