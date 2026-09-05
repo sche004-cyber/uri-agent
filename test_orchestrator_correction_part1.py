@@ -6,10 +6,16 @@
    ignore it, and a learned skill remains a genuine fallback only when
    the Brain has nothing usable to offer.
 2. The immediately preceding turn's Brain attempt history survives
-   into the next turn's reasoning request when that turn did not end
-   satisfied - real evidence for whatever the user's next message
-   turns out to be (acceptance, rejection, or redirection) - and is
-   cleared, not carried forward, once a turn does end satisfied.
+   into the next turn's reasoning request regardless of whether that
+   turn ended satisfied or not - real evidence for whatever the user's
+   next message turns out to be (acceptance, rejection, or
+   redirection). The Brain being satisfied is not the same as the USER
+   accepting the result, so a satisfied turn carries its result forward
+   exactly like an unsatisfied one (Milestone 12: "user feedback is
+   part of the loop") - URI never decides for itself whether the user's
+   next message is an acceptance or a rejection; it only carries the
+   real result forward and lets the Brain's own reasoning (helped by
+   comparing the carried goal against the new message) work that out.
 3. None of the above ever bypasses ApprovalGate/security boundaries.
 
 No network/Ollama involved anywhere in this file - every gateway here
@@ -439,7 +445,13 @@ class CrossTurnAttemptHistoryTests(_IsolatedOrchestratorCase):
         self.assertEqual(dispatcher.calls[0][0], "extract_student_records")
         self.assertEqual(dispatcher.calls[1][0], "draft_institutional_note")
 
-    def test_satisfied_turn_does_not_carry_forward(self):
+    def test_satisfied_turn_still_carries_forward_for_the_user_to_judge(
+        self,
+    ):
+        # Milestone 12: the Brain declaring itself satisfied is only
+        # the Brain's own judgment - the USER is the final authority on
+        # acceptance. The real result must still reach the Brain on the
+        # very next message in case the user rejects it.
         captured_requests = []
         gateway = ModelReasoningGateway(
             model_callable=_capturing_callable(
@@ -470,17 +482,23 @@ class CrossTurnAttemptHistoryTests(_IsolatedOrchestratorCase):
         self.assertTrue(first["brain_evaluation"]["satisfied"])
 
         session = orchestrator.session_manager.get_session("s1")
-        self.assertIsNone(session.last_goal_text)
-        self.assertIsNone(session.last_goal_attempt_history)
+        self.assertEqual(session.last_goal_text, "draft the note")
+        self.assertIsNotNone(session.last_goal_attempt_history)
+        self.assertEqual(len(session.last_goal_attempt_history), 1)
 
         orchestrator.process_user_input(
-            session_id="s1", user_text="thanks, one more thing"
+            session_id="s1", user_text="actually that's not right"
         )
 
         third_call_request = captured_requests[2]
-        self.assertEqual(
-            third_call_request.get("attempt_history"), []
-        )
+        carried = third_call_request.get("attempt_history")
+        self.assertTrue(carried)
+        self.assertEqual(carried[0]["goal"], "draft the note")
+
+        # Read-once: consumed now, not left sitting in session state
+        # once the Brain has had a chance to see it.
+        session_after = orchestrator.session_manager.get_session("s1")
+        self.assertIsNone(session_after.last_goal_attempt_history)
 
 
 if __name__ == "__main__":

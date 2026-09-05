@@ -433,11 +433,29 @@ class ModelOutputCannotBypassBoundaryTests(_IsolatedOrchestratorCase):
 
 
 class QueryContextReachesReasoningRequestTests(_IsolatedOrchestratorCase):
-    """10g: M10A's query context (identity/personalization/session/
-    verified_facts/capabilities) reaches the Brain reasoning request,
-    not only the response-drafting request."""
+    """10g: M10A's query context reaches the Brain reasoning request,
+    not only the response-drafting request.
 
-    def test_query_context_key_present_with_expected_sections(self):
+    Milestone 12 correction: live testing against real Ollama
+    (qwen3:14b) showed that sending query_context's identity/session/
+    capabilities sections verbatim into the reasoning request - on top
+    of the reasoning request's OWN top-level system_policy/
+    session_context/available_capabilities fields, which already carry
+    exactly the same data - doubled the effective prompt (the ~9.5k
+    character policy text alone was duplicated in full) and reliably
+    made the real model lose track of user_request, answering with an
+    invented, unrelated "clarification needed" shape instead of ever
+    naming a capability. See orchestrator.py's _run_model_reasoning,
+    which now blanks those three redundant sections for the reasoning
+    call specifically (drafting is unaffected) - this test now proves
+    query_context still reaches the reasoning request (the key is
+    present, and its genuinely new sections - personalization and
+    verified_facts - still carry real data), while its duplicate
+    sections are deliberately empty and the actual information they
+    would have carried is still present, undiminished, via the
+    reasoning request's own top-level fields."""
+
+    def test_query_context_key_present_with_deduplicated_sections(self):
         captured_requests = []
 
         gateway = ModelReasoningGateway(
@@ -471,17 +489,30 @@ class QueryContextReachesReasoningRequestTests(_IsolatedOrchestratorCase):
         self.assertIn("verified_facts", query_context)
         self.assertIn("capabilities", query_context)
 
+        # Genuinely new information (not duplicated anywhere else in
+        # the reasoning request) still reaches the Brain.
         self.assertEqual(
             query_context["personalization"]["communication_style"],
             "formal",
         )
         self.assertIn("insurance", query_context["personalization"]["focus_areas"])
+
+        # Deliberately blanked here - a verbatim duplicate of
+        # system_policy/session_context/available_capabilities, which
+        # this same request already carries at its own top level.
+        self.assertEqual(query_context["identity"], "")
+        self.assertEqual(query_context["session"], {})
+        self.assertEqual(query_context["capabilities"], [])
+
+        # The information itself is not lost - it is simply not
+        # duplicated: the top-level field already carries it.
         self.assertTrue(
             any(
-                entry.get("id") == "draft_institutional_note"
-                for entry in query_context["capabilities"]
+                entry.get("name") == "draft_institutional_note"
+                for entry in request["available_capabilities"]
             )
         )
+        self.assertTrue(request["system_policy"])
 
 
 if __name__ == "__main__":

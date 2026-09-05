@@ -516,6 +516,28 @@ class UriOrchestrator:
                 )
             )
 
+            # Milestone 12: query_context's identity/session/
+            # capabilities sections are, for THIS specific request,
+            # verbatim duplicates of fields the reasoning request
+            # already carries at its own top level - system_policy,
+            # session_context, available_capabilities. Live testing
+            # against real Ollama (qwen3:14b) showed this doubling the
+            # policy text alone (~9.5k characters, repeated) reliably
+            # made the model lose track of user_request entirely and
+            # answer with an invented, boilerplate "clarification
+            # needed" shape unrelated to the actual request - the real
+            # root cause behind the schema-mismatch symptom this
+            # milestone otherwise addresses via tolerant extraction.
+            # Blanking out the duplicated sections here removes pure
+            # noise the Brain already has through the other fields,
+            # without losing any information - only personalization
+            # and verified_facts in query_context are genuinely new for
+            # this call, so those two are kept.
+            query_context = dict(query_context)
+            query_context["identity"] = ""
+            query_context["session"] = {}
+            query_context["capabilities"] = []
+
             session_context = (
                 self._build_model_session_context(
                     session
@@ -572,6 +594,101 @@ class UriOrchestrator:
                     str(exc)
             }
 
+    # Milestone 12 (Real Brain Loop): a handful of generic, self-
+    # evidently identifier-shaped keys - not a task taxonomy, not a
+    # set of domain keywords. These say nothing about WHAT the Brain
+    # may decide, only recognize WHERE it commonly puts a capability
+    # identifier when it does not use the exact action.capability/
+    # workflow.steps[].capability path - see
+    # _recover_capability_mentions.
+    _TOLERANT_CAPABILITY_KEYS = frozenset(
+        {"capability", "capability_id", "tool", "tool_name"}
+    )
+
+    def _executable_capability_ids(self):
+        """The authoritative, currently-executable capability id set -
+        the single source every extraction path (strict or tolerant)
+        checks a proposed capability name against. Reused, not
+        reimplemented, from self.capability_registry (the same
+        instance ApprovalGate/approval-requirement lookups already use
+        elsewhere in this class). Never raises."""
+
+        try:
+            return {
+                descriptor.id
+                for descriptor in (
+                    self.capability_registry.list_capabilities()
+                )
+                if descriptor.is_executable
+            }
+        except Exception:
+            return set()
+
+    def _recover_capability_mentions(
+        self,
+        node,
+        executable_capability_ids,
+        found=None
+    ):
+        """Milestone 12 (Real Brain Loop): a shape-agnostic recovery
+        pass over an ALREADY-PARSED proposal object, for when the real
+        Brain named a real, registered capability but not at the exact
+        action.capability/workflow.steps[].capability path the strict
+        contract expects - e.g. {"proposed_workflow": [{"capability_id":
+        "..."}]} or {"proposed_actions": [{"capability": "...", ...}]}
+        instead of {"action": {"capability": "..."}} - both genuinely
+        observed from a real model in live testing. This is
+        deliberately NOT a new cognitive template, task taxonomy, or
+        keyword scorer: it does not care what the model names its own
+        wrapper structure, and does not look at intent/goal/reasoning
+        prose at all - it only ever recognizes a capability IDENTIFIER
+        under one of a handful of generic, self-evidently identifier-
+        shaped keys (_TOLERANT_CAPABILITY_KEYS), and only when that
+        exact value is independently confirmed against the
+        authoritative capability registry - the same check the strict
+        path already relies on. Nothing about what the Brain is
+        allowed to think, plan, or propose is constrained here; this
+        only widens what URI recognizes as a decision the Brain has
+        already made.
+
+        Returns capability-name strings in first-seen (pre-order,
+        depth-first) order, deduplicated. Never raises - any traversal
+        failure degrades to whatever was already found.
+        """
+
+        if found is None:
+            found = []
+
+        try:
+
+            if isinstance(node, dict):
+
+                for key, value in node.items():
+
+                    if (
+                        isinstance(value, str)
+                        and key in self._TOLERANT_CAPABILITY_KEYS
+                        and value in executable_capability_ids
+                        and value not in found
+                    ):
+                        found.append(value)
+
+                    self._recover_capability_mentions(
+                        value, executable_capability_ids, found
+                    )
+
+            elif isinstance(node, list):
+
+                for item in node:
+                    self._recover_capability_mentions(
+                        item, executable_capability_ids, found
+                    )
+
+        except Exception:
+            return found
+
+        return found
+
     def _model_proposed_capability(
         self,
         model_reasoning
@@ -589,9 +706,8 @@ class UriOrchestrator:
           see model_reasoning_gateway.py's own validation, unmodified
           here);
         - the proposal names a workflow instead of - or in addition to
-          - a single action (dynamic, multi-step Brain-proposed
-          workflows remain deferred to a later M11 phase; this phase
-          only promotes the single-capability path).
+          - a single action (a genuine, multi-capability workflow is
+          _model_proposed_workflow's concern, not this method's).
 
         Only a plain capability-name string ever crosses this
         boundary - never the model's proposed arguments/reason text,
@@ -600,6 +716,16 @@ class UriOrchestrator:
         supplies the real arguments (request_text=user_text) exactly
         as it always has for a CapabilityPlanner-selected tool - see
         ApprovalGate.execute_tool, unmodified.
+
+        Milestone 12 (Real Brain Loop): when the strict
+        action.capability path finds nothing, this falls back to
+        _recover_capability_mentions - promoted ONLY when it finds
+        EXACTLY ONE distinct, already-registered capability mentioned
+        anywhere in the proposal. Zero mentions means genuinely
+        nothing to use (unchanged fallback behaviour). Two or more are
+        deliberately left to _model_proposed_workflow, which treats
+        multiple mentions as an implied sequential workflow rather
+        than this method guessing which single one to use.
 
         Never raises: any unexpected shape degrades to None, the same
         as "no usable proposal," so a malformed result can never break
@@ -626,27 +752,36 @@ class UriOrchestrator:
 
             action = proposal.get("action")
 
-            if not isinstance(action, dict):
-                return None
+            if isinstance(action, dict):
 
-            capability = action.get("capability")
+                capability = action.get("capability")
 
-            if not isinstance(capability, str) or not capability.strip():
-                return None
+                if isinstance(capability, str) and capability.strip():
+                    return capability
 
-            return capability
+            mentions = self._recover_capability_mentions(
+                proposal, self._executable_capability_ids()
+            )
+
+            if len(mentions) == 1:
+                return mentions[0]
+
+            return None
 
         except Exception:
             return None
 
-    def _model_proposed_workflow(
+    def _strict_model_proposed_workflow(
         self,
         model_reasoning
     ):
         """Extracts a usable, registry-validated multi-step workflow
         proposal from _run_model_reasoning's result, or None when
         there is none to use - mirrors _model_proposed_capability for
-        the single-action case (Milestone 11 Phase 2).
+        the single-action case (Milestone 11 Phase 2). Unmodified since
+        Phase 2 - see _model_proposed_workflow, the public entry point,
+        for the Milestone 12 tolerant fallback layered on top of this
+        exact, unchanged strict path.
 
         Returns None (falls back to the deterministic WorkflowPlanner/
         WorkflowCapabilityRouter path - see process_user_input)
@@ -755,6 +890,78 @@ class UriOrchestrator:
 
             return {
                 "goal": goal,
+                "steps": normalized_steps,
+            }
+
+        except Exception:
+            return None
+
+    def _model_proposed_workflow(
+        self,
+        model_reasoning
+    ):
+        """Public entry point: tries _strict_model_proposed_workflow
+        (Phase 2, unmodified) first - the exact action.capability/
+        workflow.steps[] contract, still preferred whenever the Brain
+        actually uses it. When that finds nothing, falls back to
+        _recover_capability_mentions (Milestone 12, Real Brain Loop):
+        if the Brain named TWO OR MORE distinct, already-registered
+        capabilities anywhere in its response - just not in the exact
+        strict shape - this treats that as an implied sequential
+        workflow in the order they were written, each step depending
+        on the one before it. This is the most faithful, still
+        entirely generic reading of "the Brain listed these as steps
+        in this order" without guessing at any dependency structure it
+        did not actually state.
+
+        A single mention is deliberately left to
+        _model_proposed_capability (never duplicated here), preserving
+        the same mutual exclusivity the strict paths already have.
+
+        Never raises.
+        """
+
+        strict = self._strict_model_proposed_workflow(model_reasoning)
+
+        if strict is not None:
+            return strict
+
+        try:
+
+            if model_reasoning.get("status") != "reasoning_completed":
+                return None
+
+            result = model_reasoning.get("result", {})
+
+            if result.get("status") != "proposal_ready":
+                return None
+
+            proposal = result.get("proposal")
+
+            if not isinstance(proposal, dict):
+                return None
+
+            mentions = self._recover_capability_mentions(
+                proposal, self._executable_capability_ids()
+            )
+
+            if len(mentions) < 2:
+                return None
+
+            normalized_steps = [
+                {
+                    "step_id": f"step_{index + 1}",
+                    "capability": capability,
+                    "depends_on": (
+                        [f"step_{index}"] if index > 0 else []
+                    ),
+                    "requires_user_input": False,
+                }
+                for index, capability in enumerate(mentions)
+            ]
+
+            return {
+                "goal": "",
                 "steps": normalized_steps,
             }
 
@@ -1092,15 +1299,23 @@ class UriOrchestrator:
         user_text,
         attempt_history
     ):
-        """URI Correction Part 1: persists this turn's attempt history
-        so the Brain sees it on the NEXT turn if the user's following
-        message continues, accepts, or rejects this same goal - read-
-        once by process_user_input, which clears both fields
-        unconditionally at the start of every turn. Only called when
-        this turn's Brain re-evaluation did NOT end satisfied (see
-        _continue_brain_evaluation_loop) - a satisfied outcome clears
-        this instead (_clear_goal_attempt_history) since there is
-        nothing unresolved to carry forward.
+        """URI Correction Part 1 / M12 feedback loop: persists this
+        turn's attempt history so the Brain sees it on the NEXT turn if
+        the user's following message continues, accepts, or rejects
+        this same goal - read-once by process_user_input, which clears
+        both fields unconditionally at the start of every turn.
+
+        Called even when the Brain judged itself satisfied: the Brain
+        being satisfied is not the same as the USER accepting the
+        result - only the user has that authority. If the user's very
+        next message rejects or redirects, this carried history is
+        what lets the Brain evaluate that rejection against the real
+        result rather than starting from nothing. If the user's next
+        message is unrelated, the Brain's own goal-comparison (see
+        REASONING_SYSTEM_PROMPT's attempt_history rules) recognizes
+        that and treats the carried entries as inert history - URI does
+        not need to, and must not, decide for itself whether the user
+        accepted, rejected, or moved on.
 
         Bounded to the most recent _MAX_CARRIED_ATTEMPT_ENTRIES entries
         - this is a short memory aid for the immediately following
@@ -1116,26 +1331,6 @@ class UriOrchestrator:
             session.last_goal_attempt_history = list(
                 attempt_history[-self._MAX_CARRIED_ATTEMPT_ENTRIES:]
             )
-
-            self._persist_session(session_id)
-
-        except Exception:
-            return
-
-    def _clear_goal_attempt_history(
-        self,
-        session,
-        session_id
-    ):
-        """Counterpart to _carry_forward_goal_attempt_history: called
-        when the Brain judged itself satisfied, so a completed goal's
-        history is not carried into an unrelated future turn. Never
-        raises."""
-
-        try:
-
-            session.last_goal_text = None
-            session.last_goal_attempt_history = None
 
             self._persist_session(session_id)
 
@@ -1320,8 +1515,18 @@ class UriOrchestrator:
                     used_next_proposal=False,
                 )
 
-                self._clear_goal_attempt_history(
-                    session=session, session_id=session_id
+                # M12 feedback loop: the BRAIN being satisfied is not
+                # the same as the USER accepting the result - carry
+                # this turn's real result forward exactly as an
+                # unsatisfied turn would, so a rejecting or redirecting
+                # next message still reaches the Brain as evidence
+                # about what actually happened, not a fresh blank
+                # slate. See _carry_forward_goal_attempt_history.
+                self._carry_forward_goal_attempt_history(
+                    session=session,
+                    session_id=session_id,
+                    user_text=user_text,
+                    attempt_history=attempt_history,
                 )
 
                 response["brain_evaluation"] = {
