@@ -96,14 +96,26 @@ class HttpUriClient implements UriClient {
   void setBaseUrl(String baseUrl) => this.baseUrl = baseUrl;
 
   @override
-  Future<bool> checkConnection() async {
+  Future<ConnectionCheckResult> checkConnection({String? addressOverride}) async {
+    final target = addressOverride ?? baseUrl;
+
+    final Uri uri;
     try {
-      final response = await _http
-          .get(Uri.parse('$baseUrl/health'))
-          .timeout(const Duration(seconds: 8));
-      return response.statusCode == 200;
-    } catch (_) {
-      return false;
+      uri = Uri.parse('$target/health');
+    } catch (error) {
+      return ConnectionCheckResult.unreachable('Invalid server address: $error');
+    }
+
+    try {
+      final response = await _http.get(uri).timeout(const Duration(seconds: 8));
+      if (response.statusCode == 200) return const ConnectionCheckResult.reachable();
+      return ConnectionCheckResult.unreachable('URI backend returned HTTP ${response.statusCode}.');
+    } catch (error) {
+      // Never swallowed to a bare false — a cleartext-traffic block, a
+      // wrong/unreachable host, a timeout, and a refused connection all
+      // produce different messages here, so a real failure is
+      // diagnosable instead of collapsing into one generic result.
+      return ConnectionCheckResult.unreachable(error.toString());
     }
   }
 
@@ -178,8 +190,8 @@ class HttpUriClient implements UriClient {
   }
 
   @override
-  Future<UriTurn> ask(String text) async {
-    final id = 'turn-${DateTime.now().microsecondsSinceEpoch}';
+  Future<UriTurn> ask(String text, {String? turnId}) async {
+    final id = turnId ?? 'turn-${DateTime.now().microsecondsSinceEpoch}';
     final timestamp = DateTime.now();
 
     http.Response response;
@@ -338,7 +350,14 @@ class HttpUriClient implements UriClient {
       understanding: understanding,
       result: ActionResult(
         summary: summary,
-        detail: execution != null ? 'Tool: ${execution['tool'] ?? execution['status']}' : null,
+        // Only ever shown when a real tool was actually involved (e.g.
+        // a registered capability's dispatch) - a conversational,
+        // no-capability-required reply's execution has no "tool" key
+        // at all, and must not show a meaningless "Tool: success"/
+        // "Tool: null" line under a plain greeting.
+        detail: execution != null && execution['tool'] != null
+            ? 'Tool: ${execution['tool']}'
+            : null,
       ),
     );
   }

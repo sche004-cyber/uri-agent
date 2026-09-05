@@ -2324,11 +2324,13 @@ if __name__ == "__main__":
 
     print(
         "Open http://127.0.0.1:8000 "
-        "in your browser."
+        "in your browser, or "
+        "http://<this PC's LAN IP>:8000 "
+        "from another device on the same network."
     )
 
     server = ThreadingHTTPServer(
-        ("127.0.0.1", 8000),
+        ("0.0.0.0", 8000),
         UriHandler,
     )
 

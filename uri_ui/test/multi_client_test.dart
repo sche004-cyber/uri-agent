@@ -75,28 +75,34 @@ void main() {
       expect(requestedUris.last.toString(), 'http://192.168.1.23:8000/health');
     });
 
-    test('checkConnection returns true for a reachable backend', () async {
+    test('checkConnection reports reachable with no detail for a healthy backend', () async {
       final client = HttpUriClient(
         httpClient: MockClient((request) async => _json({'status': 'ok'})),
       );
 
-      expect(await client.checkConnection(), isTrue);
+      final result = await client.checkConnection();
+      expect(result.reachable, isTrue);
+      expect(result.detail, isNull);
     });
 
-    test('checkConnection returns false rather than throwing on a network error', () async {
+    test('checkConnection surfaces the underlying exception message rather than swallowing it', () async {
       final client = HttpUriClient(
-        httpClient: MockClient((request) async => throw Exception('unreachable')),
+        httpClient: MockClient((request) async => throw Exception('Connection refused')),
       );
 
-      expect(await client.checkConnection(), isFalse);
+      final result = await client.checkConnection();
+      expect(result.reachable, isFalse);
+      expect(result.detail, contains('Connection refused'));
     });
 
-    test('checkConnection returns false for a non-200 response', () async {
+    test('checkConnection reports the HTTP status for a non-200 response', () async {
       final client = HttpUriClient(
         httpClient: MockClient((request) async => http.Response('error', 500)),
       );
 
-      expect(await client.checkConnection(), isFalse);
+      final result = await client.checkConnection();
+      expect(result.reachable, isFalse);
+      expect(result.detail, contains('500'));
     });
 
     test('a disconnect followed by a reconnect recovers cleanly on the same client', () async {
@@ -108,10 +114,33 @@ void main() {
         }),
       );
 
-      expect(await client.checkConnection(), isFalse);
+      final first = await client.checkConnection();
+      expect(first.reachable, isFalse);
+      expect(first.detail, contains('network down'));
 
       shouldFail = false;
-      expect(await client.checkConnection(), isTrue);
+      final second = await client.checkConnection();
+      expect(second.reachable, isTrue);
+      expect(second.detail, isNull);
+    });
+
+    test('checkConnection tests addressOverride instead of baseUrl when given, without changing baseUrl', () async {
+      final requestedUris = <Uri>[];
+      final client = HttpUriClient(
+        baseUrl: 'http://localhost:8000',
+        httpClient: MockClient((request) async {
+          requestedUris.add(request.url);
+          return _json({'status': 'ok'});
+        }),
+      );
+
+      final result = await client.checkConnection(addressOverride: 'http://192.168.1.44:8000');
+
+      expect(result.reachable, isTrue);
+      expect(requestedUris.single.toString(), 'http://192.168.1.44:8000/health');
+      // The override is a one-off test - it must never silently repoint
+      // the client the way setBaseUrl does.
+      expect(client.baseUrl, 'http://localhost:8000');
     });
   });
 
@@ -151,7 +180,8 @@ void main() {
     test('is always reachable and accepts setBaseUrl without error', () async {
       final client = MockUriClient();
 
-      expect(await client.checkConnection(), isTrue);
+      final result = await client.checkConnection();
+      expect(result.reachable, isTrue);
       client.setBaseUrl('anything');
       expect(client.baseUrl, 'anything');
     });

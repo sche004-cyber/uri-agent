@@ -85,9 +85,9 @@ class MockUriClient implements UriClient {
   void setBaseUrl(String baseUrl) => _baseUrl = baseUrl;
 
   @override
-  Future<bool> checkConnection() async {
+  Future<ConnectionCheckResult> checkConnection({String? addressOverride}) async {
     await _latency(const Duration(milliseconds: 80));
-    return true;
+    return const ConnectionCheckResult.reachable();
   }
 
   void _seedConnections() {
@@ -227,9 +227,9 @@ class MockUriClient implements UriClient {
   // ---------------------------------------------------------------
 
   @override
-  Future<UriTurn> ask(String text) async {
+  Future<UriTurn> ask(String text, {String? turnId}) async {
     await _latency();
-    final id = _nextId('turn');
+    final id = turnId ?? _nextId('turn');
     final analysis = _analyze(text);
 
     final TurnStage stage;
