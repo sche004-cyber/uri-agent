@@ -23,6 +23,8 @@ uri_workspace/growth_ledger.json
 uri_workspace/approvals.json
 uri_workspace/users/
 uri_workspace/user_accounts.json
+# M14 Part 1: this PC's persistent-server log output, not source.
+uri_workspace/logs/
 uri_workspace/skill_memory.json
 uri_workspace/uri_memory.json
 uri_workspace/friction_log.json
