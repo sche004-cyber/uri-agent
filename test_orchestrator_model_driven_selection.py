@@ -259,15 +259,23 @@ class InvalidProposalFallsBackTests(_IsolatedOrchestratorCase):
             [call[0] for call in dispatcher.calls],
         )
 
-    def test_workflow_proposal_is_not_used_for_this_phase(self):
-        # Phase 1 only promotes single-action proposals - a workflow
-        # proposal (multi-step) must not be used as the direct-
-        # capability plan, even though ModelReasoningGateway itself
-        # already validates it.
+    def test_workflow_proposal_is_used_via_the_workflow_path(self):
+        # Historical note: Phase 1 (single-action promotion only)
+        # deliberately did not use a workflow-shaped proposal here -
+        # Milestone 11 Phase 2 (generic Brain-composed workflow
+        # execution) and URI Correction Part 1 (a fresh Brain proposal,
+        # single action or workflow, takes priority over
+        # CapabilityPlanner/learned_skill) together mean a valid
+        # workflow proposal is now genuinely used, just via the
+        # planning_required/workflow path rather than the direct
+        # capability_selected one - see
+        # test_orchestrator_model_driven_workflow.py for the dedicated
+        # workflow-execution test suite this exercises the same way.
         gateway = ModelReasoningGateway(
             model_callable=_fake_model_callable(
                 {
                     "workflow": {
+                        "goal": "draft a note",
                         "steps": [
                             {
                                 "step_id": "step_1",
@@ -281,6 +289,8 @@ class InvalidProposalFallsBackTests(_IsolatedOrchestratorCase):
         )
         orchestrator = self._orchestrator(model_reasoning_gateway=gateway)
 
+        # Even though CapabilityPlanner would also confidently match
+        # this request, the Brain's own valid workflow proposal wins.
         orchestrator.capability_planner.plan = (
             lambda semantic_result: {
                 "status": "capability_selected",
@@ -295,9 +305,12 @@ class InvalidProposalFallsBackTests(_IsolatedOrchestratorCase):
             session_id="s1", user_text="draft a note"
         )
 
-        self.assertNotEqual(result["plan"].get("source"), "model_reasoning")
+        self.assertEqual(result["plan"].get("source"), "model_reasoning")
+        self.assertEqual(result["plan"].get("status"), "planning_required")
+        self.assertEqual(result["execution"]["status"], "success")
+        self.assertEqual(len(dispatcher.calls), 1)
         self.assertEqual(
-            result["execution"]["tool"], "draft_institutional_note"
+            dispatcher.calls[0][0], "draft_institutional_note"
         )
 
 

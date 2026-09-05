@@ -66,6 +66,26 @@ class SessionState:
     # This is intentionally transient and is NOT serialized.
     active_workflow_recovered: bool = False
 
+    # ---------------------------------------------
+    # CARRIED BRAIN ATTEMPT HISTORY (URI Correction Part 1)
+    #
+    # Read-once: the goal text and compact attempt/result history from
+    # the immediately preceding turn's Brain re-evaluation loop
+    # (orchestrator.py's _continue_brain_evaluation_loop), kept ONLY
+    # when that turn did not end with the Brain judging itself
+    # satisfied - i.e. exactly the case where the user's next message
+    # (acceptance, rejection, or redirection) is real evidence the
+    # Brain has not yet seen. orchestrator.py reads and clears both
+    # fields at the start of the next turn's reasoning call; they are
+    # never accumulated indefinitely and never independently
+    # interpreted by URI as "the user rejected this" - that judgment,
+    # like every other judgment of intent, belongs to the Brain.
+    # ---------------------------------------------
+
+    last_goal_text: Optional[str] = None
+
+    last_goal_attempt_history: Optional[List[dict]] = None
+
 
 class SessionManager:
     """
@@ -281,6 +301,12 @@ class SessionManager:
 
             "active_workflow_question":
                 session.active_workflow_question,
+
+            "last_goal_text":
+                getattr(session, "last_goal_text", None),
+
+            "last_goal_attempt_history":
+                getattr(session, "last_goal_attempt_history", None),
         }
 
     def _serialize_fact_collection(
@@ -600,6 +626,18 @@ class SessionManager:
             session.active_workflow_question = (
                 data.get(
                     "active_workflow_question"
+                )
+            )
+
+            session.last_goal_text = (
+                data.get(
+                    "last_goal_text"
+                )
+            )
+
+            session.last_goal_attempt_history = (
+                data.get(
+                    "last_goal_attempt_history"
                 )
             )
 

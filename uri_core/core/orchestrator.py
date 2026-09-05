@@ -68,8 +68,17 @@ class UriOrchestrator:
         approval_gate=None,
         enable_response_narrative=False,
         response_drafting_provider=None,
-        session_manager=None
+        session_manager=None,
+        max_brain_iterations=3
     ):
+
+        # Milestone 11 Part 2 (Brain re-evaluation loop): a safety cap
+        # on how many execute-then-evaluate rounds a single turn may
+        # run, never a limitation on what the Brain may propose - see
+        # _continue_brain_evaluation_loop. Overridable per instance
+        # (mainly for tests) so it can be set low to deterministically
+        # exercise the cap without an unbounded fixture.
+        self.max_brain_iterations = max_brain_iterations
 
         self.prompt_builder = PromptBuilder()
 
@@ -432,7 +441,9 @@ class UriOrchestrator:
         user_text,
         session,
         session_id,
-        personalization_context
+        personalization_context,
+        attempt_history=None,
+        learned_skill=None
     ):
         """Runs ModelReasoningGateway.reason() and returns its result
         wrapped with a status of its own (see below). Despite the
@@ -458,6 +469,27 @@ class UriOrchestrator:
         ModelReasoningGateway.reason()).
         "reasoning_failed" - the gateway raised (unreachable model,
         malformed response, etc.).
+
+        Milestone 11 Part 2 (Brain re-evaluation loop): attempt_history
+        is optional and additive - omitted (None) for the first call in
+        a turn, exactly as before. When _continue_brain_evaluation_loop
+        calls this a second (or third) time within the same turn, it
+        passes the compact record of what has already been tried and
+        what actually happened, so the model can evaluate its own
+        prior action's real result rather than being asked to propose
+        blind each time. As of URI Correction Part 1, attempt_history
+        may also carry forward the immediately preceding turn's
+        history when the Brain was not satisfied then either (see
+        process_user_input) - the same field, just a longer memory.
+
+        URI Correction Part 1: learned_skill, when given, is folded
+        into session_context as "learned_skill_reference" - advisory
+        only. It is never used here to decide anything; it exists so
+        the Brain can see "a similar request was handled this way
+        before" and itself decide whether that is actually relevant to
+        THIS request - see model_reasoning_adapter.py's prompt. Never
+        used on the follow-up evaluation calls within
+        _continue_brain_evaluation_loop, only on a turn's first call.
         """
 
         if not self.enable_model_reasoning_shadow:
@@ -484,20 +516,41 @@ class UriOrchestrator:
                 )
             )
 
+            session_context = (
+                self._build_model_session_context(
+                    session
+                )
+            )
+
+            if isinstance(learned_skill, dict):
+
+                # A plain, bounded reference - never the raw
+                # skill_memory record (which also carries an internal
+                # "workflow" step-name list irrelevant to the Brain).
+                # The Brain decides whether this is relevant; nothing
+                # here treats it as a decision.
+                session_context = dict(session_context)
+
+                session_context["learned_skill_reference"] = {
+                    "tool_name": learned_skill.get("tool_name"),
+                    "task_type": learned_skill.get("task_type"),
+                    "domain": learned_skill.get("domain"),
+                    "success_count": learned_skill.get(
+                        "success_count", 0
+                    ),
+                }
+
             result = (
                 self.model_reasoning_gateway.reason(
                     user_text=user_text,
-                    session_context=(
-                        self._build_model_session_context(
-                            session
-                        )
-                    ),
+                    session_context=session_context,
                     evidence_context=(
                         self._build_model_evidence_context(
                             session
                         )
                     ),
-                    query_context=query_context
+                    query_context=query_context,
+                    attempt_history=attempt_history
                 )
             )
 
@@ -708,6 +761,69 @@ class UriOrchestrator:
         except Exception:
             return None
 
+    def _model_evaluation(
+        self,
+        model_reasoning
+    ):
+        """Extracts a usable {"satisfied": bool, "reason": Optional[str]}
+        evaluation from _run_model_reasoning's result, or None when
+        there is none to use (Milestone 11 Part 2 - Brain re-evaluation
+        loop).
+
+        Returns None whenever:
+        - model reasoning is disabled, failed to run, or not
+          configured;
+        - ModelReasoningGateway.validate_proposal() rejected the
+          proposal;
+        - the proposal has no "evaluation" object, or
+          evaluation.satisfied is not a plain boolean (e.g. this was
+          an initial proposal with nothing to evaluate yet, or the
+          model responded with something malformed).
+
+        A None return always means "cannot get a structured judgment
+        from the Brain right now" - callers must stop the evaluation
+        loop safely rather than guess, exactly like
+        _model_proposed_capability/_model_proposed_workflow returning
+        None means "nothing usable to execute."
+
+        Never raises.
+        """
+
+        try:
+
+            if model_reasoning.get("status") != "reasoning_completed":
+                return None
+
+            result = model_reasoning.get("result", {})
+
+            if result.get("status") != "proposal_ready":
+                return None
+
+            proposal = result.get("proposal")
+
+            if not isinstance(proposal, dict):
+                return None
+
+            evaluation = proposal.get("evaluation")
+
+            if not isinstance(evaluation, dict):
+                return None
+
+            satisfied = evaluation.get("satisfied")
+
+            if not isinstance(satisfied, bool):
+                return None
+
+            reason = evaluation.get("reason")
+
+            return {
+                "satisfied": satisfied,
+                "reason": reason if isinstance(reason, str) else None,
+            }
+
+        except Exception:
+            return None
+
     def _build_model_workflow(
         self,
         model_workflow_proposal
@@ -855,6 +971,488 @@ class UriOrchestrator:
 
         except Exception:
             return
+
+    # ==========================================================
+    # BRAIN RE-EVALUATION LOOP (Milestone 11 Part 2)
+    #
+    # user goal -> Brain proposes -> URI validates/executes ->
+    # real result -> Brain re-evaluates -> satisfied, or a new
+    # proposal -> URI validates/executes -> ... -> goal achieved
+    # (or the Brain honestly has nothing further to try, or the
+    # safety cap is reached).
+    #
+    # URI never decides on its own that a technically-successful
+    # execution means the user's goal was achieved, and URI never
+    # repeats an action on its own initiative - every additional
+    # attempt here comes from a fresh, independently-validated Brain
+    # proposal (_model_proposed_capability/_model_proposed_workflow,
+    # both unmodified), executed only through the exact same
+    # ApprovalGate/WorkflowExecutor boundary as the first attempt.
+    # This section only ever runs for a plan whose "source" is
+    # "model_reasoning" - a learned skill or a CapabilityPlanner/
+    # WorkflowPlanner fallback plan is never re-evaluated this way,
+    # preserving their existing, unmodified behaviour exactly.
+    # ==========================================================
+
+    def _is_paused_execution(
+        self,
+        execution
+    ):
+        """True when an execution result is waiting on a human
+        decision (approval or more information) rather than actually
+        finished (success/failure/blocked). A paused result must never
+        be sent to the Brain for evaluation - the user hasn't acted
+        yet, so there is nothing real to evaluate."""
+
+        if not isinstance(execution, dict):
+            return False
+
+        return execution.get("status") in (
+            "awaiting_approval",
+            "waiting_for_input",
+        )
+
+    def _compact_attempt_result(
+        self,
+        execution,
+        response_data
+    ):
+        """Builds one bounded, JSON-safe {"status", "data"} summary of
+        an attempt's real outcome for attempt_history - the actual
+        result data (not just a bare status word) is what lets the
+        Brain judge whether the goal was really satisfied, e.g.
+        recognising a tool's own "local_fallback_cache"/mock-data
+        marker rather than presenting it as a real answer. Bounded the
+        same way response_drafting.py already bounds known_gaps text,
+        so one large tool result can never blow up the next reasoning
+        request. Never raises."""
+
+        status = (
+            execution.get("status")
+            if isinstance(execution, dict)
+            else None
+        )
+
+        try:
+            data_text = json.dumps(
+                response_data,
+                default=str,
+                ensure_ascii=False,
+            )
+        except Exception:
+            data_text = str(response_data)
+
+        if len(data_text) > 800:
+            data_text = data_text[:800].rstrip() + "...(truncated)"
+
+        return {
+            "status": status,
+            "data": data_text,
+        }
+
+    def _record_brain_reevaluation_audit(
+        self,
+        session_id,
+        iteration,
+        satisfied,
+        used_next_proposal,
+        stop_reason=None
+    ):
+        """Honest bookkeeping for one round of the re-evaluation loop -
+        mirrors _record_model_reasoning_audit/_record_model_workflow_audit's
+        existing discipline. Never raises."""
+
+        try:
+
+            self.audit_trail.record(
+                event_type="brain_reevaluation",
+                status="satisfied" if satisfied else "continuing",
+                session_id=session_id,
+                metadata={
+                    "iteration": iteration,
+                    "satisfied": bool(satisfied),
+                    "used_next_proposal": bool(used_next_proposal),
+                    "stop_reason": stop_reason,
+                },
+            )
+
+        except Exception:
+            return
+
+    # Bounds how much attempt history carries forward into the next
+    # turn - the same "small, bounded reference, never an unbounded
+    # dump" discipline personalization_context.py/query_context.py
+    # already apply elsewhere in this codebase.
+    _MAX_CARRIED_ATTEMPT_ENTRIES = 3
+
+    def _carry_forward_goal_attempt_history(
+        self,
+        session,
+        session_id,
+        user_text,
+        attempt_history
+    ):
+        """URI Correction Part 1: persists this turn's attempt history
+        so the Brain sees it on the NEXT turn if the user's following
+        message continues, accepts, or rejects this same goal - read-
+        once by process_user_input, which clears both fields
+        unconditionally at the start of every turn. Only called when
+        this turn's Brain re-evaluation did NOT end satisfied (see
+        _continue_brain_evaluation_loop) - a satisfied outcome clears
+        this instead (_clear_goal_attempt_history) since there is
+        nothing unresolved to carry forward.
+
+        Bounded to the most recent _MAX_CARRIED_ATTEMPT_ENTRIES entries
+        - this is a short memory aid for the immediately following
+        turn, never an accumulating log.
+
+        Never raises - a failure to persist this must never break the
+        live request."""
+
+        try:
+
+            session.last_goal_text = user_text
+
+            session.last_goal_attempt_history = list(
+                attempt_history[-self._MAX_CARRIED_ATTEMPT_ENTRIES:]
+            )
+
+            self._persist_session(session_id)
+
+        except Exception:
+            return
+
+    def _clear_goal_attempt_history(
+        self,
+        session,
+        session_id
+    ):
+        """Counterpart to _carry_forward_goal_attempt_history: called
+        when the Brain judged itself satisfied, so a completed goal's
+        history is not carried into an unrelated future turn. Never
+        raises."""
+
+        try:
+
+            session.last_goal_text = None
+            session.last_goal_attempt_history = None
+
+            self._persist_session(session_id)
+
+        except Exception:
+            return
+
+    def _execute_brain_proposal(
+        self,
+        session,
+        session_id,
+        user_text,
+        next_capability,
+        next_workflow
+    ):
+        """Executes exactly one Brain-proposed next action (either a
+        single capability or a workflow, never both - the same
+        mutual exclusivity _model_proposed_capability/
+        _model_proposed_workflow already guarantee) through the exact
+        same boundaries the first attempt in a turn already uses:
+        ApprovalGate.execute_tool for a single capability,
+        _create_workflow_executor/WorkflowExecutor.execute for a
+        workflow. Returns (execution, response_data, workflow_dict_or_None)
+        so the caller can update the turn's response in place. Never
+        calls self.dispatcher directly."""
+
+        if next_capability is not None:
+
+            dispatch_result = self.approval_gate.execute_tool(
+                next_capability,
+                session_id=session_id,
+                request_text=user_text,
+            )
+
+            execution = {
+                "status": dispatch_result.get("status"),
+                "tool": next_capability,
+            }
+
+            response_data = dispatch_result.get("data", dispatch_result)
+
+            return execution, response_data, None
+
+        workflow = self._build_model_workflow(next_workflow)
+
+        workflow_executor = self._create_workflow_executor(
+            session,
+            session_id=session_id,
+            workflow=workflow,
+        )
+
+        execution = workflow_executor.execute(workflow)
+
+        execution_status = execution.get("status")
+
+        if execution_status == "success":
+
+            response_data = {
+                "message": "URI completed the Brain-composed workflow.",
+                "workflow": execution.get("workflow"),
+                "execution_log": execution.get("execution_log"),
+            }
+
+        elif execution_status == "waiting_for_input":
+
+            self._save_paused_workflow(session, execution)
+
+            response_data = {
+                "message": session.active_workflow_question,
+                "workflow": session.active_workflow,
+                "required_information":
+                    session.active_workflow_required_field,
+            }
+
+        else:
+
+            response_data = {
+                "message":
+                    "URI could not complete the Brain-composed "
+                    "workflow.",
+                "workflow": execution.get("workflow"),
+                "error": execution.get("error"),
+            }
+
+        return execution, response_data, workflow
+
+    def _continue_brain_evaluation_loop(
+        self,
+        user_text,
+        session,
+        session_id,
+        personalization_context,
+        response,
+        first_proposal_description
+    ):
+        """After a Brain-directed execution (response["execution"]/
+        response["response"] already reflect what just happened),
+        sends the Brain the original goal, what it proposed, and the
+        real result, and asks it to evaluate - not because URI decided
+        execution succeeding means the goal is achieved, but because
+        URI never decides that on its own (see module-level comment
+        above). Mutates response in place with the outcome of however
+        many further rounds actually happen (0 or more, bounded by
+        self.max_brain_iterations) and always leaves it in the same
+        shape process_user_input's existing branches already produce -
+        callers do not need to change their own return/persist logic.
+
+        No-ops immediately (no extra call to the Brain at all) when
+        the just-completed execution is still paused on a human
+        decision (_is_paused_execution) - an approval-required or
+        needs-more-information result is never sent for evaluation
+        until the human has actually acted.
+
+        Never repeats an action on its own: every additional execution
+        here comes from a fresh next_capability/next_workflow the
+        Brain itself proposed in its evaluation response, re-validated
+        exactly like an initial proposal - if the Brain proposes
+        nothing further, or reasoning fails/is unavailable, or the
+        iteration cap is reached, the loop stops and reports which of
+        those honestly happened, using whatever the LAST real
+        execution already produced.
+        """
+
+        if self._is_paused_execution(response.get("execution")):
+            return
+
+        attempt_history = [
+            {
+                "goal": user_text,
+                "proposal": first_proposal_description,
+                "result": self._compact_attempt_result(
+                    response.get("execution"),
+                    response.get("response"),
+                ),
+            }
+        ]
+
+        iteration = 1
+
+        while iteration < self.max_brain_iterations:
+
+            model_reasoning = self._run_model_reasoning(
+                user_text=user_text,
+                session=session,
+                session_id=session_id,
+                personalization_context=personalization_context,
+                attempt_history=attempt_history,
+            )
+
+            evaluation = self._model_evaluation(model_reasoning)
+
+            if evaluation is None:
+
+                self._record_brain_reevaluation_audit(
+                    session_id=session_id,
+                    iteration=iteration,
+                    satisfied=False,
+                    used_next_proposal=False,
+                    stop_reason="evaluation_unavailable",
+                )
+
+                self._carry_forward_goal_attempt_history(
+                    session=session,
+                    session_id=session_id,
+                    user_text=user_text,
+                    attempt_history=attempt_history,
+                )
+
+                response["brain_evaluation"] = {
+                    "satisfied": False,
+                    "iterations": iteration,
+                    "status": "evaluation_unavailable",
+                }
+
+                return
+
+            if evaluation["satisfied"]:
+
+                self._record_brain_reevaluation_audit(
+                    session_id=session_id,
+                    iteration=iteration,
+                    satisfied=True,
+                    used_next_proposal=False,
+                )
+
+                self._clear_goal_attempt_history(
+                    session=session, session_id=session_id
+                )
+
+                response["brain_evaluation"] = {
+                    "satisfied": True,
+                    "reason": evaluation["reason"],
+                    "iterations": iteration,
+                }
+
+                return
+
+            next_capability = self._model_proposed_capability(
+                model_reasoning
+            )
+
+            next_workflow = self._model_proposed_workflow(
+                model_reasoning
+            )
+
+            if next_capability is None and next_workflow is None:
+
+                self._record_brain_reevaluation_audit(
+                    session_id=session_id,
+                    iteration=iteration,
+                    satisfied=False,
+                    used_next_proposal=False,
+                    stop_reason="no_further_proposal",
+                )
+
+                self._carry_forward_goal_attempt_history(
+                    session=session,
+                    session_id=session_id,
+                    user_text=user_text,
+                    attempt_history=attempt_history,
+                )
+
+                response["brain_evaluation"] = {
+                    "satisfied": False,
+                    "reason": evaluation["reason"],
+                    "iterations": iteration,
+                    "status": "no_further_proposal",
+                }
+
+                return
+
+            iteration += 1
+
+            execution, response_data, workflow = (
+                self._execute_brain_proposal(
+                    session=session,
+                    session_id=session_id,
+                    user_text=user_text,
+                    next_capability=next_capability,
+                    next_workflow=next_workflow,
+                )
+            )
+
+            response["execution"] = execution
+            response["response"] = response_data
+
+            if workflow is not None:
+
+                response["workflow"] = workflow
+
+                response["plan"] = {
+                    "status": "planning_required",
+                    "tool_name": None,
+                    "reason": evaluation["reason"],
+                    "source": "model_reasoning",
+                }
+
+                proposal_description = {
+                    "type": "workflow",
+                    "steps": [
+                        step["capability"]
+                        for step in workflow.get("steps", [])
+                    ],
+                }
+
+                if execution.get("status") == "success":
+                    self._clear_active_workflow(session)
+
+            else:
+
+                response.pop("workflow", None)
+
+                response["plan"] = {
+                    "status": "capability_selected",
+                    "tool_name": next_capability,
+                    "reason": evaluation["reason"],
+                    "source": "model_reasoning",
+                }
+
+                proposal_description = {
+                    "type": "capability",
+                    "capability": next_capability,
+                }
+
+            attempt_history.append(
+                {
+                    "goal": user_text,
+                    "proposal": proposal_description,
+                    "result": self._compact_attempt_result(
+                        execution, response_data
+                    ),
+                }
+            )
+
+            self._record_brain_reevaluation_audit(
+                session_id=session_id,
+                iteration=iteration,
+                satisfied=False,
+                used_next_proposal=True,
+            )
+
+            self._persist_session(session_id)
+
+            if self._is_paused_execution(execution):
+                return
+
+        self._carry_forward_goal_attempt_history(
+            session=session,
+            session_id=session_id,
+            user_text=user_text,
+            attempt_history=attempt_history,
+        )
+
+        response["brain_evaluation"] = {
+            "satisfied": False,
+            "iterations": iteration,
+            "status": "iteration_limit_reached",
+        }
 
     # ==========================================================
     # UNIFIED QUERY CONTEXT (Milestone 10A)
@@ -2028,6 +2626,27 @@ class UriOrchestrator:
                 )
             )
 
+            learned_skill = (
+                self.skill_memory.find_matching_skill(
+                    semantic_result
+                )
+            )
+
+            # URI Correction Part 1: read-once carry-forward of the
+            # immediately preceding turn's Brain attempt history (see
+            # state.py's SessionState.last_goal_text/
+            # last_goal_attempt_history, and
+            # _continue_brain_evaluation_loop below, which is the only
+            # writer). Cleared here unconditionally - if this turn
+            # doesn't end up Brain-driven either, that history simply
+            # isn't carried further rather than growing without bound.
+            carried_attempt_history = (
+                session.last_goal_attempt_history
+            )
+
+            session.last_goal_attempt_history = None
+            session.last_goal_text = None
+
             # --------------------------------------------------
             # Run model reasoning (Milestone 11 Phase 1).
             #
@@ -2045,7 +2664,9 @@ class UriOrchestrator:
                     user_text=user_text,
                     session=session,
                     session_id=session_id,
-                    personalization_context=personalization_context
+                    personalization_context=personalization_context,
+                    attempt_history=carried_attempt_history,
+                    learned_skill=learned_skill
                 )
             )
 
@@ -2061,12 +2682,6 @@ class UriOrchestrator:
             skill_router_shadow = (
                 self._run_skill_router_shadow(
                     user_text=user_text
-                )
-            )
-
-            learned_skill = (
-                self.skill_memory.find_matching_skill(
-                    semantic_result
                 )
             )
 
@@ -2099,6 +2714,19 @@ class UriOrchestrator:
                 )
             )
 
+            # URI Correction Part 1: a fresh Brain workflow proposal
+            # also takes priority over a learned skill, exactly like a
+            # fresh single-action proposal does - checked here (cheap,
+            # pure, re-checked again inside the planning_required
+            # branch below where the actual workflow is built) purely
+            # to decide priority, not to build anything yet.
+            model_workflow_proposal_present = (
+                self._model_proposed_workflow(
+                    model_reasoning
+                )
+                is not None
+            )
+
             self._record_skill_router_audit(
                 session_id=session_id,
                 skill_router_shadow=skill_router_shadow,
@@ -2110,8 +2738,8 @@ class UriOrchestrator:
                 model_reasoning_shadow=model_reasoning,
                 comparison_tool_name=comparison_tool_name,
                 used_as_plan=(
-                    not learned_skill
-                    and model_capability_proposal is not None
+                    model_capability_proposal is not None
+                    or model_workflow_proposal_present
                 )
             )
 
@@ -2150,36 +2778,24 @@ class UriOrchestrator:
             # --------------------------------------------------
             # Capability selection.
             #
-            # A learned skill only ever accelerates/confirms WHICH
-            # capability to use - it must never substitute for
-            # actually invoking it. "Learned" and "executed
-            # successfully now" are not the same thing: reusing the
-            # exact same capability_selected branch below (approval
-            # gate, dispatcher, narrative, re-learning on success) is
-            # what guarantees a learned skill is always genuinely
-            # re-executed, and always still goes through approval if
-            # the capability requires it, rather than short-circuiting
-            # past both. A stale/renamed learned tool_name correctly
+            # URI Correction Part 1: a learned skill is REFERENCE ONLY
+            # (surfaced to the Brain as "learned_skill_reference" in
+            # _run_model_reasoning's session_context above) - it must
+            # never automatically override a fresh Brain proposal for
+            # THIS request. A fresh, validated Brain proposal (single
+            # action or workflow) therefore takes priority; a learned
+            # skill remains a genuine, still fully re-executed and
+            # re-authorized fallback whenever the Brain has nothing
+            # usable to offer (disabled, unavailable, or its proposal
+            # didn't validate) - never short-circuited past approval
+            # either way. A stale/renamed learned tool_name correctly
             # surfaces the dispatcher's real "URI lacks the
             # capability" error instead of a false "recognized"
-            # message, for the same reason.
+            # message, for the same reason as before.
             #
-            # IMPORTANT (Milestone 11 Phase 1):
-            # A learned skill still takes priority over a fresh model
-            # proposal - it represents a prior, already-successful
-            # resolution for this exact task type/domain, and is
-            # itself always genuinely re-executed and re-authorized
-            # below, never short-circuited. Below that, a validated
-            # model proposal (model_capability_proposal - a registered
-            # capability name that already passed
-            # ModelReasoningGateway.validate_proposal()) IS now used as
-            # the real plan for this single-capability path, in place
-            # of CapabilityPlanner's keyword-scored pick.
-            # CapabilityPlanner.plan() remains the deterministic
-            # fallback whenever there is no learned skill and no
-            # usable model proposal (model not configured/disabled,
-            # proposal rejected as invalid/unregistered, or the model
-            # proposed a workflow instead of a single action).
+            # CapabilityPlanner.plan() remains the last, purely
+            # deterministic fallback whenever there is no learned
+            # skill and no usable model proposal either.
             #
             # In every branch, only a plain capability-name string
             # crosses into "plan" - the model's proposed arguments/
@@ -2188,36 +2804,10 @@ class UriOrchestrator:
             # (ApprovalGate.execute_tool, unmodified): approval
             # requirements, execution, and persistence are decided
             # exactly as they always have been, regardless of which of
-            # these three sources chose the tool_name.
+            # these sources chose the tool_name.
             # --------------------------------------------------
 
-            if learned_skill:
-
-                plan = {
-                    "status":
-                        "capability_selected",
-
-                    "tool_name":
-                        learned_skill.get(
-                            "tool_name"
-                        ),
-
-                    "reason":
-                        "Matched a previously learned workflow for "
-                        "this task type/domain; still executed and "
-                        "authorized like a fresh selection.",
-
-                    "source":
-                        "skill_memory",
-
-                    "success_count":
-                        learned_skill.get(
-                            "success_count",
-                            0
-                        )
-                }
-
-            elif model_capability_proposal is not None:
+            if model_capability_proposal is not None:
 
                 plan = {
                     "status":
@@ -2234,6 +2824,53 @@ class UriOrchestrator:
 
                     "source":
                         "model_reasoning"
+                }
+
+            elif model_workflow_proposal_present:
+
+                # Defers to the existing, unmodified workflow branch
+                # below (which independently re-derives and re-
+                # validates the actual workflow via
+                # _model_proposed_workflow) - this only ensures a
+                # fresh Brain workflow proposal is not preempted by a
+                # learned skill either, exactly like a single-action
+                # proposal.
+                plan = {
+                    "status": "planning_required",
+                    "tool_name": None,
+                    "reason": (
+                        "Brain proposed a multi-step workflow for "
+                        "this request."
+                    ),
+                    "source": "model_reasoning",
+                }
+
+            elif learned_skill:
+
+                plan = {
+                    "status":
+                        "capability_selected",
+
+                    "tool_name":
+                        learned_skill.get(
+                            "tool_name"
+                        ),
+
+                    "reason":
+                        "No fresh Brain proposal was usable for this "
+                        "request; matched a previously learned "
+                        "workflow for this task type/domain instead - "
+                        "still executed and authorized like a fresh "
+                        "selection.",
+
+                    "source":
+                        "skill_memory",
+
+                    "success_count":
+                        learned_skill.get(
+                            "success_count",
+                            0
+                        )
                 }
 
             else:
@@ -2308,6 +2945,25 @@ class UriOrchestrator:
 
                         tool_name=
                             tool_name
+                    )
+
+                # Milestone 11 Part 2: only a Brain-proposed plan gets
+                # re-evaluated - a learned skill or a CapabilityPlanner
+                # selection is untouched, exactly as before. No-ops
+                # immediately if this result is still awaiting
+                # approval.
+                if plan.get("source") == "model_reasoning":
+
+                    self._continue_brain_evaluation_loop(
+                        user_text=user_text,
+                        session=session,
+                        session_id=session_id,
+                        personalization_context=personalization_context,
+                        response=response,
+                        first_proposal_description={
+                            "type": "capability",
+                            "capability": tool_name,
+                        },
                     )
 
                 self._draft_narrative_safely(
@@ -2481,6 +3137,25 @@ class UriOrchestrator:
                                 execution_result.get("execution_log"),
                         }
 
+                        self._continue_brain_evaluation_loop(
+                            user_text=user_text,
+                            session=session,
+                            session_id=session_id,
+                            personalization_context=(
+                                personalization_context
+                            ),
+                            response=response,
+                            first_proposal_description={
+                                "type": "workflow",
+                                "steps": [
+                                    step["capability"]
+                                    for step in workflow.get(
+                                        "steps", []
+                                    )
+                                ],
+                            },
+                        )
+
                         return response
 
                     if execution_status == "waiting_for_input":
@@ -2511,6 +3186,23 @@ class UriOrchestrator:
                         "error":
                             execution_result.get("error"),
                     }
+
+                    self._continue_brain_evaluation_loop(
+                        user_text=user_text,
+                        session=session,
+                        session_id=session_id,
+                        personalization_context=(
+                            personalization_context
+                        ),
+                        response=response,
+                        first_proposal_description={
+                            "type": "workflow",
+                            "steps": [
+                                step["capability"]
+                                for step in workflow.get("steps", [])
+                            ],
+                        },
+                    )
 
                     self._draft_narrative_safely(
                         user_text=user_text,

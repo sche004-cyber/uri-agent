@@ -106,6 +106,7 @@ class ModelReasoningGateway:
         session_context: Optional[dict] = None,
         evidence_context: Optional[dict] = None,
         query_context: Optional[dict] = None,
+        attempt_history: Optional[list] = None,
     ) -> dict:
 
         capabilities = self.load_capabilities()
@@ -151,6 +152,21 @@ class ModelReasoningGateway:
                 )
                 else {},
 
+            # Milestone 11 Part 2 (Brain re-evaluation loop): empty for
+            # the first reasoning call in a turn. When non-empty, each
+            # entry is a compact {"proposal", "result"} record of an
+            # action already taken THIS turn and what actually
+            # happened - the model is being asked to evaluate the most
+            # recent entry's real result against the original
+            # user_request, not merely propose again from scratch.
+            "attempt_history":
+                attempt_history
+                if isinstance(
+                    attempt_history,
+                    list,
+                )
+                else [],
+
             "available_capabilities":
                 self._capability_descriptions(
                     capabilities
@@ -161,7 +177,10 @@ class ModelReasoningGateway:
                 "structured URI model proposal. Do not execute anything. "
                 "Use only capabilities present in the supplied catalogue. "
                 "Adapt to new tasks by composing available capabilities "
-                "rather than assuming a predefined workflow."
+                "rather than assuming a predefined workflow. If "
+                "attempt_history is non-empty, evaluate whether the most "
+                "recent attempt's real result actually satisfies "
+                "user_request before proposing anything further."
             ),
         }
 
@@ -206,6 +225,7 @@ class ModelReasoningGateway:
         session_context: Optional[dict] = None,
         evidence_context: Optional[dict] = None,
         query_context: Optional[dict] = None,
+        attempt_history: Optional[list] = None,
     ) -> dict:
 
         request = (
@@ -214,6 +234,7 @@ class ModelReasoningGateway:
                 session_context=session_context,
                 evidence_context=evidence_context,
                 query_context=query_context,
+                attempt_history=attempt_history,
             )
         )
 
@@ -455,6 +476,40 @@ class ModelReasoningGateway:
 
                     errors.append(
                         "clarification.question must be non-empty."
+                    )
+
+        # Milestone 11 Part 2 (Brain re-evaluation loop): present only
+        # when the model was asked to evaluate a prior attempt's real
+        # result (see attempt_history in build_reasoning_request).
+        # Absent/null is valid and means "this is an initial proposal,
+        # not an evaluation" - unchanged behavior for every existing
+        # caller.
+        evaluation = proposal.get(
+            "evaluation"
+        )
+
+        if evaluation is not None:
+
+            if not isinstance(
+                evaluation,
+                dict,
+            ):
+                errors.append(
+                    "evaluation must be an object or null."
+                )
+
+            else:
+
+                satisfied = evaluation.get(
+                    "satisfied"
+                )
+
+                if not isinstance(
+                    satisfied,
+                    bool,
+                ):
+                    errors.append(
+                        "evaluation.satisfied must be a boolean."
                     )
 
         capability_names = (
