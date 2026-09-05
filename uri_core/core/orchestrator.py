@@ -444,7 +444,9 @@ class UriOrchestrator:
         personalization_context,
         attempt_history=None,
         learned_skill=None,
-        pending_proposal=None
+        pending_proposal=None,
+        interaction_signal=None,
+        retention_request=False
     ):
         """Runs ModelReasoningGateway.reason() and returns its result
         wrapped with a status of its own (see below). Despite the
@@ -499,6 +501,17 @@ class UriOrchestrator:
         caller that passes it. Omitted (None) everywhere else,
         including the turn's own first call and the post-execution
         _continue_brain_evaluation_loop, both unaffected.
+
+        Milestone 13 Part 2: interaction_signal, when given, is a
+        small generic label describing why this call follows a
+        previous, not-yet-resolved turn (see process_user_input, the
+        only caller that computes it, and REASONING_SYSTEM_PROMPT for
+        what it means) - passed only on a turn's own first call.
+        retention_request, when True, asks the Brain to summarize what
+        is genuinely worth retaining after the user has accepted a
+        result - see _run_acceptance_retention_step, the only caller
+        that sets it. Both default to their ordinary, pre-M13
+        behaviour (no signal, not a retention call) everywhere else.
         """
 
         if not self.enable_model_reasoning_shadow:
@@ -582,7 +595,9 @@ class UriOrchestrator:
                     ),
                     query_context=query_context,
                     attempt_history=attempt_history,
-                    pending_proposal=pending_proposal
+                    pending_proposal=pending_proposal,
+                    interaction_signal=interaction_signal,
+                    retention_request=retention_request
                 )
             )
 
@@ -992,10 +1007,25 @@ class UriOrchestrator:
           configured;
         - ModelReasoningGateway.validate_proposal() rejected the
           proposal;
-        - the proposal has no "evaluation" object, or
-          evaluation.satisfied is not a plain boolean (e.g. this was
-          an initial proposal with nothing to evaluate yet, or the
-          model responded with something malformed).
+        - the proposal has no "evaluation" object at all, or (even
+          tolerantly, see below) no usable satisfaction boolean in it
+          (e.g. this was an initial proposal with nothing to evaluate
+          yet, or the model responded with something malformed).
+
+        Milestone 13 Part 2: live testing found the real model
+        sometimes puts the SAME satisfaction judgment under a
+        different, still self-evidently-named boolean key inside the
+        SAME evaluation object (e.g. "result_satisfies_request" instead
+        of "satisfied") rather than an entirely different response
+        shape - the identical class of problem
+        _recover_capability_mentions already solves for capability
+        proposals, applied here narrowly to one boolean field within an
+        already-present evaluation object (never a scan of the whole
+        proposal, and never a guess when there is no evaluation object
+        at all - the harder case of the Brain skipping evaluation
+        entirely and just proposing again is left as "nothing usable,"
+        exactly as before, rather than inferring intent from an
+        unrelated shape).
 
         A None return always means "cannot get a structured judgment
         from the Brain right now" - callers must stop the evaluation
@@ -1029,6 +1059,18 @@ class UriOrchestrator:
             satisfied = evaluation.get("satisfied")
 
             if not isinstance(satisfied, bool):
+
+                satisfied = None
+
+                for key in self._TOLERANT_SATISFACTION_KEYS:
+
+                    value = evaluation.get(key)
+
+                    if isinstance(value, bool):
+                        satisfied = value
+                        break
+
+            if not isinstance(satisfied, bool):
                 return None
 
             reason = evaluation.get("reason")
@@ -1040,6 +1082,16 @@ class UriOrchestrator:
 
         except Exception:
             return None
+
+    _TOLERANT_SATISFACTION_KEYS = frozenset(
+        {
+            "result_satisfies_request",
+            "satisfies_request",
+            "goal_achieved",
+            "task_complete",
+            "request_fulfilled",
+        }
+    )
 
     def _model_clarification(
         self,
@@ -1077,6 +1129,73 @@ class UriOrchestrator:
                 return None
 
             return {"question": question}
+
+        except Exception:
+            return None
+
+    _RETENTION_CATEGORIES = frozenset(
+        {
+            "successful_approach",
+            "user_preference",
+            "reference_pattern",
+            "other",
+        }
+    )
+
+    _MAX_RETENTION_SUMMARY_LENGTH = 500
+
+    def _model_retention_candidate(
+        self,
+        model_reasoning
+    ):
+        """Milestone 13 Part 2: extracts a usable retention candidate
+        - {"category": str, "summary": str} - from a retention_request
+        call's result, or None when the Brain proposed nothing worth
+        retaining (should_retain false/absent, a malformed shape, or
+        the call itself produced nothing usable). Mirrors
+        _model_clarification's exact discipline - URI does its own
+        bounding here (category must be one of a small known set,
+        summary is length-capped) rather than trusting the Brain's
+        output as already safe to persist; this is extraction, not
+        persistence - see _run_acceptance_retention_step for what
+        actually gets stored. Never raises."""
+
+        try:
+
+            if model_reasoning.get("status") != "reasoning_completed":
+                return None
+
+            result = model_reasoning.get("result", {})
+
+            if result.get("status") != "proposal_ready":
+                return None
+
+            proposal = result.get("proposal")
+
+            if not isinstance(proposal, dict):
+                return None
+
+            candidate = proposal.get("retention_candidate")
+
+            if not isinstance(candidate, dict):
+                return None
+
+            if candidate.get("should_retain") is not True:
+                return None
+
+            category = candidate.get("category")
+
+            if category not in self._RETENTION_CATEGORIES:
+                category = "other"
+
+            summary = candidate.get("summary")
+
+            if not isinstance(summary, str) or not summary.strip():
+                return None
+
+            summary = summary.strip()[: self._MAX_RETENTION_SUMMARY_LENGTH]
+
+            return {"category": category, "summary": summary}
 
         except Exception:
             return None
@@ -1212,20 +1331,41 @@ class UriOrchestrator:
         self,
         response,
         question,
-        stage
+        stage,
+        session,
+        session_id,
+        user_text,
+        attempt_history_so_far=None
     ):
-        """Milestone 13 Part 1: pauses a turn on the Brain's own
+        """Milestone 13 Part 1/2: pauses a turn on the Brain's own
         decision that more information is needed, before anything
-        executes - reused for both an initial-call clarification (no
-        plan was ever formulated) and a pre-execution sanity-check
+        (further) executes - reused for an initial-call clarification
+        (no plan was ever formulated), a pre-execution sanity-check
         clarification (a plan was formulated, then the Brain decided
-        against acting on it once given fuller context). Mirrors the
-        same "waiting_for_input" pause vocabulary WorkflowExecutor
-        already uses elsewhere in this class, so callers/UI treat it
-        exactly like any other pause. stage is a plain, human-readable
-        label ("initial_reasoning" or "pre_execution_check") for
-        transparency only - it changes nothing about how the pause
-        itself is handled. Never raises."""
+        against acting on it once given fuller context), and a
+        post-execution re-evaluation clarification (real actions may
+        already have happened this turn, but the Brain has nothing
+        further to propose without an answer first). Mirrors the same
+        "waiting_for_input" pause vocabulary WorkflowExecutor already
+        uses elsewhere in this class, so callers/UI treat it exactly
+        like any other pause. stage is a plain, human-readable label
+        for transparency only - it changes nothing about how the pause
+        itself is handled.
+
+        Milestone 13 Part 2: also carries this exchange forward as one
+        more attempt_history entry - {"goal": user_text, "proposal":
+        {"type": "clarification", "question": question}, "result":
+        {"status": "awaiting_user_response", "data": None}} - appended
+        to attempt_history_so_far (whatever real actions already
+        happened this turn, or none). This is the SAME generic
+        attempt_history carry-forward _carry_forward_goal_attempt_history
+        already provides; nothing new is invented here, it is just
+        also used for a clarification rather than only a completed
+        action's result. On the user's next message, process_user_input
+        reads this back and computes interaction_signal =
+        "MISSING_INFORMATION" - see there for how the Brain is told
+        why. Never raises.
+        """
 
         response["plan"] = {
             "status": "clarification_needed",
@@ -1243,6 +1383,34 @@ class UriOrchestrator:
             "question": question,
             "stage": stage,
         }
+
+        try:
+
+            combined_history = list(attempt_history_so_far or [])
+
+            combined_history.append(
+                {
+                    "goal": user_text,
+                    "proposal": {
+                        "type": "clarification",
+                        "question": question,
+                    },
+                    "result": {
+                        "status": "awaiting_user_response",
+                        "data": None,
+                    },
+                }
+            )
+
+            self._carry_forward_goal_attempt_history(
+                session=session,
+                session_id=session_id,
+                user_text=user_text,
+                attempt_history=combined_history,
+            )
+
+        except Exception:
+            pass
 
         return response
 
@@ -1266,6 +1434,181 @@ class UriOrchestrator:
 
         except Exception:
             return
+
+    def _executed_tool_names(
+        self,
+        response
+    ):
+        """The capability name(s) actually executed for this turn's
+        response - a single-item list for a plain capability
+        execution, or the ordered capability list from a Brain-
+        composed workflow. Read-only, purely descriptive: never
+        re-derives or re-validates anything, only reports what
+        response already recorded. Never raises."""
+
+        try:
+
+            execution = response.get("execution")
+
+            if (
+                isinstance(execution, dict)
+                and isinstance(execution.get("tool"), str)
+            ):
+                return [execution["tool"]]
+
+            workflow = response.get("workflow")
+
+            if isinstance(workflow, dict):
+
+                return [
+                    step.get("capability")
+                    for step in workflow.get("steps", [])
+                    if isinstance(step, dict)
+                    and isinstance(step.get("capability"), str)
+                ]
+
+            return []
+
+        except Exception:
+            return []
+
+    def _record_retention_audit(
+        self,
+        session_id,
+        outcome,
+        category=None,
+        summary=None,
+        persisted=False
+    ):
+        """Honest bookkeeping for one acceptance retention step -
+        mirrors _record_brain_reevaluation_audit's exact discipline.
+        This is also the PROVENANCE record for whatever the Brain
+        proposed retaining, independent of whether URI actually
+        persisted it anywhere else. Never raises."""
+
+        try:
+
+            self.audit_trail.record(
+                event_type="brain_retention_candidate",
+                status=outcome,
+                session_id=session_id,
+                metadata={
+                    "outcome": outcome,
+                    "category": category,
+                    "summary": summary,
+                    "persisted": bool(persisted),
+                },
+            )
+
+        except Exception:
+            return
+
+    def _run_acceptance_retention_step(
+        self,
+        session,
+        session_id,
+        user_text,
+        response,
+        personalization_context=None
+    ):
+        """Milestone 13 Part 2 - the canonical loop's acceptance step:
+        once the Brain has judged a result satisfied (the closest
+        generic proxy URI has today to "the user accepted it," in a
+        text-only interface with no separate accept/reject gesture),
+        asks the Brain ONE dedicated question - what, if anything, from
+        this interaction is genuinely worth remembering for a future,
+        DIFFERENT request - via a fresh retention_request call (see
+        _run_model_reasoning/REASONING_SYSTEM_PROMPT). The Brain
+        decides WHAT is worth retaining (_model_retention_candidate
+        already bounds category/summary shape); URI decides
+        independently whether, how, and where to actually persist it:
+
+        - "successful_approach" for a genuinely multi-capability
+          workflow this turn is recorded into the existing
+          SkillMemory (the same store/mechanism a single-capability
+          success is already unconditionally recorded into elsewhere -
+          see process_user_input's dispatch-success branch - so a
+          single-capability "successful_approach" candidate is
+          deliberately NOT re-recorded here, to avoid double-counting
+          the exact same outcome).
+        - every other category (or should_retain=false/absent) is not
+          persisted anywhere as a standing fact - only kept as an
+          honest, inspectable audit record of what the Brain proposed
+          (see _record_retention_audit) - deliberately NOT a general
+          long-term knowledge store: building one is a real, separate
+          piece of work this milestone does not attempt.
+
+        Never blindly stores the whole interaction, never promotes a
+        single success into a permanent rule, and never raises - a
+        failure here must never affect the already-decided
+        brain_evaluation/execution outcome. Mutates response in place,
+        adding response["retention"].
+        """
+
+        try:
+
+            model_reasoning = self._run_model_reasoning(
+                user_text=user_text,
+                session=session,
+                session_id=session_id,
+                personalization_context=personalization_context,
+                attempt_history=None,
+                learned_skill=None,
+                retention_request=True,
+            )
+
+            candidate = self._model_retention_candidate(model_reasoning)
+
+            if candidate is None:
+
+                response["retention"] = {"outcome": "nothing_to_retain"}
+
+                self._record_retention_audit(
+                    session_id=session_id,
+                    outcome="nothing_to_retain",
+                )
+
+                return
+
+            category = candidate["category"]
+            summary = candidate["summary"]
+            persisted = False
+
+            if category == "successful_approach":
+
+                tool_names = self._executed_tool_names(response)
+
+                if len(tool_names) > 1:
+
+                    semantic_result = (
+                        response.get("semantic_analysis") or {}
+                    )
+
+                    self.skill_memory.learn_skill(
+                        semantic_result=semantic_result,
+                        workflow=list(tool_names),
+                        tool_name="+".join(tool_names),
+                    )
+
+                    persisted = True
+
+            self._record_retention_audit(
+                session_id=session_id,
+                outcome="candidate_received",
+                category=category,
+                summary=summary,
+                persisted=persisted,
+            )
+
+            response["retention"] = {
+                "outcome": "candidate_received",
+                "category": category,
+                "summary": summary,
+                "persisted": persisted,
+            }
+
+        except Exception:
+            response["retention"] = {"outcome": "unavailable"}
 
     def _build_model_workflow(
         self,
@@ -1771,6 +2114,22 @@ class UriOrchestrator:
                     "iterations": iteration,
                 }
 
+                # Milestone 13 Part 2: the Brain's own satisfied=True
+                # judgment is the closest generic signal URI has today
+                # to "the user accepted this result" - ask the Brain,
+                # once, whether anything from this interaction is
+                # genuinely worth retaining for a future, different
+                # request. See _run_acceptance_retention_step - it
+                # never overrides brain_evaluation above, only adds its
+                # own outcome to response["retention"].
+                self._run_acceptance_retention_step(
+                    session=session,
+                    session_id=session_id,
+                    user_text=user_text,
+                    response=response,
+                    personalization_context=personalization_context,
+                )
+
                 return
 
             next_capability = self._model_proposed_capability(
@@ -1782,6 +2141,36 @@ class UriOrchestrator:
             )
 
             if next_capability is None and next_workflow is None:
+
+                # Milestone 13 Part 2: before honestly giving up, check
+                # whether the Brain has a targeted question instead of
+                # a next action - "nothing further to propose" and "I
+                # need to ask the user something" are different
+                # outcomes, and the second one deserves to reach the
+                # user rather than being reported as a dead end.
+                clarification = self._model_clarification(model_reasoning)
+
+                if clarification is not None:
+
+                    self._record_brain_reevaluation_audit(
+                        session_id=session_id,
+                        iteration=iteration,
+                        satisfied=False,
+                        used_next_proposal=False,
+                        stop_reason="clarification_needed",
+                    )
+
+                    self._apply_clarification_pause(
+                        response,
+                        clarification["question"],
+                        stage="post_execution_reevaluation",
+                        session=session,
+                        session_id=session_id,
+                        user_text=user_text,
+                        attempt_history_so_far=attempt_history,
+                    )
+
+                    return
 
                 self._record_brain_reevaluation_audit(
                     session_id=session_id,
@@ -3088,6 +3477,39 @@ class UriOrchestrator:
             session.last_goal_attempt_history = None
             session.last_goal_text = None
 
+            # Milestone 13 Part 2: a small, generic label telling the
+            # Brain WHY there is carried history to consider, without
+            # URI itself deciding what that history means. "the most
+            # recent entry's result was awaiting_user_response" is a
+            # plain, generic fact about the carried record's own shape
+            # (see _apply_clarification_pause) - not a judgment about
+            # the user's new message.
+            interaction_signal = None
+
+            if carried_attempt_history:
+
+                try:
+                    last_carried = carried_attempt_history[-1]
+                    last_result = (
+                        last_carried.get("result")
+                        if isinstance(last_carried, dict)
+                        else None
+                    )
+                    if (
+                        isinstance(last_result, dict)
+                        and last_result.get("status")
+                        == "awaiting_user_response"
+                    ):
+                        interaction_signal = "MISSING_INFORMATION"
+                    else:
+                        interaction_signal = (
+                            "RESULT_NOT_ACCEPTED_OR_INCOMPLETE"
+                        )
+                except Exception:
+                    interaction_signal = (
+                        "RESULT_NOT_ACCEPTED_OR_INCOMPLETE"
+                    )
+
             # --------------------------------------------------
             # Run model reasoning (Milestone 11 Phase 1).
             #
@@ -3107,7 +3529,8 @@ class UriOrchestrator:
                     session_id=session_id,
                     personalization_context=personalization_context,
                     attempt_history=carried_attempt_history,
-                    learned_skill=learned_skill
+                    learned_skill=learned_skill,
+                    interaction_signal=interaction_signal
                 )
             )
 
@@ -3289,7 +3712,12 @@ class UriOrchestrator:
                     )
 
                     return self._apply_clarification_pause(
-                        response, question, stage="pre_execution_check"
+                        response,
+                        question,
+                        stage="pre_execution_check",
+                        session=session,
+                        session_id=session_id,
+                        user_text=user_text,
                     )
 
                 # "unavailable": the sanity check itself produced
@@ -3325,6 +3753,9 @@ class UriOrchestrator:
                         response,
                         initial_clarification["question"],
                         stage="initial_reasoning",
+                        session=session,
+                        session_id=session_id,
+                        user_text=user_text,
                     )
 
             # --------------------------------------------------

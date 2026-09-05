@@ -126,6 +126,39 @@ Do not include any text outside the JSON object. Do not invent a
 capability name that is not in available_capabilities.
 """
 
+# Milestone 13 Part 2: appended to REASONING_SYSTEM_PROMPT only when
+# the request actually carries interaction_signal/retention_request
+# (see OllamaReasoningAdapter.__call__) rather than unconditionally on
+# every call. Live testing found that adding both explanations to the
+# ALWAYS-sent base prompt measurably increased how often qwen3:14b
+# abandoned strict JSON output for prose - even on ordinary calls
+# where neither field was present - mirroring the exact lesson already
+# learned from duplicated context in the M12 reasoning request: this
+# model is sensitive to prompt bulk it doesn't need for the call at
+# hand. Keeping each explanation out of calls that don't need it keeps
+# every individual call as short as it can be.
+_INTERACTION_SIGNAL_ADDENDUM = """
+
+interaction_signal names why prior context exists, never what to
+conclude: "MISSING_INFORMATION" means the user is answering a question
+you already asked (see attempt_history's last entry, status
+"awaiting_user_response") - continue toward the original goal.
+"RESULT_NOT_ACCEPTED_OR_INCOMPLETE" means the new message follows an
+already-produced result and may be a rejection, a revision request, or
+unrelated - decide from the message and attempt_history whether to try
+a better solution, change approach, act differently, or ask something
+specific."""
+
+_RETENTION_REQUEST_ADDENDUM = """
+
+This call has retention_request=true: the user already accepted a
+result. Do not propose action/workflow. Decide only what is genuinely
+worth remembering for a future, different request, and return:
+retention_candidate: {"should_retain": true|false, "category":
+"successful_approach"|"user_preference"|"reference_pattern"|"other",
+"summary": "..."} or null; null/false is the normal, expected answer
+for an ordinary success."""
+
 
 class OllamaReasoningAdapter:
     """Callable[[str], str] - the exact shape ModelReasoningGateway
@@ -142,8 +175,24 @@ class OllamaReasoningAdapter:
         self.provider = provider or OllamaProvider()
 
     def __call__(self, request_json: str) -> str:
+
+        system = REASONING_SYSTEM_PROMPT
+
+        try:
+            request = json.loads(request_json)
+        except (TypeError, ValueError):
+            request = {}
+
+        if isinstance(request, dict):
+
+            if request.get("interaction_signal"):
+                system += _INTERACTION_SIGNAL_ADDENDUM
+
+            if request.get("retention_request"):
+                system += _RETENTION_REQUEST_ADDENDUM
+
         response = self.provider.complete(
-            system=REASONING_SYSTEM_PROMPT,
+            system=system,
             user=request_json,
             temperature=0,
             max_tokens=800,

@@ -108,6 +108,8 @@ class ModelReasoningGateway:
         query_context: Optional[dict] = None,
         attempt_history: Optional[list] = None,
         pending_proposal: Optional[dict] = None,
+        interaction_signal: Optional[str] = None,
+        retention_request: bool = False,
     ) -> dict:
 
         capabilities = self.load_capabilities()
@@ -189,6 +191,29 @@ class ModelReasoningGateway:
                 )
                 else None,
 
+            # Milestone 13 Part 2: a small, generic label describing
+            # WHY this call follows a previous, not-yet-resolved turn -
+            # URI detects and names the interaction condition; the
+            # Brain interprets it and decides what to do (see
+            # REASONING_SYSTEM_PROMPT). None (the default) on any
+            # ordinary fresh turn.
+            "interaction_signal":
+                interaction_signal
+                if isinstance(
+                    interaction_signal,
+                    str,
+                )
+                else None,
+
+            # Milestone 13 Part 2: true only on the dedicated,
+            # separate call made after the user has accepted a result -
+            # asks the Brain to summarize what is genuinely worth
+            # retaining (see REASONING_SYSTEM_PROMPT's
+            # retention_candidate). Never true alongside a normal
+            # proposal/evaluation request.
+            "retention_request":
+                bool(retention_request),
+
             "instruction": (
                 "Reason about the user's objective and return a "
                 "structured URI model proposal. Do not execute anything. "
@@ -244,6 +269,8 @@ class ModelReasoningGateway:
         query_context: Optional[dict] = None,
         attempt_history: Optional[list] = None,
         pending_proposal: Optional[dict] = None,
+        interaction_signal: Optional[str] = None,
+        retention_request: bool = False,
     ) -> dict:
 
         request = (
@@ -254,6 +281,8 @@ class ModelReasoningGateway:
                 query_context=query_context,
                 attempt_history=attempt_history,
                 pending_proposal=pending_proposal,
+                interaction_signal=interaction_signal,
+                retention_request=retention_request,
             )
         )
 
@@ -519,12 +548,21 @@ class ModelReasoningGateway:
 
             else:
 
-                satisfied = evaluation.get(
-                    "satisfied"
-                )
-
-                if not isinstance(
-                    satisfied,
+                # Milestone 13 Part 2: only reject when "satisfied" is
+                # actually PRESENT with the wrong type - a genuinely
+                # malformed value. An evaluation object that omits
+                # "satisfied" entirely (e.g. live testing found the
+                # real model sometimes uses a different, still
+                # self-evidently boolean key such as
+                # "result_satisfies_request" for the exact same
+                # judgment) is not itself invalid - the runtime's own
+                # tolerant recovery decides what to do with it (see
+                # UriOrchestrator._model_evaluation), exactly as an
+                # unregistered-shape capability proposal is tolerated
+                # here and recovered there, not hard-rejected at this
+                # layer.
+                if "satisfied" in evaluation and not isinstance(
+                    evaluation.get("satisfied"),
                     bool,
                 ):
                     errors.append(
