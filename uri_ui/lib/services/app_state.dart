@@ -88,6 +88,26 @@ class AppState extends ChangeNotifier {
 
   BackendConnectionStatus connectionStatus = BackendConnectionStatus.unknown;
 
+  /// A short diagnostic reason for the last unreachable result (the
+  /// underlying exception message or HTTP status - see
+  /// ConnectionCheckResult.detail) - null on success, or when nothing
+  /// has been tested yet. Purely informational, shown alongside
+  /// [connectionStatus] rather than replacing it, so the badge itself
+  /// stays exactly as simple as before.
+  String? lastConnectionErrorDetail;
+
+  /// Bootstrap fix: true once a backend address has actually been
+  /// configured on this device - either recovered from a prior launch
+  /// (see [loadPersistedServerAddress]) or explicitly applied via
+  /// [setBaseUrl] this session. Before that, the compiled-in default
+  /// (`http://localhost:8000`, meaningless on a phone) is all any
+  /// client has, and login/signup can never succeed against it - see
+  /// screens/bootstrap/bootstrap_screen.dart, which main.dart shows
+  /// instead of the login screen until this becomes true. Login itself
+  /// is completely unaffected: this only ever gates which screen is
+  /// shown, never any backend call's authorization.
+  bool hasConfiguredServerAddress = false;
+
   /// Loads any previously persisted backend address for this device,
   /// applying it to [_client] before first use. Call once, alongside
   /// [loadPersistedPreferences], before the first frame - a phone that
@@ -97,6 +117,7 @@ class AppState extends ChangeNotifier {
     final saved = await _serverAddressStore.load();
     if (saved != null && saved.isNotEmpty) {
       _client.setBaseUrl(saved);
+      hasConfiguredServerAddress = true;
       notifyListeners();
     }
   }
@@ -108,6 +129,7 @@ class AppState extends ChangeNotifier {
   Future<void> setBaseUrl(String url) async {
     _client.setBaseUrl(url);
     connectionStatus = BackendConnectionStatus.unknown;
+    hasConfiguredServerAddress = true;
     notifyListeners();
     await _serverAddressStore.save(url);
   }
@@ -115,13 +137,20 @@ class AppState extends ChangeNotifier {
   /// Explicit "Test connection" action - never called automatically/on
   /// a timer, so reconnect/disconnect behaviour stays predictable and
   /// visible rather than silently polling in the background.
-  Future<bool> checkConnection() async {
-    final reachable = await _client.checkConnection();
-    connectionStatus = reachable
+  ///
+  /// [addressOverride], when given, is tested exactly as typed instead
+  /// of [baseUrl] - this is what lets Settings test whatever address is
+  /// currently in the text field even before [setBaseUrl]/Save has
+  /// been pressed. This never applies or persists that address itself;
+  /// call [setBaseUrl] separately for that, exactly as before.
+  Future<bool> checkConnection({String? addressOverride}) async {
+    final result = await _client.checkConnection(addressOverride: addressOverride);
+    connectionStatus = result.reachable
         ? BackendConnectionStatus.reachable
         : BackendConnectionStatus.unreachable;
+    lastConnectionErrorDetail = result.detail;
     notifyListeners();
-    return reachable;
+    return result.reachable;
   }
 
   /// Loads any previously persisted preferences from this device,
@@ -182,14 +211,56 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Fix (chat UX): the user's message and a persistent URI
+  /// processing state must both appear the instant this is called,
+  /// not only once the request resolves - a placeholder turn (stage
+  /// [TurnStage.understanding], an existing, previously-unused stage
+  /// whose own doc comment already means exactly "URI is processing,
+  /// nothing decided yet") is added to [conversation] synchronously,
+  /// before the network call is even made. Once [_client.ask] resolves
+  /// (success, capability gap, or failure), that same turn is updated
+  /// in place - see [_replacePendingTurn] - never appended as a second,
+  /// separate entry.
   Future<UriTurn> ask(String text) async {
+    final pendingId = _generateTurnId();
+
+    conversation.add(
+      UriTurn(
+        id: pendingId,
+        userText: text,
+        timestamp: DateTime.now(),
+        stage: TurnStage.understanding,
+      ),
+    );
     isSendingAsk = true;
     notifyListeners();
-    final turn = await _client.ask(text);
-    conversation.add(turn);
+
+    final turn = await _client.ask(text, turnId: pendingId);
+    _replacePendingTurn(pendingId, turn);
     isSendingAsk = false;
     notifyListeners();
     return turn;
+  }
+
+  static String _generateTurnId() =>
+      'turn-${DateTime.now().microsecondsSinceEpoch}';
+
+  /// Finds the pending placeholder by [pendingId] - never by
+  /// [updated]'s own id, which can legitimately differ from it: an
+  /// awaiting-approval turn's id becomes the backend's real action_id
+  /// (see HttpUriClient._turnFromResponse), not the client-generated
+  /// placeholder id. Keying off [pendingId] is what keeps this a
+  /// single, updated-in-place card in both cases rather than leaving a
+  /// stuck "Understanding" placeholder behind a second, duplicate
+  /// entry.
+  void _replacePendingTurn(String pendingId, UriTurn updated) {
+    final index = conversation.indexWhere((t) => t.id == pendingId);
+    if (index == -1) {
+      conversation.add(updated);
+    } else {
+      conversation[index] = updated;
+    }
+    notifyListeners();
   }
 
   Future<void> approve(String turnId) async {

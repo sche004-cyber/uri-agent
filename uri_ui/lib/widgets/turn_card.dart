@@ -58,6 +58,22 @@ class TurnCard extends StatelessWidget {
               Text(turn.understanding!, style: theme.textTheme.bodyMedium),
             ],
 
+            // ---- chat UX fix: persistent processing state ----
+            //
+            // TurnStage.understanding is set the instant a request is
+            // submitted (see AppState.ask) and nothing else on the turn
+            // is populated yet - proposedAction/result/failureReason
+            // are all still null. Without this block the card would
+            // show only the user's message and a bare status pill,
+            // which is easy to miss as "URI is working on this" rather
+            // than a stalled/empty card. Not a new stage or a fake
+            // progress step - existing TurnStage.understanding
+            // semantics, rendered.
+            if (turn.stage == TurnStage.understanding) ...[
+              const SizedBox(height: UriSpace.md),
+              const _ProcessingBlock(),
+            ],
+
             // ---- failed: the technical detail, always shown ----
             //
             // Previously never rendered anywhere - a failed turn with
@@ -95,6 +111,45 @@ class TurnCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A persistent, visible "URI is working on this" state shown from the
+/// instant a request is submitted until it resolves - see TurnCard's
+/// TurnStage.understanding branch. Reuses the exact spinner+label
+/// pattern _ProposalBlock's "Executing…" row already established,
+/// rather than inventing a new visual language for "processing."
+class _ProcessingBlock extends StatelessWidget {
+  const _ProcessingBlock();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(UriSpace.md),
+      decoration: BoxDecoration(
+        color: UriColors.surfaceSunken,
+        borderRadius: BorderRadius.circular(UriRadius.sm),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(
+            height: 16,
+            width: 16,
+            child: CircularProgressIndicator(strokeWidth: 2, color: UriColors.inkFaint),
+          ),
+          const SizedBox(width: UriSpace.sm),
+          Expanded(
+            child: Text(
+              'URI is working on this…',
+              style: theme.textTheme.bodyMedium?.copyWith(color: UriColors.inkFaint),
+            ),
+          ),
+        ],
       ),
     );
   }

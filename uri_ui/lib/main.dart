@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'screens/activity/activity_screen.dart';
 import 'screens/ask/ask_uri_screen.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/bootstrap/bootstrap_screen.dart';
 import 'screens/connections/connections_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -59,6 +60,21 @@ class UriApp extends StatelessWidget {
         home: ListenableBuilder(
           listenable: appState,
           builder: (context, _) {
+            // Bootstrap fix (multi-client connectivity): a device that
+            // has never had a working backend address configured can
+            // never log in against the compiled-in default
+            // (http://localhost:8000, meaningless on a phone) - and
+            // Settings > "URI server" (the only place to fix that) was
+            // only reachable after logging in. This screen breaks that
+            // lockout by coming BEFORE the login gate below, exposing
+            // the exact same address/Test Connection controls
+            // unauthenticated (GET /health only - no other endpoint is
+            // reachable from here). Once a working address is
+            // confirmed, AppState.hasConfiguredServerAddress flips true
+            // and this screen never shows again this session.
+            if (!appState.isAuthenticated && !appState.hasConfiguredServerAddress) {
+              return const BootstrapScreen();
+            }
             // Prototype 1 (multi-user identity): login is the outermost
             // gate, ahead of onboarding - which user's state onboarding
             // and everything after it operates on is decided here,
