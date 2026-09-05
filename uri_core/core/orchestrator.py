@@ -36,6 +36,11 @@ from uri_core.core.response_validation import (
     ResponseValidationError,
     validate_drafted_response
 )
+from uri_core.core.evidence_context import (
+    evidence_summary,
+    get_verified_evidence
+)
+from uri_core.core.query_context import build_query_context
 from uri_core.core.skill_evaluator import SkillEvaluator
 from uri_core.core.context_budget import ContextBudget
 from uri_core.core.audit_trail import AuditTrail
@@ -471,6 +476,82 @@ class UriOrchestrator:
             }
 
     # ==========================================================
+    # UNIFIED QUERY CONTEXT (Milestone 10A)
+    # ==========================================================
+
+    def _build_query_context(
+        self,
+        session_id,
+        policy_text,
+        personalization_context
+    ):
+        """Assembles Milestone 10A's bounded, model-facing query
+        context purely from state this orchestrator already builds or
+        holds for other purposes - no new parallel state pipeline:
+
+        - policy_text is passed in by the caller (already loaded via
+          self.model_reasoning_gateway.load_policy() for the drafting
+          system prompt - reused, not re-read).
+        - session_context reuses _build_model_session_context, the
+          same session snapshot the model-reasoning shadow path
+          already builds.
+        - verified_facts reuses evidence_context.get_verified_evidence
+          (VERIFIED-status only) + evidence_summary - deliberately not
+          evidence_context.get_relevant_evidence, whose keyword
+          taxonomy is scenario-specific (see query_context.py).
+        - capabilities reuses self.capability_registry (the same
+          CapabilityRegistry instance already constructed for
+          approval-requirement/risk lookups elsewhere in this class).
+
+        Never raises: each section degrades to empty independently so
+        one missing/unavailable piece (e.g. no session yet) never
+        blanks out the rest - callers still sit behind
+        _draft_narrative_safely's own broad except as a final
+        backstop.
+        """
+
+        session = None
+
+        if session_id:
+
+            try:
+                session = self.session_manager.get_session(session_id)
+            except Exception:
+                session = None
+
+        session_context = {}
+        verified_facts = {}
+
+        if session is not None:
+
+            try:
+                session_context = (
+                    self._build_model_session_context(session)
+                )
+            except Exception:
+                session_context = {}
+
+            try:
+                verified_facts = evidence_summary(
+                    get_verified_evidence(session)
+                )
+            except Exception:
+                verified_facts = {}
+
+        try:
+            capabilities = self.capability_registry.list_capabilities()
+        except Exception:
+            capabilities = []
+
+        return build_query_context(
+            policy_text=policy_text,
+            personalization=personalization_context,
+            session_context=session_context,
+            verified_facts=verified_facts,
+            capabilities=capabilities,
+        )
+
+    # ==========================================================
     # LIVE RESPONSE NARRATIVE (Milestone 8A)
     # ==========================================================
 
@@ -524,12 +605,19 @@ class UriOrchestrator:
                 ),
             }
 
+            query_context = self._build_query_context(
+                session_id=session_id,
+                policy_text=policy_text,
+                personalization_context=personalization_context,
+            )
+
             draft = draft_response(
                 DraftRequest(
                     user_text=user_text,
                     outcome=outcome,
                     personalization=personalization_context,
                     policy_text=policy_text,
+                    query_context=query_context,
                 ),
                 provider=self.response_drafting_provider,
             )

@@ -156,6 +156,21 @@ class NarrativeAdditiveSuccessTests(unittest.TestCase):
             "I've drafted the office note for your review.",
         )
 
+    def test_query_context_reaches_the_drafting_call(self):
+        # Milestone 10A: the unified query context (identity, session,
+        # verified facts, capability catalogue) must reach the same
+        # live drafting call personalization already reaches - proving
+        # the previously shadow-only pieces (session/capabilities) are
+        # now wired into the one user-visible model path.
+        self.orchestrator.process_user_input(
+            session_id="s1", user_text="draft a note"
+        )
+
+        payload = self.provider.calls[0]["user"]
+        self.assertIn("query_context", payload)
+        self.assertIn("capabilities", payload)
+        self.assertIn("draft_institutional_note", payload)
+
 
 class NarrativeFallbackOnFailureTests(unittest.TestCase):
     """The central safety property: any failure at drafting or

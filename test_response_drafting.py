@@ -116,6 +116,41 @@ class DraftResponseTests(unittest.TestCase):
         payload = provider.calls[0]["user"]
         self.assertIn('"personalization": {}', payload)
 
+    def test_omitted_query_context_serializes_to_empty_object(self):
+        # Milestone 10A: DraftRequest.query_context is optional and
+        # additive - a caller that never sets it (the exact shape
+        # every pre-Milestone-10A test/caller in this file uses) still
+        # gets a well-formed, empty section rather than a missing key
+        # or an error.
+        provider = _FakeProvider()
+
+        draft_response(self._request(), provider=provider)
+
+        payload = provider.calls[0]["user"]
+        self.assertIn('"query_context": {}', payload)
+
+    def test_supplied_query_context_reaches_the_payload(self):
+        provider = _FakeProvider()
+
+        request = DraftRequest(
+            user_text="draft a note",
+            outcome={"execution": {"status": "success"}, "response": {}},
+            personalization=None,
+            policy_text="policy text",
+            query_context={
+                "identity": "policy",
+                "personalization": {},
+                "session": {"task": "noting"},
+                "verified_facts": {},
+                "capabilities": [],
+            },
+        )
+
+        draft_response(request, provider=provider)
+
+        payload = provider.calls[0]["user"]
+        self.assertIn("noting", payload)
+
 
 if __name__ == "__main__":
     unittest.main()

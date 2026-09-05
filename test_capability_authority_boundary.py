@@ -337,6 +337,33 @@ class CapabilityAuthorityBoundaryTests(unittest.TestCase):
 
         self.assertNotIn("uri_core.core.growth_ledger", imports)
 
+    def test_query_context_never_imports_execution_or_approval_modules(
+        self,
+    ):
+        # Milestone 10A: query_context.py assembles the unified,
+        # model-facing context but must never gain a path back into
+        # execution/authorization, exactly like personalization_context
+        # above.
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "query_context.py")
+        )
+
+        offending = {
+            name
+            for name in imports
+            if any(
+                fragment in name
+                for fragment in (
+                    "capability_planner",
+                    "dispatcher",
+                    "approval_store",
+                    "approval_gate",
+                )
+            )
+        }
+
+        self.assertEqual(offending, set())
+
     def test_capability_planner_dispatcher_never_import_response_modules(
         self,
     ):
