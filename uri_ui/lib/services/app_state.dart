@@ -6,7 +6,15 @@ import '../models/task_item.dart';
 import '../models/user_preferences.dart';
 import '../models/uri_turn.dart';
 import 'preferences_store.dart';
+import 'server_address_store.dart';
 import 'uri_client.dart' show AuthOutcome, HomeSummary, UriClient;
+
+/// Prototype 2 (multi-client + runtime awareness): the result of the
+/// last [AppState.checkConnection] call. Deliberately a separate type
+/// from models/connection.dart's ConnectionStatus (OAuth-style external
+/// service connections, e.g. Gmail) - this is about reaching the URI
+/// backend itself, an unrelated concern.
+enum BackendConnectionStatus { unknown, reachable, unreachable }
 
 /// App-wide, UI-only state. Holds nothing that belongs to the runtime
 /// (no facts, no evidence, no authorization decisions) — only what the
@@ -17,13 +25,16 @@ class AppState extends ChangeNotifier {
   AppState({
     required UriClient client,
     PreferencesStore? preferencesStore,
+    ServerAddressStore? serverAddressStore,
     UserPreferences? initialPreferences,
   }) : _client = client,
        _preferencesStore = preferencesStore ?? PreferencesStore(),
+       _serverAddressStore = serverAddressStore ?? ServerAddressStore(),
        preferences = initialPreferences ?? const UserPreferences.initial();
 
   final UriClient _client;
   final PreferencesStore _preferencesStore;
+  final ServerAddressStore _serverAddressStore;
 
   UserPreferences preferences;
 
@@ -67,6 +78,50 @@ class AppState extends ChangeNotifier {
     homeSummary = null;
     hasLoadedActivity = false;
     notifyListeners();
+  }
+
+  // ---------------------------------------------------------------
+  // Prototype 2 — multi-client + runtime awareness.
+  // ---------------------------------------------------------------
+
+  String get baseUrl => _client.baseUrl;
+
+  BackendConnectionStatus connectionStatus = BackendConnectionStatus.unknown;
+
+  /// Loads any previously persisted backend address for this device,
+  /// applying it to [_client] before first use. Call once, alongside
+  /// [loadPersistedPreferences], before the first frame - a phone that
+  /// was already pointed at its PC must not silently fall back to
+  /// localhost on relaunch.
+  Future<void> loadPersistedServerAddress() async {
+    final saved = await _serverAddressStore.load();
+    if (saved != null && saved.isNotEmpty) {
+      _client.setBaseUrl(saved);
+      notifyListeners();
+    }
+  }
+
+  /// Repoints this client at a different backend address and persists
+  /// it on-device for next launch. Does not itself verify reachability
+  /// - call [checkConnection] afterwards for that, exactly as a human
+  /// tester would after changing this in Settings.
+  Future<void> setBaseUrl(String url) async {
+    _client.setBaseUrl(url);
+    connectionStatus = BackendConnectionStatus.unknown;
+    notifyListeners();
+    await _serverAddressStore.save(url);
+  }
+
+  /// Explicit "Test connection" action - never called automatically/on
+  /// a timer, so reconnect/disconnect behaviour stays predictable and
+  /// visible rather than silently polling in the background.
+  Future<bool> checkConnection() async {
+    final reachable = await _client.checkConnection();
+    connectionStatus = reachable
+        ? BackendConnectionStatus.reachable
+        : BackendConnectionStatus.unreachable;
+    notifyListeners();
+    return reachable;
   }
 
   /// Loads any previously persisted preferences from this device,

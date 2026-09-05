@@ -49,6 +49,28 @@ abstract class UriClient {
   /// until [login]/[signup] succeeds again.
   Future<void> logout();
 
+  /// Prototype 2 (multi-client + runtime awareness): the backend
+  /// address this client is currently configured to talk to. Never
+  /// "localhost" by assumption on every device — a phone reaching a
+  /// PC's backend over the LAN must be pointed at that PC's own
+  /// address (see [setBaseUrl]).
+  String get baseUrl;
+
+  /// Reconfigures which backend this client talks to. Takes effect
+  /// immediately for every subsequent call - already-in-flight
+  /// requests are unaffected. Does not itself log out or clear any
+  /// held token; a token issued by one backend is meaningless to a
+  /// different one, so a caller should usually [logout] first when
+  /// deliberately switching backends.
+  void setBaseUrl(String baseUrl);
+
+  /// A cheap, side-effect-free reachability check against [baseUrl] -
+  /// backs a "Test connection" action so reconnect/disconnect has
+  /// clear, explicit feedback rather than only surfacing as a failed
+  /// [ask]/[approve]/[cancel] later. Never throws; returns false for
+  /// any network failure, timeout, or non-2xx response.
+  Future<bool> checkConnection();
+
   /// Ask URI to understand and, if appropriate, propose an action for
   /// [text]. Never executes anything by itself.
   Future<UriTurn> ask(String text);

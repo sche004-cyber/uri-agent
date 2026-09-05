@@ -10,6 +10,7 @@ import 'screens/settings/settings_screen.dart';
 import 'screens/tasks/tasks_screen.dart';
 import 'services/app_state.dart';
 import 'services/app_state_scope.dart';
+import 'services/device_identity.dart';
 import 'services/http_uri_client.dart';
 import 'theme/uri_theme.dart';
 import 'widgets/app_shell.dart';
@@ -17,14 +18,24 @@ import 'widgets/app_shell.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Prototype 2 (multi-client + runtime awareness): this install's own
+  // durable device_id (see device_identity.dart), generated once and
+  // reused across launches, distinct from whichever user_id ends up
+  // logging in on it. Resolved before the client is built so it can be
+  // sent at login/signup time.
+  final deviceId = await DeviceIdentityStore().loadOrCreate();
+
   // Talks to the real uri_core backend (uvicorn uri_core.app.server:app)
   // for `ask`; see HttpUriClient's class doc for what still falls back
   // to mock behaviour. Widget/unit tests build their own AppState with
   // MockUriClient directly and are unaffected by this.
-  final appState = AppState(client: HttpUriClient());
-  // Resolve any previously persisted onboarding/preferences before the
-  // first frame, so a returning user never sees onboarding flash by.
+  final appState = AppState(client: HttpUriClient(deviceId: deviceId));
+  // Resolve any previously persisted onboarding/preferences/server
+  // address before the first frame, so a returning user never sees
+  // onboarding flash by and a phone already pointed at its PC never
+  // silently falls back to localhost.
   await appState.loadPersistedPreferences();
+  await appState.loadPersistedServerAddress();
 
   runApp(UriApp(appState: appState));
 }

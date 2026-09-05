@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/user_preferences.dart';
+import '../../services/app_state.dart' show BackendConnectionStatus;
 import '../../services/app_state_scope.dart';
 import '../../theme/uri_theme.dart';
 import '../../widgets/screen_header.dart';
@@ -83,6 +84,19 @@ class SettingsScreen extends StatelessWidget {
                   child: _AccountRow(
                     username: state.currentUsername,
                     onLogOut: () => state.logout(),
+                  ),
+                ),
+                _SettingsSection(
+                  title: 'URI server',
+                  description:
+                      'Which backend this device talks to. On a phone, point this at your '
+                      "PC's address on the same network — not localhost, which means this "
+                      'phone itself.',
+                  child: _ServerAddressSection(
+                    baseUrl: state.baseUrl,
+                    connectionStatus: state.connectionStatus,
+                    onSave: (url) => state.setBaseUrl(url),
+                    onTestConnection: () => state.checkConnection(),
                   ),
                 ),
                 const _SettingsSection(
@@ -178,6 +192,108 @@ class _AccountRow extends StatelessWidget {
           ),
           TextButton(onPressed: onLogOut, child: const Text('Log out')),
         ],
+      ),
+    );
+  }
+}
+
+/// Prototype 2 (multi-client + runtime awareness): lets this device be
+/// pointed at a specific backend address, and proves reconnect/
+/// disconnect with a clear, explicit "Test connection" action rather
+/// than only surfacing connectivity problems as a failed Ask URI
+/// request later.
+class _ServerAddressSection extends StatefulWidget {
+  const _ServerAddressSection({
+    required this.baseUrl,
+    required this.connectionStatus,
+    required this.onSave,
+    required this.onTestConnection,
+  });
+
+  final String baseUrl;
+  final BackendConnectionStatus connectionStatus;
+  final ValueChanged<String> onSave;
+  final Future<bool> Function() onTestConnection;
+
+  @override
+  State<_ServerAddressSection> createState() => _ServerAddressSectionState();
+}
+
+class _ServerAddressSectionState extends State<_ServerAddressSection> {
+  late final TextEditingController _controller = TextEditingController(text: widget.baseUrl);
+  bool _isTesting = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _testConnection() async {
+    setState(() => _isTesting = true);
+    await widget.onTestConnection();
+    if (mounted) setState(() => _isTesting = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _controller,
+          decoration: const InputDecoration(
+            labelText: 'Backend address',
+            hintText: 'http://192.168.1.23:8000',
+          ),
+          onSubmitted: widget.onSave,
+        ),
+        const SizedBox(height: UriSpace.sm),
+        Row(
+          children: [
+            ElevatedButton(
+              onPressed: () => widget.onSave(_controller.text.trim()),
+              child: const Text('Save'),
+            ),
+            const SizedBox(width: UriSpace.sm),
+            OutlinedButton(
+              onPressed: _isTesting ? null : _testConnection,
+              child: _isTesting
+                  ? const SizedBox(
+                      height: 14,
+                      width: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Test connection'),
+            ),
+            const SizedBox(width: UriSpace.sm),
+            _ConnectionStatusBadge(status: widget.connectionStatus),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ConnectionStatusBadge extends StatelessWidget {
+  const _ConnectionStatusBadge({required this.status});
+
+  final BackendConnectionStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color, background) = switch (status) {
+      BackendConnectionStatus.reachable => ('Connected', UriColors.success, UriColors.successSoft),
+      BackendConnectionStatus.unreachable => ('Not reachable', UriColors.danger, UriColors.dangerSoft),
+      BackendConnectionStatus.unknown => ('Not tested yet', UriColors.inkFaint, UriColors.surfaceSunken),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: UriSpace.sm, vertical: 4),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(UriRadius.sm)),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color, fontWeight: FontWeight.w600),
       ),
     );
   }

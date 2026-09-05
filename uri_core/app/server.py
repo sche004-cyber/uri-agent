@@ -5,8 +5,18 @@ No new authorization, planning, or execution logic lives here — this
 file only does request/response plumbing (JSON in, JSON out) so a real
 network client can reach the existing orchestrator entry point.
 
-Run with:
+Run with (localhost-only, e.g. Flutter desktop/web on the same machine):
     uvicorn uri_core.app.server:app --reload --port 8000
+
+Run with (Prototype 2 — reachable from another device on the same LAN,
+e.g. a phone): bind to 0.0.0.0 instead of the default 127.0.0.1-only
+loopback, then point the phone's client at this PC's LAN IP (see
+`ipconfig`, typically 192.168.x.x) and the same port - "localhost" on
+the phone means the phone itself, never this PC:
+    uvicorn uri_core.app.server:app --host 0.0.0.0 --port 8000
+This is a local development/LAN convenience, not production remote
+access - no TLS, no reverse proxy, no authentication beyond this file's
+own login endpoints. Do not expose 0.0.0.0 on a network you don't trust.
 """
 
 from contextlib import asynccontextmanager
@@ -442,11 +452,21 @@ class ApprovalDecisionRequest(BaseModel):
 class SignupRequest(BaseModel):
     username: str
     password: str
+    # Prototype 2 (multi-client + runtime awareness): the CLIENT's own
+    # self-reported device_id (see auth_session.py's module docstring
+    # and uri_ui/lib/services/device_identity.dart) - optional so every
+    # Prototype 1 caller/test that predates this field keeps working
+    # unchanged. Never validated against a shape (unlike user_id) and
+    # never used for anything beyond GET /auth/me's informational
+    # read-back - it carries no authentication or authorization
+    # meaning by itself.
+    device_id: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
     username: str
     password: str
+    device_id: Optional[str] = None
 
 
 def _memory_entry_to_dict(entry: MemoryEntry) -> dict:
@@ -494,7 +514,9 @@ def signup(payload: SignupRequest) -> dict:
     except UserAccountError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
-    token = _auth_session_store.create(account.user_id)
+    token = _auth_session_store.create(
+        account.user_id, device_id=payload.device_id
+    )
 
     return {
         "user_id": account.user_id,
@@ -522,7 +544,14 @@ def login(payload: LoginRequest) -> dict:
             status_code=401, detail="Invalid username or password."
         )
 
-    token = _auth_session_store.create(account.user_id)
+    # A fresh, independent token/device binding every login - this is
+    # what lets the same account be logged in from two clients (e.g. a
+    # phone and a PC) at once, each with its own token and its own
+    # device_id, without one login displacing the other (see
+    # test_multi_client_runtime.py).
+    token = _auth_session_store.create(
+        account.user_id, device_id=payload.device_id
+    )
 
     return {
         "user_id": account.user_id,
@@ -549,22 +578,55 @@ def logout(
 @app.get("/auth/me")
 def auth_me(
     user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+    authorization: Optional[str] = Header(default=None),
 ) -> dict:
     """Read-only: which user_id (if any) the presented token resolves
     to right now - lets a client check whether it's still logged in
     without side effects. authenticated is False (not a 401) when no
     Authorization header was sent at all, since that's a normal,
     supported "not logged in yet" state for every other endpoint in
-    this file."""
+    this file.
+
+    Prototype 2 (multi-client + runtime awareness) adds two more,
+    deliberately distinct fields so a client can tell all three kinds
+    of identity apart at a glance:
+        - device_id: THIS login's own client-reported device_id (see
+          auth_session.py), i.e. "which of my devices am I on" - null
+          when the login/signup call never supplied one.
+        - runtime_device_id: the install this backend/Ollama runtime is
+          actually running on (see identity.py's DeviceIdentityStore,
+          unchanged from GET /identity) - i.e. "which PC is serving me
+          right now". Two different clients of the same user talking
+          to the same backend always see the identical
+          runtime_device_id, even though each has its own device_id.
+    Neither field is a credential and neither grants access to
+    anything by itself.
+    """
     if user_id is None:
-        return {"authenticated": False, "user_id": None, "username": None}
+        return {
+            "authenticated": False,
+            "user_id": None,
+            "username": None,
+            "device_id": None,
+            "runtime_device_id": None,
+        }
 
     account = _user_account_store.get_by_user_id(user_id)
+
+    device_id = None
+    if authorization is not None and authorization.startswith("Bearer "):
+        device_id = _auth_session_store.get_device_id(
+            authorization[len("Bearer "):].strip()
+        )
+
+    runtime_device_id = _device_identity_store.load_or_create().device_id
 
     return {
         "authenticated": True,
         "user_id": user_id,
         "username": account.username if account is not None else None,
+        "device_id": device_id,
+        "runtime_device_id": runtime_device_id,
     }
 
 

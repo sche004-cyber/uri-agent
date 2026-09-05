@@ -31,14 +31,29 @@ import 'uri_client.dart';
 class HttpUriClient implements UriClient {
   HttpUriClient({
     this.baseUrl = 'http://localhost:8000',
+    String? deviceId,
     String? sessionId,
     http.Client? httpClient,
     UriClient? fallback,
-  }) : _sessionId = sessionId ?? _generateSessionId(),
+  }) : _deviceId = deviceId,
+       _sessionId = sessionId ?? _generateSessionId(),
        _http = httpClient ?? http.Client(),
        _fallback = fallback ?? MockUriClient();
 
-  final String baseUrl;
+  /// Prototype 2 (multi-client + runtime awareness): mutable, not
+  /// final — [setBaseUrl] lets a caller (see Settings) repoint this
+  /// client at a different backend address (e.g. localhost during
+  /// desktop development vs a PC's LAN IP from a phone) without
+  /// rebuilding the client or losing [_token]/[_deviceId].
+  @override
+  String baseUrl;
+
+  /// This install's own client device_id (see device_identity.dart) -
+  /// sent only at login/signup time, bound server-side to that login's
+  /// token (see auth_session.py). Never sent on any other request, and
+  /// never treated as a credential.
+  final String? _deviceId;
+
   final String _sessionId;
   final http.Client _http;
   final UriClient _fallback;
@@ -77,6 +92,21 @@ class HttpUriClient implements UriClient {
   @override
   String? get currentUsername => _username;
 
+  @override
+  void setBaseUrl(String baseUrl) => this.baseUrl = baseUrl;
+
+  @override
+  Future<bool> checkConnection() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/health'))
+          .timeout(const Duration(seconds: 8));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<AuthOutcome> _authenticate({
     required String path,
     required String username,
@@ -88,7 +118,11 @@ class HttpUriClient implements UriClient {
           .post(
             Uri.parse('$baseUrl$path'),
             headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode({'username': username, 'password': password}),
+            body: jsonEncode({
+              'username': username,
+              'password': password,
+              if (_deviceId != null) 'device_id': _deviceId,
+            }),
           )
           .timeout(const Duration(seconds: 15));
     } catch (error) {

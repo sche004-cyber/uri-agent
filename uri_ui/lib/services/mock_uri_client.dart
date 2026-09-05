@@ -69,6 +69,27 @@ class MockUriClient implements UriClient {
     _username = null;
   }
 
+  // ---------------------------------------------------------------
+  // Connection config — no real backend, so these are trivial: this
+  // mock is always "reachable" and baseUrl is a fixed placeholder
+  // never actually dialed. See HttpUriClient for the real behaviour
+  // this stands in for.
+  // ---------------------------------------------------------------
+
+  String _baseUrl = 'mock://local';
+
+  @override
+  String get baseUrl => _baseUrl;
+
+  @override
+  void setBaseUrl(String baseUrl) => _baseUrl = baseUrl;
+
+  @override
+  Future<bool> checkConnection() async {
+    await _latency(const Duration(milliseconds: 80));
+    return true;
+  }
+
   void _seedConnections() {
     _connections.addAll(const [
       ServiceConnection(
