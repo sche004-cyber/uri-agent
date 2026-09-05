@@ -12,6 +12,10 @@ from uri_core.core.provider_semantic_interpreter import (
 )
 from uri_core.core.skill_memory import SkillMemory
 from uri_core.core.capability_planner import CapabilityPlanner
+from uri_core.core.conversational_classifier import (
+    NO_CAPABILITY_REQUIRED_MESSAGE,
+    is_conversational_no_capability_required
+)
 from uri_core.core.workflow_planner import WorkflowPlanner
 from uri_core.core.workflow_capability_router import (
     WorkflowCapabilityRouter
@@ -1750,6 +1754,52 @@ class UriOrchestrator:
                 )
                 == "planning_required"
             ):
+
+                # ----------------------------------------------
+                # Deterministic "no capability required" check.
+                #
+                # Some requests (a greeting, a thank-you, a bare
+                # question about what URI can do) genuinely need no
+                # registered capability at all. Without this check,
+                # every one of these would fall into the generic
+                # workflow below and fail at prepare_output with a
+                # capability-gap message - correct for a genuine gap,
+                # dishonest here. See conversational_classifier.py's
+                # module docstring for the exact discriminator and why
+                # it is safe: it never touches genuine capability-gap
+                # requests (verified against test_capability_planner.py's
+                # own "optimize my pc" fixtures), never calls
+                # self.approval_gate, never dispatches a tool, and
+                # never lets the model decide - only the user's own raw
+                # text plus a fail-closed check on the semantic
+                # interpreter's structured entities/requires_evidence/
+                # requires_clarification fields.
+                # ----------------------------------------------
+
+                if is_conversational_no_capability_required(
+                    user_text, semantic_result
+                ):
+
+                    response["execution"] = {
+                        "status": "success"
+                    }
+
+                    response["response"] = {
+                        "message": NO_CAPABILITY_REQUIRED_MESSAGE
+                    }
+
+                    self._draft_narrative_safely(
+                        user_text=user_text,
+                        response=response,
+                        personalization_context=personalization_context,
+                        session_id=session_id
+                    )
+
+                    self._persist_session(
+                        session_id
+                    )
+
+                    return response
 
                 workflow_plan = (
                     self.workflow_planner.create_workflow(
