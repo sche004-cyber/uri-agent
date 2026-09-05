@@ -27,6 +27,134 @@ class WorkflowExecutor:
 
         self.capability_handlers[capability] = handler
 
+    def complete_step_externally(
+        self,
+        workflow: dict,
+        step_id: str,
+        output=None
+    ) -> bool:
+        """Marks one currently-paused ("waiting_for_input") step
+        completed using a result obtained OUTSIDE a normal execute()
+        call - e.g. a real, asynchronous human decision (an approval)
+        recorded elsewhere, after which the underlying capability has
+        already actually run exactly once. execute() itself has no
+        way to resume a paused step without re-invoking its handler
+        (which would re-run - and for an approval-required capability,
+        re-propose - the exact action that already executed); this is
+        the generic escape hatch for "the real answer already exists,
+        just record it and let the dependency graph continue."
+
+        Mirrors execute()'s own "success" branch bookkeeping exactly
+        (status/timestamps/output/history), so a workflow completed
+        this way is indistinguishable in shape from one that completed
+        entirely inside execute(). A subsequent execute() call then
+        naturally continues with whatever remaining steps this
+        completion unblocks - it is not itself re-invoked here.
+
+        Returns False (no-op) when step_id does not exist or is not
+        currently "waiting_for_input" - callers must not use this to
+        complete a step that was never actually paused, or to
+        double-complete one already finished.
+        """
+
+        step = None
+
+        for candidate in workflow.get("steps", []):
+
+            if (
+                isinstance(candidate, dict)
+                and candidate.get("step_id") == step_id
+            ):
+                step = candidate
+                break
+
+        if step is None or step.get("status") != "waiting_for_input":
+            return False
+
+        now = self._now()
+
+        step["status"] = "completed"
+        step["completed_at"] = now
+        step["updated_at"] = now
+
+        if output is not None:
+            step["output"] = output
+            step["result"] = output
+
+        self._append_history(
+            workflow,
+            {
+                "step_id": step_id,
+                "event": "step_completed_externally",
+                "timestamp": now,
+            }
+        )
+
+        workflow["updated_at"] = now
+
+        # This step's own pause no longer applies - clear the
+        # top-level marker so the next execute() call reports whatever
+        # actually applies now (success, blocked, or paused on a
+        # different step) instead of appearing stuck on the old pause.
+        if workflow.get("status") == "waiting_for_input":
+            workflow["status"] = "planned"
+
+        return True
+
+    def fail_step_externally(
+        self,
+        workflow: dict,
+        step_id: str,
+        error: str = "Step failed."
+    ) -> bool:
+        """The fail-closed counterpart to complete_step_externally:
+        marks one step (and the whole workflow) failed using an
+        outcome obtained outside a normal execute() call - e.g. a
+        rejected approval, for which the paused step can never
+        actually complete (its action_id can only ever be decided
+        once). Mirrors execute()'s own "failed" branch bookkeeping
+        exactly.
+
+        Returns False (no-op) when step_id does not exist - callers
+        must not use this on a step that was never actually paused."""
+
+        step = None
+
+        for candidate in workflow.get("steps", []):
+
+            if (
+                isinstance(candidate, dict)
+                and candidate.get("step_id") == step_id
+            ):
+                step = candidate
+                break
+
+        if step is None:
+            return False
+
+        now = self._now()
+
+        step["status"] = "failed"
+        step["error"] = error
+        step["failed_at"] = now
+        step["updated_at"] = now
+
+        workflow["status"] = "failed"
+        workflow["failed_at"] = now
+        workflow["updated_at"] = now
+
+        self._append_history(
+            workflow,
+            {
+                "step_id": step_id,
+                "event": "step_failed_externally",
+                "timestamp": now,
+                "error": error,
+            }
+        )
+
+        return True
+
     def execute(self, workflow: dict, step_handler=None) -> dict:
 
         if not isinstance(workflow, dict):
@@ -236,8 +364,21 @@ class WorkflowExecutor:
                 if (
                     result_status
                     == "waiting_for_input"
+                    or result_status
+                    == "awaiting_approval"
                 ):
 
+                    # "awaiting_approval" (e.g. ApprovalGate.execute_tool's
+                    # result for an approval-required capability) is a
+                    # second, generic pause state alongside
+                    # "waiting_for_input" (a handler asking for more
+                    # information) - WorkflowExecutor treats both the
+                    # same way structurally (pause this step, mark the
+                    # workflow waiting, let the caller resume it later)
+                    # without needing to know what "approval" means -
+                    # see _pause_for_input's extra= passthrough below,
+                    # which is what lets a caller still recover
+                    # approval-specific fields like action_id.
                     return self._pause_for_input(
                         workflow,
                         step,
@@ -248,7 +389,8 @@ class WorkflowExecutor:
                         ),
                         handler_result.get(
                             "required_field"
-                        )
+                        ),
+                        extra=handler_result
                     )
 
                 error_message = (
@@ -449,7 +591,8 @@ class WorkflowExecutor:
         step: dict,
         execution_log: list,
         message: str,
-        required_field=None
+        required_field=None,
+        extra: dict = None
     ) -> dict:
 
         now = self._now()
@@ -487,6 +630,21 @@ class WorkflowExecutor:
             workflow["active_required_field"] = (
                 required_field
             )
+
+        # Generic passthrough: any additional fields the handler's
+        # own pause result carried (e.g. ApprovalGate.execute_tool's
+        # action_id/risk/description for an "awaiting_approval"
+        # result) are merged in without ever overwriting a field
+        # already set above - WorkflowExecutor itself never
+        # interprets these; it only relays them so a caller can still
+        # reach domain-specific pause data through this one generic
+        # path.
+        if isinstance(extra, dict):
+
+            for key, value in extra.items():
+
+                if key not in result and key != "status":
+                    result[key] = value
 
         return result
 

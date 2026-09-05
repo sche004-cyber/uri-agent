@@ -20,6 +20,7 @@ from uri_core.core.workflow_planner import WorkflowPlanner
 from uri_core.core.workflow_capability_router import (
     WorkflowCapabilityRouter
 )
+from uri_core.core.workflow_executor import WorkflowExecutor
 from uri_core.core.state import SessionManager
 from uri_core.core.facts import Fact
 from uri_core.core.fact_manager import update_fact
@@ -585,6 +586,276 @@ class UriOrchestrator:
         except Exception:
             return None
 
+    def _model_proposed_workflow(
+        self,
+        model_reasoning
+    ):
+        """Extracts a usable, registry-validated multi-step workflow
+        proposal from _run_model_reasoning's result, or None when
+        there is none to use - mirrors _model_proposed_capability for
+        the single-action case (Milestone 11 Phase 2).
+
+        Returns None (falls back to the deterministic WorkflowPlanner/
+        WorkflowCapabilityRouter path - see process_user_input)
+        whenever:
+        - model reasoning is disabled, failed to run, or not
+          configured;
+        - the proposal has no workflow object, or the workflow has no
+          steps (a single-action proposal is _model_proposed_capability's
+          concern, not this method's);
+        - ModelReasoningGateway.validate_proposal() already rejected
+          the proposal (e.g. an unregistered capability name in any
+          step - see model_reasoning_gateway.py's own validation,
+          unmodified here) - reaching "proposal_ready" is a
+          precondition checked below;
+        - despite already passing validate_proposal(), any step's
+          capability does not independently resolve to an EXECUTABLE
+          descriptor in self.capability_registry right now (belt-and-
+          braces re-check immediately before execution, using the
+          same CapabilityRegistry instance ApprovalGate/approval-
+          requirement lookups already use elsewhere in this class -
+          not a second, independent implementation of "is this
+          registered").
+
+        On success, returns a small, normalized {"goal": str,
+        "steps": [...]}, not the raw proposal - every step reduced to
+        exactly the fields WorkflowExecutor needs (step_id, capability,
+        depends_on, requires_user_input), so nothing beyond an
+        already-validated capability name and dependency shape crosses
+        from model output into execution.
+
+        Never raises: any unexpected shape degrades to None, the same
+        as "no usable proposal."
+        """
+
+        try:
+
+            if model_reasoning.get("status") != "reasoning_completed":
+                return None
+
+            result = model_reasoning.get("result", {})
+
+            if result.get("status") != "proposal_ready":
+                return None
+
+            proposal = result.get("proposal")
+
+            if not isinstance(proposal, dict):
+                return None
+
+            workflow_proposal = proposal.get("workflow")
+
+            if not isinstance(workflow_proposal, dict):
+                return None
+
+            steps = workflow_proposal.get("steps")
+
+            if not isinstance(steps, list) or not steps:
+                return None
+
+            executable_capability_ids = {
+                descriptor.id
+                for descriptor in self.capability_registry.list_capabilities()
+                if descriptor.is_executable
+            }
+
+            normalized_steps = []
+
+            for step in steps:
+
+                if not isinstance(step, dict):
+                    return None
+
+                step_id = step.get("step_id")
+
+                if not isinstance(step_id, str) or not step_id.strip():
+                    return None
+
+                capability = step.get("capability")
+
+                if (
+                    not isinstance(capability, str)
+                    or capability not in executable_capability_ids
+                ):
+                    return None
+
+                depends_on = step.get("depends_on", [])
+
+                if not isinstance(depends_on, list):
+                    return None
+
+                normalized_steps.append(
+                    {
+                        "step_id": step_id,
+                        "capability": capability,
+                        "depends_on": list(depends_on),
+                        "requires_user_input": bool(
+                            step.get("requires_user_input", False)
+                        ),
+                    }
+                )
+
+            goal = workflow_proposal.get("goal")
+
+            if not isinstance(goal, str) or not goal.strip():
+                goal = ""
+
+            return {
+                "goal": goal,
+                "steps": normalized_steps,
+            }
+
+        except Exception:
+            return None
+
+    def _build_model_workflow(
+        self,
+        model_workflow_proposal
+    ):
+        """Turns _model_proposed_workflow's normalized {"goal", "steps"}
+        into a full workflow dict WorkflowExecutor._ensure_workflow_metadata
+        can complete (workflow_id/schema_version/status/timestamps are
+        all filled in there, unmodified - the same way
+        WorkflowPlanner.create_workflow's own output relies on it).
+
+        "source": "model_reasoning" is the one field this workflow
+        carries that a WorkflowPlanner-built workflow never has - it is
+        what _create_workflow_executor below reads to decide which
+        kind of executor a persisted/resumed workflow needs, and what
+        makes response["plan"]/audit metadata honest about this
+        workflow's real origin.
+        """
+
+        return {
+            "workflow_id": (
+                "model-workflow-" + os.urandom(8).hex()
+            ),
+            "source": "model_reasoning",
+            "goal": model_workflow_proposal["goal"],
+            "request_text": model_workflow_proposal["goal"],
+            "status": "planned",
+            "steps": model_workflow_proposal["steps"],
+        }
+
+    def _build_model_workflow_executor(
+        self,
+        workflow,
+        session_id
+    ):
+        """Builds a generic WorkflowExecutor for a Brain-composed
+        workflow (Milestone 11 Phase 2): one handler per REAL,
+        already-registry-confirmed capability named in
+        workflow["steps"] (see _model_proposed_workflow), each handler
+        doing nothing but calling self.approval_gate.execute_tool(...)
+        - never self.dispatcher directly - so approval requirements,
+        execution, and persistence are decided exactly as they already
+        are for the direct single-capability path (Milestone 11 Phase
+        1) and the existing WorkflowCapabilityRouter-backed workflow
+        path. WorkflowExecutor itself is unmodified and generic; only
+        handler registration differs from _create_workflow_executor's
+        default (WorkflowCapabilityRouter) branch.
+
+        Known, deliberate limitation (Milestone 11 Phase 2 - see
+        process_user_input): every step's request_text is
+        workflow["goal"] - the Brain's original request text, exactly
+        the same field WorkflowCapabilityRouter's own handlers already
+        read this way (see workflow_capability_router.py's
+        draft_output/retrieve_evidence). A model-proposed step's own
+        "arguments" are never read here, the same discipline
+        _model_proposed_capability already applies to a single-action
+        proposal - richer, per-step structured argument synthesis is
+        deferred to a later increment, not invented ad hoc here.
+        """
+
+        executor = WorkflowExecutor()
+
+        goal = workflow.get("goal", "")
+
+        capability_ids = {
+            step.get("capability")
+            for step in workflow.get("steps", [])
+            if (
+                isinstance(step, dict)
+                and isinstance(step.get("capability"), str)
+            )
+        }
+
+        for capability_id in capability_ids:
+
+            executor.register_handler(
+                capability_id,
+                self._model_workflow_step_handler(
+                    capability_id=capability_id,
+                    session_id=session_id,
+                    goal=goal,
+                ),
+            )
+
+        return executor
+
+    def _model_workflow_step_handler(
+        self,
+        capability_id,
+        session_id,
+        goal
+    ):
+        """One closure per capability - the ONLY thing a Brain-
+        composed workflow step's handler ever does is call
+        ApprovalGate.execute_tool(), unmodified, with exactly the
+        arguments the direct single-capability path already uses
+        (session_id, request_text). This is what guarantees approval
+        requirements are enforced identically regardless of whether a
+        capability was chosen directly (Phase 1) or as one step of a
+        Brain-composed workflow (Phase 2)."""
+
+        def _handler(step, workflow):
+
+            return self.approval_gate.execute_tool(
+                capability_id,
+                session_id=session_id,
+                request_text=goal,
+            )
+
+        return _handler
+
+    def _record_model_workflow_audit(
+        self,
+        session_id,
+        workflow_proposed,
+        workflow_valid,
+        used_as_plan,
+        fallback_reason=None
+    ):
+        """Milestone 11 Phase 2's honest bookkeeping for the workflow
+        decision, mirroring _record_model_reasoning_audit's Phase 1
+        "used_as_plan" discipline: records whether the Brain proposed
+        a workflow at all this turn (workflow_proposed), whether that
+        proposal survived re-validation against the authoritative
+        CapabilityRegistry (workflow_valid), whether it actually became
+        the executed plan (used_as_plan), and - when it did not - why
+        the deterministic WorkflowPlanner/WorkflowCapabilityRouter
+        fallback was used instead (fallback_reason).
+
+        Never raises - a failure to audit must never break the live
+        request."""
+
+        try:
+
+            self.audit_trail.record(
+                event_type="model_workflow_evaluation",
+                status="used" if used_as_plan else "fallback",
+                session_id=session_id,
+                metadata={
+                    "workflow_proposed": bool(workflow_proposed),
+                    "workflow_valid": bool(workflow_valid),
+                    "used_as_plan": bool(used_as_plan),
+                    "fallback_reason": fallback_reason,
+                },
+            )
+
+        except Exception:
+            return
+
     # ==========================================================
     # UNIFIED QUERY CONTEXT (Milestone 10A)
     # ==========================================================
@@ -1039,12 +1310,35 @@ class UriOrchestrator:
 
     def _create_workflow_executor(
         self,
-        session
+        session,
+        session_id=None,
+        workflow=None
     ):
+        """Milestone 11 Phase 2: workflow is optional and additive -
+        every existing caller that omits it (or passes a
+        WorkflowPlanner-built workflow, which never carries
+        "source": "model_reasoning") gets exactly the pre-Phase-2
+        WorkflowCapabilityRouter-backed executor below, unchanged.
+        Only a workflow this orchestrator itself built via
+        _build_model_workflow gets the generic, capability-name-keyed
+        executor instead - required so resuming a paused Brain-
+        composed workflow (see _resume_active_workflow) rebuilds the
+        SAME kind of executor it was originally created with, not the
+        abstract-pipeline-stage one."""
 
         if self.workflow_executor is not None:
 
             return self.workflow_executor
+
+        if (
+            isinstance(workflow, dict)
+            and workflow.get("source") == "model_reasoning"
+        ):
+
+            return self._build_model_workflow_executor(
+                workflow=workflow,
+                session_id=session_id,
+            )
 
         router = WorkflowCapabilityRouter(
             dispatcher=self.approval_gate,
@@ -1533,7 +1827,9 @@ class UriOrchestrator:
 
         workflow_executor = (
             self._create_workflow_executor(
-                session
+                session,
+                session_id=session_id,
+                workflow=session.active_workflow,
             )
         )
 
@@ -2084,6 +2380,159 @@ class UriOrchestrator:
 
                     return response
 
+                # ----------------------------------------------
+                # Brain-composed workflow (Milestone 11 Phase 2).
+                #
+                # When ModelReasoningGateway proposed a multi-step
+                # workflow and it survives re-confirmation against the
+                # authoritative CapabilityRegistry (see
+                # _model_proposed_workflow), it is preferred over the
+                # deterministic WorkflowPlanner/WorkflowCapabilityRouter
+                # pipeline below for THIS planning_required turn. Every
+                # step still executes only through
+                # self.approval_gate.execute_tool() (see
+                # _build_model_workflow_executor) - never
+                # self.dispatcher directly - so approval requirements
+                # are enforced exactly as they already are for the
+                # direct single-capability path and the deterministic
+                # workflow path. Absent, invalid, or unsupported (e.g.
+                # an unregistered capability, no model configured)
+                # falls through unchanged to today's WorkflowPlanner
+                # path immediately below.
+                # ----------------------------------------------
+
+                model_workflow_proposal = (
+                    self._model_proposed_workflow(
+                        model_reasoning
+                    )
+                )
+
+                raw_workflow_proposed = False
+
+                try:
+                    raw_workflow_proposed = isinstance(
+                        model_reasoning.get("result", {})
+                        .get("proposal", {})
+                        .get("workflow"),
+                        dict,
+                    )
+                except Exception:
+                    raw_workflow_proposed = False
+
+                if model_workflow_proposal is not None:
+
+                    self._record_model_workflow_audit(
+                        session_id=session_id,
+                        workflow_proposed=raw_workflow_proposed,
+                        workflow_valid=True,
+                        used_as_plan=True,
+                    )
+
+                    workflow = self._build_model_workflow(
+                        model_workflow_proposal
+                    )
+
+                    response["workflow"] = workflow
+
+                    response["plan"] = {
+                        "status": "planning_required",
+                        "tool_name": None,
+                        "reason": (
+                            "Brain-proposed multi-step workflow - "
+                            "every step's capability already "
+                            "re-confirmed against the registered "
+                            "capability catalogue before execution."
+                        ),
+                        "source": "model_reasoning",
+                    }
+
+                    workflow_executor = (
+                        self._create_workflow_executor(
+                            session,
+                            session_id=session_id,
+                            workflow=workflow,
+                        )
+                    )
+
+                    execution_result = (
+                        workflow_executor.execute(
+                            workflow
+                        )
+                    )
+
+                    response["execution"] = execution_result
+
+                    execution_status = execution_result.get(
+                        "status"
+                    )
+
+                    if execution_status == "success":
+
+                        self._clear_active_workflow(session)
+                        self._persist_session(session_id)
+
+                        response["response"] = {
+                            "message":
+                                "URI completed the Brain-composed "
+                                "workflow.",
+                            "workflow":
+                                execution_result.get("workflow"),
+                            "execution_log":
+                                execution_result.get("execution_log"),
+                        }
+
+                        return response
+
+                    if execution_status == "waiting_for_input":
+
+                        self._save_paused_workflow(
+                            session, execution_result
+                        )
+                        self._persist_session(session_id)
+
+                        response["response"] = {
+                            "message": session.active_workflow_question,
+                            "workflow": session.active_workflow,
+                            "required_information":
+                                session.active_workflow_required_field,
+                        }
+
+                        return response
+
+                    self._clear_active_workflow(session)
+                    self._persist_session(session_id)
+
+                    response["response"] = {
+                        "message":
+                            "URI could not complete the "
+                            "Brain-composed workflow.",
+                        "workflow":
+                            execution_result.get("workflow"),
+                        "error":
+                            execution_result.get("error"),
+                    }
+
+                    self._draft_narrative_safely(
+                        user_text=user_text,
+                        response=response,
+                        personalization_context=personalization_context,
+                        session_id=session_id
+                    )
+
+                    return response
+
+                self._record_model_workflow_audit(
+                    session_id=session_id,
+                    workflow_proposed=raw_workflow_proposed,
+                    workflow_valid=False,
+                    used_as_plan=False,
+                    fallback_reason=(
+                        "no_valid_workflow_proposal"
+                        if raw_workflow_proposed
+                        else "no_workflow_proposed"
+                    ),
+                )
+
                 workflow_plan = (
                     self.workflow_planner.create_workflow(
                         semantic_result=
@@ -2244,6 +2693,157 @@ class UriOrchestrator:
                     str(exc)
             }
 
+    def _resume_model_workflow_after_decision(
+        self,
+        session_id,
+        proposed,
+        approved,
+        decision_result
+    ):
+        """Milestone 11 Phase 2.1: when the decided action_id was one
+        paused step of a Brain-composed workflow
+        (session.active_workflow tagged "source": "model_reasoning"),
+        continues that workflow's remaining steps after the decision -
+        rather than leaving it permanently stuck "waiting_for_input"
+        once its one approval-required action has already been
+        irreversibly decided (an ApprovalStore action_id can only ever
+        be decided once - see approval_store.py's STATUS_PENDING ->
+        STATUS_APPROVED/REJECTED -> STATUS_CONSUMED lifecycle).
+
+        Returns None whenever there is nothing to resume - no
+        session_id, no active workflow, not a Brain-composed one, not
+        currently paused, or the paused step does not match this
+        decision's capability. This covers every existing single-
+        capability approval (Milestone 7) and every
+        WorkflowCapabilityRouter-backed workflow (none of whose 4 real
+        tools require approval today) completely unchanged - only a
+        Brain-composed workflow's own paused step can ever match here.
+
+        The approved capability itself is never re-executed: this
+        method only records the ALREADY-PRODUCED decision_result
+        (self.approval_gate.decide() already executed the underlying
+        ToolDispatcher call exactly once, unmodified) onto the
+        matching paused step via
+        WorkflowExecutor.complete_step_externally(), then calls
+        WorkflowExecutor.execute() again to let already-completed
+        steps be skipped and any newly-unblocked dependent step run
+        for the first time through the same generic, ApprovalGate-
+        backed handlers _build_model_workflow_executor already built -
+        never a second, independent execution path.
+
+        A rejected or otherwise-failed decision fails the workflow
+        closed (WorkflowExecutor.fail_step_externally) instead of
+        leaving it stuck waiting on an action_id that can never be
+        decided again.
+
+        Never raises: any failure here must never break the
+        already-decided approval result the caller (decide_action) is
+        returning regardless.
+        """
+
+        try:
+
+            if not session_id or proposed is None:
+                return None
+
+            session = self.session_manager.get_session(session_id)
+
+            workflow = session.active_workflow
+
+            if not isinstance(workflow, dict):
+                return None
+
+            if workflow.get("source") != "model_reasoning":
+                return None
+
+            if session.active_workflow_status != "waiting_for_input":
+                return None
+
+            paused_step = None
+
+            for step in workflow.get("steps", []):
+
+                if (
+                    isinstance(step, dict)
+                    and step.get("status") == "waiting_for_input"
+                    and step.get("capability")
+                    == getattr(proposed, "capability_id", None)
+                ):
+                    paused_step = step
+                    break
+
+            if paused_step is None:
+                return None
+
+            workflow_executor = self._create_workflow_executor(
+                session,
+                session_id=session_id,
+                workflow=workflow,
+            )
+
+            decision_status = decision_result.get("status")
+
+            if not approved or decision_status not in (
+                "success",
+                "completed",
+            ):
+
+                workflow_executor.fail_step_externally(
+                    workflow,
+                    paused_step.get("step_id"),
+                    error=(
+                        "Approval was rejected."
+                        if not approved
+                        else str(
+                            decision_result.get(
+                                "message",
+                                "Action could not be executed.",
+                            )
+                        )
+                    ),
+                )
+
+                self._clear_active_workflow(session)
+                self._persist_session(session_id)
+
+                return {
+                    "status": "failed",
+                    "workflow": workflow,
+                }
+
+            completed = workflow_executor.complete_step_externally(
+                workflow,
+                paused_step.get("step_id"),
+                output=decision_result.get("data", decision_result),
+            )
+
+            if not completed:
+                return None
+
+            execution_result = workflow_executor.execute(workflow)
+
+            execution_status = execution_result.get("status")
+
+            if execution_status == "success":
+
+                self._clear_active_workflow(session)
+                self._persist_session(session_id)
+
+            elif execution_status == "waiting_for_input":
+
+                self._save_paused_workflow(session, execution_result)
+                self._persist_session(session_id)
+
+            else:
+
+                self._clear_active_workflow(session)
+                self._persist_session(session_id)
+
+            return execution_result
+
+        except Exception:
+            return None
+
     def decide_action(
         self,
         action_id: str,
@@ -2304,6 +2904,22 @@ class UriOrchestrator:
         )
 
         result["narrative"] = narrative_context.get("narrative")
+
+        # Milestone 11 Phase 2.1: additive only - None (the
+        # overwhelming majority of decisions, including every
+        # existing single-capability approval) leaves result exactly
+        # as it already was.
+        workflow_continuation = (
+            self._resume_model_workflow_after_decision(
+                session_id=session_id,
+                proposed=proposed,
+                approved=approved,
+                decision_result=result,
+            )
+        )
+
+        if workflow_continuation is not None:
+            result["workflow_continuation"] = workflow_continuation
 
         return result
 
