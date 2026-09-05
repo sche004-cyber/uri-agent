@@ -395,5 +395,87 @@ class NotImplementedActionabilityTests(unittest.TestCase):
             validate_drafted_response(draft, outcome)
 
 
+class ToolResultOwnStatusOverridesDispatchStatusTests(unittest.TestCase):
+    """Live testing found a real gap: a tool can be successfully
+    DISPATCHED (execution.status = "success") while its own result
+    reports the actual task was not accomplished (its own "status" is
+    something other than "success", e.g. "unavailable"). Before this
+    fix, every honesty check below was gated on execution.status alone
+    and never fired for this shape, letting an unrelated "please
+    clarify" or an implausible success claim pass validation
+    unchecked. Deliberately generic throughout - no capability/domain
+    name appears in the fix or these tests."""
+
+    def _incomplete_outcome(self, **response_extra):
+        return {
+            "execution": {"status": "success", "tool": "some_capability"},
+            "response": {
+                "status": "unavailable",
+                "message": "Could not find the requested record.",
+                "error": "Records path not found: some/configured/path",
+                **response_extra,
+            },
+        }
+
+    def test_success_claim_is_rejected_despite_successful_dispatch(self):
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(
+                "Done! I've completed that for you.",
+                self._incomplete_outcome(),
+            )
+
+    def test_honest_relay_of_the_tools_own_message_is_allowed(self):
+        result = validate_drafted_response(
+            "I couldn't find that record - the records path isn't "
+            "configured on this system.",
+            self._incomplete_outcome(),
+        )
+        self.assertTrue(result)
+
+    def test_length_is_bounded_relative_to_the_tools_own_evidence(self):
+        outcome = self._incomplete_outcome(
+            message="x" * 30, error="y" * 30
+        )
+        # allowed = min(400, max(300, 60 * 3)) = 300 (floor dominates)
+        within_budget = "z" * 250
+        with_too_much = "z" * 350
+
+        self.assertTrue(validate_drafted_response(within_budget, outcome))
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(with_too_much, outcome)
+
+    def test_a_real_success_status_inside_response_is_unaffected(self):
+        # The tool's own status IS "success" here - this must behave
+        # exactly like the pre-existing plain-success path.
+        outcome = {
+            "execution": {"status": "success"},
+            "response": {"status": "success", "message": "done"},
+        }
+        result = validate_drafted_response(
+            "Done - I've completed the note for you.", outcome
+        )
+        self.assertIn("Done", result)
+
+    def test_response_with_no_status_field_is_unaffected(self):
+        # Most existing tools/tests never set a nested "status" at all
+        # - absence must never be treated as evidence of a problem.
+        outcome = {
+            "execution": {"status": "success"},
+            "response": {"message": "note_sheet contents here"},
+        }
+        result = validate_drafted_response(
+            "Done - here is the note.", outcome
+        )
+        self.assertIn("Done", result)
+
+    def test_non_dict_response_is_unaffected(self):
+        outcome = {
+            "execution": {"status": "success"},
+            "response": "a plain string response",
+        }
+        result = validate_drafted_response("Done.", outcome)
+        self.assertEqual(result, "Done.")
+
+
 if __name__ == "__main__":
     unittest.main()

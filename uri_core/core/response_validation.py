@@ -139,16 +139,29 @@ def validate_drafted_response(
         execution.get("status") if isinstance(execution, dict) else None
     )
 
-    if execution_status != "success" and _SUCCESS_CLAIM_PATTERN.search(
-        text
-    ):
+    # A "success" dispatch does not by itself mean the capability
+    # accomplished what the user asked for - a tool can report its own
+    # non-success result (e.g. "unavailable", "not_found", "error")
+    # inside outcome.response while execution.status still reads
+    # "success". is_genuine_success folds both signals into the one
+    # check every rule below already keyed off execution_status alone
+    # - deliberately generic (only ever looks at whether
+    # outcome.response's own "status" field equals the literal string
+    # "success", never at any tool/domain-specific value), so no new
+    # task-specific rule is introduced here.
+    is_genuine_success = (
+        execution_status == "success"
+        and not _tool_result_reports_incomplete(outcome)
+    )
+
+    if not is_genuine_success and _SUCCESS_CLAIM_PATTERN.search(text):
         raise ResponseValidationError(
             "draft uses success-shaped language but the actual "
             f"execution status was {execution_status!r}, not "
             "'success'."
         )
 
-    if execution_status != "success" and _has_not_implemented_gap(
+    if not is_genuine_success and _has_not_implemented_gap(
         outcome
     ) and _implies_future_capability(text):
         raise ResponseValidationError(
@@ -158,7 +171,7 @@ def validate_drafted_response(
             "so nothing the user provides changes that."
         )
 
-    if execution_status != "success":
+    if not is_genuine_success:
 
         evidence_length = _outcome_evidence_length(outcome)
         allowed_length = min(
@@ -195,6 +208,31 @@ def validate_drafted_response(
             )
 
     return text
+
+
+def _tool_result_reports_incomplete(outcome: Dict[str, Any]) -> bool:
+    """True when outcome.response is itself an object carrying its own
+    "status" field, and that field is present but is not the literal
+    string "success" - i.e. the capability's own result is reporting
+    that the requested task was not actually completed, found, or
+    produced, independent of whatever outcome.execution.status says
+    about the dispatch itself. This is the exact same "status" key
+    every tool in this codebase already returns for this purpose (see
+    uri_core/tools/*.py) - deliberately generic: it never inspects
+    what the status value actually is (no "unavailable"/"not_found"/
+    etc. specific handling), only whether it differs from the tool's
+    own conventional positive marker. Absent field, or a
+    response that is not an object at all, is not itself evidence of
+    anything - only an explicit non-"success" value counts."""
+
+    response = outcome.get("response")
+
+    if not isinstance(response, dict):
+        return False
+
+    status = response.get("status")
+
+    return isinstance(status, str) and status != "success"
 
 
 def _has_not_implemented_gap(outcome: Dict[str, Any]) -> bool:

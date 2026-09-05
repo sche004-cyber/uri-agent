@@ -14,6 +14,21 @@ what happened.
 Output from this module is never trusted as-is: see
 response_validation.py, which every draft must pass before it is ever
 shown to a user (see orchestrator.py's _draft_narrative_safely).
+
+ARCHITECTURE (M14 correction): URI is silent machinery, never a second
+Brain. It never composes, hand-writes, or invents the natural-language
+text a user sees - draft_response() below is a real call to the same
+underlying reasoning model (via ModelProvider/OllamaProvider) the rest
+of this codebase calls "the Brain," never a template or rule engine of
+URI's own. URI's only responsibilities in this path are: (1) decide the
+real outcome deterministically (already done by the time this module
+is ever called), (2) hand that real, already-decided evidence to the
+model without alteration, and (3) validate the model's own words for
+claim-consistency before relaying them - never rewrite what the model
+said, only accept or discard it whole. When no draft is available or
+none passes validation, the caller falls back to the pre-existing
+deterministic template text - still never URI improvising a reply, only
+URI's plainest, template-based report of the same already-decided facts.
 """
 
 import json
@@ -85,22 +100,36 @@ Rules:
 - Never claim an outcome different from outcome.execution.status. If
   it is "awaiting_approval", say an approval is needed - never say it
   succeeded. If it is "error"/"failed", say so plainly.
+- outcome.execution.status = "success" means URI successfully
+  DISPATCHED the capability - it never by itself means the capability
+  accomplished what the user actually asked for. Always look at
+  outcome.response itself for what the capability actually produced:
+  if it is an object with its own "status" field and that field is
+  present but is not "success", the capability's own result is telling
+  you the real task was not completed, found, or produced - even
+  though the dispatch itself succeeded. Treat that as the true outcome
+  for every rule below, in place of outcome.execution.status.
 - Never invent an action id, approval status, or capability that is
   not present in the given outcome.
 - Do not fabricate facts about the world beyond what outcome contains.
-- When outcome.execution.status is NOT "success", you are explaining
-  a known runtime outcome, never generating a solution. Do not
-  propose troubleshooting steps, commands, workarounds, or
-  alternative ways to accomplish the goal, and do not imply URI has a
-  capability it does not. If outcome.known_gaps lists the relevant
-  capability, say plainly that URI does not have it yet (or cannot use
-  it right now - see the reason distinction above), restating only the
-  id/reason/description/limitations text you were given - never add a
-  single fact, step, or suggestion beyond those exact fields, even if
-  you know of a real way to accomplish the goal yourself. If there is
-  no relevant entry in known_gaps, state only what outcome.response's
-  message/error already says, plainly and briefly - do not elaborate
-  with invented detail.
+- Whenever the true outcome (by the rule above) is not a genuine
+  success, you are explaining a known runtime outcome, never
+  generating a solution. Do not propose troubleshooting steps,
+  commands, workarounds, or alternative ways to accomplish the goal,
+  and do not imply URI has a capability it does not. Never invent a
+  request for clarification either - the user's original request may
+  already have been entirely clear; a capability's own result saying
+  it could not find or produce something is a limitation in what URI
+  was able to do, not a sign the request itself was unclear. If
+  outcome.known_gaps lists the relevant capability, say plainly that
+  URI does not have it yet (or cannot use it right now - see the
+  reason distinction above), restating only the id/reason/description/
+  limitations text you were given - never add a single fact, step, or
+  suggestion beyond those exact fields, even if you know of a real way
+  to accomplish the goal yourself. If there is no relevant entry in
+  known_gaps, state only what outcome.response's own message/error
+  already says, plainly and briefly - do not elaborate with invented
+  detail.
 - Keep it concise unless the user's communication_style says
   otherwise - and for a non-"success" outcome, concise means one or
   two short sentences, not a structured guide.

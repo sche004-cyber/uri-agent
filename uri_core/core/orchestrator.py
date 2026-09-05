@@ -2420,6 +2420,33 @@ class UriOrchestrator:
                 personalization_context=personalization_context,
             )
 
+            # M14 correction: query_context's identity/session/
+            # capabilities/personalization sections are, for THIS
+            # specific call, verbatim duplicates of what the drafting
+            # request already carries elsewhere - identity duplicates
+            # policy_text (used as this call's own system prompt via
+            # build_drafting_system_prompt), personalization duplicates
+            # DraftRequest.personalization below, and session/
+            # capabilities add nothing the narrow "explain this
+            # already-decided outcome" task needs that outcome itself
+            # doesn't already supply. Live testing reproduced the exact
+            # failure this caused: with the full ~9.5k-character policy
+            # text duplicated into the prompt, the drafting model
+            # reliably ignored the real outcome.response evidence it
+            # was given and invented an unrelated "please clarify"
+            # reply instead - the identical prompt-bulk sensitivity
+            # already fixed once for the reasoning gateway (see
+            # _run_model_reasoning) and once for its own explanatory
+            # addenda (see model_reasoning_adapter.py) - never
+            # previously applied here. verified_facts is the only
+            # genuinely new information in query_context for this call,
+            # so it is the only section kept.
+            query_context = dict(query_context)
+            query_context["identity"] = ""
+            query_context["session"] = {}
+            query_context["capabilities"] = []
+            query_context["personalization"] = {}
+
             draft = draft_response(
                 DraftRequest(
                     user_text=user_text,
