@@ -204,8 +204,14 @@ class CapabilityAuthorityBoundaryTests(unittest.TestCase):
     def test_model_reasoning_gateway_never_imports_approval_modules(
         self,
     ):
-        # The shadow model-reasoning path must have no path to
-        # approval state either - it is observational only.
+        # Milestone 11 Phase 1: model reasoning's result may now become
+        # the real plan for the direct single-capability path (see
+        # orchestrator.py's _model_proposed_capability), but only ever
+        # as a plain capability-name string handed back to
+        # orchestrator.py, which alone decides whether to route it into
+        # ApprovalGate/ToolDispatcher. model_reasoning_gateway.py itself
+        # must still have no path of its own to approval or execution
+        # state - it only ever reasons and proposes.
         imports = _imported_module_names(
             os.path.join(
                 "uri_core", "core", "model_reasoning_gateway.py"
@@ -215,7 +221,14 @@ class CapabilityAuthorityBoundaryTests(unittest.TestCase):
         offending = {
             name
             for name in imports
-            if "approval_store" in name or "approval_gate" in name
+            if any(
+                fragment in name
+                for fragment in (
+                    "approval_store",
+                    "approval_gate",
+                    "dispatcher",
+                )
+            )
         }
 
         self.assertEqual(offending, set())

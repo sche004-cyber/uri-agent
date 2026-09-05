@@ -105,6 +105,7 @@ class ModelReasoningGateway:
         user_text: str,
         session_context: Optional[dict] = None,
         evidence_context: Optional[dict] = None,
+        query_context: Optional[dict] = None,
     ) -> dict:
 
         capabilities = self.load_capabilities()
@@ -131,6 +132,21 @@ class ModelReasoningGateway:
                 evidence_context
                 if isinstance(
                     evidence_context,
+                    dict,
+                )
+                else {},
+
+            # Milestone 10A/11: the same bounded, model-facing context
+            # object query_context.build_query_context() already
+            # assembles for response drafting (identity/personalization/
+            # session/verified_facts/capabilities) - reused verbatim,
+            # not rebuilt here. Additive: every existing caller that
+            # omits this keeps getting exactly the pre-M11 request
+            # shape below it.
+            "query_context":
+                query_context
+                if isinstance(
+                    query_context,
                     dict,
                 )
                 else {},
@@ -189,6 +205,7 @@ class ModelReasoningGateway:
         user_text: str,
         session_context: Optional[dict] = None,
         evidence_context: Optional[dict] = None,
+        query_context: Optional[dict] = None,
     ) -> dict:
 
         request = (
@@ -196,6 +213,7 @@ class ModelReasoningGateway:
                 user_text=user_text,
                 session_context=session_context,
                 evidence_context=evidence_context,
+                query_context=query_context,
             )
         )
 

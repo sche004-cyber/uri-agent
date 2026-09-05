@@ -69,25 +69,35 @@ from uri_core.core.user_profile import (
 # UriOrchestrator.session_manager, keyed by the session_id each request
 # supplies, not by HTTP connection.
 #
-# The model-reasoning shadow is wired to Ollama/qwen3:14b here, at the
-# application boundary, rather than as UriOrchestrator's own default -
-# every other test/caller that constructs UriOrchestrator() with no
-# args keeps the previous, network-free model_callable=None behaviour.
-# The shadow remains strictly observational: UriOrchestrator's existing
-# _run_model_reasoning_shadow (unmodified) already never lets it affect
-# plan/execution, and already catches any failure (Ollama unreachable,
-# timeout, malformed response) into a "shadow_failed" status rather
-# than raising.
+# Model reasoning is wired to Ollama/qwen3:14b here, at the application
+# boundary, rather than as UriOrchestrator's own default - every other
+# test/caller that constructs UriOrchestrator() with no args keeps the
+# previous, network-free model_callable=None behaviour.
+#
+# As of Milestone 11 Phase 1, this is no longer purely observational:
+# UriOrchestrator._run_model_reasoning's result may become the real
+# plan for the direct single-capability path (see
+# _model_proposed_capability/process_user_input's capability-selection
+# step, both unmodified here) whenever the model proposes a registered
+# capability that ModelReasoningGateway.validate_proposal() already
+# accepted. CapabilityPlanner remains the deterministic fallback for
+# everything else (model not configured/disabled, an invalid/
+# unregistered proposal, or a proposed workflow rather than a single
+# action), and any failure here (Ollama unreachable, timeout,
+# malformed response) still degrades to a "reasoning_failed" status -
+# same fallback either way - rather than raising. The execution
+# boundary itself (ApprovalGate/ToolDispatcher) is unchanged regardless
+# of which of these actually chose the tool_name.
 #
 # enable_response_narrative=True is this milestone's one explicit
 # opt-in: UriOrchestrator defaults it to False specifically so every
 # existing test/caller keeps its exact prior behaviour (see
 # orchestrator.py's __init__ comment) - this server is the one place
-# that turns the live conversational surface on, matching how the
-# model-reasoning shadow was already turned on here rather than as a
-# class default. response.narrative stays additive - see
-# _draft_narrative_safely - so this does not change what /ask returns
-# for any client not yet reading that field.
+# that turns the live conversational surface on, matching how model
+# reasoning was already turned on here rather than as a class default.
+# response.narrative stays additive - see _draft_narrative_safely - so
+# this does not change what /ask returns for any client not yet
+# reading that field.
 _orchestrator = UriOrchestrator(
     model_reasoning_gateway=ModelReasoningGateway(
         model_callable=OllamaReasoningAdapter()

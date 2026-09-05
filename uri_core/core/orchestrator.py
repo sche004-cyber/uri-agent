@@ -426,20 +426,62 @@ class UriOrchestrator:
                 )
         }
 
-    def _run_model_reasoning_shadow(
+    def _run_model_reasoning(
         self,
         user_text,
-        session
+        session,
+        session_id,
+        personalization_context
     ):
+        """Runs ModelReasoningGateway.reason() and returns its result
+        wrapped with a status of its own (see below). Despite the
+        historical "shadow" name this method used to carry (Milestone
+        6/7), its result is no longer observational-only as of
+        Milestone 11 Phase 1: process_user_input's capability-selection
+        step (see _model_proposed_capability) may use a validated,
+        registered-capability proposal from here as the real plan,
+        routed through the unmodified ApprovalGate/ToolDispatcher exactly
+        like a CapabilityPlanner-selected tool always has been. This
+        method itself still only ever reasons and proposes - it has no
+        authority to execute anything, and returns a request/response
+        pair that must always be gated. Wrapping never raises: a
+        disabled or unreachable model must never break the live
+        request whether or not its result is later used as the plan.
+
+        "reasoning_disabled" - model reasoning is turned off entirely
+        (self.enable_model_reasoning_shadow is False) - no request is
+        even built.
+        "reasoning_completed" - the gateway ran and returned a result
+        (which may itself be "model_not_configured",
+        "model_proposal_rejected", or "proposal_ready" - see
+        ModelReasoningGateway.reason()).
+        "reasoning_failed" - the gateway raised (unreachable model,
+        malformed response, etc.).
+        """
 
         if not self.enable_model_reasoning_shadow:
 
             return {
                 "status":
-                    "shadow_disabled"
+                    "reasoning_disabled"
             }
 
         try:
+
+            policy_text = (
+                self.model_reasoning_gateway.load_policy()
+            )
+
+            # Milestone 10A/11: the same bounded, model-facing context
+            # object already assembled for response drafting - reused
+            # verbatim (see query_context.py), not rebuilt here.
+            query_context = (
+                self._build_query_context(
+                    session_id=session_id,
+                    policy_text=policy_text,
+                    personalization_context=personalization_context,
+                )
+            )
 
             result = (
                 self.model_reasoning_gateway.reason(
@@ -453,13 +495,14 @@ class UriOrchestrator:
                         self._build_model_evidence_context(
                             session
                         )
-                    )
+                    ),
+                    query_context=query_context
                 )
             )
 
             return {
                 "status":
-                    "shadow_completed",
+                    "reasoning_completed",
 
                 "result":
                     result
@@ -469,11 +512,78 @@ class UriOrchestrator:
 
             return {
                 "status":
-                    "shadow_failed",
+                    "reasoning_failed",
 
                 "error":
                     str(exc)
             }
+
+    def _model_proposed_capability(
+        self,
+        model_reasoning
+    ):
+        """Extracts a usable, registry-validated single-capability
+        name from _run_model_reasoning's result, or None when there is
+        none to use.
+
+        Returns None (falls back to the deterministic
+        CapabilityPlanner - see process_user_input) whenever:
+        - model reasoning is disabled or failed to run;
+        - no model is configured;
+        - ModelReasoningGateway.validate_proposal() rejected the
+          proposal (e.g. an unregistered/invented capability name -
+          see model_reasoning_gateway.py's own validation, unmodified
+          here);
+        - the proposal names a workflow instead of - or in addition to
+          - a single action (dynamic, multi-step Brain-proposed
+          workflows remain deferred to a later M11 phase; this phase
+          only promotes the single-capability path).
+
+        Only a plain capability-name string ever crosses this
+        boundary - never the model's proposed arguments/reason text,
+        which are never read here or anywhere in process_user_input's
+        capability_selected branch. The deterministic runtime still
+        supplies the real arguments (request_text=user_text) exactly
+        as it always has for a CapabilityPlanner-selected tool - see
+        ApprovalGate.execute_tool, unmodified.
+
+        Never raises: any unexpected shape degrades to None, the same
+        as "no usable proposal," so a malformed result can never break
+        real decision-making.
+        """
+
+        try:
+
+            if model_reasoning.get("status") != "reasoning_completed":
+                return None
+
+            result = model_reasoning.get("result", {})
+
+            if result.get("status") != "proposal_ready":
+                return None
+
+            proposal = result.get("proposal")
+
+            if not isinstance(proposal, dict):
+                return None
+
+            if proposal.get("workflow") is not None:
+                return None
+
+            action = proposal.get("action")
+
+            if not isinstance(action, dict):
+                return None
+
+            capability = action.get("capability")
+
+            if not isinstance(capability, str) or not capability.strip():
+                return None
+
+            return capability
+
+        except Exception:
+            return None
 
     # ==========================================================
     # UNIFIED QUERY CONTEXT (Milestone 10A)
@@ -815,34 +925,40 @@ class UriOrchestrator:
         self,
         session_id,
         model_reasoning_shadow,
-        comparison_tool_name
+        comparison_tool_name,
+        used_as_plan
     ):
         """
-        Record a single, small audit event comparing the model
-        reasoning shadow's proposed capability against the tool
-        actually selected on this turn (by SkillMemory or
-        CapabilityPlanner) - mirrors _record_skill_router_audit,
-        the same pattern already used to compare Skill Router V1's
-        shadow pick.
+        Records one audit event per turn describing this turn's model
+        reasoning outcome: what it proposed, what the deterministic
+        fallback (SkillMemory/CapabilityPlanner) would have picked
+        instead (comparison_tool_name), and - as of Milestone 11 Phase
+        1 - whether the proposal actually became the real plan
+        (used_as_plan) rather than only ever being an audit
+        comparison. Before this milestone every event here was purely
+        observational by construction; that is no longer universally
+        true, so "agrees_with_planner"/used_as_plan together are what
+        make this event honest about which one actually decided
+        execution on a given turn, instead of always implying the
+        deterministic planner did.
 
-        Nothing is recorded when the shadow had no model configured
-        (model_reasoning_gateway.model_callable is None - the
-        default everywhere except where a real ModelProvider-backed
-        callable has been explicitly wired in). There is no proposal
-        to compare in that case, so a comparison event would only be
-        noise.
+        Nothing is recorded when there was no model configured to
+        propose anything (model_reasoning_gateway.model_callable is
+        None, the default everywhere except where a real
+        ModelProvider-backed callable has been explicitly wired in) -
+        there is nothing to record in that case.
 
-        Never raises - a failure to audit must not break the live
-        request the shadow is only observing.
+        Never raises - a failure to audit must never break the live
+        request, whether or not this turn's proposal was actually used.
         """
 
         try:
 
-            shadow_status = model_reasoning_shadow.get(
+            reasoning_status = model_reasoning_shadow.get(
                 "status"
             )
 
-            if shadow_status != "shadow_completed":
+            if reasoning_status != "reasoning_completed":
                 return
 
             result = model_reasoning_shadow.get(
@@ -890,7 +1006,17 @@ class UriOrchestrator:
 
                     "agrees_with_planner":
                         model_capability
-                        == comparison_tool_name
+                        == comparison_tool_name,
+
+                    # Milestone 11 Phase 1: True only when this
+                    # proposal (not SkillMemory/CapabilityPlanner) was
+                    # the actual source of process_user_input's plan -
+                    # see _model_proposed_capability. False whenever a
+                    # learned skill took priority, the proposal was
+                    # rejected/absent, or it named a workflow rather
+                    # than a single action.
+                    "used_as_plan":
+                        bool(used_as_plan)
                 }
             )
 
@@ -1607,17 +1733,23 @@ class UriOrchestrator:
             )
 
             # --------------------------------------------------
-            # NEW:
-            # Run model reasoning as a shadow proposal only.
+            # Run model reasoning (Milestone 11 Phase 1).
             #
-            # It cannot execute anything.
-            # It cannot replace the deterministic planner.
+            # It still never executes anything itself. Its result MAY
+            # become the real plan for the direct single-capability
+            # path below (see _model_proposed_capability) when it
+            # proposes a registered capability that
+            # ModelReasoningGateway.validate_proposal() already
+            # accepted - otherwise CapabilityPlanner remains the
+            # fallback, exactly as before this milestone.
             # --------------------------------------------------
 
             model_reasoning = (
-                self._run_model_reasoning_shadow(
+                self._run_model_reasoning(
                     user_text=user_text,
-                    session=session
+                    session=session,
+                    session_id=session_id,
+                    personalization_context=personalization_context
                 )
             )
 
@@ -1642,12 +1774,33 @@ class UriOrchestrator:
                 )
             )
 
+            # The deterministic fallback pick - what would have
+            # executed without any Brain involvement at all. Computed
+            # once and reused both as the comparison baseline for the
+            # audit events below and, when nothing overrides it, as
+            # the actual fallback plan further down - never
+            # recomputed.
+            capability_planner_plan = (
+                self.capability_planner.plan(
+                    semantic_result
+                )
+            )
+
             comparison_tool_name = (
                 learned_skill.get("tool_name")
                 if learned_skill
-                else self.capability_planner.plan(
-                    semantic_result
-                ).get("tool_name")
+                else capability_planner_plan.get("tool_name")
+            )
+
+            # A validated, registered-capability proposal from model
+            # reasoning (Milestone 11 Phase 1) - None whenever there is
+            # nothing usable to promote to a real plan (see
+            # _model_proposed_capability's own docstring for every
+            # reason that can be).
+            model_capability_proposal = (
+                self._model_proposed_capability(
+                    model_reasoning
+                )
             )
 
             self._record_skill_router_audit(
@@ -1659,7 +1812,11 @@ class UriOrchestrator:
             self._record_model_reasoning_audit(
                 session_id=session_id,
                 model_reasoning_shadow=model_reasoning,
-                comparison_tool_name=comparison_tool_name
+                comparison_tool_name=comparison_tool_name,
+                used_as_plan=(
+                    not learned_skill
+                    and model_capability_proposal is not None
+                )
             )
 
             response = {
@@ -1711,8 +1868,31 @@ class UriOrchestrator:
             # capability" error instead of a false "recognized"
             # message, for the same reason.
             #
-            # IMPORTANT:
-            # The model proposal is NOT used here yet.
+            # IMPORTANT (Milestone 11 Phase 1):
+            # A learned skill still takes priority over a fresh model
+            # proposal - it represents a prior, already-successful
+            # resolution for this exact task type/domain, and is
+            # itself always genuinely re-executed and re-authorized
+            # below, never short-circuited. Below that, a validated
+            # model proposal (model_capability_proposal - a registered
+            # capability name that already passed
+            # ModelReasoningGateway.validate_proposal()) IS now used as
+            # the real plan for this single-capability path, in place
+            # of CapabilityPlanner's keyword-scored pick.
+            # CapabilityPlanner.plan() remains the deterministic
+            # fallback whenever there is no learned skill and no
+            # usable model proposal (model not configured/disabled,
+            # proposal rejected as invalid/unregistered, or the model
+            # proposed a workflow instead of a single action).
+            #
+            # In every branch, only a plain capability-name string
+            # crosses into "plan" - the model's proposed arguments/
+            # reason text are never used, and this plan is still routed
+            # through the exact same capability_selected branch below
+            # (ApprovalGate.execute_tool, unmodified): approval
+            # requirements, execution, and persistence are decided
+            # exactly as they always have been, regardless of which of
+            # these three sources chose the tool_name.
             # --------------------------------------------------
 
             if learned_skill:
@@ -1741,13 +1921,28 @@ class UriOrchestrator:
                         )
                 }
 
+            elif model_capability_proposal is not None:
+
+                plan = {
+                    "status":
+                        "capability_selected",
+
+                    "tool_name":
+                        model_capability_proposal,
+
+                    "reason":
+                        "Brain-proposed capability, already validated "
+                        "against the registered capability catalogue "
+                        "by ModelReasoningGateway before being used as "
+                        "the plan.",
+
+                    "source":
+                        "model_reasoning"
+                }
+
             else:
 
-                plan = (
-                    self.capability_planner.plan(
-                        semantic_result
-                    )
-                )
+                plan = capability_planner_plan
 
             response["plan"] = plan
 

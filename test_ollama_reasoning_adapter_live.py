@@ -1,6 +1,6 @@
-"""Real integration tests for the model-reasoning shadow against a
-locally running Ollama server. Deliberately does NOT mock Ollama - see
-test_ollama_provider_live.py for the same pattern used in the previous
+"""Real integration tests for model reasoning against a locally
+running Ollama server. Deliberately does NOT mock Ollama - see
+test_ollama_provider_live.py for the same pattern used in a previous
 milestone. Skips (rather than fails) when Ollama isn't reachable.
 """
 
@@ -72,7 +72,7 @@ class OllamaReasoningAdapterLiveTests(unittest.TestCase):
                 gateway.registered_capability_names(),
             )
 
-    def test_real_orchestrator_shadow_stays_observational(self):
+    def test_real_orchestrator_reasoning_runs_end_to_end(self):
         # A fresh session_id every run - see test_ollama_provider_live.py
         # for why (SessionManager persists workflow state to disk).
         session_id = f"reasoning-shadow-live-{uuid.uuid4()}"
@@ -96,13 +96,18 @@ class OllamaReasoningAdapterLiveTests(unittest.TestCase):
 
             self.assertEqual(result["status"], "success")
             self.assertEqual(
-                result["model_reasoning"]["status"], "shadow_completed"
+                result["model_reasoning"]["status"], "reasoning_completed"
             )
 
-            # The shadow ran for real, but the actual execution path
-            # (plan/workflow/execution) is still whatever the
-            # deterministic runtime produced - completely independent
-            # of what the shadow proposed.
+            # Milestone 11 Phase 1: unlike before this milestone, the
+            # real model reasoning result MAY now be what actually
+            # decided plan/execution for this turn (see
+            # test_orchestrator_model_driven_selection.py for the
+            # deterministic, non-live proof) - this live test only
+            # asserts the pipeline runs end to end against a real
+            # model without raising; it does not assert independence
+            # from execution, since that is no longer guaranteed by
+            # design.
             self.assertIn("execution", result)
         finally:
             if os.path.exists(session_file):
@@ -137,7 +142,7 @@ class OllamaReasoningAdapterLiveTests(unittest.TestCase):
 
             self.assertEqual(result["status"], "success")
             self.assertEqual(
-                result["model_reasoning"]["status"], "shadow_failed"
+                result["model_reasoning"]["status"], "reasoning_failed"
             )
         finally:
             if os.path.exists(session_file):

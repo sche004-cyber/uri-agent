@@ -34,7 +34,7 @@ def _model_reasoning_events(orchestrator, session_id):
 
 def _fake_callable_proposing(capability_name):
     """A Callable[[str], str] matching model_callable's contract - no
-    network, no Ollama. Used to drive the comparison-audit logic
+    network, no Ollama. Used to drive the audit/decision logic
     deterministically."""
 
     def _call(request_json):
@@ -47,11 +47,16 @@ class TestOrchestratorModelReasoningAudit(unittest.TestCase):
     """
     _record_model_reasoning_audit mirrors the existing
     _record_skill_router_audit pattern: a single, small AuditTrail
-    event comparing the model reasoning shadow's proposed capability
-    against the tool actually selected on this turn. These tests
-    assert it stays observational (never changes plan/execution),
-    stays quiet when there's nothing configured to compare, and never
-    breaks the live request if audit recording itself fails.
+    event comparing the model's proposed capability against the tool
+    the deterministic fallback (SkillMemory/CapabilityPlanner) would
+    have picked instead. As of Milestone 11 Phase 1 this is no longer
+    purely observational: a validated, registered-capability proposal
+    is now actually used as the plan for the direct single-capability
+    path (see test_orchestrator_model_driven_selection.py for the
+    execution-level proof) - these tests assert the audit event itself
+    stays honest about that (the new "used_as_plan" field), stays quiet
+    when there's nothing configured to compare, and never breaks the
+    live request if audit recording itself fails.
     """
 
     def setUp(self):
@@ -115,13 +120,18 @@ class TestOrchestratorModelReasoningAudit(unittest.TestCase):
             result["model_reasoning"]["result"]["status"],
             "model_not_configured",
         )
+        # Falls back to CapabilityPlanner exactly as before this
+        # milestone whenever there is nothing to propose.
+        self.assertEqual(
+            result["execution"]["tool"], "draft_institutional_note"
+        )
 
         events = _model_reasoning_events(
             orchestrator, "model-reasoning-audit-1"
         )
         self.assertEqual(len(events), 0)
 
-    def test_records_agreement_when_proposal_matches_planner(self):
+    def test_used_as_plan_true_when_proposal_matches_planner(self):
         gateway = ModelReasoningGateway(
             model_callable=_fake_callable_proposing(
                 "draft_institutional_note"
@@ -136,12 +146,14 @@ class TestOrchestratorModelReasoningAudit(unittest.TestCase):
             user_text="Draft an office note.",
         )
 
-        # Fully observational: execution is still driven by
-        # CapabilityPlanner/ToolDispatcher, not by the shadow proposal.
+        # The model's own (validated) proposal is what actually
+        # executed here - it happens to agree with what
+        # CapabilityPlanner would also have picked.
         self.assertEqual(result["status"], "success")
         self.assertEqual(
             result["execution"]["tool"], "draft_institutional_note"
         )
+        self.assertEqual(result["plan"]["source"], "model_reasoning")
 
         events = _model_reasoning_events(
             orchestrator, "model-reasoning-audit-2"
@@ -157,8 +169,14 @@ class TestOrchestratorModelReasoningAudit(unittest.TestCase):
             event.metadata["planner_tool_name"], "draft_institutional_note"
         )
         self.assertTrue(event.metadata["agrees_with_planner"])
+        self.assertTrue(event.metadata["used_as_plan"])
 
-    def test_records_disagreement_when_proposal_differs_from_planner(self):
+    def test_disagreeing_proposal_is_used_and_recorded_as_such(self):
+        # Milestone 11 Phase 1: unlike before this milestone, a
+        # registry-valid proposal that disagrees with what
+        # CapabilityPlanner would have picked is now the one that
+        # actually executes - the deterministic planner no longer wins
+        # by default once a valid Brain proposal exists.
         gateway = ModelReasoningGateway(
             model_callable=_fake_callable_proposing(
                 "extract_student_records"
@@ -173,11 +191,10 @@ class TestOrchestratorModelReasoningAudit(unittest.TestCase):
             user_text="Draft an office note.",
         )
 
-        # Still fully observational - the deterministic planner's
-        # choice is what actually executed, regardless of disagreement.
         self.assertEqual(
-            result["execution"]["tool"], "draft_institutional_note"
+            result["execution"]["tool"], "extract_student_records"
         )
+        self.assertEqual(result["plan"]["source"], "model_reasoning")
 
         events = _model_reasoning_events(
             orchestrator, "model-reasoning-audit-3"
@@ -186,7 +203,11 @@ class TestOrchestratorModelReasoningAudit(unittest.TestCase):
 
         event = events[0]
         self.assertEqual(event.capability, "extract_student_records")
+        # Disagreement with what the deterministic fallback would have
+        # picked is recorded honestly ...
         self.assertFalse(event.metadata["agrees_with_planner"])
+        # ... but it was still the proposal that actually executed.
+        self.assertTrue(event.metadata["used_as_plan"])
 
     def test_audit_failure_never_breaks_the_live_request(self):
         gateway = ModelReasoningGateway(
