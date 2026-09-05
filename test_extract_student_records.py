@@ -8,6 +8,7 @@ import unittest
 
 from uri_core.tools.extract_student_records import (
     StudentRecordExtractor,
+    _extract_all_candidates,
     _extract_roll_number,
 )
 
@@ -143,6 +144,118 @@ class MaterialInputDifferenceTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "unavailable")
         self.assertNotIn("cgpa", result)
+
+
+class AmbiguousInputTests(unittest.TestCase):
+    """Milestone 8A correction: multiple plausible identifiers must
+    trigger clarification, never a silent pick of one materially
+    different candidate."""
+
+    def test_one_clear_identifier_executes_normally(self):
+        query_service = _FakeQueryService(
+            {
+                "BTECH-2023-001": {
+                    "success": True,
+                    "found": True,
+                    "answer": "Student found: Asha Rai (BTECH-2023-001).",
+                    "student": {
+                        "roll_number": "BTECH-2023-001",
+                        "name": "Asha Rai",
+                        "record": {"CGPA": 8.42},
+                    },
+                    "evidence": [],
+                    "raw_match_count": 1,
+                }
+            }
+        )
+        tool = StudentRecordExtractor(query_service=query_service)
+
+        result = tool.execute(
+            request_text="what is the cgpa for roll number BTECH-2023-001"
+        )
+
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(query_service.calls, ["BTECH-2023-001"])
+
+    def test_two_distinct_identifiers_trigger_clarification_not_a_lookup(
+        self,
+    ):
+        query_service = _FakeQueryService({})
+        tool = StudentRecordExtractor(query_service=query_service)
+
+        result = tool.execute(
+            request_text=(
+                "look up roll number BTECH-2023-001 or BTECH-2023-002 "
+                "whichever you find first"
+            )
+        )
+
+        self.assertEqual(result["status"], "clarification_required")
+        self.assertIsNone(result["student_roll"])
+        self.assertEqual(
+            set(result["candidates"]),
+            {"BTECH-2023-001", "BTECH-2023-002"},
+        )
+        # The real service must never be queried for either candidate
+        # until the ambiguity is resolved by the user.
+        self.assertEqual(query_service.calls, [])
+
+    def test_labeled_plus_unlabeled_second_identifier_is_still_ambiguous(
+        self,
+    ):
+        # Only the first identifier is explicitly labeled "roll
+        # number" - the second, unlabeled one is still a real
+        # candidate the tool must not silently ignore.
+        query_service = _FakeQueryService({})
+        tool = StudentRecordExtractor(query_service=query_service)
+
+        result = tool.execute(
+            request_text="compare roll number BTECH-2023-001 with BTECH-2023-002"
+        )
+
+        self.assertEqual(result["status"], "clarification_required")
+        self.assertEqual(query_service.calls, [])
+
+    def test_the_same_identifier_repeated_is_not_ambiguous(self):
+        query_service = _FakeQueryService(
+            {
+                "BTECH-2023-001": {
+                    "success": True,
+                    "found": True,
+                    "answer": "Student found: Asha Rai (BTECH-2023-001).",
+                    "student": {
+                        "roll_number": "BTECH-2023-001",
+                        "name": "Asha Rai",
+                        "record": {},
+                    },
+                    "evidence": [],
+                    "raw_match_count": 1,
+                }
+            }
+        )
+        tool = StudentRecordExtractor(query_service=query_service)
+
+        result = tool.execute(
+            request_text=(
+                "roll number BTECH-2023-001 - please confirm "
+                "BTECH-2023-001 is correct"
+            )
+        )
+
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(query_service.calls, ["BTECH-2023-001"])
+
+    def test_extract_all_candidates_dedupes_case_insensitively(self):
+        candidates = _extract_all_candidates(
+            "roll number btech-2023-001, i.e. BTECH-2023-001"
+        )
+        self.assertEqual(len(candidates), 1)
+
+    def test_single_candidate_helper_still_works_for_one_identifier(self):
+        self.assertEqual(
+            _extract_roll_number("roll number BTECH-2023-001"),
+            "BTECH-2023-001",
+        )
 
 
 if __name__ == "__main__":

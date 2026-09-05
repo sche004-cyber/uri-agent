@@ -190,6 +190,14 @@ class CapabilityPlanner:
                 "description": gap.description,
                 "status": gap.status,
                 "limitations": gap.limitations,
+                # "not_implemented" (no execution adapter exists at
+                # all) vs "unavailable_runtime" (an adapter exists but
+                # this runtime can't use it right now) - see
+                # CapabilityDescriptor.gap_reason. The response-
+                # narrative path treats these very differently: only
+                # the former forbids implying that more detail/
+                # authorization would make it executable.
+                "reason": gap.gap_reason,
             }
             for gap in gaps
         ]

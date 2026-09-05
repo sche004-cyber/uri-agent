@@ -22,19 +22,47 @@ _GENERIC_ID_RE = re.compile(
 
 
 def _extract_roll_number(request_text: str):
+    """Single-candidate convenience wrapper kept for any caller still
+    passing one identifier directly - internal execute() now always
+    goes through _extract_all_candidates so it can detect ambiguity
+    rather than silently taking the first match."""
+
+    candidates = _extract_all_candidates(request_text)
+    return candidates[0] if candidates else None
+
+
+def _extract_all_candidates(request_text: str) -> list:
+    """Every distinct identifier-shaped token actually present in the
+    request - labeled ("roll number X") and unlabeled alike, deduped
+    case-insensitively, order preserved. A label on one candidate is
+    not treated as "safely ignore the others": if the request also
+    names a second, different identifier-shaped token, that is a real
+    ambiguity the caller must ask about, not silently resolve by
+    picking whichever the label happened to sit next to."""
+
     text = request_text or ""
 
-    match = _LABELED_ROLL_RE.search(text)
-    if match:
-        return match.group(1).strip().rstrip(".,")
+    raw_candidates = list(_LABELED_ROLL_RE.findall(text))
 
-    match = _GENERIC_ID_RE.search(text)
-    if match:
-        candidate = match.group(1).strip().rstrip(".,")
-        if any(c.isdigit() for c in candidate) and any(c.isalpha() for c in candidate):
-            return candidate
+    for match in _GENERIC_ID_RE.finditer(text):
+        candidate = match.group(1)
+        if any(c.isdigit() for c in candidate) and any(
+            c.isalpha() for c in candidate
+        ):
+            raw_candidates.append(candidate)
 
-    return None
+    seen = set()
+    unique = []
+
+    for candidate in raw_candidates:
+        cleaned = candidate.strip().rstrip(".,")
+        key = cleaned.upper()
+
+        if key and key not in seen:
+            seen.add(key)
+            unique.append(cleaned)
+
+    return unique
 
 
 class StudentRecordExtractor:
@@ -49,9 +77,15 @@ class StudentRecordExtractor:
 
     def execute(self, **kwargs):
         request_text = kwargs.get("request_text", "") or ""
-        roll_number = kwargs.get("roll_number") or _extract_roll_number(request_text)
+        explicit_roll_number = kwargs.get("roll_number")
 
-        if not roll_number:
+        candidates = (
+            [explicit_roll_number]
+            if explicit_roll_number
+            else _extract_all_candidates(request_text)
+        )
+
+        if not candidates:
             return {
                 "status": "input_required",
                 "student_roll": None,
@@ -61,6 +95,20 @@ class StudentRecordExtractor:
                     "to look up."
                 ),
             }
+
+        if len(candidates) > 1:
+            return {
+                "status": "clarification_required",
+                "student_roll": None,
+                "candidates": candidates,
+                "message": (
+                    "The request names more than one possible student "
+                    "identifier (" + ", ".join(candidates) + "). Please "
+                    "specify which one you mean."
+                ),
+            }
+
+        roll_number = candidates[0]
 
         result = self._query_service.answer_student_query(roll_number)
 

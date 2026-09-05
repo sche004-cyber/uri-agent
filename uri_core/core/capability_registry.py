@@ -54,6 +54,19 @@ VALID_AVAILABILITY = {
     "unknown",
 }
 
+# Availability values that mean "an execution adapter genuinely exists,
+# but this runtime cannot use it right now" - deliberately excludes
+# "unknown" (an unset/unlabeled field on an otherwise-implemented
+# entry), which is treated as available rather than as a gap, so an
+# incomplete registry entry never becomes a false-positive gap.
+_RUNTIME_UNAVAILABLE_STATES = {
+    "unavailable_on_runtime",
+    "unavailable_missing_dependency",
+}
+
+GAP_REASON_NOT_IMPLEMENTED = "not_implemented"
+GAP_REASON_UNAVAILABLE_RUNTIME = "unavailable_runtime"
+
 VALID_APPROVAL_REQUIREMENT = {"none", "user_approval_required"}
 
 VALID_RISK = {"controlled", "low", "variable", "high", "unknown"}
@@ -86,6 +99,40 @@ class CapabilityDescriptor:
         may rely on to decide whether an entry could ever be selected."""
 
         return self.status == "implemented"
+
+    @property
+    def gap_reason(self) -> Optional[str]:
+        """Why this descriptor cannot be relied on right now, distinct
+        from is_executable's plain yes/no - the response-narrative path
+        (response_drafting.py/response_validation.py) needs this
+        distinction because the two reasons carry very different
+        honesty obligations:
+
+        - GAP_REASON_NOT_IMPLEMENTED: no execution adapter exists at
+          all (status is "planned"/"not_implemented"/unrecognized).
+          Nothing the user says or authorizes changes this - URI must
+          never imply that more detail, clarification, or approval
+          would make it executable.
+        - GAP_REASON_UNAVAILABLE_RUNTIME: an adapter genuinely exists
+          (status is "implemented") but this runtime cannot use it
+          right now (availability is explicitly
+          "unavailable_on_runtime"/"unavailable_missing_dependency",
+          e.g. a missing credential file) - here it IS honest to say
+          what would make it work.
+
+        Returns None when the capability is genuinely available -
+        including when status is "implemented" and availability is
+        merely "unknown" (unset), which is treated as available rather
+        than as a gap so an incomplete registry entry never becomes a
+        false-positive gap."""
+
+        if self.status != "implemented":
+            return GAP_REASON_NOT_IMPLEMENTED
+
+        if self.availability in _RUNTIME_UNAVAILABLE_STATES:
+            return GAP_REASON_UNAVAILABLE_RUNTIME
+
+        return None
 
 
 def _clean_choice(value: Any, valid: set, default: str) -> str:
@@ -210,14 +257,16 @@ class CapabilityRegistry:
         return None
 
     def known_gaps(self) -> List[CapabilityDescriptor]:
-        """Every non-executable descriptor (planned/not_implemented/
-        unknown-status) - informational only, used by
-        CapabilityPlanner's gap-reporting path to explain a miss
+        """Every descriptor with a gap_reason - not just
+        planned/not_implemented/unknown-status entries (is_executable's
+        False case) but also an "implemented" entry this runtime
+        currently cannot use (see gap_reason). Informational only, used
+        by CapabilityPlanner's gap-reporting path to explain a miss
         honestly instead of a single generic sentence. Never consulted
         for selection - see CapabilityDescriptor.is_executable."""
 
         return [
             descriptor
             for descriptor in self.list_capabilities()
-            if not descriptor.is_executable
+            if descriptor.gap_reason is not None
         ]

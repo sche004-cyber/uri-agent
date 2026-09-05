@@ -72,6 +72,41 @@ _SUCCESS_CLAIM_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
+# For a "not_implemented" gap specifically (see
+# CapabilityDescriptor.gap_reason / response_drafting.py's four-state
+# distinction) - no execution adapter exists at all, so nothing the
+# user provides changes that. A live-observed failure: even with the
+# prompt instruction and the length caps above in place, a draft could
+# still stay short and evidence-proportional while ending with
+# something like "To move forward, I recommend providing more details
+# ... This will help in tailoring the optimization steps to your
+# needs" - true for an "unavailable_runtime" gap (a missing credential
+# really would unblock it) but false for "not_implemented" (there is
+# no adapter to unblock). Deliberately a modest, imprecise phrase list,
+# not a parser - same false-positive-acceptable, false-negative-not
+# posture as _SUCCESS_CLAIM_PATTERN above.
+_IMPLIES_FUTURE_CAPABILITY_PATTERNS = (
+    re.compile(r"\bthis will help\b", re.IGNORECASE),
+    re.compile(r"\bto (proceed|move forward)\b", re.IGNORECASE),
+    re.compile(
+        r"\bonce you (provide|share|specify|give|authorize|approve)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(r"\btailor(ed|ing)?\b", re.IGNORECASE),
+    re.compile(
+        r"\b(?:please|kindly)?\s*(?:provide|share|specify|give|"
+        r"let me know|tell me)\b[^.]{0,80}\b(?:will|can|could|would|"
+        r"help|allow|enable)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\bif you (?:provide|share|specify|give|authorize|approve)\b"
+        r"[^.]{0,80}\b(?:i (?:can|will|could|would)|"
+        r"uri (?:can|will|could|would))\b",
+        re.IGNORECASE,
+    ),
+)
+
 
 class ResponseValidationError(ValueError):
     """Raised when a drafted response fails claim-consistency
@@ -113,6 +148,16 @@ def validate_drafted_response(
             "'success'."
         )
 
+    if execution_status != "success" and _has_not_implemented_gap(
+        outcome
+    ) and _implies_future_capability(text):
+        raise ResponseValidationError(
+            "draft implies that more detail, clarification, or "
+            "authorization would make a not_implemented capability "
+            "executable - no execution adapter exists at all for it, "
+            "so nothing the user provides changes that."
+        )
+
     if execution_status != "success":
 
         evidence_length = _outcome_evidence_length(outcome)
@@ -150,6 +195,46 @@ def validate_drafted_response(
             )
 
     return text
+
+
+def _has_not_implemented_gap(outcome: Dict[str, Any]) -> bool:
+    """True when outcome.known_gaps contains at least one entry whose
+    gap reason is "not_implemented" (see
+    CapabilityDescriptor.gap_reason) - i.e. no execution adapter
+    exists at all for it. Falls back to the older status field
+    (status in "planned"/"not_implemented") when "reason" is absent,
+    so outcomes/tests built before this field existed are still
+    treated correctly rather than silently exempted."""
+
+    known_gaps = outcome.get("known_gaps")
+
+    if not isinstance(known_gaps, list):
+        return False
+
+    for gap in known_gaps:
+
+        if not isinstance(gap, dict):
+            continue
+
+        reason = gap.get("reason")
+
+        if reason == "not_implemented":
+            return True
+
+        if reason is None and gap.get("status") in (
+            "planned",
+            "not_implemented",
+        ):
+            return True
+
+    return False
+
+
+def _implies_future_capability(text: str) -> bool:
+    return any(
+        pattern.search(text)
+        for pattern in _IMPLIES_FUTURE_CAPABILITY_PATTERNS
+    )
 
 
 def _outcome_evidence_length(outcome: Dict[str, Any]) -> int:

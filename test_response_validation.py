@@ -277,5 +277,123 @@ class GroundingRatioTests(unittest.TestCase):
             validate_drafted_response(over_cap, outcome)
 
 
+class NotImplementedActionabilityTests(unittest.TestCase):
+    """Milestone 8A correction: a not_implemented gap (no execution
+    adapter exists at all) must never be explained with language
+    implying that more detail, clarification, or authorization would
+    make it executable - that was false, and slipped past the length/
+    ratio checks alone (live-observed: a short, evidence-proportional
+    draft still ended with "this will help in tailoring the
+    optimization steps"). unavailable_runtime is the opposite case -
+    an adapter exists, so the same phrasing there is honest."""
+
+    def _not_implemented_outcome(self, reason="not_implemented"):
+        return _outcome(
+            status="failed",
+            known_gaps=[
+                {
+                    "id": "pc_system_optimization",
+                    "status": "not_implemented",
+                    "reason": reason,
+                    "description": "Optimize this device's performance.",
+                    "limitations": "No execution adapter exists yet.",
+                }
+            ],
+        )
+
+    def test_live_observed_phrasing_is_rejected(self):
+        draft = (
+            "It seems there was an issue with the workflow to optimize "
+            "your PC. The system was unable to proceed because it "
+            "couldn't find any drafted output to review. To move "
+            "forward, I recommend providing more details about your "
+            "PC's specifications and any specific performance issues "
+            "you're experiencing. This will help in tailoring the "
+            "optimization steps to your needs."
+        )
+
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(
+                draft, self._not_implemented_outcome()
+            )
+
+    def test_tailor_language_alone_is_rejected(self):
+        draft = (
+            "URI can't optimize your PC yet. Share more about your "
+            "setup and I can look at tailoring the steps."
+        )
+
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(
+                draft, self._not_implemented_outcome()
+            )
+
+    def test_once_you_authorize_language_is_rejected(self):
+        draft = (
+            "I can't optimize your PC right now. Once you authorize "
+            "this, I can proceed."
+        )
+
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(
+                draft, self._not_implemented_outcome()
+            )
+
+    def test_honest_explanation_with_no_implied_actionability_is_allowed(
+        self,
+    ):
+        draft = (
+            "I can't optimize your PC yet - that's a capability URI "
+            "knows about but doesn't have an execution adapter for "
+            "yet, so I can't act on it."
+        )
+
+        result = validate_drafted_response(
+            draft, self._not_implemented_outcome()
+        )
+        self.assertTrue(result)
+
+    def test_same_phrasing_is_allowed_for_an_unavailable_runtime_gap(
+        self,
+    ):
+        # A real adapter exists here - a missing credential genuinely
+        # would unblock it, so this phrasing is honest, not implied.
+        draft = (
+            "I can't read that spreadsheet right now - it needs "
+            "Google Drive credentials configured. Once you provide "
+            "those, I can try again."
+        )
+
+        result = validate_drafted_response(
+            draft, self._not_implemented_outcome(reason="unavailable_runtime")
+        )
+        self.assertTrue(result)
+
+    def test_missing_reason_field_falls_back_to_status_for_backward_compat(
+        self,
+    ):
+        # Older/test payloads built before the "reason" field existed
+        # (or a caller that only sets status) must still be protected,
+        # not silently exempted.
+        outcome = _outcome(
+            status="failed",
+            known_gaps=[
+                {
+                    "id": "pc_system_optimization",
+                    "status": "not_implemented",
+                    "description": "Optimize this device's performance.",
+                    "limitations": "No execution adapter exists yet.",
+                }
+            ],
+        )
+        draft = (
+            "I can't do this yet. To move forward, please share more "
+            "details - this will help."
+        )
+
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(draft, outcome)
+
+
 if __name__ == "__main__":
     unittest.main()

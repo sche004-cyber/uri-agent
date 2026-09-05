@@ -65,6 +65,29 @@ class CondenseKnownGapsTests(unittest.TestCase):
         self.assertEqual(condensed[0]["id"], "pc_system_optimization")
         self.assertEqual(condensed[0]["status"], "planned")
 
+    def test_reason_is_preserved_verbatim(self):
+        gaps = [
+            {
+                "id": "pc_system_optimization",
+                "status": "not_implemented",
+                "reason": "not_implemented",
+                "description": "d",
+                "limitations": "l",
+            },
+            {
+                "id": "fetch_drive_spreadsheet",
+                "status": "implemented",
+                "reason": "unavailable_runtime",
+                "description": "d",
+                "limitations": "l",
+            },
+        ]
+
+        condensed = condense_known_gaps(gaps)
+
+        self.assertEqual(condensed[0]["reason"], "not_implemented")
+        self.assertEqual(condensed[1]["reason"], "unavailable_runtime")
+
     def test_non_list_input_passes_through_unchanged(self):
         self.assertIsNone(condense_known_gaps(None))
         self.assertEqual(condense_known_gaps("not a list"), "not a list")

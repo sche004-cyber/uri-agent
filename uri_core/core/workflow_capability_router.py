@@ -395,23 +395,24 @@ class WorkflowCapabilityRouter:
         step: dict,
         workflow: dict
     ) -> dict:
-
-        decision_context = (
-            workflow.get(
-                "decision_context",
-                {}
-            )
-        )
+        """Only reached by the generic workflow shape (see
+        workflow_planner.py's _create_steps) - "noting"/"insurance"
+        tasks route through draft_output instead, which dispatches to
+        a real, registered tool. There is no real, implemented
+        capability behind this generic bucket at all (no
+        TASK_REQUIREMENTS entry in clarification.py, no drafting/
+        compilation tool wired in), so claiming "prepared: True" here
+        would be a false claim of progress - this is a genuine missing-
+        capability outcome, distinct from a missing-evidence or
+        missing-resource one, and must be reported as such rather than
+        silently faked."""
 
         return {
-            "status": "success",
-            "data": {
-                "prepared": True,
-                "goal":
-                    workflow.get("goal"),
-                "decision_context":
-                    decision_context
-            }
+            "status": "failed",
+            "error": (
+                "URI does not have an implemented capability for "
+                "this kind of task yet."
+            )
         }
 
     def draft_output(

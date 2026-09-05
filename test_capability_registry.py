@@ -191,6 +191,107 @@ class CapabilityRegistryTests(unittest.TestCase):
         for gap in registry.known_gaps():
             self.assertFalse(gap.is_executable)
 
+    def test_gap_reason_is_not_implemented_for_planned_status(self):
+        self._write(
+            {
+                "planned_capabilities": {
+                    "future_thing": {
+                        "description": "Not built yet.",
+                        "status": "not_implemented",
+                    }
+                }
+            }
+        )
+        registry = CapabilityRegistry(registry_path=self.registry_path)
+        descriptor = registry.describe_status("future_thing")
+        self.assertEqual(descriptor.gap_reason, "not_implemented")
+
+    def test_gap_reason_is_unavailable_runtime_for_implemented_but_unavailable(
+        self,
+    ):
+        self._write(
+            {
+                "active_tools": {
+                    "real_tool": {
+                        "file_path": "x.py",
+                        "class_name": "X",
+                        "method": "run",
+                        "status": "implemented",
+                        "availability": "unavailable_missing_dependency",
+                    }
+                }
+            }
+        )
+        registry = CapabilityRegistry(registry_path=self.registry_path)
+        descriptor = registry.describe_status("real_tool")
+        self.assertEqual(descriptor.gap_reason, "unavailable_runtime")
+
+    def test_gap_reason_is_none_for_a_genuinely_available_capability(self):
+        self._write(
+            {
+                "active_tools": {
+                    "real_tool": {
+                        "file_path": "x.py",
+                        "class_name": "X",
+                        "method": "run",
+                        "status": "implemented",
+                        "availability": "available",
+                    }
+                }
+            }
+        )
+        registry = CapabilityRegistry(registry_path=self.registry_path)
+        descriptor = registry.describe_status("real_tool")
+        self.assertIsNone(descriptor.gap_reason)
+
+    def test_gap_reason_is_none_when_availability_is_merely_unknown(self):
+        # An incomplete registry entry (no availability field set at
+        # all) must not become a false-positive gap - "unknown" is
+        # treated as available, matching test_known_gaps_excludes_
+        # implemented_capabilities's existing fixture shape.
+        self._write(
+            {
+                "active_tools": {
+                    "real_tool": {
+                        "file_path": "x.py",
+                        "class_name": "X",
+                        "method": "run",
+                        "status": "implemented",
+                    }
+                }
+            }
+        )
+        registry = CapabilityRegistry(registry_path=self.registry_path)
+        descriptor = registry.describe_status("real_tool")
+        self.assertIsNone(descriptor.gap_reason)
+
+    def test_known_gaps_now_includes_implemented_but_unavailable_tools(
+        self,
+    ):
+        self._write(
+            {
+                "active_tools": {
+                    "real_tool": {
+                        "file_path": "x.py",
+                        "class_name": "X",
+                        "method": "run",
+                        "status": "implemented",
+                        "availability": "available",
+                    },
+                    "broken_tool": {
+                        "file_path": "y.py",
+                        "class_name": "Y",
+                        "method": "run",
+                        "status": "implemented",
+                        "availability": "unavailable_missing_dependency",
+                    },
+                }
+            }
+        )
+        registry = CapabilityRegistry(registry_path=self.registry_path)
+        gap_ids = {gap.id for gap in registry.known_gaps()}
+        self.assertEqual(gap_ids, {"broken_tool"})
+
     def test_real_registry_file_loads_without_error(self):
         # Exercises the actual, restructured
         # uri_workspace/capabilities_registry.json shipped with this
@@ -209,6 +310,21 @@ class CapabilityRegistryTests(unittest.TestCase):
         pc_optimization = registry.describe_status("pc_system_optimization")
         self.assertEqual(pc_optimization.status, "not_implemented")
         self.assertFalse(pc_optimization.is_executable)
+        self.assertEqual(pc_optimization.gap_reason, "not_implemented")
+
+        # fetch_drive_spreadsheet is "implemented" (a real adapter
+        # exists) but currently unavailable_missing_dependency on this
+        # runtime (no credentials.json) - a genuinely different gap
+        # reason from pc_system_optimization's, and now surfaced by
+        # known_gaps() too, not silently excluded just because its
+        # status is "implemented".
+        drive_spreadsheet = registry.describe_status(
+            "fetch_drive_spreadsheet"
+        )
+        self.assertEqual(drive_spreadsheet.gap_reason, "unavailable_runtime")
+        gap_ids = {gap.id for gap in registry.known_gaps()}
+        self.assertIn("fetch_drive_spreadsheet", gap_ids)
+        self.assertIn("pc_system_optimization", gap_ids)
 
 
 if __name__ == "__main__":

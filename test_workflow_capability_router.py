@@ -159,6 +159,44 @@ class TestWorkflowCapabilityRouter(
             "draft_institutional_note"
         )
 
+    def test_generic_task_prepare_output_reports_missing_capability_honestly(
+        self,
+    ):
+        # Milestone 8A correction: the generic workflow shape (any
+        # task that isn't "noting"/"insurance", e.g. "compile these
+        # Word files into a report") has no real drafting/compilation
+        # tool behind prepare_output - it must fail honestly with a
+        # missing-capability message rather than falsely claiming
+        # "prepared: True".
+        workflow = {
+            "workflow_id": "test-3",
+            "goal": "Compile these files into a report",
+            "status": "planned",
+            "semantic_context": {"requested_output": "compiled report"},
+            "steps": [
+                {
+                    "step_id": "step_1",
+                    "capability": "prepare_output",
+                    "depends_on": [],
+                    "status": "pending",
+                },
+                {
+                    "step_id": "step_2",
+                    "capability": "review_result",
+                    "depends_on": ["step_1"],
+                    "status": "pending",
+                },
+            ],
+        }
+
+        result = self.executor.execute(workflow)
+
+        self.assertEqual(result["status"], "failed")
+        self.assertIn("does not have an implemented capability", result["error"])
+        # review_result must never run once prepare_output has
+        # honestly failed - no dispatch call, no false "reviewed".
+        self.assertEqual(len(self.dispatcher.calls), 0)
+
     def test_missing_information_pauses_workflow(
         self
     ):

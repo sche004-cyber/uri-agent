@@ -96,6 +96,33 @@ class CapabilityPlannerGapAwarenessTests(unittest.TestCase):
         gap_ids = {gap["id"] for gap in result["known_gaps"]}
         self.assertIn("pc_system_optimization", gap_ids)
 
+    def test_known_gaps_entries_carry_a_gap_reason(self):
+        # Milestone 8A correction: the response-narrative path needs
+        # to distinguish "not_implemented" (no adapter at all) from
+        # "unavailable_runtime" (an adapter exists but this runtime
+        # can't use it) - this is the field it reads.
+        planner = CapabilityPlanner()
+
+        result = planner.plan(
+            {
+                "task_type": "something unrelated",
+                "domain": "",
+                "goal": "optimize my pc",
+                "requested_output": "",
+                "entities": [],
+            }
+        )
+
+        gaps_by_id = {gap["id"]: gap for gap in result["known_gaps"]}
+        self.assertEqual(
+            gaps_by_id["pc_system_optimization"]["reason"],
+            "not_implemented",
+        )
+        self.assertEqual(
+            gaps_by_id["fetch_drive_spreadsheet"]["reason"],
+            "unavailable_runtime",
+        )
+
     def test_pc_optimization_request_is_never_selected(self):
         planner = CapabilityPlanner()
 
