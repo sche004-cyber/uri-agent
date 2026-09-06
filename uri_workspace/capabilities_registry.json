@@ -56,6 +56,20 @@
       "platform": "any",
       "limitations": "Drafting only; does not issue, sign, or distribute the order.",
       "interface": null
+    },
+    "web_search": {
+      "file_path": "uri_core/tools/web_search.py",
+      "class_name": "WebSearchTool",
+      "method": "execute",
+      "description": "Search the public Internet for real, current information via a real search API, returning titles/URLs/content snippets as evidence for the Brain to reason from - never an answer URI composes itself.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": ["external_web_search"],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "Requires a configured TAVILY_API_KEY (see .env.example); honestly reports when the search service is unreachable, misconfigured, or returns no results rather than inventing information.",
+      "interface": null
     }
   },
   "planned_capabilities": {
