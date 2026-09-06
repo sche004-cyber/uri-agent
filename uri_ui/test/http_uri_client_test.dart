@@ -65,6 +65,37 @@ void main() {
       expect(turn.result!.summary, isNot(contains('RAW DOCUMENT TEXT')));
     });
 
+    test(
+      'M15 correction: a successful execution with no narrative but a real, '
+      'readable tool result relays that result rather than a content-free '
+      'confirmation',
+      () async {
+        const realNoteSheet =
+            'NOTING\n\nSubject: New library hours\n\n'
+            'The matter is submitted for kind consideration.';
+
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            return _json({
+              'status': 'success',
+              'session_id': 's1',
+              'semantic_analysis': {'goal': 'draft a note'},
+              'execution': {'status': 'success', 'tool': 'draft_institutional_note'},
+              'response': {'status': 'success', 'note_sheet': realNoteSheet},
+              'narrative': null,
+            });
+          }),
+        );
+
+        final turn = await client.ask('draft a note');
+
+        expect(turn.stage, TurnStage.completed);
+        // The real, already-produced result must reach the user - a
+        // transient drafting failure must never silently discard it.
+        expect(turn.result!.summary, realNoteSheet);
+      },
+    );
+
     test('awaiting_approval uses a humanized title and the registry description', () async {
       final client = HttpUriClient(
         httpClient: MockClient((request) async {
@@ -237,6 +268,46 @@ void main() {
       expect(approved.result!.summary, isNot(contains('{')));
       expect(approved.result!.summary, isNot(contains('RAW DOCUMENT TEXT')));
     });
+
+    test(
+      'M15 correction: approve without a narrative but a real, readable '
+      'tool result relays that result rather than a content-free '
+      'confirmation',
+      () async {
+        const noteSheet =
+            'NOTING\n\nSubject: New library hours\n\n'
+            'The matter is submitted for kind consideration.';
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            if (request.url.path == '/ask') {
+              return _json({
+                'status': 'success',
+                'session_id': 's1',
+                'semantic_analysis': {},
+                'execution': {'status': 'awaiting_approval', 'tool': 'draft_institutional_note'},
+                'response': {
+                  'status': 'awaiting_approval',
+                  'action_id': 'action-1',
+                  'tool_name': 'draft_institutional_note',
+                  'risk': 'controlled',
+                  'message': 'needs approval',
+                },
+              });
+            }
+            return _json({
+              'status': 'success',
+              'data': {'status': 'success', 'note_sheet': noteSheet},
+              'narrative': null,
+            });
+          }),
+        );
+
+        await client.ask('draft a note');
+        final approved = await client.approve('action-1');
+
+        expect(approved.result!.summary, contains('New library hours'));
+      },
+    );
 
     test('cancel reports no action was taken', () async {
       final client = HttpUriClient(

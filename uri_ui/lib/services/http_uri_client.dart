@@ -10,6 +10,33 @@ import '../utils/capability_display.dart';
 import 'mock_uri_client.dart';
 import 'uri_client.dart';
 
+/// M15 correction: a generic, tool-agnostic fallback for when neither
+/// a Brain-drafted narrative nor a "message" field is available on a
+/// tool's own result map - picks the longest plain-string value
+/// present, if any is long enough to plausibly be real content (a
+/// drafted document, a generated report, ...) rather than a short
+/// status/id token, so a real result is never silently replaced with
+/// a content-free confirmation just because the tool happened to use
+/// a different key name than "message" (e.g. a drafting tool's
+/// {status, note_sheet} shape). Never dumps the whole map as JSON -
+/// only ever returns a single string the tool itself already
+/// produced. Returns null when nothing suitable exists, leaving the
+/// caller's own last-resort fallback text in place.
+String? _bestTextualField(Map<dynamic, dynamic> data) {
+  const minimumContentLength = 20;
+  String? best;
+
+  for (final value in data.values) {
+    if (value is String && value.length >= minimumContentLength) {
+      if (best == null || value.length > best.length) {
+        best = value;
+      }
+    }
+  }
+
+  return best;
+}
+
 /// Real HTTP implementation of [UriClient].
 ///
 /// [ask], [approve], [cancel], and [listTasks] are all backed by real
@@ -334,11 +361,21 @@ class HttpUriClient implements UriClient {
       summary = narrative;
     } else if (responseData is Map && responseData['message'] != null) {
       summary = responseData['message'].toString();
+    } else if (responseData is Map &&
+        _bestTextualField(responseData) != null) {
+      // M15 correction: the Brain's narrative wasn't available this
+      // time (e.g. a transient drafting failure), but the tool itself
+      // already produced real, readable content under some other key
+      // (e.g. a drafting tool's {status, note_sheet} shape) - show
+      // that rather than a content-free confirmation that silently
+      // discards a real result. This is exactly the tool's own real
+      // output, never anything this client invents.
+      summary = _bestTextualField(responseData)!;
     } else {
-      // Deliberately never dumps raw JSON (e.g. a drafting tool's
-      // {status, note_sheet} shape has no "message" key) - a generic,
+      // Deliberately never dumps the raw map as JSON - a generic,
       // honest confirmation is always better than an unreadable
-      // escaped-JSON string (Issue 3).
+      // escaped-JSON string (Issue 3). Only reached when there is
+      // truly no readable content anywhere in the result.
       summary = 'URI finished processing this request.';
     }
 
@@ -424,6 +461,11 @@ class HttpUriClient implements UriClient {
       summary = narrative;
     } else if (data is Map && data['message'] != null) {
       summary = data['message'].toString();
+    } else if (data is Map && _bestTextualField(data) != null) {
+      // M15 correction: see the identical fix in _turnFromResponse -
+      // relay the tool's own real, readable content rather than
+      // discarding it just because it isn't under "message".
+      summary = _bestTextualField(data)!;
     } else {
       // Deliberately never dumps raw JSON - see the identical fix in
       // _turnFromResponse (Issue 3).

@@ -2447,18 +2447,50 @@ class UriOrchestrator:
             query_context["capabilities"] = []
             query_context["personalization"] = {}
 
-            draft = draft_response(
-                DraftRequest(
-                    user_text=user_text,
-                    outcome=outcome,
-                    personalization=personalization_context,
-                    policy_text=policy_text,
-                    query_context=query_context,
-                ),
-                provider=self.response_drafting_provider,
+            draft_request = DraftRequest(
+                user_text=user_text,
+                outcome=outcome,
+                personalization=personalization_context,
+                policy_text=policy_text,
+                query_context=query_context,
             )
 
-            validated = validate_drafted_response(draft, outcome)
+            # M15 correction: a transient failure here (a timeout, or
+            # the model's own output failing an honesty check just
+            # once) previously discarded the Brain's chance to answer
+            # outright - the caller fell straight through to whatever
+            # generic fallback it had, even though a real, already-
+            # produced tool result (outcome) was sitting right there
+            # unexplained. One bounded retry costs nothing on the
+            # common case (the first attempt almost always succeeds)
+            # and measurably reduces how often a real result goes
+            # unexplained to a transient hiccup - never a redesign,
+            # still the exact same real model producing the exact
+            # same kind of answer, just given one more real chance at
+            # it before this method gives up.
+            attempts_remaining = 2
+            last_error = None
+            validated = None
+
+            while attempts_remaining > 0 and validated is None:
+
+                attempts_remaining -= 1
+
+                try:
+                    draft = draft_response(
+                        draft_request,
+                        provider=self.response_drafting_provider,
+                    )
+                    validated = validate_drafted_response(draft, outcome)
+
+                except (
+                    ResponseDraftingError,
+                    ResponseValidationError,
+                ) as exc:
+                    last_error = exc
+
+            if validated is None:
+                raise last_error
 
         except (ResponseDraftingError, ResponseValidationError) as exc:
 
