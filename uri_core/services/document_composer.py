@@ -172,6 +172,28 @@ class DocumentComposer:
             f"Tone: {brief.get('tone', 'formal_administrative')}."
         )
 
+        # M19 (generate_document.py): only set for a generic generated
+        # file, never for a note/order draft - additive, so existing
+        # drafting behaviour is completely unchanged when absent.
+        output_format = brief.get("output_format")
+        if output_format == "xlsx":
+            parts.append(
+                "Output shape: this will be rendered into a real Excel "
+                "spreadsheet. Express the data as ONE markdown table: a "
+                "header row, then a '|---|---|...' separator row, then one "
+                "data row per line, using '|' to separate cells - exactly "
+                "like GitHub-flavoured markdown tables. Do not include any "
+                "prose outside the table."
+            )
+        elif output_format == "pptx":
+            parts.append(
+                "Output shape: this will be rendered into a real "
+                "PowerPoint presentation. Structure it as one '# Slide "
+                "Title' markdown heading per slide, followed by that "
+                "slide's bullet points as '- point' lines. Keep each "
+                "bullet short (one line)."
+            )
+
         if suggested_text:
             parts.append(
                 "Suggested elements you MAY use, drawn from institutional "

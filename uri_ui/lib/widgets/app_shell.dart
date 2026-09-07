@@ -21,7 +21,12 @@ class ShellIndex {
   static const tasks = 1;
   static const connections = 2;
   static const activity = 3;
-  static const settings = 4;
+  // M19: promoted to a top-level destination (was previously nested
+  // inside Settings, per user request to see conversation history
+  // directly rather than three taps deep) - not duplicated in
+  // Settings' own category list.
+  static const history = 4;
+  static const settings = 5;
 }
 
 /// The persistent application shell: a sidebar on wide (desktop-first)

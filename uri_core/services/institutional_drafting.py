@@ -192,3 +192,16 @@ def draft_institutional_document(
         "detail": result.get("detail"),
         "drafting_brief": _bounded_brief(brief),
     }
+
+
+# M19: public aliases so generate_document.py (a generic Brain-authored
+# document, not only a note/order) can reuse this module's policy/
+# evidence/soul assembly exactly as-is, rather than re-implementing it -
+# there is one place attachment evidence is gathered for drafting, one
+# place the policy's drafting rules are sliced out, one place soul.md is
+# read.
+read_text_file = _read_file
+extract_drafting_rules = _extract_drafting_rules
+gather_session_evidence = _gather_attachment_evidence
+POLICY_PATH = _POLICY_PATH
+SOUL_PATH = _SOUL_PATH

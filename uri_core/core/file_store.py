@@ -69,6 +69,11 @@ ALLOWED_EXTENSIONS = frozenset(
         ".bmp",
         ".webp",
         ".docx",
+        # M19: generated presentations (see generate_document.py) - a
+        # document URI itself produces is stored the same way a user's
+        # own upload is, so it is downloadable via the existing
+        # GET /files/{id}/content path.
+        ".pptx",
     }
 )
 

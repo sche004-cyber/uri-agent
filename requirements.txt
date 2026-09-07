@@ -7,3 +7,5 @@ uvicorn>=0.52
 python-multipart>=0.0.9
 requests>=2.34
 openpyxl>=3.1
+# M19: PPTX generation (see uri_core/tools/generate_document.py).
+python-pptx>=1.0

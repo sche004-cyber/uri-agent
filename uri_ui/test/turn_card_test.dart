@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:uri_ui/models/attachment.dart';
 import 'package:uri_ui/models/uri_turn.dart';
 import 'package:uri_ui/widgets/turn_card.dart';
 
@@ -73,5 +74,46 @@ void main() {
     );
 
     expect(find.byIcon(Icons.error_outline_rounded), findsNothing);
+  });
+
+  testWidgets('a result with a generated file shows a tappable chip that opens it', (
+    tester,
+  ) async {
+    var openedFileId = '';
+    final turn = UriTurn(
+      id: 't1',
+      userText: 'write a project proposal',
+      timestamp: DateTime.now(),
+      stage: TurnStage.completed,
+      result: const ActionResult(
+        summary: 'Here is the proposal.',
+        generatedFile: Attachment(
+          fileId: 'file-123',
+          filename: 'proposal.docx',
+          mediaType:
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          sizeBytes: 20480,
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(
+      wrap(
+        TurnCard(
+          turn: turn,
+          onApprove: () {},
+          onCancel: () {},
+          onConnectService: (_) {},
+          onOpenAttachment: (attachment) => openedFileId = attachment.fileId,
+        ),
+      ),
+    );
+
+    expect(find.textContaining('proposal.docx'), findsOneWidget);
+
+    await tester.tap(find.byType(ActionChip));
+    await tester.pump();
+
+    expect(openedFileId, 'file-123');
   });
 }

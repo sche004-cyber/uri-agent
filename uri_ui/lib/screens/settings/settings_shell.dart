@@ -6,7 +6,6 @@ import 'about_settings_screen.dart';
 import 'capabilities_settings_screen.dart';
 import 'connections_settings_screen.dart';
 import 'diagnostics_settings_screen.dart';
-import 'history_settings_screen.dart';
 import 'memory_settings_screen.dart';
 import 'preferences_settings_screen.dart';
 import 'profile_settings_screen.dart';
@@ -56,12 +55,6 @@ final _categories = <_SettingsCategory>[
     subtitle: 'Facts URI holds about you, and what it remembers between conversations.',
     icon: Icons.psychology_outlined,
     builder: (_) => const MemorySettingsScreen(),
-  ),
-  _SettingsCategory(
-    label: 'History',
-    subtitle: 'Your past conversations — reopen, continue, or delete them.',
-    icon: Icons.history_rounded,
-    builder: (_) => const HistorySettingsScreen(),
   ),
   _SettingsCategory(
     label: 'Capabilities',

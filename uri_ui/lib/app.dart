@@ -14,6 +14,7 @@ import 'screens/activity/activity_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/bootstrap/bootstrap_screen.dart';
 import 'screens/connections/connections_screen.dart';
+import 'screens/history/history_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/settings/settings_shell.dart';
@@ -160,6 +161,13 @@ class UriHome extends StatelessWidget {
           icon: Icons.receipt_long_outlined,
           builder: _buildActivity,
         ),
+        // M19: promoted to a top-level destination (was nested inside
+        // Settings) so past conversations are genuinely visible.
+        const UriSection(
+          label: 'History',
+          icon: Icons.history_rounded,
+          builder: _buildHistory,
+        ),
         const UriSection(
           label: 'Settings',
           icon: Icons.settings_outlined,
@@ -174,5 +182,6 @@ class UriHome extends StatelessWidget {
       const ConnectionsScreen();
   static Widget _buildActivity(BuildContext context) =>
       const ActivityScreen();
+  static Widget _buildHistory(BuildContext context) => const HistoryScreen();
   static Widget _buildSettings(BuildContext context) => const SettingsShell();
 }

@@ -112,9 +112,8 @@ void main() {
     final client = _M18Client();
     final appState = await _pump(tester, client);
 
-    await tester.tap(find.text('Settings'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ListTile, 'History'));
+    // M19: History is a top-level destination (was nested in Settings).
+    await tester.tap(find.text('History'));
     await tester.pumpAndSettle();
 
     expect(find.text('draft a note about the seminar'), findsWidgets);

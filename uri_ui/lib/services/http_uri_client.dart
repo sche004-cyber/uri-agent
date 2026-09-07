@@ -429,7 +429,33 @@ class HttpUriClient implements UriClient {
             ? 'Tool: ${execution['tool']}'
             : null,
         sources: _sourcesFrom(responseData),
+        generatedFile: _generatedFileFrom(responseData),
       ),
+    );
+  }
+
+  /// M19: the real file a generation capability (generate_document,
+  /// draft_institutional_note/order — see server.py's dispatch
+  /// response) actually stored, taken verbatim from the tool's own
+  /// {"file": {file_id, filename, media_type, size_bytes}} reference —
+  /// the exact shape FileStore.StoredFile.to_reference() already
+  /// returns for a user's own uploads. Null unless a real file
+  /// reference is present; never synthesised.
+  static Attachment? _generatedFileFrom(dynamic responseData) {
+    if (responseData is! Map) return null;
+    final file = responseData['file'];
+    if (file is! Map) return null;
+
+    final fileId = file['file_id'];
+    final filename = file['filename'];
+    if (fileId is! String || fileId.isEmpty) return null;
+    if (filename is! String || filename.isEmpty) return null;
+
+    return Attachment(
+      fileId: fileId,
+      filename: filename,
+      mediaType: file['media_type'] as String? ?? 'application/octet-stream',
+      sizeBytes: (file['size_bytes'] as num?)?.toInt() ?? 0,
     );
   }
 

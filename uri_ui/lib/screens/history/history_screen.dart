@@ -7,19 +7,22 @@ import '../../theme/uri_theme.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/loading_state.dart';
+import '../../widgets/screen_header.dart';
 
-/// M18: the user's past conversations, from the durable per-user
-/// transcript (GET /history). Each can be resumed (its turns load into
-/// the Home conversation and the next message continues that session)
-/// or deleted. Read-only reconstruction — nothing is re-run.
-class HistorySettingsScreen extends StatefulWidget {
-  const HistorySettingsScreen({super.key});
+/// M18/M19: the user's past conversations with URI, from the durable
+/// per-user transcript (GET /history) — a top-level destination (not
+/// nested inside Settings) so it is genuinely visible, not three taps
+/// deep. Each conversation can be resumed (its turns load into the
+/// Home conversation and the next message continues that session) or
+/// deleted. Read-only reconstruction — nothing is re-run.
+class HistoryScreen extends StatefulWidget {
+  const HistoryScreen({super.key});
 
   @override
-  State<HistorySettingsScreen> createState() => _HistorySettingsScreenState();
+  State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistorySettingsScreenState extends State<HistorySettingsScreen> {
+class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
@@ -43,28 +46,34 @@ class _HistorySettingsScreenState extends State<HistorySettingsScreen> {
       builder: (context, _) {
         final state = AppStateScope.of(context);
 
-        if (!state.hasLoadedHistory) {
-          return const LoadingState(message: 'Loading past conversations…');
-        }
-        if (state.history.isEmpty) {
-          return const EmptyState(
-            icon: Icons.forum_outlined,
-            title: 'No past conversations',
-            message: 'Conversations you have with URI are saved here so you can '
-                'reopen or continue them later.',
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final summary in state.history)
-              _HistoryTile(
-                summary: summary,
-                onResume: () => _resume(state, summary.sessionId),
-                onDelete: () => state.deleteHistory(summary.sessionId),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(UriSpace.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const ScreenHeader(
+                title: 'History',
+                subtitle: 'Your past conversations with URI — reopen, continue, '
+                    'or delete them.',
               ),
-          ],
+              if (!state.hasLoadedHistory)
+                const LoadingState(message: 'Loading past conversations…')
+              else if (state.history.isEmpty)
+                const EmptyState(
+                  icon: Icons.forum_outlined,
+                  title: 'No past conversations',
+                  message: 'Conversations you have with URI are saved here so '
+                      'you can reopen or continue them later.',
+                )
+              else
+                for (final summary in state.history)
+                  _HistoryTile(
+                    summary: summary,
+                    onResume: () => _resume(state, summary.sessionId),
+                    onDelete: () => state.deleteHistory(summary.sessionId),
+                  ),
+            ],
+          ),
         );
       },
     );

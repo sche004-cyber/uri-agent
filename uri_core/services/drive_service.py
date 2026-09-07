@@ -3,9 +3,20 @@ import io
 from pathlib import Path
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 
 class DriveService:
+    """
+    M19: upload_file() is the one write operation this service
+    performs - it only ever creates a NEW file (never overwrites,
+    moves, renames, or deletes an existing one), and is only ever
+    reachable through the drive_upload capability, which is registered
+    approval_requirement=user_approval_required (see
+    capabilities_registry.json) - it never runs without an explicit
+    human decision, mirroring gmail_service.py's create_draft() safety
+    discipline exactly.
+    """
+
     def __init__(self):
         self.project_root = Path(__file__).resolve().parents[2]
         self.token_path = self.project_root / "token.json"
@@ -71,6 +82,39 @@ class DriveService:
                 
             return {"success": True, "path": str(target_path), "exported_name": target_path.name}
             
+        except Exception as e:
+            return {"success": False, "reason": str(e)}
+
+    def upload_file(self, filename: str, content: bytes, mime_type: str = "application/octet-stream") -> dict:
+        """M19: creates a NEW file in Drive from bytes URI already has
+        (e.g. a document generate_document.py just rendered) - never
+        overwrites or replaces anything, and never reads back what it
+        just wrote. Returns {"success": True, "file_id", "name",
+        "web_view_link"} or {"success": False, "reason": ...}. Never
+        raises."""
+
+        if not self.service:
+            conn = self.connect()
+            if not conn.get("success"):
+                return conn
+
+        try:
+            media = MediaIoBaseUpload(
+                io.BytesIO(content), mimetype=mime_type, resumable=False
+            )
+            created = self.service.files().create(
+                body={"name": filename},
+                media_body=media,
+                fields="id, name, webViewLink",
+            ).execute()
+
+            return {
+                "success": True,
+                "file_id": created.get("id"),
+                "name": created.get("name"),
+                "web_view_link": created.get("webViewLink"),
+            }
+
         except Exception as e:
             return {"success": False, "reason": str(e)}
 

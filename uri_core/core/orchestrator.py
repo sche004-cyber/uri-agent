@@ -5,7 +5,7 @@ from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
 
 from uri_core.core.prompt_builder import PromptBuilder
-from uri_core.core.dispatcher import ToolDispatcher
+from uri_core.core.dispatcher import ToolDispatcher, real_tool_status
 from uri_core.core.approval_gate import ApprovalGate
 from uri_core.core.capability_registry import CapabilityRegistry
 from uri_core.core.provider_semantic_interpreter import (
@@ -906,7 +906,8 @@ class UriOrchestrator:
 
     def _strict_model_proposed_workflow(
         self,
-        model_reasoning
+        model_reasoning,
+        fallback_goal=None
     ):
         """Extracts a usable, registry-validated multi-step workflow
         proposal from _run_model_reasoning's result, or None when
@@ -1019,7 +1020,22 @@ class UriOrchestrator:
             goal = workflow_proposal.get("goal")
 
             if not isinstance(goal, str) or not goal.strip():
-                goal = ""
+                # M19: when the Brain omits (or blanks) its own workflow
+                # goal, every step handler downstream reads THIS goal as
+                # request_text (see _model_workflow_step_handler) - an
+                # empty goal previously meant every step, including a
+                # web_search step, ran with no query at all, silently
+                # producing "input_required" while the workflow itself
+                # was still reported as completed. Falling back to the
+                # user's own original request text keeps steps working
+                # on real input; it is never a guess at what the Brain
+                # meant, only the one piece of real text this turn
+                # unambiguously has.
+                goal = (
+                    fallback_goal
+                    if isinstance(fallback_goal, str) and fallback_goal.strip()
+                    else ""
+                )
 
             return {
                 "goal": goal,
@@ -1031,12 +1047,14 @@ class UriOrchestrator:
 
     def _model_proposed_workflow(
         self,
-        model_reasoning
+        model_reasoning,
+        fallback_goal=None
     ):
         """Public entry point: tries _strict_model_proposed_workflow
-        (Phase 2, unmodified) first - the exact action.capability/
-        workflow.steps[] contract, still preferred whenever the Brain
-        actually uses it. When that finds nothing, falls back to
+        (Phase 2, unmodified except for M19's fallback_goal - see
+        below) first - the exact action.capability/workflow.steps[]
+        contract, still preferred whenever the Brain actually uses it.
+        When that finds nothing, falls back to
         _recover_capability_mentions (Milestone 12, Real Brain Loop):
         if the Brain named TWO OR MORE distinct, already-registered
         capabilities anywhere in its response - just not in the exact
@@ -1051,10 +1069,17 @@ class UriOrchestrator:
         _model_proposed_capability (never duplicated here), preserving
         the same mutual exclusivity the strict paths already have.
 
+        fallback_goal (M19): the user's own original request text,
+        used ONLY when the Brain's workflow proposal omits its own
+        goal - see _strict_model_proposed_workflow's docstring on why
+        an empty goal silently starved every step of real input.
+
         Never raises.
         """
 
-        strict = self._strict_model_proposed_workflow(model_reasoning)
+        strict = self._strict_model_proposed_workflow(
+            model_reasoning, fallback_goal=fallback_goal
+        )
 
         if strict is not None:
             return strict
@@ -1094,7 +1119,11 @@ class UriOrchestrator:
             ]
 
             return {
-                "goal": "",
+                "goal": (
+                    fallback_goal
+                    if isinstance(fallback_goal, str) and fallback_goal.strip()
+                    else ""
+                ),
                 "steps": normalized_steps,
             }
 
@@ -1404,7 +1433,7 @@ class UriOrchestrator:
                 model_reasoning
             )
             new_workflow = self._model_proposed_workflow(
-                model_reasoning
+                model_reasoning, fallback_goal=user_text
             )
 
             if new_capability is not None or new_workflow is not None:
@@ -1852,15 +1881,42 @@ class UriOrchestrator:
         (session_id, request_text). This is what guarantees approval
         requirements are enforced identically regardless of whether a
         capability was chosen directly (Phase 1) or as one step of a
-        Brain-composed workflow (Phase 2)."""
+        Brain-composed workflow (Phase 2).
+
+        M19: the raw result's own "status" is then corrected to the
+        tool's REAL reported outcome (see dispatcher.real_tool_status)
+        before WorkflowExecutor ever sees it - otherwise a tool that
+        reported "input_required"/"unavailable"/"not_found" inside its
+        own result still reached WorkflowExecutor wrapped in the
+        dispatcher's unconditional outer "success", and was marked
+        step "completed" (M19 audit finding #3, reproduced live: a
+        web_search step with no query silently "completed" and the
+        workflow was reported as finished). approval-pending/awaiting-
+        approval results are untouched (real_tool_status only ever
+        overrides an outer "success")."""
 
         def _handler(step, workflow):
 
-            return self.approval_gate.execute_tool(
+            result = self.approval_gate.execute_tool(
                 capability_id,
                 session_id=session_id,
                 request_text=goal,
             )
+
+            status = real_tool_status(result)
+
+            if status == result.get("status"):
+                return result
+
+            corrected = dict(result)
+            corrected["status"] = status
+
+            data = result.get("data")
+            if isinstance(data, dict):
+                corrected.setdefault("message", data.get("message"))
+                corrected.setdefault("error", data.get("error"))
+
+            return corrected
 
         return _handler
 
@@ -2087,8 +2143,14 @@ class UriOrchestrator:
                 request_text=user_text,
             )
 
+            # M19: execution["status"] is what response_drafting.py
+            # treats as authoritative when phrasing the narrative the
+            # user sees ("never contradict it") - so it must reflect
+            # what the TOOL actually reported, not just that the
+            # dispatcher call itself did not raise (see
+            # dispatcher.real_tool_status; audit findings #3/#8).
             execution = {
-                "status": dispatch_result.get("status"),
+                "status": real_tool_status(dispatch_result),
                 "tool": next_capability,
             }
 
@@ -2281,7 +2343,7 @@ class UriOrchestrator:
             )
 
             next_workflow = self._model_proposed_workflow(
-                model_reasoning
+                model_reasoning, fallback_goal=user_text
             )
 
             if next_capability is None and next_workflow is None:
@@ -3975,7 +4037,7 @@ class UriOrchestrator:
             # to decide priority, not to build anything yet.
             model_workflow_proposal = (
                 self._model_proposed_workflow(
-                    model_reasoning
+                    model_reasoning, fallback_goal=user_text
                 )
             )
 
@@ -4088,7 +4150,9 @@ class UriOrchestrator:
                         self._model_proposed_capability(model_reasoning)
                     )
                     model_workflow_proposal = (
-                        self._model_proposed_workflow(model_reasoning)
+                        self._model_proposed_workflow(
+                            model_reasoning, fallback_goal=user_text
+                        )
                     )
                     model_workflow_proposal_present = (
                         model_workflow_proposal is not None
@@ -4276,14 +4340,18 @@ class UriOrchestrator:
                     )
                 )
 
-                response["execution"] = {
-                    "status":
-                        dispatch_result.get(
-                            "status"
-                        ),
+                # M19: the tool's REAL outcome, not just "the dispatcher
+                # call didn't raise" - see dispatcher.real_tool_status.
+                # This is what response_drafting.py treats as
+                # authoritative when phrasing what the user is told, so
+                # a tool that reported "unavailable"/"input_required"
+                # inside its own result must not be relayed as
+                # execution.status == "success" (audit findings #3/#8).
+                real_status = real_tool_status(dispatch_result)
 
-                    "tool":
-                        tool_name
+                response["execution"] = {
+                    "status": real_status,
+                    "tool": tool_name,
                 }
 
                 response["response"] = (
@@ -4293,12 +4361,7 @@ class UriOrchestrator:
                     )
                 )
 
-                if (
-                    dispatch_result.get(
-                        "status"
-                    )
-                    == "success"
-                ):
+                if real_status == "success":
 
                     workflow = [
                         "interpret_request",
@@ -4328,7 +4391,7 @@ class UriOrchestrator:
                 # an approval-pending (not-yet-executed) result.
                 elif (
                     learned_skill is not None
-                    and dispatch_result.get("status") not in (
+                    and real_status not in (
                         "success",
                         "awaiting_approval",
                         "awaiting_user_response",
@@ -4454,7 +4517,7 @@ class UriOrchestrator:
 
                 model_workflow_proposal = (
                     self._model_proposed_workflow(
-                        model_reasoning
+                        model_reasoning, fallback_goal=user_text
                     )
                 )
 

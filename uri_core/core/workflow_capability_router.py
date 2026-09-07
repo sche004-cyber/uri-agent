@@ -1,6 +1,7 @@
 ﻿from uri_core.core.workflow_executor import (
     WorkflowExecutor
 )
+from uri_core.core.dispatcher import real_tool_status
 from uri_core.core.evidence_search import (
     build_evidence_queries
 )
@@ -451,19 +452,16 @@ class WorkflowCapabilityRouter:
                 "draft_institutional_order"
             )
 
-        if tool_name is None:
+        else:
 
-            return {
-                "status":
-                    "waiting_for_input",
-                "message":
-                    (
-                        "URI needs a supported output "
-                        "format before drafting."
-                    ),
-                "required_field":
-                    "requested_output"
-            }
+            # M19 (audit finding #8): a requested output that is not an
+            # institutional note or order (a proposal, a presentation,
+            # a spreadsheet, a PDF report, or anything else) no longer
+            # dead-ends this step waiting for a "supported output
+            # format" that only ever meant note/order - it drafts via
+            # the generic Brain-authored document capability instead,
+            # which detects DOCX/XLSX/PPTX/PDF from the request itself.
+            tool_name = "generate_document"
 
         decision_context = (
             workflow.get(
@@ -486,17 +484,28 @@ class WorkflowCapabilityRouter:
             )
         )
 
-        if result.get("status") == "success":
+        # M19: real_tool_status looks past the dispatcher's own
+        # unconditional outer "success" to the drafting tool's actual
+        # reported outcome, so a tool that could not draft (e.g.
+        # returned "unavailable"/"input_required") is never reported
+        # as a completed draft (audit finding #3).
+        if real_tool_status(result) == "success":
 
             return {
                 "status": "success",
                 "data": result.get("data")
             }
 
+        data = result.get("data")
+        error_detail = (
+            data.get("message") if isinstance(data, dict) else None
+        )
+
         return {
             "status": "failed",
             "error":
-                result.get(
+                error_detail
+                or result.get(
                     "message",
                     "Drafting failed."
                 )

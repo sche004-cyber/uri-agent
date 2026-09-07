@@ -1,6 +1,8 @@
 import re
 from datetime import datetime
 
+from uri_core.config.institutional_rules import load_institutional_rules
+
 
 class EvidenceFactExtractor:
     """
@@ -19,21 +21,32 @@ class EvidenceFactExtractor:
 
         # --------------------------------------------------
         # INSTITUTION
+        #
+        # M19 (audit finding #6: "do not hardcode institutional rules
+        # into tools"): the institution's own name is read from the
+        # configurable institutional_rules (see config/
+        # institutional_rules.py) rather than a literal here, so a
+        # different deployment's evidence is recognised correctly
+        # without any code change - only the packaged DEFAULT still
+        # happens to be NIT Sikkim's own name.
         # --------------------------------------------------
 
+        rules = load_institutional_rules()
+        full_name = rules.get("institution_name", "")
+        short_name = rules.get("short_name", "")
+
         institution_patterns = [
-            r"National Institute of Technology Sikkim",
-            r"NIT Sikkim"
+            pattern for pattern in (full_name, short_name) if pattern
         ]
 
         for pattern in institution_patterns:
 
-            if re.search(pattern, text, re.IGNORECASE):
+            if re.search(re.escape(pattern), text, re.IGNORECASE):
 
                 facts.append(
                     self._fact(
                         name="institution",
-                        value="NIT Sikkim",
+                        value=short_name or full_name,
                         source=source
                     )
                 )

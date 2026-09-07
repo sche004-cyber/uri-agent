@@ -26,7 +26,7 @@
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
-      "limitations": "No Google service-account credentials are configured at uri_workspace/credentials.json; falls back to mock data until they are.",
+      "limitations": "No Google service-account credentials are configured at uri_workspace/credentials.json; reports 'unavailable' honestly rather than returning simulated data until they are.",
       "interface": null
     },
     "draft_institutional_note": {
@@ -55,6 +55,20 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Drafting only; does not issue, sign, or distribute the order.",
+      "interface": null
+    },
+    "generate_document": {
+      "file_path": "uri_core/tools/generate_document.py",
+      "class_name": "GenerateDocumentTool",
+      "method": "generate",
+      "description": "Generate a real Office file (DOCX, XLSX, PPTX, or PDF) for a general request that is not an institutional note or order - the Brain composes the content (reusing the same policy/evidence/institutional-conventions assembly as note/order drafting); the requested file format is detected from the request and rendered into a real, downloadable file. Not a fixed template.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": [],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "Generation only; does not distribute, upload, or file the document anywhere. PDF output is plain-text pagination, not rich layout.",
       "interface": null
     },
     "read_attached_file": {
@@ -111,6 +125,62 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Requires a configured TAVILY_API_KEY (see .env.example); honestly reports when the search service is unreachable, misconfigured, or returns no results rather than inventing information.",
+      "interface": null
+    },
+    "drive_search": {
+      "file_path": "uri_core/tools/drive_search.py",
+      "class_name": "DriveSearchTool",
+      "method": "execute",
+      "description": "Search Google Drive (files the user already has access to) by name/content and return real file metadata (id, name, type) as evidence - read-only, the same scope Gmail/Drive already share.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": ["google_drive_readonly"],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "Requires a stored Google OAuth token (token.json) on the server host; honestly reports 'unavailable' with the real reason when Drive is not connected rather than inventing results.",
+      "interface": null
+    },
+    "gmail_create_draft": {
+      "file_path": "uri_core/tools/gmail_create_draft.py",
+      "class_name": "GmailCreateDraftTool",
+      "method": "generate",
+      "description": "Create a Gmail DRAFT (never sends it) - the Brain composes the subject/body from the request and any evidence; the recipient is taken directly from an email address in the request text. The user still reviews and sends the draft themselves in Gmail.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": ["gmail_compose"],
+      "approval_requirement": "user_approval_required",
+      "risk": "high",
+      "platform": "any",
+      "limitations": "Requires a stored Google OAuth token with gmail.compose scope on the server host; creates a draft only - there is no capability anywhere in URI that sends an email.",
+      "interface": null
+    },
+    "drive_upload": {
+      "file_path": "uri_core/tools/drive_upload.py",
+      "class_name": "DriveUploadTool",
+      "method": "generate",
+      "description": "Upload the most recently generated or attached file in this conversation to Google Drive as a new file - never overwrites, moves, renames, or deletes anything already in Drive.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": ["google_drive_file_write"],
+      "approval_requirement": "user_approval_required",
+      "risk": "high",
+      "platform": "any",
+      "limitations": "Requires a stored Google OAuth token with drive.file scope on the server host, and a file already generated or attached in this conversation to upload.",
+      "interface": null
+    },
+    "fetch_url": {
+      "file_path": "uri_core/tools/fetch_url.py",
+      "class_name": "FetchUrlTool",
+      "method": "execute",
+      "description": "Fetch one web page or document by URL and extract its readable text as evidence (HTML, PDF, DOCX, XLSX, plain text, CSV) - lets URI actually read a source web_search found (or one the user gave directly), not just cite its search-result snippet.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": ["external_web_fetch"],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "The URL must appear literally in the request text (the Brain cannot supply an arbitrary URL of its own choosing - see the tool's own module docstring on the argument boundary); bounded to 10 MB and content types URI can extract text from; honestly reports an unreachable page, an unsupported content type, or an empty result rather than inventing content.",
       "interface": null
     }
   },

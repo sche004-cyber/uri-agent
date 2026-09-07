@@ -127,7 +127,7 @@ class TurnCard extends StatelessWidget {
             // ---- stage 3: result ----
             if (turn.result != null) ...[
               const SizedBox(height: UriSpace.md),
-              _ResultBlock(turn: turn),
+              _ResultBlock(turn: turn, onOpenAttachment: onOpenAttachment),
             ],
           ],
         ),
@@ -373,9 +373,10 @@ class _ProposalBlock extends StatelessWidget {
 }
 
 class _ResultBlock extends StatelessWidget {
-  const _ResultBlock({required this.turn});
+  const _ResultBlock({required this.turn, required this.onOpenAttachment});
 
   final UriTurn turn;
+  final ValueChanged<Attachment> onOpenAttachment;
 
   @override
   Widget build(BuildContext context) {
@@ -437,8 +438,28 @@ class _ResultBlock extends StatelessWidget {
                 ),
               ),
           ],
+          // M19: the real file a generation capability produced
+          // (generate_document/draft_institutional_note/order) - tap
+          // to open/verify, same as any other attachment.
+          if (result.generatedFile != null) ...[
+            const SizedBox(height: UriSpace.sm),
+            ActionChip(
+              avatar: const Icon(Icons.description_outlined, size: 18),
+              label: Text(
+                '${result.generatedFile!.filename} · '
+                '${_formatFileSize(result.generatedFile!.sizeBytes)}',
+              ),
+              onPressed: () => onOpenAttachment(result.generatedFile!),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  static String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).round()} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }

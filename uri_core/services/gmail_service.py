@@ -1,3 +1,4 @@
+from email.mime.text import MIMEText
 from pathlib import Path
 import base64
 
@@ -11,8 +12,6 @@ class GmailService:
     """
     Gmail integration service for URI.
 
-    URI uses Gmail strictly in READ_ONLY mode.
-
     Capabilities:
     - Connect to Gmail
     - Search Gmail for evidence
@@ -21,13 +20,43 @@ class GmailService:
     - Build attachment inventories
     - Download one explicitly selected attachment temporarily
     - Safely delete temporary evidence files
+    - Create a DRAFT (M19) - see create_draft() below
 
-    URI does NOT send, modify, delete, or archive emails.
+    URI does NOT send, modify, delete, or archive existing emails, and
+    does not send the drafts it creates. Creating a draft is the one
+    write operation this service performs; it is only ever reachable
+    through the gmail_create_draft capability, which is registered
+    approval_requirement=user_approval_required (see
+    capabilities_registry.json) - it never runs without an explicit
+    human decision, and the resulting draft still requires the user to
+    review and send it themselves in Gmail. There is no send_message/
+    send_draft method anywhere in this class, and none should be added
+    without the same explicit consideration this one required
+    (M19 audit finding #2: "other consequential actions through URI
+    permission/approval").
+
+    M19 note on scope: the gmail.compose scope below is Google's own
+    OAuth scope for draft creation, requested specifically so it can be
+    granted WITHOUT also granting gmail.send (a separate, broader
+    scope this class deliberately never requests). Google's own scope
+    documentation for gmail.compose also permits sending a draft via
+    the API; this class's safety boundary is that no code path in this
+    service (or anywhere else in URI) ever calls a send endpoint - the
+    boundary is enforced by what URI's own code does, not solely by
+    the OAuth scope, exactly like every other capability in this
+    codebase (see orchestrator.py's capability-registry-gated
+    execution boundary).
     """
 
     SCOPES = [
         'https://www.googleapis.com/auth/gmail.readonly',
-        'https://www.googleapis.com/auth/drive.readonly'
+        'https://www.googleapis.com/auth/gmail.compose',
+        'https://www.googleapis.com/auth/drive.readonly',
+        # M19: least-privilege upload scope - covers only files this
+        # app itself creates (see DriveService.upload_file), never the
+        # broader 'drive' scope that would grant read/write over the
+        # user's entire Drive.
+        'https://www.googleapis.com/auth/drive.file',
     ]
 
     def __init__(self):
@@ -118,6 +147,45 @@ class GmailService:
             "connected": self.service is not None,
             "mode": "READ_ONLY"
         }
+
+    def create_draft(self, to: str, subject: str, body: str) -> dict:
+        """M19: creates a real Gmail DRAFT - never sends it. The
+        caller (gmail_create_draft.py) supplies `to` extracted
+        deterministically from the user's own request text, and
+        `subject`/`body` composed by the Brain from a drafting brief -
+        this method itself makes no decision about content, exactly
+        like every other write in this codebase leaves composition to
+        its caller and only performs the mechanical action.
+
+        Returns {"success": True, "draft_id": ...} or
+        {"success": False, "reason": ...}. Never raises."""
+
+        if not self.service:
+            connection = self.connect()
+            if not connection.get("success"):
+                return connection
+
+        try:
+            message = MIMEText(body)
+            message["to"] = to
+            message["subject"] = subject
+
+            raw = base64.urlsafe_b64encode(
+                message.as_bytes()
+            ).decode("utf-8")
+
+            created = self.service.users().drafts().create(
+                userId="me",
+                body={"message": {"raw": raw}},
+            ).execute()
+
+            return {
+                "success": True,
+                "draft_id": created.get("id"),
+            }
+
+        except Exception as e:
+            return {"success": False, "reason": str(e)}
 
 
     def _get_header_map(

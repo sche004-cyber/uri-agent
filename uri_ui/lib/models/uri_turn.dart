@@ -65,6 +65,7 @@ class ActionResult {
     required this.summary,
     this.detail,
     this.sources = const <ResultSource>[],
+    this.generatedFile,
   });
 
   final String summary;
@@ -74,6 +75,13 @@ class ActionResult {
   /// produced it returned any (today: web research). Empty for every
   /// other kind of result — never padded.
   final List<ResultSource> sources;
+
+  /// M19: the real file a generation capability (generate_document,
+  /// draft_institutional_note/order) actually produced and stored via
+  /// the backend's FileStore — tappable to open/verify via the same
+  /// mechanism a user-attached file already uses. Null for every
+  /// result that produced no file.
+  final Attachment? generatedFile;
 }
 
 /// One exchange in the Ask URI conversation: the user's request plus

@@ -15,6 +15,47 @@ ERROR_LOAD_FAILURE = "component_load_failure"
 ERROR_EXECUTION_EXCEPTION = "execution_exception"
 
 
+def real_tool_status(dispatch_result: dict) -> str:
+    """M19: the tool's OWN reported outcome, not just whether the Python
+    call raised.
+
+    execute_tool() reports status="success" for any call that returned
+    without an exception, wrapping the tool's own result dict as
+    "data" - but a tool's own dict very often carries a genuinely
+    different status of its own ("input_required", "unavailable",
+    "not_found", "error", ...) when it could not actually do what was
+    asked (e.g. web_search.py returns {"status": "input_required"} for
+    a missing query, wrapped inside a dispatcher envelope that still
+    says {"status": "success"}). A caller that only reads the outer
+    envelope status therefore sees "success" even when the tool
+    reported it could not act - this is what let a workflow step (and
+    the final response) be reported as completed/successful while the
+    tool underneath said otherwise (M19 audit findings #3/#8).
+
+    Returns the tool's own "data.status" whenever the dispatcher call
+    itself succeeded AND the tool's own result is a dict with its own
+    status string; otherwise returns the dispatcher-level status
+    unchanged (a genuine dispatch failure, an approval-pending result,
+    or a tool result with no separate status of its own all pass
+    through as before - this never invents a status that was not
+    already present somewhere in the result)."""
+
+    if not isinstance(dispatch_result, dict):
+        return "failed"
+
+    outer_status = dispatch_result.get("status")
+
+    if outer_status != "success":
+        return outer_status
+
+    data = dispatch_result.get("data")
+
+    if isinstance(data, dict) and isinstance(data.get("status"), str):
+        return data["status"]
+
+    return outer_status
+
+
 class ToolDispatcher:
     def __init__(self, registry_path="uri_workspace/capabilities_registry.json"):
         self.registry_path = os.path.normpath(registry_path)
