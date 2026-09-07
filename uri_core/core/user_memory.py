@@ -205,6 +205,109 @@ class MemoryStore:
 
         return entry
 
+    def propose(
+        self,
+        *,
+        category: str,
+        content: str,
+        confidence: Optional[float] = None,
+        notes: Optional[str] = None,
+    ) -> MemoryEntry:
+        """M18: URI (the Brain) proposing something worth remembering,
+        NOT yet consented to. Stored with consent="pending_confirmation"
+        and source="uri_proposed", so it is visible to the user for
+        review but - by is_eligible_for_personalization - can never
+        influence URI's behaviour until the user confirms it. This is
+        the only path that creates a non-user_provided entry, and it
+        still requires an explicit later user action to become
+        established (see confirm)."""
+
+        _validate_category(category)
+        _validate_content(content, notes)
+
+        fact = Fact(
+            name=category,
+            value=content,
+            # Proposed, not established - a provisional fact the user has
+            # not agreed to. PROVISIONAL (not CONFIRMED) so nothing
+            # downstream treats it as an established fact until confirmed.
+            status="PROVISIONAL",
+            source="uri_proposed",
+            confidence=confidence,
+            notes=notes,
+        )
+        fact.validate_status()
+        fact.validate_confidence()
+
+        now = _now()
+        entry = MemoryEntry(
+            memory_id=str(uuid.uuid4()),
+            category=category,
+            consent="pending_confirmation",
+            fact=fact,
+            created_at=now,
+            updated_at=now,
+        )
+
+        entries = self._load()
+        entries.append(entry)
+        self._save(entries)
+        return entry
+
+    def confirm(
+        self,
+        memory_id: str,
+        *,
+        category: Optional[str] = None,
+        content: Optional[str] = None,
+    ) -> Optional[MemoryEntry]:
+        """M18: the user accepting a pending_confirmation entry (optionally
+        CORRECTING its category/content first). Flips consent to
+        "user_confirmed" and the fact to CONFIRMED, so it becomes
+        eligible to inform URI. Returns None for an unknown id; only a
+        pending entry can be confirmed (confirming an already-established
+        entry is a no-op returning it unchanged)."""
+
+        entries = self._load()
+
+        for index, existing in enumerate(entries):
+            if existing.memory_id != memory_id:
+                continue
+
+            if existing.consent != "pending_confirmation":
+                return existing
+
+            new_category = category if category is not None else existing.category
+            new_content = content if content is not None else existing.fact.value
+
+            _validate_category(new_category)
+            _validate_content(new_content, existing.fact.notes)
+
+            fact = Fact(
+                name=new_category,
+                value=new_content,
+                status="CONFIRMED",
+                source=existing.fact.source,
+                confidence=existing.fact.confidence,
+                notes=existing.fact.notes,
+            )
+            fact.validate_status()
+            fact.validate_confidence()
+
+            confirmed = MemoryEntry(
+                memory_id=existing.memory_id,
+                category=new_category,
+                consent="user_confirmed",
+                fact=fact,
+                created_at=existing.created_at,
+                updated_at=_now(),
+            )
+            entries[index] = confirmed
+            self._save(entries)
+            return confirmed
+
+        return None
+
     def update(
         self,
         memory_id: str,

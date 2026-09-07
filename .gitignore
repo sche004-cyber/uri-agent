@@ -31,6 +31,10 @@ uri_workspace/skill_memory.json
 uri_workspace/uri_memory.json
 uri_workspace/friction_log.json
 uri_workspace/experience.json
+# M18: durable conversation transcripts and the installed-skill ledger
+# are runtime state, not source (per-user copies live under users/).
+uri_workspace/conversation_history/
+uri_workspace/installed_skills.json
 
 # Large institutional data directories, excluded by explicit decision
 # (uri_workspace/linked_documents/ contains real student PDF/xlsx records

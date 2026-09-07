@@ -2,6 +2,7 @@ import json
 import os
 
 from dataclasses import asdict, is_dataclass
+from datetime import datetime, timezone
 
 from uri_core.core.prompt_builder import PromptBuilder
 from uri_core.core.dispatcher import ToolDispatcher
@@ -48,6 +49,7 @@ from uri_core.core.experience_store import (
     summarize_for_query_context as summarize_experience_for_query_context
 )
 from uri_core.core.file_store import FileStore
+from uri_core.core.conversation_history import ConversationHistoryStore
 from uri_core.core.skill_evaluator import SkillEvaluator
 from uri_core.core.context_budget import ContextBudget
 from uri_core.core.audit_trail import AuditTrail
@@ -77,7 +79,9 @@ class UriOrchestrator:
         session_manager=None,
         max_brain_iterations=3,
         experience_store=None,
-        file_store=None
+        file_store=None,
+        skill_memory=None,
+        conversation_history=None
     ):
 
         # Milestone 11 Part 2 (Brain re-evaluation loop): a safety cap
@@ -104,7 +108,12 @@ class UriOrchestrator:
                 ProviderSemanticInterpreter()
             )
 
-        self.skill_memory = SkillMemory()
+        # M18: skill_memory is injectable so the server can give each
+        # logged-in user_id their OWN skill store (see _build_user_context)
+        # rather than every user sharing one global uri_workspace/
+        # skill_memory.json. A None default preserves the legacy ambient
+        # single-store behaviour for unauthenticated/legacy callers.
+        self.skill_memory = skill_memory if skill_memory is not None else SkillMemory()
 
         self.capability_planner = CapabilityPlanner()
 
@@ -261,6 +270,18 @@ class UriOrchestrator:
         # self.skill_memory/self.experience_store above.
         self.file_store = (
             file_store if file_store is not None else FileStore()
+        )
+
+        # M18: durable per-user/per-session conversation transcript.
+        # Injectable and user-scoped by the server (see
+        # _build_user_context); a None default keeps the legacy ambient
+        # behaviour. Recording a turn here never affects the turn's
+        # outcome - a write failure is swallowed (see
+        # _record_conversation_turn_safely).
+        self.conversation_history = (
+            conversation_history
+            if conversation_history is not None
+            else ConversationHistoryStore()
         )
 
     # ==========================================================
@@ -3677,6 +3698,86 @@ class UriOrchestrator:
         user_text: str,
         personalization_context: dict = None
     ) -> dict:
+        """Public entry point. Runs the unchanged core turn logic, then
+        records the exchange to the durable conversation transcript (M18).
+        The recording is best-effort and strictly after the outcome is
+        decided - it can never change what happened, only note it - so a
+        transcript-store failure never affects the returned result."""
+
+        result = self._process_user_input_core(
+            session_id=session_id,
+            user_text=user_text,
+            personalization_context=personalization_context,
+        )
+
+        self._record_conversation_turn_safely(
+            session_id=session_id,
+            user_text=user_text,
+            result=result,
+        )
+
+        return result
+
+    def _record_conversation_turn_safely(
+        self,
+        session_id: str,
+        user_text: str,
+        result: dict,
+    ) -> None:
+        """Append one {user_text, response, status, capability, attachments}
+        turn to the transcript. Never raises."""
+        try:
+            if not isinstance(result, dict):
+                return
+
+            response = result.get("response")
+            if isinstance(response, dict):
+                response_text = (
+                    result.get("narrative")
+                    or response.get("message")
+                    or response.get("note_sheet")
+                    or ""
+                )
+            else:
+                response_text = result.get("narrative") or (response or "")
+
+            execution = result.get("execution")
+            status = None
+            capability = None
+            if isinstance(execution, dict):
+                status = execution.get("status")
+                capability = execution.get("tool") or execution.get("capability")
+            if status is None:
+                status = result.get("status")
+
+            attachments = []
+            try:
+                attachments = [
+                    record.to_reference()
+                    for record in self.file_store.list_for_session(session_id)
+                ] if session_id else []
+            except Exception:
+                attachments = []
+
+            self.conversation_history.append_turn(
+                session_id=session_id,
+                turn_id=f"turn-{datetime.now(timezone.utc).timestamp()}",
+                user_text=user_text,
+                response_text=str(response_text),
+                status=status,
+                capability=capability,
+                attachments=attachments,
+            )
+        except Exception:
+            # A transcript write must never affect the turn's outcome.
+            return
+
+    def _process_user_input_core(
+        self,
+        session_id: str,
+        user_text: str,
+        personalization_context: dict = None
+    ) -> dict:
 
         try:
 
@@ -4217,6 +4318,29 @@ class UriOrchestrator:
                         tool_name=
                             tool_name
                     )
+
+                # M18: a matched skill that then FAILS to execute must
+                # lose confidence, so a formerly-good pattern that has
+                # gone bad stops being recommended (see
+                # skill_memory.CONFIDENCE_RECALL_FLOOR). Only recorded
+                # when this turn actually acted on a recalled skill -
+                # never for an ordinary planner selection, and never on
+                # an approval-pending (not-yet-executed) result.
+                elif (
+                    learned_skill is not None
+                    and dispatch_result.get("status") not in (
+                        "success",
+                        "awaiting_approval",
+                        "awaiting_user_response",
+                    )
+                ):
+                    try:
+                        self.skill_memory.record_failure(
+                            semantic_result=semantic_result,
+                            tool_name=tool_name,
+                        )
+                    except Exception:
+                        pass
 
                 # Milestone 11 Part 2: only a Brain-proposed plan gets
                 # re-evaluated - a learned skill or a CapabilityPlanner

@@ -16,6 +16,7 @@ import 'uri_client.dart'
         AttachmentException,
         AuthOutcome,
         CapabilityInfo,
+        ConversationSummary,
         HomeSummary,
         MemoryWriteException,
         UriClient,
@@ -376,6 +377,64 @@ class AppState extends ChangeNotifier {
     identity = await _client.getIdentity();
     hasLoadedIdentity = true;
     notifyListeners();
+  }
+
+  // ---------------------------------------------------------------
+  // M18: conversation history (list / resume / delete) and
+  // Brain-proposed memory confirmation.
+  // ---------------------------------------------------------------
+
+  List<ConversationSummary> history = <ConversationSummary>[];
+  bool hasLoadedHistory = false;
+
+  Future<void> loadHistory() async {
+    history = await _client.listHistory();
+    hasLoadedHistory = true;
+    notifyListeners();
+  }
+
+  /// Loads a past conversation's turns into the live conversation view
+  /// and repoints the client at that session, so the next message the
+  /// user sends continues it rather than starting a new one. Read-only
+  /// reconstruction: nothing is re-run or re-proposed.
+  Future<void> resumeSession(String sessionId) async {
+    final turns = await _client.getHistory(sessionId);
+    _client.setSessionId(sessionId);
+    conversation
+      ..clear()
+      ..addAll(turns);
+    notifyListeners();
+  }
+
+  Future<void> deleteHistory(String sessionId) async {
+    final deleted = await _client.deleteHistory(sessionId);
+    if (deleted) {
+      history = history.where((h) => h.sessionId != sessionId).toList(growable: false);
+      notifyListeners();
+    }
+  }
+
+  /// M18: accept a URI-proposed (pending_confirmation) memory, optionally
+  /// correcting its content. Refreshes the memory list on success.
+  Future<void> confirmMemory(String memoryId, {String? content}) async {
+    final confirmed = await _client.confirmMemory(memoryId, content: content);
+    if (confirmed != null) {
+      final index = memories.indexWhere((m) => m.memoryId == memoryId);
+      if (index != -1) {
+        memories = [...memories]..[index] = confirmed;
+        notifyListeners();
+      } else {
+        await loadMemory();
+      }
+    }
+  }
+
+  Future<void> rejectMemory(String memoryId) async {
+    final rejected = await _client.rejectMemory(memoryId);
+    if (rejected) {
+      memories = memories.where((m) => m.memoryId != memoryId).toList(growable: false);
+      notifyListeners();
+    }
   }
 
   // ---------------------------------------------------------------

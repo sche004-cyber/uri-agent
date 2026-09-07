@@ -78,7 +78,10 @@ class HttpUriClient implements UriClient {
   /// never treated as a credential.
   final String? _deviceId;
 
-  final String _sessionId;
+  // M18: mutable so the client can be repointed at a past conversation
+  // to resume it (see setSessionId / AppState.resumeSession). A fresh
+  // login/session still starts from a generated id.
+  String _sessionId;
   final http.Client _http;
 
   /// Prototype 1 (multi-user identity): set only by a successful
@@ -911,6 +914,119 @@ class HttpUriClient implements UriClient {
     try {
       final response = await _http
           .delete(Uri.parse('$baseUrl/memory/$memoryId'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return false;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return body['deleted'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  String get sessionId => _sessionId;
+
+  @override
+  void setSessionId(String sessionId) {
+    _sessionId = sessionId;
+  }
+
+  @override
+  Future<MemoryEntry?> confirmMemory(String memoryId, {String? content}) async {
+    try {
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/memory/$memoryId/confirm'),
+            headers: _jsonHeaders,
+            body: jsonEncode({if (content != null) 'content': content}),
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      return _memoryFrom(jsonDecode(response.body) as Map<String, dynamic>);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> rejectMemory(String memoryId) async {
+    try {
+      final response = await _http
+          .post(Uri.parse('$baseUrl/memory/$memoryId/reject'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return false;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return body['rejected'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<List<ConversationSummary>> listHistory() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/history'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return const [];
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = body['sessions'];
+      if (raw is! List) return const [];
+      return raw.whereType<Map<String, dynamic>>().map((item) {
+        return ConversationSummary(
+          sessionId: item['session_id'] as String? ?? '',
+          turnCount: (item['turn_count'] as num?)?.toInt() ?? 0,
+          preview: item['preview'] as String? ?? '',
+          lastActivity: item['last_activity'] as String?,
+        );
+      }).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
+  Future<List<UriTurn>> getHistory(String sessionId) async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/history/$sessionId'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return const [];
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = body['turns'];
+      if (raw is! List) return const [];
+      return raw.whereType<Map<String, dynamic>>().map((turn) {
+        final status = turn['status'] as String?;
+        final responseText = turn['response_text'] as String? ?? '';
+        // A past turn is rendered read-only: a completed turn shows its
+        // recorded response as the result; a failed turn shows it as the
+        // failure detail. Never re-runs or re-proposes anything.
+        final failed = status != null &&
+            status != 'success' &&
+            status != 'awaiting_approval';
+        return UriTurn(
+          id: turn['turn_id'] as String? ??
+              'history-${DateTime.now().microsecondsSinceEpoch}',
+          userText: turn['user_text'] as String? ?? '',
+          timestamp: DateTime.tryParse(turn['timestamp'] as String? ?? '') ??
+              DateTime.now(),
+          stage: failed ? TurnStage.failed : TurnStage.completed,
+          failureReason: failed ? responseText : null,
+          result: failed
+              ? null
+              : ActionResult(summary: responseText.isEmpty ? '—' : responseText),
+        );
+      }).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
+  Future<bool> deleteHistory(String sessionId) async {
+    try {
+      final response = await _http
+          .delete(Uri.parse('$baseUrl/history/$sessionId'), headers: _jsonHeaders)
           .timeout(const Duration(seconds: 30));
       if (response.statusCode != 200) return false;
       final body = jsonDecode(response.body) as Map<String, dynamic>;

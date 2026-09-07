@@ -135,6 +135,33 @@ abstract class UriClient {
   /// Real, complete removal. Returns whether anything was deleted.
   Future<bool> deleteMemory(String memoryId);
 
+  /// M18: the user accepting a URI-proposed (pending_confirmation)
+  /// memory, optionally correcting its content first. Only after this
+  /// does the entry begin to inform URI. Returns the confirmed entry,
+  /// or null on failure.
+  Future<MemoryEntry?> confirmMemory(String memoryId, {String? content});
+
+  /// M18: the user declining a URI-proposed memory. Returns whether it
+  /// was removed.
+  Future<bool> rejectMemory(String memoryId);
+
+  /// M18: the user's past conversations (GET /history), most recently
+  /// active first — a bounded summary list.
+  Future<List<ConversationSummary>> listHistory();
+
+  /// M18: the full transcript of one past conversation (GET
+  /// /history/{id}), as turns the UI can render and resume.
+  Future<List<UriTurn>> getHistory(String sessionId);
+
+  /// M18: remove one past conversation. Returns whether it was deleted.
+  Future<bool> deleteHistory(String sessionId);
+
+  /// M18: the current conversation/session id, and a way to repoint the
+  /// client at a past one so the next message continues that
+  /// conversation (see AppState.resumeSession).
+  String get sessionId;
+  void setSessionId(String sessionId);
+
   /// This install's durable identity (see GET /identity): the
   /// logged-in user's own portable user_id, and this device's
   /// local-only device_id. Neither is a credential. Null on any
@@ -234,6 +261,21 @@ class CapabilityInfo {
   /// it can run right now. Nothing the user says or approves makes a
   /// non-existent capability work, and the UI must not imply otherwise.
   bool get isImplemented => status == 'implemented';
+}
+
+/// M18: a bounded summary of one past conversation (see GET /history).
+class ConversationSummary {
+  const ConversationSummary({
+    required this.sessionId,
+    required this.turnCount,
+    required this.preview,
+    this.lastActivity,
+  });
+
+  final String sessionId;
+  final int turnCount;
+  final String preview;
+  final String? lastActivity;
 }
 
 /// This install's durable identity, from GET /identity — see

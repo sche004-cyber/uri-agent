@@ -401,6 +401,76 @@ class MockUriClient implements UriClient {
     return _memories.length != before;
   }
 
+  // M18: session id + history + memory-confirmation stand-ins for tests
+  // and offline development. HttpUriClient never delegates here.
+  String _sessionId = 'mock-session';
+
+  @override
+  String get sessionId => _sessionId;
+
+  @override
+  void setSessionId(String sessionId) {
+    _sessionId = sessionId;
+  }
+
+  @override
+  Future<MemoryEntry?> confirmMemory(String memoryId, {String? content}) async {
+    await _latency();
+    final index = _memories.indexWhere((m) => m.memoryId == memoryId);
+    if (index == -1) return null;
+    final existing = _memories[index];
+    final updated = MemoryEntry(
+      memoryId: existing.memoryId,
+      category: existing.category,
+      consent: 'user_confirmed',
+      content: content ?? existing.content,
+      confidence: existing.confidence,
+      notes: existing.notes,
+      status: 'CONFIRMED',
+      createdAt: existing.createdAt,
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+    _memories[index] = updated;
+    return updated;
+  }
+
+  @override
+  Future<bool> rejectMemory(String memoryId) async {
+    await _latency();
+    final before = _memories.length;
+    _memories.removeWhere((m) => m.memoryId == memoryId);
+    return _memories.length != before;
+  }
+
+  final Map<String, List<UriTurn>> _history = <String, List<UriTurn>>{};
+
+  @override
+  Future<List<ConversationSummary>> listHistory() async {
+    await _latency();
+    return _history.entries
+        .map(
+          (entry) => ConversationSummary(
+            sessionId: entry.key,
+            turnCount: entry.value.length,
+            preview: entry.value.isEmpty ? '' : entry.value.first.userText,
+            lastActivity: DateTime.now().toIso8601String(),
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<List<UriTurn>> getHistory(String sessionId) async {
+    await _latency();
+    return List.unmodifiable(_history[sessionId] ?? const []);
+  }
+
+  @override
+  Future<bool> deleteHistory(String sessionId) async {
+    await _latency();
+    return _history.remove(sessionId) != null;
+  }
+
   @override
   Future<HomeSummary> loadHomeSummary() async {
     await _latency();

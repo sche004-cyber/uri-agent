@@ -48,6 +48,10 @@ from uri_core.core.connection_status import list_connection_status
 from uri_core.core.file_store import FileStore, FileValidationError
 from uri_core.core.dispatcher import ToolDispatcher
 from uri_core.core.growth_ledger import GrowthLedgerStore
+from uri_core.core.conversation_history import ConversationHistoryStore
+from uri_core.core.experience_store import ExperienceStore
+from uri_core.core.skill_memory import SkillMemory
+from uri_core.skills.skill_installer import SkillInstaller
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
 from uri_core.core.model_providers import OllamaProvider
 from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
@@ -272,6 +276,28 @@ def _build_user_context(user_id: str) -> _UserContext:
         )
     )
 
+    # M18: experience, skill memory, and the conversation transcript are
+    # now user-scoped exactly like profile/memory/growth/sessions above -
+    # before M18 they defaulted to global uri_workspace files, so one
+    # user's learned skills, experience records, and past conversations
+    # leaked into every other user's Brain context. Each is now pointed
+    # only at this user_id's own directory.
+    experience_store = ExperienceStore(
+        storage_path=user_scoped_path(
+            user_id, "experience.json", root=_USER_STATE_ROOT
+        )
+    )
+    skill_memory = SkillMemory(
+        storage_path=user_scoped_path(
+            user_id, "skill_memory.json", root=_USER_STATE_ROOT
+        )
+    )
+    conversation_history = ConversationHistoryStore(
+        storage_dir=user_scoped_path(
+            user_id, "conversation_history", root=_USER_STATE_ROOT
+        )
+    )
+
     orchestrator = UriOrchestrator(
         model_reasoning_gateway=ModelReasoningGateway(
             model_callable=OllamaReasoningAdapter()
@@ -279,6 +305,9 @@ def _build_user_context(user_id: str) -> _UserContext:
         enable_response_narrative=True,
         approval_gate=approval_gate,
         session_manager=session_manager,
+        experience_store=experience_store,
+        skill_memory=skill_memory,
+        conversation_history=conversation_history,
     )
 
     return _UserContext(
@@ -465,6 +494,13 @@ class MemoryWriteRequest(BaseModel):
     content: str
     confidence: Optional[float] = None
     notes: Optional[str] = None
+
+
+class MemoryConfirmRequest(BaseModel):
+    # M18: optional correction applied when confirming a URI-proposed
+    # memory. Both omitted = confirm as proposed.
+    category: Optional[str] = None
+    content: Optional[str] = None
 
 
 class ApprovalDecisionRequest(BaseModel):
@@ -1027,6 +1063,163 @@ def delete_memory(
     return {"deleted": True, "memory_id": memory_id}
 
 
+@app.post("/memory/{memory_id}/confirm")
+def confirm_memory(
+    memory_id: str,
+    payload: Optional[MemoryConfirmRequest] = None,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """M18: the user accepting a URI-proposed (pending_confirmation)
+    memory, optionally correcting its category/content first. Only after
+    this does the entry become eligible to inform URI
+    (is_eligible_for_personalization). 404 for an unknown id."""
+    context = _resolve_context(user_id)
+    try:
+        confirmed = context.memory_store.confirm(
+            memory_id,
+            category=payload.category if payload else None,
+            content=payload.content if payload else None,
+        )
+    except MemoryValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    if confirmed is None:
+        raise HTTPException(status_code=404, detail="Memory not found.")
+
+    return _memory_entry_to_dict(confirmed)
+
+
+@app.get("/skills")
+def list_skills() -> dict:
+    """M18: the installed-skill ledger - every externally installed skill
+    with its source, version, status (quarantined/enabled/disabled),
+    declared capabilities and dependencies, and last validation report.
+    This is NOT the runtime capability registry the dispatcher executes
+    from; a skill listed here is tracked but not runnable until a human
+    explicitly promotes it (a separate step by design), so reading this
+    exposes what is installed without granting any of it execution."""
+    installer = SkillInstaller()
+    return {"skills": installer.list_installed()}
+
+
+@app.post("/skills/{skill_id}/enable")
+def enable_skill(skill_id: str) -> dict:
+    """M18: an operator vouching for an installed skill. Metadata only -
+    flips its status to 'enabled'; it still never becomes executable
+    through this call (promotion into the dispatcher is a separate,
+    deliberate step). 404 for a skill that is not installed."""
+    result = SkillInstaller().enable(skill_id)
+    if not result.ok:
+        raise HTTPException(status_code=404, detail=result.detail or "Skill not installed.")
+    return result.to_dict()
+
+
+@app.post("/skills/{skill_id}/disable")
+def disable_skill(skill_id: str) -> dict:
+    """M18: mark an installed skill disabled (metadata only)."""
+    result = SkillInstaller().disable(skill_id)
+    if not result.ok:
+        raise HTTPException(status_code=404, detail=result.detail or "Skill not installed.")
+    return result.to_dict()
+
+
+@app.delete("/skills/{skill_id}")
+def remove_skill(skill_id: str) -> dict:
+    """M18: remove an installed skill from the ledger entirely."""
+    result = SkillInstaller().remove(skill_id)
+    if not result.ok:
+        raise HTTPException(status_code=404, detail=result.detail or "Skill not installed.")
+    return result.to_dict()
+
+
+@app.get("/learning")
+def learning_diagnostics(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """M18: an honest, read-only summary of the memory/learning
+    subsystem for THIS user, so a memory/learning problem is explainable
+    rather than invisible. Counts only - never content - covering user
+    memory (by consent state), stored experience, learned skills (with a
+    confidence breakdown so a demoted/failing skill is visible), and
+    saved conversations. Every field degrades to a safe zero/empty on a
+    store failure rather than raising, and each degradation is reported
+    as an explicit error string so 'why is this empty?' is answerable."""
+
+    context = _resolve_context(user_id)
+    errors: List[str] = []
+
+    memory_by_consent: dict = {}
+    try:
+        for entry in context.memory_store.list_all():
+            memory_by_consent[entry.consent] = memory_by_consent.get(entry.consent, 0) + 1
+    except Exception as exc:
+        errors.append(f"memory: {exc}")
+
+    experience_count = 0
+    try:
+        experience_count = len(context.orchestrator.experience_store.recent())
+    except Exception as exc:
+        errors.append(f"experience: {exc}")
+
+    skills_total = 0
+    skills_recommended = 0
+    skills_demoted = 0
+    try:
+        from uri_core.core.skill_memory import (
+            SkillMemory as _SkillMemory,
+            CONFIDENCE_RECALL_FLOOR as _FLOOR,
+        )
+        for skill in context.orchestrator.skill_memory.list_skills():
+            skills_total += 1
+            if _SkillMemory.confidence(skill) >= _FLOOR:
+                skills_recommended += 1
+            else:
+                skills_demoted += 1
+    except Exception as exc:
+        errors.append(f"skills: {exc}")
+
+    conversation_sessions = 0
+    try:
+        conversation_sessions = len(
+            context.orchestrator.conversation_history.list_sessions(limit=200)
+        )
+    except Exception as exc:
+        errors.append(f"conversations: {exc}")
+
+    return {
+        "memory": {
+            "total": sum(memory_by_consent.values()),
+            "by_consent": memory_by_consent,
+            "pending_confirmation": memory_by_consent.get("pending_confirmation", 0),
+        },
+        "experience_records": experience_count,
+        "skills": {
+            "total": skills_total,
+            "recommended": skills_recommended,
+            "demoted": skills_demoted,
+        },
+        "conversation_sessions": conversation_sessions,
+        "errors": errors,
+    }
+
+
+@app.post("/memory/{memory_id}/reject")
+def reject_memory(
+    memory_id: str,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """M18: the user rejecting a URI-proposed memory. A rejection is a
+    real, complete removal - a proposal the user declined leaves nothing
+    behind. Same store call as delete; named separately so the client
+    (and audit) can distinguish 'declined a proposal' from 'deleted an
+    established memory'."""
+    context = _resolve_context(user_id)
+    deleted = context.memory_store.delete(memory_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Memory not found.")
+    return {"rejected": True, "memory_id": memory_id}
+
+
 @app.get("/growth")
 def growth(
     user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
@@ -1257,6 +1450,62 @@ def activity(
             for index, event in enumerate(events)
         ]
     }
+
+
+@app.get("/history")
+def list_history(
+    limit: int = 50,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """M18: the user's own past conversations - a bounded summary list
+    (session id, turn count, last activity, a short preview), most
+    recently active first. Read from the durable per-user transcript
+    store (see conversation_history.py); a logged-in user only ever
+    sees their own (see _build_user_context). Degrades to an empty list
+    rather than raising."""
+
+    context = _resolve_context(user_id)
+    try:
+        sessions = context.orchestrator.conversation_history.list_sessions(
+            limit=max(1, min(limit, 200))
+        )
+    except Exception:
+        sessions = []
+    return {"sessions": sessions}
+
+
+@app.get("/history/{session_id}")
+def get_history(
+    session_id: str,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """M18: the full transcript of one past conversation so a client can
+    reload/resume it. Verbatim turns (user text + URI response + status),
+    never a judgement. An unknown session degrades to an empty turn list
+    rather than 404-leaking whether it exists."""
+
+    context = _resolve_context(user_id)
+    try:
+        turns = context.orchestrator.conversation_history.get_session(session_id)
+    except Exception:
+        turns = []
+    return {"session_id": session_id, "turns": turns}
+
+
+@app.delete("/history/{session_id}")
+def delete_history(
+    session_id: str,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """M18: the user removing one of their own past conversations. Reports
+    honestly whether anything was actually deleted."""
+
+    context = _resolve_context(user_id)
+    try:
+        deleted = context.orchestrator.conversation_history.delete_session(session_id)
+    except Exception:
+        deleted = False
+    return {"deleted": deleted, "session_id": session_id}
 
 
 @app.post("/connections/{connection_id}/authorize")

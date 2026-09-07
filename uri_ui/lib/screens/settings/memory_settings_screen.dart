@@ -124,9 +124,32 @@ class _MemorySettingsScreenState extends State<MemorySettingsScreen> {
                 title: 'Nothing remembered yet',
                 message: 'Anything you explicitly ask URI to remember will show up here.',
               )
-            else
-              for (final entry in state.memories)
-                _MemoryTile(entry: entry, onDelete: () => state.deleteMemory(entry.memoryId)),
+            else ...[
+              // M18: URI-proposed memories awaiting the user's decision.
+              // Shown first, with Confirm/Reject — until confirmed they
+              // never influence URI (the backend keeps them
+              // pending_confirmation and excludes them from
+              // personalization).
+              for (final entry in state.memories
+                  .where((m) => m.consent == 'pending_confirmation'))
+                _MemoryTile(
+                  entry: entry,
+                  pending: true,
+                  onConfirm: () => state.confirmMemory(entry.memoryId),
+                  onReject: () => state.rejectMemory(entry.memoryId),
+                  onDelete: () => state.deleteMemory(entry.memoryId),
+                ),
+              // Established memories.
+              for (final entry in state.memories
+                  .where((m) => m.consent != 'pending_confirmation'))
+                _MemoryTile(
+                  entry: entry,
+                  pending: false,
+                  onConfirm: () {},
+                  onReject: () {},
+                  onDelete: () => state.deleteMemory(entry.memoryId),
+                ),
+            ],
           ],
         );
       },
@@ -135,41 +158,85 @@ class _MemorySettingsScreenState extends State<MemorySettingsScreen> {
 }
 
 class _MemoryTile extends StatelessWidget {
-  const _MemoryTile({required this.entry, required this.onDelete});
+  const _MemoryTile({
+    required this.entry,
+    required this.pending,
+    required this.onConfirm,
+    required this.onReject,
+    required this.onDelete,
+  });
 
   final MemoryEntry entry;
+  final bool pending;
+  final VoidCallback onConfirm;
+  final VoidCallback onReject;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: UriSpace.sm),
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(UriSpace.md),
-          child: Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(entry.category, style: theme.textTheme.labelSmall),
+                            if (pending) ...[
+                              const SizedBox(width: UriSpace.sm),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: colors.warningSoft,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  'URI suggests remembering',
+                                  style: theme.textTheme.labelSmall?.copyWith(color: colors.warning),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(entry.content, style: theme.textTheme.bodyLarge),
+                        if (entry.notes != null && entry.notes!.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(entry.notes!, style: theme.textTheme.bodyMedium),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (!pending)
+                    IconButton(
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                      tooltip: 'Forget this',
+                    ),
+                ],
+              ),
+              if (pending) ...[
+                const SizedBox(height: UriSpace.sm),
+                Row(
                   children: [
-                    Text(entry.category, style: theme.textTheme.labelSmall),
-                    const SizedBox(height: 2),
-                    Text(entry.content, style: theme.textTheme.bodyLarge),
-                    if (entry.notes != null && entry.notes!.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(entry.notes!, style: theme.textTheme.bodyMedium),
-                    ],
+                    ElevatedButton(onPressed: onConfirm, child: const Text('Confirm')),
+                    const SizedBox(width: UriSpace.sm),
+                    OutlinedButton(onPressed: onReject, child: const Text('Reject')),
                   ],
                 ),
-              ),
-              IconButton(
-                onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                tooltip: 'Forget this',
-              ),
+              ],
             ],
           ),
         ),
