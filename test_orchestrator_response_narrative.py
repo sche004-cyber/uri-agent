@@ -2,7 +2,17 @@
 the additive/shadow-rollout behaviour, that a failure at any stage
 falls back to the untouched deterministic response, and that model
 output drafting the narrative can never influence execution outcome.
-No Ollama/network involved - a fake provider is injected."""
+No Ollama/network involved - a fake provider is injected.
+
+M17 note: document drafting is now Brain-authored (services/
+institutional_drafting.py), so the drafting capability would otherwise
+make a real model call and produce a non-deterministic body - breaking
+this module's "no network / deterministic response" contract and the
+byte-equality check below. setUpModule pins the drafting model
+unreachable so drafting deterministically uses its plain fallback,
+keeping these tests hermetic and isolating exactly what they test: that
+the NARRATIVE layer is additive and never alters execution or the
+deterministic response."""
 
 import os
 import tempfile
@@ -11,6 +21,24 @@ import unittest
 from uri_core.core.model_providers.base import ModelResponse
 from uri_core.core.orchestrator import UriOrchestrator
 from uri_core.core.skill_memory import SkillMemory
+
+
+_SAVED_OLLAMA_URL = None
+
+
+def setUpModule():
+    global _SAVED_OLLAMA_URL
+    _SAVED_OLLAMA_URL = os.environ.get("OLLAMA_BASE_URL")
+    # An unroutable address - the drafting composer catches the
+    # provider error and returns its deterministic fallback document.
+    os.environ["OLLAMA_BASE_URL"] = "http://127.0.0.1:1"
+
+
+def tearDownModule():
+    if _SAVED_OLLAMA_URL is None:
+        os.environ.pop("OLLAMA_BASE_URL", None)
+    else:
+        os.environ["OLLAMA_BASE_URL"] = _SAVED_OLLAMA_URL
 
 
 class _FixedSemanticInterpreter:
