@@ -117,6 +117,112 @@ abstract class UriClient {
   /// cancel a task the same way as any awaiting-approval turn: call
   /// [approve]/[cancel] with [TaskItem.id].
   Future<List<TaskItem>> listTasks();
+
+  /// M16: URI's real capability catalogue (GET /capabilities) — what
+  /// it can do, what it cannot, and honestly why not (gap_reason
+  /// distinguishes "no implementation exists" from "exists but this
+  /// runtime cannot use it right now").
+  ///
+  /// Returns an empty list when the backend is unreachable — the UI
+  /// then shows nothing rather than claiming capabilities it cannot
+  /// verify.
+  Future<List<CapabilityInfo>> listCapabilities();
+
+  /// M16: pushes the user's behaviour-changing preferences to the
+  /// backend profile (POST /profile), which is what
+  /// personalization_context feeds to the Brain on every turn.
+  ///
+  /// Before M16 these lived only in device-local storage, so the Brain
+  /// never actually saw the communication style or autonomy level the
+  /// user chose during onboarding. Returns whether the backend
+  /// accepted them - never assumed.
+  Future<bool> syncPreferences({
+    required String communicationStyle,
+    required String autonomyLevel,
+    required List<String> focusAreas,
+  });
+
+  /// M16: attach a file to the current conversation. The backend
+  /// validates type/size and stores it (see file_store.py); URI only
+  /// ever reads it if the Brain decides to, via the registered
+  /// read_attached_file capability.
+  ///
+  /// Throws [AttachmentException] with the backend's real reason when
+  /// the file is rejected, so the user is told why rather than seeing
+  /// a silent failure.
+  Future<Attachment> uploadAttachment({
+    required String filename,
+    required List<int> bytes,
+  });
+
+  /// Files currently attached to this conversation.
+  Future<List<Attachment>> listAttachments();
+
+  /// Remove an attachment. Returns whether anything was actually
+  /// removed.
+  Future<bool> deleteAttachment(String fileId);
+}
+
+/// M16: one capability from URI's real registry, with the honest
+/// availability fields the backend already maintains (see
+/// capability_registry.py). [gapReason] is null when the capability is
+/// genuinely usable right now.
+class CapabilityInfo {
+  const CapabilityInfo({
+    required this.id,
+    required this.description,
+    required this.status,
+    required this.availability,
+    required this.approvalRequirement,
+    required this.risk,
+    this.limitations,
+    this.gapReason,
+  });
+
+  final String id;
+  final String description;
+  final String status;
+  final String availability;
+  final String approvalRequirement;
+  final String risk;
+  final String? limitations;
+  final String? gapReason;
+
+  /// True only for a capability the backend says is usable right now.
+  bool get isUsable => status == 'implemented' && gapReason == null;
+
+  /// Whether an implementation exists at all — distinct from whether
+  /// it can run right now. Nothing the user says or approves makes a
+  /// non-existent capability work, and the UI must not imply otherwise.
+  bool get isImplemented => status == 'implemented';
+}
+
+/// A file the user attached to the conversation. Mirrors the backend's
+/// bounded reference exactly (see StoredFile.to_reference) — metadata
+/// only, never content, and never a storage path.
+class Attachment {
+  const Attachment({
+    required this.fileId,
+    required this.filename,
+    required this.mediaType,
+    required this.sizeBytes,
+  });
+
+  final String fileId;
+  final String filename;
+  final String mediaType;
+  final int sizeBytes;
+}
+
+/// Raised when the backend refuses an upload. [message] is the real,
+/// user-facing reason (unsupported type, too large, empty).
+class AttachmentException implements Exception {
+  const AttachmentException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
 }
 
 /// Result of a [UriClient.login]/[UriClient.signup] attempt.

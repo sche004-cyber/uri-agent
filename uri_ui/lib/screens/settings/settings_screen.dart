@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/user_preferences.dart';
 import '../../services/app_state_scope.dart';
+import '../../services/uri_client.dart' show CapabilityInfo;
 import '../../theme/uri_theme.dart';
 import '../../widgets/screen_header.dart';
 import '../../widgets/server_address_section.dart';
@@ -10,8 +11,28 @@ import '../../widgets/server_address_section.dart';
 /// even where the underlying feature (accounts, privacy policy, connection
 /// management detail) isn't built yet. Preference controls here are wired
 /// to real (if UI-only) state; the rest are clearly-labelled placeholders.
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // M16: ask the backend what URI can actually do, once, when this
+    // screen first opens. Until it answers, the capability section
+    // says it is checking rather than showing an empty list.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final state = AppStateScope.of(context);
+      if (!state.hasLoadedCapabilities) {
+        state.loadCapabilities();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +119,21 @@ class SettingsScreen extends StatelessWidget {
                     connectionErrorDetail: state.lastConnectionErrorDetail,
                     onSave: (url) => state.setBaseUrl(url),
                     onTestConnection: (address) => state.checkConnection(addressOverride: address),
+                  ),
+                ),
+                // M16: URI's real capability catalogue, straight from
+                // the backend registry - including honest gap reasons.
+                // Nothing here is a hardcoded list of what URI "can
+                // do": if the backend cannot verify a capability, it
+                // is not shown as available.
+                _SettingsSection(
+                  title: 'What URI can do',
+                  description:
+                      "URI's registered capabilities and their real current "
+                      'availability, reported by the server.',
+                  child: _CapabilityList(
+                    capabilities: state.capabilities,
+                    loaded: state.hasLoadedCapabilities,
                   ),
                 ),
                 const _SettingsSection(
@@ -195,6 +231,94 @@ class _AccountRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// M16: renders the backend's real capability catalogue. A capability
+/// that cannot run right now is shown as such, with the honest reason -
+/// "not implemented" never masquerades as "temporarily unavailable",
+/// because only one of those can ever be unblocked by the user.
+class _CapabilityList extends StatelessWidget {
+  const _CapabilityList({required this.capabilities, required this.loaded});
+
+  final List<CapabilityInfo> capabilities;
+  final bool loaded;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!loaded) {
+      return const _PlaceholderRow(label: 'Checking with the server…');
+    }
+
+    if (capabilities.isEmpty) {
+      // Honest empty state: URI could not verify anything, so it
+      // claims nothing.
+      return const _PlaceholderRow(
+        label: 'Could not read capabilities from the server',
+      );
+    }
+
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final capability in capabilities)
+          Padding(
+            padding: const EdgeInsets.only(bottom: UriSpace.sm),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  capability.isUsable
+                      ? Icons.check_circle_outline
+                      : Icons.remove_circle_outline,
+                  size: 16,
+                  color: capability.isUsable
+                      ? UriColors.success
+                      : UriColors.inkFaint,
+                ),
+                const SizedBox(width: UriSpace.xs),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        capability.id,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: UriColors.ink,
+                        ),
+                      ),
+                      if (capability.description.isNotEmpty)
+                        Text(
+                          capability.description,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      if (capability.gapReason != null)
+                        Text(
+                          _gapLabel(capability),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: UriColors.inkFaint,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  static String _gapLabel(CapabilityInfo capability) {
+    if (!capability.isImplemented) {
+      return 'Not built yet — nothing you do can enable this.';
+    }
+    final limitations = capability.limitations;
+    return limitations == null
+        ? 'Exists, but unavailable on this system right now.'
+        : 'Unavailable right now: $limitations';
   }
 }
 

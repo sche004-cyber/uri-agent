@@ -61,6 +61,7 @@ class BuildQueryContextTests(unittest.TestCase):
                 "capabilities",
                 "diagnostics",
                 "experience",
+                "attachments",
             },
         )
         self.assertEqual(context["identity"], "")
@@ -70,6 +71,7 @@ class BuildQueryContextTests(unittest.TestCase):
         self.assertEqual(context["verified_facts"], {})
         self.assertEqual(context["capabilities"], [])
         self.assertEqual(context["experience"], [])
+        self.assertEqual(context["attachments"], [])
         self.assertEqual(context["diagnostics"], {})
 
     def test_identity_policy_text_is_passed_through_verbatim(self):
@@ -116,6 +118,25 @@ class BuildQueryContextTests(unittest.TestCase):
         context = build_query_context(experience=experience)
 
         self.assertEqual(context["experience"], experience)
+
+    def test_attachments_are_references_only_never_content(self):
+        # M16: the Brain may see THAT a file is attached and what it is,
+        # never its content - reading requires selecting the
+        # read_attached_file capability.
+        attachments = [
+            {
+                "file_id": "f1",
+                "filename": "minutes.pdf",
+                "media_type": "application/pdf",
+                "size_bytes": 2048,
+            }
+        ]
+
+        context = build_query_context(attachments=attachments)
+
+        self.assertEqual(context["attachments"], attachments)
+        self.assertNotIn("text", context["attachments"][0])
+        self.assertNotIn("stored_name", context["attachments"][0])
 
     def test_session_context_is_passed_through_unchanged(self):
         session_context = {"task": "noting", "active_workflow_status": None}

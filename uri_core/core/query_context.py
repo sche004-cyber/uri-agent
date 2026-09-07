@@ -90,6 +90,7 @@ def build_query_context(
     capabilities: Optional[List[CapabilityDescriptor]] = None,
     diagnostics: Optional[Dict[str, Any]] = None,
     experience: Optional[List[Dict[str, Any]]] = None,
+    attachments: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """Assembles one bounded, labeled dict for a single Brain query -
     never prose, never free-form instruction text, so a query prompt
@@ -146,6 +147,14 @@ def build_query_context(
       Brain-approved retention candidates ever reach this list (see
       orchestrator.py's _run_acceptance_retention_step). Degrades to an
       empty list when none exist yet.
+    - attachments: bounded references to files the user actually
+      attached to this conversation - {file_id, filename, media_type,
+      size_bytes} only, from core/file_store.StoredFile.to_reference().
+      Never file CONTENT: the Brain sees only that an attachment
+      exists and what it is, and must select the registered
+      read_attached_file capability for URI to actually extract and
+      return its text. Degrades to an empty list when nothing is
+      attached.
 
     Any argument may be omitted (None) - the corresponding section
     degrades to an empty value rather than being guessed at, matching
@@ -170,4 +179,5 @@ def build_query_context(
         ],
         "diagnostics": diagnostics or {},
         "experience": experience or [],
+        "attachments": attachments or [],
     }

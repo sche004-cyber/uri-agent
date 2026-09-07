@@ -7,7 +7,14 @@ import '../models/user_preferences.dart';
 import '../models/uri_turn.dart';
 import 'preferences_store.dart';
 import 'server_address_store.dart';
-import 'uri_client.dart' show AuthOutcome, HomeSummary, UriClient;
+import 'uri_client.dart'
+    show
+        Attachment,
+        AttachmentException,
+        AuthOutcome,
+        CapabilityInfo,
+        HomeSummary,
+        UriClient;
 
 /// Prototype 2 (multi-client + runtime awareness): the result of the
 /// last [AppState.checkConnection] call. Deliberately a separate type
@@ -77,6 +84,10 @@ class AppState extends ChangeNotifier {
     tasks.clear();
     homeSummary = null;
     hasLoadedActivity = false;
+    // M16: attachments are conversation state too - a different user
+    // must never see the previous user's attached filenames.
+    attachments = <Attachment>[];
+    attachmentError = null;
     notifyListeners();
   }
 
@@ -163,10 +174,23 @@ class AppState extends ChangeNotifier {
 
   /// Applies and persists a preferences update — used both by onboarding
   /// completion and by later edits from Settings.
+  ///
+  /// M16: also pushes them to the backend profile, which is what
+  /// personalization_context feeds the Brain each turn. Before this,
+  /// preferences lived only on-device and the Brain never saw them.
+  /// The device-local save still happens first and independently: it
+  /// is what survives a restart, and it must not depend on the backend
+  /// being reachable.
   Future<void> updatePreferences(UserPreferences updated) async {
     preferences = updated;
     notifyListeners();
     await _preferencesStore.save(updated);
+
+    await _client.syncPreferences(
+      communicationStyle: updated.communicationStyle.name,
+      autonomyLevel: updated.autonomyLevel.name,
+      focusAreas: updated.focusAreas,
+    );
   }
 
   Future<void> loadHome() async {
@@ -240,6 +264,74 @@ class AppState extends ChangeNotifier {
     isSendingAsk = false;
     notifyListeners();
     return turn;
+  }
+
+  // ---------------------------------------------------------------
+  // M16: file attachments.
+  //
+  // Attachments belong to the conversation, not to a single message:
+  // the backend scopes them by session_id and the Brain is shown that
+  // they exist (see query_context's "attachments"), deciding for
+  // itself whether to read one. [attachmentError] holds the backend's
+  // real rejection reason so the UI can show why, never a silent
+  // failure.
+  // ---------------------------------------------------------------
+
+  // M16: URI's real capability catalogue, loaded from the backend.
+  // hasLoadedCapabilities distinguishes "not asked yet" from "asked
+  // and got nothing" - the UI must not show an honest-looking empty
+  // list before it has actually checked.
+  List<CapabilityInfo> capabilities = <CapabilityInfo>[];
+  bool hasLoadedCapabilities = false;
+
+  Future<void> loadCapabilities() async {
+    capabilities = await _client.listCapabilities();
+    hasLoadedCapabilities = true;
+    notifyListeners();
+  }
+
+  List<Attachment> attachments = <Attachment>[];
+  bool isUploadingAttachment = false;
+  String? attachmentError;
+
+  Future<void> attachFile({
+    required String filename,
+    required List<int> bytes,
+  }) async {
+    isUploadingAttachment = true;
+    attachmentError = null;
+    notifyListeners();
+
+    try {
+      final attachment = await _client.uploadAttachment(
+        filename: filename,
+        bytes: bytes,
+      );
+      attachments = [...attachments, attachment];
+    } on AttachmentException catch (error) {
+      attachmentError = error.message;
+    } catch (_) {
+      attachmentError = 'The file could not be attached.';
+    } finally {
+      isUploadingAttachment = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> removeAttachment(String fileId) async {
+    final removed = await _client.deleteAttachment(fileId);
+    if (removed) {
+      attachments = attachments
+          .where((a) => a.fileId != fileId)
+          .toList(growable: false);
+      notifyListeners();
+    }
+  }
+
+  void clearAttachmentError() {
+    if (attachmentError == null) return;
+    attachmentError = null;
+    notifyListeners();
   }
 
   static String _generateTurnId() =>

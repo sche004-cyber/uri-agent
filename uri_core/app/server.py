@@ -19,11 +19,20 @@ access - no TLS, no reverse proxy, no authentication beyond this file's
 own login endpoints. Do not expose 0.0.0.0 on a network you don't trust.
 """
 
+import os
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import List, Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    Header,
+    HTTPException,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -33,7 +42,9 @@ from uri_core.core.audit_comparison import build_shadow_comparison_report
 from uri_core.core.audit_trail import AuditTrail
 from uri_core.core.auth_session import AuthSessionStore
 from uri_core.core.capability_registry import CapabilityRegistry
+from uri_core.core import connection_status as connection_status_module
 from uri_core.core.connection_status import list_connection_status
+from uri_core.core.file_store import FileStore, FileValidationError
 from uri_core.core.dispatcher import ToolDispatcher
 from uri_core.core.growth_ledger import GrowthLedgerStore
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
@@ -1074,6 +1085,14 @@ def capabilities() -> dict:
                 "platform": descriptor.platform,
                 "limitations": descriptor.limitations,
                 "interface": descriptor.interface,
+                # M16: the honest reason a capability cannot be relied
+                # on right now - "not_implemented" (no adapter exists,
+                # and nothing the user says or approves changes that)
+                # vs "unavailable_runtime" (it exists, this runtime
+                # cannot use it yet). Null when genuinely usable. The
+                # client needs this to explain a gap truthfully rather
+                # than implying more detail would unblock it.
+                "gap_reason": descriptor.gap_reason,
             }
             for descriptor in _capability_registry.list_capabilities()
         ],
@@ -1097,3 +1116,209 @@ def connections() -> dict:
     """
 
     return {"connections": list_connection_status()}
+
+
+# ------------------------------------------------------------------
+# M16 Priority 1 - user file attachments.
+#
+# The Engine side of the attachment boundary: it validates, authorizes,
+# stores and lists files. It never extracts, interprets, or decides
+# anything about their content - reading a file happens only when the
+# Brain selects the registered read_attached_file capability and it is
+# executed through the ordinary ApprovalGate/ToolDispatcher path (see
+# uri_core/tools/read_attached_file.py).
+#
+# _file_store is ambient/global, matching the orchestrator's own
+# default (see UriOrchestrator.__init__) so an upload made here is the
+# same store the capability reads from. Files are keyed by the
+# conversation session_id the client supplies.
+# ------------------------------------------------------------------
+
+_file_store = FileStore()
+
+
+def _repo_root_for_credentials() -> str:
+    """The directory connection_status.py resolves credential/token
+    files against - reused here (rather than re-derived) so a real
+    disconnect removes exactly the token the status check reads."""
+
+    return connection_status_module._repo_root()
+
+
+@app.post("/files")
+async def upload_file(
+    session_id: str = Form(...),
+    file: UploadFile = File(...),
+) -> dict:
+    """Accepts one user file for a conversation. Validation
+    (type/size/name) is enforced in FileStore, not trusted from the
+    client - see file_store.py. A rejected upload returns 400 with the
+    real reason so the user can act on it, never a silent drop."""
+
+    content = await file.read()
+
+    try:
+        record = _file_store.save(
+            filename=file.filename,
+            content=content,
+            media_type=file.content_type,
+            session_id=session_id,
+        )
+
+    except FileValidationError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+    return {"file": record.to_reference()}
+
+
+@app.get("/files")
+def list_files(session_id: str) -> dict:
+    """Bounded references to the files attached to one conversation -
+    never content, matching what the Brain itself is shown."""
+
+    return {
+        "files": [
+            record.to_reference()
+            for record in _file_store.list_for_session(session_id)
+        ]
+    }
+
+
+@app.delete("/files/{file_id}")
+def delete_file(file_id: str) -> dict:
+    """Removes an attachment the user no longer wants URI to have.
+    Reports honestly whether anything was actually deleted."""
+
+    return {"deleted": _file_store.delete(file_id)}
+
+
+@app.get("/activity")
+def activity(
+    limit: int = 50,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """M16 Priority 2: REAL activity, from the runtime's own AuditTrail
+    (see audit_trail.py) - proposals, approvals, executions and
+    recovery decisions that actually happened. This replaces a client
+    fallback that previously served fabricated mock events.
+
+    Honest scope: the audit store is in-memory, so this covers the
+    current server process only. That is a real limitation of what URI
+    can currently evidence, and is reported as an empty list after a
+    restart rather than being padded with invented history.
+
+    Structured outcomes only - never raw prompts, model responses, or
+    chain-of-thought, matching audit_trail.py's own rule.
+    """
+
+    context = _resolve_context(user_id)
+
+    try:
+        events = context.orchestrator.audit_trail.store.query(
+            limit=max(1, min(limit, 200))
+        )
+    except Exception:
+        events = []
+
+    return {
+        "activity": [
+            {
+                "id": f"{event.event_type}-{index}",
+                "timestamp": event.timestamp,
+                "event_type": event.event_type,
+                "status": event.status,
+                "capability": event.capability,
+                "session_id": event.session_id,
+            }
+            for index, event in enumerate(events)
+        ]
+    }
+
+
+@app.post("/connections/{connection_id}/authorize")
+def authorize_connection(connection_id: str) -> dict:
+    """M16 Priority 4: start Google sign-in for a service.
+
+    Honest about what is actually possible: Google's installed-app
+    consent flow opens a browser ON THE SERVER HOST (see
+    GmailService.connect / InstalledAppFlow.run_local_server), so a
+    phone cannot complete it remotely. This endpoint therefore does not
+    pretend to authorize anything from the client - it reports what is
+    genuinely required and returns the real, unchanged state.
+
+    It deliberately does NOT invoke the interactive flow: a blocking
+    browser prompt must never be triggerable by an HTTP request (the
+    same rule connection_status.py already enforces for status reads).
+    """
+
+    if connection_id not in {"gmail", "drive"}:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Unknown connection: {connection_id}",
+        )
+
+    credentials_present = os.path.exists(
+        os.path.join(_repo_root_for_credentials(), "credentials.json")
+    )
+
+    return {
+        "started": False,
+        "detail": (
+            "Google sign-in must be completed on the URI server host, "
+            "where the consent browser opens. Run the one-time consent "
+            "there, then refresh this screen."
+            if credentials_present
+            else "No Google client secret (credentials.json) is "
+            "configured on the URI server host yet, so sign-in cannot "
+            "be started."
+        ),
+        "connections": list_connection_status(),
+    }
+
+
+@app.delete("/connections/{connection_id}")
+def disconnect_connection(connection_id: str) -> dict:
+    """M16 Priority 2: a REAL disconnect. Previously the client faked
+    this against mock state, so "Disconnected" was displayed while
+    nothing had changed.
+
+    Revoking a Google connection means removing the stored OAuth token
+    on the server host - after this, connection_status.py reports the
+    service as needing authorization again, because it genuinely does.
+    Both Gmail and Drive share one token file (they are one Google
+    authorization with two scopes), so this is reported honestly as
+    affecting both rather than pretending they are independent.
+    """
+
+    if connection_id not in {"gmail", "drive"}:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Unknown connection: {connection_id}",
+        )
+
+    token_path = os.path.join(_repo_root_for_credentials(), "token.json")
+
+    if not os.path.exists(token_path):
+        return {
+            "disconnected": False,
+            "detail": "That service was not connected.",
+            "connections": list_connection_status(),
+        }
+
+    try:
+        os.remove(token_path)
+
+    except OSError as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"The stored token could not be removed: {error}",
+        )
+
+    return {
+        "disconnected": True,
+        "detail": (
+            "Google authorization removed. Gmail and Drive share one "
+            "token, so both now require sign-in again."
+        ),
+        "connections": list_connection_status(),
+    }

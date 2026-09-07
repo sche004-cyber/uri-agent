@@ -57,6 +57,20 @@
       "limitations": "Drafting only; does not issue, sign, or distribute the order.",
       "interface": null
     },
+    "read_attached_file": {
+      "file_path": "uri_core/tools/read_attached_file.py",
+      "class_name": "ReadAttachedFileTool",
+      "method": "execute",
+      "description": "Read the text of a file the user attached to this conversation (PDF including scanned/OCR, plain text, CSV, JSON, spreadsheet, image, or Word document), returning the extracted text as evidence for the Brain to reason from - never an answer URI composes itself.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": ["read_user_attachments"],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "Reads only files the user actually attached to the current conversation; honestly reports when nothing is attached, when a file type has no text extractor, when a document contains no readable text, or when extraction fails, rather than inventing content.",
+      "interface": null
+    },
     "gmail_search": {
       "file_path": "uri_core/tools/gmail_search.py",
       "class_name": "GmailSearchTool",
@@ -69,6 +83,20 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Requires uri_workspace/credentials.json (a Google OAuth client secret) and a completed one-time OAuth consent; honestly reports when credentials are missing, authentication fails, or the search returns no results rather than inventing information.",
+      "interface": null
+    },
+    "gmail_find_draft": {
+      "file_path": "uri_core/tools/gmail_find_draft.py",
+      "class_name": "GmailFindDraftTool",
+      "method": "execute",
+      "description": "Search the user's existing Gmail drafts (read-only) for one relevant to the request, returning it as evidence for the Brain to reason from. URI cannot create, modify, send, or delete drafts through this capability.",
+      "status": "implemented",
+      "availability": "unavailable_missing_dependency",
+      "permissions": ["gmail_readonly"],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "Requires the same Google OAuth credentials as gmail_search; reports 'not found' when Gmail is unavailable or when no relevant draft exists, and cannot distinguish those two cases from the underlying service's return value.",
       "interface": null
     },
     "web_search": {

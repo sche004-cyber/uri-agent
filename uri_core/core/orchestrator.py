@@ -47,6 +47,7 @@ from uri_core.core.experience_store import (
     ExperienceStore,
     summarize_for_query_context as summarize_experience_for_query_context
 )
+from uri_core.core.file_store import FileStore
 from uri_core.core.skill_evaluator import SkillEvaluator
 from uri_core.core.context_budget import ContextBudget
 from uri_core.core.audit_trail import AuditTrail
@@ -75,7 +76,8 @@ class UriOrchestrator:
         response_drafting_provider=None,
         session_manager=None,
         max_brain_iterations=3,
-        experience_store=None
+        experience_store=None,
+        file_store=None
     ):
 
         # Milestone 11 Part 2 (Brain re-evaluation loop): a safety cap
@@ -246,6 +248,19 @@ class UriOrchestrator:
             experience_store
             if experience_store is not None
             else ExperienceStore()
+        )
+
+        # M16 Priority 1 (file attachments): read-only here. The
+        # orchestrator only ever asks which files the user attached to
+        # a session, so the Brain can see that they exist (see
+        # _build_query_context's "attachments" section); it never reads
+        # their content. Content extraction happens only when the Brain
+        # selects the registered read_attached_file capability, through
+        # the same ApprovalGate/ToolDispatcher boundary as any other
+        # capability. Ambient by default, exactly like
+        # self.skill_memory/self.experience_store above.
+        self.file_store = (
+            file_store if file_store is not None else FileStore()
         )
 
     # ==========================================================
@@ -2501,6 +2516,23 @@ class UriOrchestrator:
         except Exception:
             experience = []
 
+        # ATTACHMENTS (M16 Priority 1): bounded references only - what
+        # the user actually attached to THIS session, never content.
+        # Reading a file requires the Brain to select the registered
+        # read_attached_file capability; seeing that one exists is what
+        # lets it make that decision. A store failure degrades to "no
+        # attachments" rather than breaking context assembly - it must
+        # never claim a file exists that URI cannot actually produce.
+        try:
+            attachments = [
+                record.to_reference()
+                for record in self.file_store.list_for_session(
+                    session_id
+                )
+            ] if session_id else []
+        except Exception:
+            attachments = []
+
         return build_query_context(
             policy_text=policy_text,
             soul_text=soul_text,
@@ -2510,6 +2542,7 @@ class UriOrchestrator:
             capabilities=capabilities,
             diagnostics=diagnostics,
             experience=experience,
+            attachments=attachments,
         )
 
     # ==========================================================

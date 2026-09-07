@@ -46,26 +46,22 @@ String? _bestTextualField(Map<dynamic, dynamic> data) {
 /// and a real cross-session pending-actions store to read from, so
 /// these no longer need [MockUriClient] as a stand-in.
 ///
-/// [listConnections]/[authorizeConnection]/[disconnectConnection],
-/// [listActivity], and [loadHomeSummary] still delegate to
-/// [MockUriClient] — no backend surface exists yet for OAuth-style
-/// connection management or a general activity feed, and building one
-/// is explicitly out of scope for this UI-prototype-discovery phase
-/// (see uri_core/app/server.py's GET /tasks docstring and this
-/// milestone's own scope notes). This is intentionally visible here
-/// rather than hidden: see the class doc on [UriClient] for the
-/// boundary this respects.
+/// As of M16 this client delegates to [MockUriClient] for NOTHING.
+/// Every method is backed by a real backend call: connections by
+/// GET/DELETE /connections, activity by GET /activity (the runtime's
+/// own AuditTrail), and the home summary composed from real /tasks and
+/// /connections data. Where the backend cannot evidence something, the
+/// method returns an honest empty/unchanged result rather than mock
+/// data — the UI must never present fabricated state as real.
 class HttpUriClient implements UriClient {
   HttpUriClient({
     this.baseUrl = 'http://localhost:8000',
     String? deviceId,
     String? sessionId,
     http.Client? httpClient,
-    UriClient? fallback,
   }) : _deviceId = deviceId,
        _sessionId = sessionId ?? _generateSessionId(),
-       _http = httpClient ?? http.Client(),
-       _fallback = fallback ?? MockUriClient();
+       _http = httpClient ?? http.Client();
 
   /// Prototype 2 (multi-client + runtime awareness): mutable, not
   /// final — [setBaseUrl] lets a caller (see Settings) repoint this
@@ -83,7 +79,6 @@ class HttpUriClient implements UriClient {
 
   final String _sessionId;
   final http.Client _http;
-  final UriClient _fallback;
 
   /// Prototype 1 (multi-user identity): set only by a successful
   /// [login]/[signup], sent as `Authorization: Bearer <token>` on every
@@ -395,8 +390,43 @@ class HttpUriClient implements UriClient {
         detail: execution != null && execution['tool'] != null
             ? 'Tool: ${execution['tool']}'
             : null,
+        sources: _sourcesFrom(responseData),
       ),
     );
+  }
+
+  /// M16: the REAL sources behind a researched answer, taken verbatim
+  /// from the tool result the backend already returns (web_search's
+  /// {title, url, content} entries). Before this, the URLs were
+  /// dropped at the client boundary and the user had no way to verify
+  /// a researched claim.
+  ///
+  /// Never synthesised: only entries that genuinely carry a url are
+  /// included, so an answer can never display a citation URI did not
+  /// actually retrieve.
+  static List<ResultSource> _sourcesFrom(dynamic responseData) {
+    if (responseData is! Map) return const [];
+
+    final raw = responseData['results'];
+    if (raw is! List) return const [];
+
+    final sources = <ResultSource>[];
+
+    for (final item in raw) {
+      if (item is! Map) continue;
+      final url = item['url'];
+      if (url is! String || url.isEmpty) continue;
+      sources.add(
+        ResultSource(
+          title: (item['title'] as String?)?.trim().isNotEmpty == true
+              ? item['title'] as String
+              : url,
+          url: url,
+        ),
+      );
+    }
+
+    return sources;
   }
 
   Future<UriTurn> _decide({required String actionId, required bool approved}) async {
@@ -616,17 +646,315 @@ class HttpUriClient implements UriClient {
     );
   }
 
-  // ---------------------------------------------------------------
-  // No real backend surface exists for these yet — see class doc.
-  // ---------------------------------------------------------------
+  /// A REAL disconnect: the backend removes the stored OAuth token, so
+  /// the service genuinely requires sign-in again. Previously this
+  /// delegated to the mock, which reported "Disconnected" while
+  /// nothing had actually changed.
+  ///
+  /// The returned state is whatever the backend reports afterwards —
+  /// never an assumed "now disconnected".
+  @override
+  Future<ServiceConnection> disconnectConnection(String connectionId) async {
+    try {
+      await _http
+          .delete(
+            Uri.parse('$baseUrl/connections/$connectionId'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      // Fall through: re-read real state rather than assume either way.
+    }
+
+    final current = await listConnections();
+    return current.firstWhere(
+      (c) => c.id == connectionId,
+      orElse: () => ServiceConnection(
+        id: connectionId,
+        name: connectionId,
+        description: '',
+        status: ConnectionStatus.notConnected,
+        detail: null,
+      ),
+    );
+  }
+
+  /// Real audit-backed activity from GET /activity (see
+  /// audit_trail.py). Previously served fabricated mock events.
+  ///
+  /// An unreachable backend yields an empty list — an honest "nothing
+  /// to show" — never invented history.
+  @override
+  Future<List<ActivityEvent>> listActivity() async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(Uri.parse('$baseUrl/activity'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return const [];
+    }
+
+    if (response.statusCode != 200) return const [];
+
+    final Map<String, dynamic> body;
+    try {
+      body = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      return const [];
+    }
+
+    final raw = body['activity'];
+    if (raw is! List) return const [];
+
+    return raw.whereType<Map<String, dynamic>>().map((item) {
+      final eventType = item['event_type'] as String? ?? 'event';
+      final capability = item['capability'] as String?;
+      final status = item['status'] as String?;
+      return ActivityEvent(
+        id: item['id'] as String? ?? eventType,
+        timestamp:
+            DateTime.tryParse(item['timestamp'] as String? ?? '') ??
+                DateTime.now(),
+        kind: _activityKindFrom(eventType),
+        summary: capability == null
+            ? _humanizeEventType(eventType)
+            : '${_humanizeEventType(eventType)}: $capability',
+        detail: status,
+      );
+    }).toList();
+  }
+
+  /// Maps a runtime audit event_type onto the client's display kinds.
+  /// An unrecognized type falls back to [ActivityKind.system] rather
+  /// than being dropped — the event really happened, so it is shown.
+  static ActivityKind _activityKindFrom(String eventType) {
+    if (eventType.contains('approval')) return ActivityKind.approval;
+    if (eventType.contains('execution')) return ActivityKind.execution;
+    if (eventType.contains('cancel')) return ActivityKind.cancellation;
+    if (eventType.contains('proposal') || eventType.contains('reasoning')) {
+      return ActivityKind.proposal;
+    }
+    return ActivityKind.system;
+  }
+
+  static String _humanizeEventType(String raw) {
+    final words = raw.split('_').where((w) => w.isNotEmpty).toList();
+    if (words.isEmpty) return raw;
+    return words
+        .map((w) => w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+  }
+
+  /// M16: URI's real capability catalogue from GET /capabilities.
+  /// Relayed verbatim, including the honest gap_reason — the client
+  /// never re-decides what URI can do.
+  @override
+  Future<List<CapabilityInfo>> listCapabilities() async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(Uri.parse('$baseUrl/capabilities'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return const [];
+    }
+
+    if (response.statusCode != 200) return const [];
+
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = body['capabilities'];
+      if (raw is! List) return const [];
+
+      return raw
+          .whereType<Map<String, dynamic>>()
+          .map(
+            (item) => CapabilityInfo(
+              id: item['id'] as String? ?? 'unknown',
+              description: item['description'] as String? ?? '',
+              status: item['status'] as String? ?? 'unknown',
+              availability: item['availability'] as String? ?? 'unknown',
+              approvalRequirement:
+                  item['approval_requirement'] as String? ?? 'none',
+              risk: item['risk'] as String? ?? 'unknown',
+              limitations: (item['limitations'] as String?)?.trim().isEmpty ==
+                      false
+                  ? item['limitations'] as String
+                  : null,
+              gapReason: item['gap_reason'] as String?,
+            ),
+          )
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// M16: sends the user's real preferences to the backend profile so
+  /// the Brain actually receives them (see personalization_context.py).
+  /// Reports whether the backend accepted them; a failure is never
+  /// reported as success.
+  @override
+  Future<bool> syncPreferences({
+    required String communicationStyle,
+    required String autonomyLevel,
+    required List<String> focusAreas,
+  }) async {
+    try {
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/profile'),
+            headers: _jsonHeaders,
+            body: jsonEncode({
+              'communication_style': communicationStyle,
+              'autonomy_level': autonomyLevel,
+              'focus_areas': focusAreas,
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
+
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// M16: uploads one file for the CURRENT conversation session, so
+  /// the backend scopes it to exactly this chat (see file_store.py's
+  /// per-session listing and read_attached_file's session boundary).
+  ///
+  /// Validation lives on the backend, never here: this relays the
+  /// real rejection reason as an [AttachmentException] rather than
+  /// pre-judging what is acceptable.
+  @override
+  Future<Attachment> uploadAttachment({
+    required String filename,
+    required List<int> bytes,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/files'),
+    )
+      ..fields['session_id'] = _sessionId
+      ..files.add(
+        http.MultipartFile.fromBytes('file', bytes, filename: filename),
+      );
+
+    if (_token != null) {
+      request.headers['Authorization'] = 'Bearer $_token';
+    }
+
+    http.Response response;
+    try {
+      // _http.send (not request.send) so the configured/injected
+      // client is used - request.send() would silently create its own.
+      final streamed = await _http.send(request).timeout(
+            const Duration(seconds: 60),
+          );
+      response = await http.Response.fromStream(streamed);
+    } catch (_) {
+      throw const AttachmentException(
+        'URI could not be reached, so the file was not attached.',
+      );
+    }
+
+    if (response.statusCode != 200) {
+      throw AttachmentException(_uploadFailureReason(response));
+    }
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    return _attachmentFrom(body['file'] as Map<String, dynamic>);
+  }
+
+  /// The backend's own reason (FastAPI puts it in `detail`), falling
+  /// back to a plain message rather than showing raw JSON.
+  static String _uploadFailureReason(http.Response response) {
+    try {
+      final body = jsonDecode(response.body);
+      if (body is Map && body['detail'] is String) {
+        return body['detail'] as String;
+      }
+    } catch (_) {
+      // fall through
+    }
+    return 'The file could not be attached (HTTP ${response.statusCode}).';
+  }
+
+  static Attachment _attachmentFrom(Map<String, dynamic> raw) {
+    return Attachment(
+      fileId: raw['file_id'] as String? ?? '',
+      filename: raw['filename'] as String? ?? 'file',
+      mediaType: raw['media_type'] as String? ?? 'application/octet-stream',
+      sizeBytes: (raw['size_bytes'] as num?)?.toInt() ?? 0,
+    );
+  }
 
   @override
-  Future<ServiceConnection> disconnectConnection(String connectionId) =>
-      _fallback.disconnectConnection(connectionId);
+  Future<List<Attachment>> listAttachments() async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(
+            Uri.parse('$baseUrl/files?session_id=$_sessionId'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return const [];
+    }
+
+    if (response.statusCode != 200) return const [];
+
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = body['files'];
+      if (raw is! List) return const [];
+      return raw
+          .whereType<Map<String, dynamic>>()
+          .map(_attachmentFrom)
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
 
   @override
-  Future<List<ActivityEvent>> listActivity() => _fallback.listActivity();
+  Future<bool> deleteAttachment(String fileId) async {
+    try {
+      final response = await _http
+          .delete(
+            Uri.parse('$baseUrl/files/$fileId'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return false;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return body['deleted'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
 
+  /// Composed entirely from REAL data already fetched from real
+  /// endpoints — pending approvals from /tasks, service counts from
+  /// /connections — plus the caller-supplied conversation the client
+  /// already holds. Previously this returned mock counts.
+  ///
+  /// No new endpoint is needed: every number here is something the
+  /// backend can already evidence.
   @override
-  Future<HomeSummary> loadHomeSummary() => _fallback.loadHomeSummary();
+  Future<HomeSummary> loadHomeSummary() async {
+    final tasks = await listTasks();
+    final connections = await listConnections();
+
+    return HomeSummary(
+      recentTurns: const [],
+      pendingApprovalCount: tasks.length,
+      connectedServiceCount: connections
+          .where((c) => c.status == ConnectionStatus.connected)
+          .length,
+      totalServiceCount: connections.length,
+    );
+  }
 }

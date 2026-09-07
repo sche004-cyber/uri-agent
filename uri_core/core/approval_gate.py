@@ -106,8 +106,18 @@ class ApprovalGate:
             # changes no return value and no pre-existing dispatch
             # behaviour - only an additive audit record, exactly like
             # every other _record_audit_safely call in this class.
+            # M16: session_id is forwarded to the capability alongside
+            # the other deterministic arguments. It was previously
+            # consumed here and dropped, which no capability noticed
+            # because every one of them only read request_text - but a
+            # session-scoped capability (read_attached_file, which may
+            # only ever read files attached to THIS conversation)
+            # genuinely needs it. It remains runtime-supplied context,
+            # never model-supplied, so the argument boundary is
+            # unchanged; tools take **kwargs and ignore what they don't
+            # use.
             dispatch_result = self.dispatcher.execute_tool(
-                tool_name, **kwargs
+                tool_name, session_id=session_id, **kwargs
             )
 
             self._record_audit_safely(
@@ -240,8 +250,16 @@ class ApprovalGate:
 
             return {"status": "error", "message": str(exc)}
 
+        # M16: the same session_id forwarding as the no-approval path
+        # above, but taken from the APPROVAL RECORD rather than a
+        # caller argument - record.session_id is the session the
+        # approval was actually bound to (see approval_store.py), so a
+        # session-scoped capability can never be executed against a
+        # different conversation than the one that was approved.
         dispatch_result = self.dispatcher.execute_tool(
-            record.capability_id, **record.arguments
+            record.capability_id,
+            session_id=record.session_id,
+            **record.arguments,
         )
 
         self._record_audit_safely(

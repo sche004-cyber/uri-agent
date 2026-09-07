@@ -13,9 +13,11 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:uri_ui/models/activity_event.dart';
 import 'package:uri_ui/models/connection.dart';
 import 'package:uri_ui/models/uri_turn.dart';
 import 'package:uri_ui/services/http_uri_client.dart';
+import 'package:uri_ui/services/uri_client.dart' show AttachmentException;
 
 http.Response _json(Map<String, dynamic> body, {int statusCode = 200}) {
   return http.Response(jsonEncode(body), statusCode);
@@ -475,6 +477,152 @@ void main() {
 
       // Crucially empty, NOT the mock's seeded "Gmail connected".
       expect(connections, isEmpty);
+    });
+  });
+
+  group('listActivity()', () {
+    test('real audit events are mapped, not mock history', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          expect(request.url.path, '/activity');
+          return _json({
+            'activity': [
+              {
+                'id': 'capability_execution-0',
+                'timestamp': '2026-09-07T10:00:00+00:00',
+                'event_type': 'capability_execution',
+                'status': 'success',
+                'capability': 'web_search',
+                'session_id': 's1',
+              },
+            ],
+          });
+        }),
+      );
+
+      final activity = await client.listActivity();
+
+      expect(activity, hasLength(1));
+      expect(activity.first.kind, ActivityKind.execution);
+      expect(activity.first.summary, contains('web_search'));
+    });
+
+    test('an unreachable backend yields no invented history', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          throw Exception('connection refused');
+        }),
+      );
+
+      expect(await client.listActivity(), isEmpty);
+    });
+  });
+
+  group('loadHomeSummary()', () {
+    test('counts come from real tasks and connections, not mock numbers', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          if (request.url.path == '/tasks') {
+            return _json({
+              'tasks': [
+                {
+                  'action_id': 'a1',
+                  'capability_id': 'pc_system_optimization',
+                  'description': 'Optimize',
+                  'risk': 'high',
+                  'session_id': 's1',
+                  'created_at': '2026-09-07T10:00:00Z',
+                },
+              ],
+            });
+          }
+          return _json({
+            'connections': [
+              {
+                'id': 'gmail',
+                'name': 'Gmail',
+                'description': '',
+                'status': 'not_connected',
+                'detail': null,
+              },
+              {
+                'id': 'drive',
+                'name': 'Drive',
+                'description': '',
+                'status': 'connected',
+                'detail': 'Connected',
+              },
+            ],
+          });
+        }),
+      );
+
+      final summary = await client.loadHomeSummary();
+
+      expect(summary.pendingApprovalCount, 1);
+      expect(summary.connectedServiceCount, 1);
+      expect(summary.totalServiceCount, 2);
+    });
+  });
+
+  group('attachments', () {
+    test('a rejected upload surfaces the backend reason verbatim', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          return _json(
+            {'detail': "Files of type '.exe' are not accepted."},
+            statusCode: 400,
+          );
+        }),
+      );
+
+      expect(
+        () => client.uploadAttachment(filename: 'x.exe', bytes: [1, 2]),
+        throwsA(
+          isA<AttachmentException>().having(
+            (e) => e.message,
+            'message',
+            contains('not accepted'),
+          ),
+        ),
+      );
+    });
+
+    test('a successful upload returns the bounded reference', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          return _json({
+            'file': {
+              'file_id': 'f1',
+              'filename': 'minutes.pdf',
+              'media_type': 'application/pdf',
+              'size_bytes': 2048,
+            },
+          });
+        }),
+      );
+
+      final attachment = await client.uploadAttachment(
+        filename: 'minutes.pdf',
+        bytes: [1, 2, 3],
+      );
+
+      expect(attachment.fileId, 'f1');
+      expect(attachment.filename, 'minutes.pdf');
+      expect(attachment.sizeBytes, 2048);
+    });
+
+    test('an unreachable backend reports it rather than silently succeeding', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          throw Exception('connection refused');
+        }),
+      );
+
+      expect(
+        () => client.uploadAttachment(filename: 'a.txt', bytes: [1]),
+        throwsA(isA<AttachmentException>()),
+      );
     });
   });
 }

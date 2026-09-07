@@ -48,11 +48,30 @@ class ProposedAction {
 
 /// The outcome of an executed (approved) action, as reported back by the
 /// runtime — never fabricated or assumed by the UI.
+/// M16: one real, retrievable source behind a researched answer —
+/// taken verbatim from what the research capability actually returned
+/// (see web_search.py), never synthesised by the client.
+class ResultSource {
+  const ResultSource({required this.title, required this.url});
+
+  final String title;
+  final String url;
+}
+
 class ActionResult {
-  const ActionResult({required this.summary, this.detail});
+  const ActionResult({
+    required this.summary,
+    this.detail,
+    this.sources = const <ResultSource>[],
+  });
 
   final String summary;
   final String? detail;
+
+  /// Real sources behind this result, when the capability that
+  /// produced it returned any (today: web research). Empty for every
+  /// other kind of result — never padded.
+  final List<ResultSource> sources;
 }
 
 /// One exchange in the Ask URI conversation: the user's request plus

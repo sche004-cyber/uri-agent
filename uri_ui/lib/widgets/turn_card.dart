@@ -358,6 +358,27 @@ class _ResultBlock extends StatelessWidget {
             const SizedBox(height: 4),
             Text(result.detail!, style: theme.textTheme.bodyMedium),
           ],
+          // M16: real, retrievable sources behind a researched answer.
+          // Only rendered when the capability actually returned some -
+          // never a placeholder or an invented citation.
+          if (result.sources.isNotEmpty) ...[
+            const SizedBox(height: UriSpace.sm),
+            Text(
+              'Sources',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: UriColors.inkFaint,
+              ),
+            ),
+            const SizedBox(height: 4),
+            for (final source in result.sources)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
+                  '• ${source.title} — ${source.url}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
+          ],
         ],
       ),
     );

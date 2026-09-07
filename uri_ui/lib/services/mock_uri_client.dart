@@ -396,6 +396,71 @@ class MockUriClient implements UriClient {
         .toList();
   }
 
+  @override
+  Future<List<CapabilityInfo>> listCapabilities() async {
+    await _latency();
+    return const [];
+  }
+
+  @override
+  Future<bool> syncPreferences({
+    required String communicationStyle,
+    required String autonomyLevel,
+    required List<String> focusAreas,
+  }) async {
+    // Deliberately NO _latency() here, unlike every other mock method.
+    // AppState.updatePreferences is routinely awaited by tests BEFORE
+    // the first pumpWidget (see ask_uri_flow_test's
+    // pumpPostOnboardingApp). A simulated delay at that point is a
+    // timer that fake-async time never advances - the await then never
+    // completes and the test hangs indefinitely, without even its own
+    // timeout firing. Returning synchronously keeps the mock faithful
+    // (it still reports success/failure the same way) without
+    // introducing a timer no one can pump.
+    return true;
+  }
+
+  // M16: in-memory attachments so the mock (used by widget tests and
+  // offline development) exercises the same interface as the real
+  // client. This is explicitly test/dev scaffolding — HttpUriClient
+  // never delegates here.
+  final List<Attachment> _attachments = <Attachment>[];
+
+  @override
+  Future<Attachment> uploadAttachment({
+    required String filename,
+    required List<int> bytes,
+  }) async {
+    await _latency();
+
+    if (bytes.isEmpty) {
+      throw const AttachmentException('The file is empty.');
+    }
+
+    final attachment = Attachment(
+      fileId: _nextId('file'),
+      filename: filename,
+      mediaType: 'application/octet-stream',
+      sizeBytes: bytes.length,
+    );
+    _attachments.add(attachment);
+    return attachment;
+  }
+
+  @override
+  Future<List<Attachment>> listAttachments() async {
+    await _latency();
+    return List.unmodifiable(_attachments);
+  }
+
+  @override
+  Future<bool> deleteAttachment(String fileId) async {
+    await _latency();
+    final before = _attachments.length;
+    _attachments.removeWhere((a) => a.fileId == fileId);
+    return _attachments.length != before;
+  }
+
   String _riskFromImpact(ActionImpact? impact) {
     switch (impact) {
       case ActionImpact.routine:

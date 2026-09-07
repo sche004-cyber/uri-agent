@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:uri_ui/main.dart';
+import 'package:uri_ui/app.dart';
 import 'package:uri_ui/models/user_preferences.dart';
 import 'package:uri_ui/services/app_state.dart';
 import 'package:uri_ui/services/mock_uri_client.dart';

@@ -46,3 +46,6 @@ temp_evidence/
 
 # Claude Code harness runtime state (not a URI project file)
 .claude/
+
+# M16: user-attached files (uploaded content, not source)
+uri_workspace/uploads/
