@@ -44,9 +44,10 @@ class BootstrapScreen extends StatelessWidget {
       builder: (context, _) {
         final state = AppStateScope.of(context);
         final theme = Theme.of(context);
+        final colors = UriColors.of(context);
 
         return Scaffold(
-          backgroundColor: UriColors.canvas,
+          backgroundColor: colors.canvas,
           body: SafeArea(
             child: Center(
               child: ConstrainedBox(

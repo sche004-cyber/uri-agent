@@ -50,8 +50,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     return Scaffold(
-      backgroundColor: UriColors.canvas,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -70,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: Container(
                             height: 4,
                             decoration: BoxDecoration(
-                              color: i <= _step ? UriColors.accent : UriColors.border,
+                              color: i <= _step ? colors.accent : colors.border,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -103,6 +104,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildStep(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
     switch (_step) {
       case 0:
         return SingleChildScrollView(
@@ -135,15 +137,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         });
                       },
                       showCheckmark: false,
-                      selectedColor: UriColors.accentSoft,
+                      selectedColor: colors.accentSoft,
                       labelStyle: TextStyle(
-                        color: _focusAreas.contains(option) ? UriColors.accentInk : UriColors.inkSoft,
+                        color: _focusAreas.contains(option) ? colors.accentInk : colors.inkSoft,
                         fontWeight: FontWeight.w600,
                       ),
                       side: BorderSide(
-                        color: _focusAreas.contains(option) ? UriColors.accent : UriColors.border,
+                        color: _focusAreas.contains(option) ? colors.accent : colors.border,
                       ),
-                      backgroundColor: UriColors.surface,
+                      backgroundColor: colors.surface,
                     ),
                 ],
               ),
@@ -229,10 +231,11 @@ class _ChoiceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: UriSpace.sm),
       child: Material(
-        color: selected ? UriColors.accentSoft : UriColors.surface,
+        color: selected ? colors.accentSoft : colors.surface,
         borderRadius: BorderRadius.circular(UriRadius.sm),
         child: InkWell(
           borderRadius: BorderRadius.circular(UriRadius.sm),
@@ -241,14 +244,14 @@ class _ChoiceTile extends StatelessWidget {
             padding: const EdgeInsets.all(UriSpace.md),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(UriRadius.sm),
-              border: Border.all(color: selected ? UriColors.accent : UriColors.border),
+              border: Border.all(color: selected ? colors.accent : colors.border),
             ),
             child: Row(
               children: [
                 Icon(
                   selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
                   size: 20,
-                  color: selected ? UriColors.accentInk : UriColors.inkFaint,
+                  color: selected ? colors.accentInk : colors.inkFaint,
                 ),
                 const SizedBox(width: UriSpace.md),
                 Expanded(

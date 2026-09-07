@@ -174,7 +174,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {})),
+        wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {}, onOpenAttachment: (_) {})),
       );
 
       expect(find.text('hello URI'), findsOneWidget);
@@ -198,7 +198,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {})),
+        wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {}, onOpenAttachment: (_) {})),
       );
 
       expect(find.byIcon(Icons.error_outline_rounded), findsNothing);
@@ -216,7 +216,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {})),
+        wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {}, onOpenAttachment: (_) {})),
       );
 
       expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
@@ -244,7 +244,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {})),
+        wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {}, onOpenAttachment: (_) {})),
       );
 
       expect(tester.takeException(), isNull);

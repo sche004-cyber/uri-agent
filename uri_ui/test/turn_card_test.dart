@@ -30,7 +30,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {})),
+      wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {}, onOpenAttachment: (_) {})),
     );
 
     expect(find.text('Could not reach Ollama. Is it running?'), findsOneWidget);
@@ -50,7 +50,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {})),
+      wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {}, onOpenAttachment: (_) {})),
     );
 
     expect(find.text('I looked into this but ran into a problem.'), findsOneWidget);
@@ -69,7 +69,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {})),
+      wrap(TurnCard(turn: turn, onApprove: () {}, onCancel: () {}, onConnectService: (_) {}, onOpenAttachment: (_) {})),
     );
 
     expect(find.byIcon(Icons.error_outline_rounded), findsNothing);

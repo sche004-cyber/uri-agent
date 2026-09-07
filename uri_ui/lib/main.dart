@@ -12,6 +12,7 @@ import 'app.dart';
 import 'services/app_state.dart';
 import 'services/device_identity.dart';
 import 'services/http_uri_client.dart';
+import 'services/platform_attachment_opener.dart';
 import 'services/platform_file_picker.dart';
 
 void main() async {
@@ -35,8 +36,16 @@ void main() async {
   // silently falls back to localhost.
   await appState.loadPersistedPreferences();
   await appState.loadPersistedServerAddress();
+  await appState.loadPersistedThemeMode();
 
-  // M16: the real platform picker is injected here, at the entry point,
-  // and nowhere else.
-  runApp(UriApp(appState: appState, filePicker: pickPlatformFile));
+  // M16: the real platform picker (and, likewise, the real platform
+  // attachment opener) is injected here, at the entry point, and
+  // nowhere else.
+  runApp(
+    UriApp(
+      appState: appState,
+      filePicker: pickPlatformFile,
+      attachmentOpener: openPlatformAttachment,
+    ),
+  );
 }

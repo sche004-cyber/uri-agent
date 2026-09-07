@@ -1,3 +1,5 @@
+import 'attachment.dart';
+
 /// Lifecycle stage of a single Ask-URI turn.
 ///
 /// This intentionally mirrors the shape of URI's real runtime contract
@@ -89,6 +91,7 @@ class UriTurn {
     this.failureReason,
     this.requiredConnectionId,
     this.requiredConnectionName,
+    this.attachments = const <Attachment>[],
   });
 
   final String id;
@@ -99,6 +102,16 @@ class UriTurn {
   ProposedAction? proposedAction;
   ActionResult? result;
   String? failureReason;
+
+  /// Whichever attachments were staged in the composer at the moment
+  /// this turn was sent — fixed at creation, never mutated afterwards.
+  /// This is what makes an attachment "stick" to the message it was
+  /// used in (like a WhatsApp chat bubble) rather than to the
+  /// conversation as a whole: the backend still keeps the underlying
+  /// file scoped to the session for URI to reference in later turns
+  /// (see FileStore), but the composer clears once a turn is sent so
+  /// the same chip never appears to be staged for a later message too.
+  final List<Attachment> attachments;
 
   /// Set only when [stage] is [TurnStage.needsConnection] — which
   /// connection (by id, for the "connect" action, and by display name,
@@ -115,6 +128,7 @@ class UriTurn {
     String? failureReason,
     String? requiredConnectionId,
     String? requiredConnectionName,
+    List<Attachment>? attachments,
   }) {
     return UriTurn(
       id: id,
@@ -127,6 +141,7 @@ class UriTurn {
       failureReason: failureReason ?? this.failureReason,
       requiredConnectionId: requiredConnectionId ?? this.requiredConnectionId,
       requiredConnectionName: requiredConnectionName ?? this.requiredConnectionName,
+      attachments: attachments ?? this.attachments,
     );
   }
 }

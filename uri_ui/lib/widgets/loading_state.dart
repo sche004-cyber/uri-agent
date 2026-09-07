@@ -12,16 +12,17 @@ class LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: UriSpace.xxl),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
+            SizedBox(
               width: 22,
               height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.4, color: UriColors.accent),
+              child: CircularProgressIndicator(strokeWidth: 2.4, color: colors.accent),
             ),
             if (message != null) ...[
               const SizedBox(height: UriSpace.md),

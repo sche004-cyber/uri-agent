@@ -62,6 +62,7 @@ class _ServerAddressSectionState extends State<ServerAddressSection> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     final showDetail =
         widget.connectionStatus == BackendConnectionStatus.unreachable &&
         widget.connectionErrorDetail != null &&
@@ -116,7 +117,7 @@ class _ServerAddressSectionState extends State<ServerAddressSection> {
             widget.connectionErrorDetail!,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: UriColors.inkFaint),
+            ).textTheme.bodySmall?.copyWith(color: colors.inkFaint),
           ),
         ],
       ],
@@ -131,10 +132,11 @@ class ConnectionStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     final (label, color, background) = switch (status) {
-      BackendConnectionStatus.reachable => ('Connected', UriColors.success, UriColors.successSoft),
-      BackendConnectionStatus.unreachable => ('Not reachable', UriColors.danger, UriColors.dangerSoft),
-      BackendConnectionStatus.unknown => ('Not tested yet', UriColors.inkFaint, UriColors.surfaceSunken),
+      BackendConnectionStatus.reachable => ('Connected', colors.success, colors.successSoft),
+      BackendConnectionStatus.unreachable => ('Not reachable', colors.danger, colors.dangerSoft),
+      BackendConnectionStatus.unknown => ('Not tested yet', colors.inkFaint, colors.surfaceSunken),
     };
 
     return Container(

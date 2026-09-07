@@ -73,18 +73,18 @@ class _ActivityRow extends StatelessWidget {
 
   final ActivityEvent event;
 
-  ({IconData icon, Color color}) get _visual {
+  ({IconData icon, Color color}) _visual(UriColors colors) {
     switch (event.kind) {
       case ActivityKind.proposal:
-        return (icon: Icons.bolt_rounded, color: UriColors.accentInk);
+        return (icon: Icons.bolt_rounded, color: colors.accentInk);
       case ActivityKind.approval:
-        return (icon: Icons.check_rounded, color: UriColors.success);
+        return (icon: Icons.check_rounded, color: colors.success);
       case ActivityKind.execution:
-        return (icon: Icons.check_circle_rounded, color: UriColors.success);
+        return (icon: Icons.check_circle_rounded, color: colors.success);
       case ActivityKind.cancellation:
-        return (icon: Icons.block_rounded, color: UriColors.inkFaint);
+        return (icon: Icons.block_rounded, color: colors.inkFaint);
       case ActivityKind.system:
-        return (icon: Icons.settings_outlined, color: UriColors.inkFaint);
+        return (icon: Icons.settings_outlined, color: colors.inkFaint);
     }
   }
 
@@ -99,7 +99,8 @@ class _ActivityRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final visual = _visual;
+    final colors = UriColors.of(context);
+    final visual = _visual(colors);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: UriSpace.sm),
@@ -124,7 +125,7 @@ class _ActivityRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(event.summary, style: theme.textTheme.bodyLarge?.copyWith(color: UriColors.ink)),
+                    Text(event.summary, style: theme.textTheme.bodyLarge?.copyWith(color: colors.ink)),
                     if (event.detail != null) ...[
                       const SizedBox(height: 2),
                       Text(event.detail!, style: theme.textTheme.bodyMedium),

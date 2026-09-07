@@ -116,7 +116,7 @@ class _TaskCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: UriSpace.sm),
-                  StatusPill.forImpact(impactFromRisk(task.risk)),
+                  StatusPill.forImpact(context, impactFromRisk(task.risk)),
                 ],
               ),
               if (task.description.isNotEmpty) ...[

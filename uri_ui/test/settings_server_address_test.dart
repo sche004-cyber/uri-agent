@@ -55,6 +55,13 @@ void main() {
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
 
+    // Settings now opens on the "Profile" category by default (wide
+    // master-detail layout) - the server address section lives under
+    // "URI". Matched by ListTile (not bare text) since the app's own
+    // sidebar wordmark is also literally "URI".
+    await tester.tap(find.widgetWithText(ListTile, 'URI'));
+    await tester.pumpAndSettle();
+
     return client;
   }
 

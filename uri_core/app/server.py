@@ -34,6 +34,7 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from uri_core.core.approval_gate import ApprovalGate
@@ -1190,6 +1191,29 @@ def delete_file(file_id: str) -> dict:
     Reports honestly whether anything was actually deleted."""
 
     return {"deleted": _file_store.delete(file_id)}
+
+
+@app.get("/files/{file_id}/content")
+def file_content(file_id: str) -> FileResponse:
+    """Raw bytes of one previously uploaded attachment, so the client
+    can let the user open/verify what they actually attached (the same
+    file_id shown in an /ask turn's response, not a separate lookup).
+    Scoped by unguessable file_id only, matching the other /files
+    endpoints' existing session_id-based (not per-user) authorization
+    model - see the M16 module docstring above. 404 for an unknown id
+    rather than leaking whether one exists."""
+
+    record = _file_store.get(file_id)
+    path = _file_store.path_for(file_id)
+
+    if record is None or path is None:
+        raise HTTPException(status_code=404, detail="Attachment not found.")
+
+    return FileResponse(
+        path,
+        media_type=record.media_type or "application/octet-stream",
+        filename=record.filename,
+    )
 
 
 @app.get("/activity")

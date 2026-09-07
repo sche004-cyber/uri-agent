@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/attachment.dart';
 import '../models/uri_turn.dart';
 import '../theme/uri_theme.dart';
 import 'status_pill.dart';
@@ -18,6 +19,7 @@ class TurnCard extends StatelessWidget {
     required this.onApprove,
     required this.onCancel,
     required this.onConnectService,
+    required this.onOpenAttachment,
   });
 
   final UriTurn turn;
@@ -27,6 +29,10 @@ class TurnCard extends StatelessWidget {
   /// Invoked with the blocked connection's id when the user taps
   /// "Connect [service]" from a [TurnStage.needsConnection] turn.
   final ValueChanged<String> onConnectService;
+
+  /// Invoked when the user taps one of [turn.attachments] to open and
+  /// verify it — the same file URI has, not a re-upload or re-pick.
+  final ValueChanged<Attachment> onOpenAttachment;
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +55,23 @@ class TurnCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: UriSpace.sm),
-                StatusPill.forStage(turn.stage),
+                StatusPill.forStage(context, turn.stage),
               ],
             ),
+
+            // ---- attachments this turn was sent with ----
+            //
+            // Fixed to this turn (see UriTurn.attachments), never the
+            // whole conversation's staged list, so re-opening old
+            // history always shows the right file next to the right
+            // message - like a WhatsApp chat bubble's own attachment.
+            if (turn.attachments.isNotEmpty) ...[
+              const SizedBox(height: UriSpace.sm),
+              _TurnAttachments(
+                attachments: turn.attachments,
+                onOpen: onOpenAttachment,
+              ),
+            ],
 
             if (turn.understanding != null) ...[
               const SizedBox(height: UriSpace.sm),
@@ -127,31 +147,65 @@ class _ProcessingBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(UriSpace.md),
       decoration: BoxDecoration(
-        color: UriColors.surfaceSunken,
+        color: colors.surfaceSunken,
         borderRadius: BorderRadius.circular(UriRadius.sm),
       ),
       child: Row(
         children: [
-          const SizedBox(
+          SizedBox(
             height: 16,
             width: 16,
-            child: CircularProgressIndicator(strokeWidth: 2, color: UriColors.inkFaint),
+            child: CircularProgressIndicator(strokeWidth: 2, color: colors.inkFaint),
           ),
           const SizedBox(width: UriSpace.sm),
           Expanded(
             child: Text(
               'URI is working on this…',
-              style: theme.textTheme.bodyMedium?.copyWith(color: UriColors.inkFaint),
+              style: theme.textTheme.bodyMedium?.copyWith(color: colors.inkFaint),
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+/// The files this specific turn was sent with, each tappable to open
+/// and verify — see [TurnCard.onOpenAttachment].
+class _TurnAttachments extends StatelessWidget {
+  const _TurnAttachments({required this.attachments, required this.onOpen});
+
+  final List<Attachment> attachments;
+  final ValueChanged<Attachment> onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: UriSpace.sm,
+      runSpacing: UriSpace.sm,
+      children: [
+        for (final attachment in attachments)
+          ActionChip(
+            avatar: const Icon(Icons.description_outlined, size: 18),
+            label: Text(
+              '${attachment.filename} · ${_formatSize(attachment.sizeBytes)}',
+            ),
+            onPressed: () => onOpen(attachment),
+          ),
+      ],
+    );
+  }
+
+  static String _formatSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).round()} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }
 
@@ -163,24 +217,25 @@ class _FailureBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(UriSpace.md),
       decoration: BoxDecoration(
-        color: UriColors.dangerSoft,
+        color: colors.dangerSoft,
         borderRadius: BorderRadius.circular(UriRadius.sm),
-        border: Border.all(color: UriColors.danger.withValues(alpha: 0.22)),
+        border: Border.all(color: colors.danger.withValues(alpha: 0.22)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline_rounded, size: 16, color: UriColors.danger),
+          Icon(Icons.error_outline_rounded, size: 16, color: colors.danger),
           const SizedBox(width: UriSpace.xs),
           Expanded(
             child: Text(
               reason,
-              style: theme.textTheme.bodyMedium?.copyWith(color: UriColors.danger),
+              style: theme.textTheme.bodyMedium?.copyWith(color: colors.danger),
             ),
           ),
         ],
@@ -198,6 +253,7 @@ class _ConnectionRequiredBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
     final serviceName = turn.requiredConnectionName ?? 'that service';
     final connectionId = turn.requiredConnectionId;
 
@@ -205,20 +261,20 @@ class _ConnectionRequiredBlock extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(UriSpace.md),
       decoration: BoxDecoration(
-        color: UriColors.warningSoft,
+        color: colors.warningSoft,
         borderRadius: BorderRadius.circular(UriRadius.sm),
-        border: Border.all(color: UriColors.warning.withValues(alpha: 0.22)),
+        border: Border.all(color: colors.warning.withValues(alpha: 0.22)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.link_off_rounded, size: 16, color: UriColors.warning),
+              Icon(Icons.link_off_rounded, size: 16, color: colors.warning),
               const SizedBox(width: UriSpace.xs),
               Text(
                 'Connection needed',
-                style: theme.textTheme.labelLarge?.copyWith(color: UriColors.warning),
+                style: theme.textTheme.labelLarge?.copyWith(color: colors.warning),
               ),
             ],
           ),
@@ -251,6 +307,7 @@ class _ProposalBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
     final action = turn.proposedAction!;
     final isDecided = turn.stage != TurnStage.awaitingApproval && turn.stage != TurnStage.proposalReady;
 
@@ -258,23 +315,23 @@ class _ProposalBlock extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(UriSpace.md),
       decoration: BoxDecoration(
-        color: UriColors.accentSoft,
+        color: colors.accentSoft,
         borderRadius: BorderRadius.circular(UriRadius.sm),
-        border: Border.all(color: UriColors.accent.withValues(alpha: 0.18)),
+        border: Border.all(color: colors.accent.withValues(alpha: 0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.bolt_rounded, size: 16, color: UriColors.accentInk),
+              Icon(Icons.bolt_rounded, size: 16, color: colors.accentInk),
               const SizedBox(width: UriSpace.xs),
               Text(
                 'Proposed action',
-                style: theme.textTheme.labelLarge?.copyWith(color: UriColors.accentInk),
+                style: theme.textTheme.labelLarge?.copyWith(color: colors.accentInk),
               ),
               const Spacer(),
-              StatusPill.forImpact(action.impact),
+              StatusPill.forImpact(context, action.impact),
             ],
           ),
           const SizedBox(height: UriSpace.sm),
@@ -297,15 +354,15 @@ class _ProposalBlock extends StatelessWidget {
             ),
           ] else if (turn.stage == TurnStage.executing) ...[
             const SizedBox(height: UriSpace.md),
-            const Row(
+            Row(
               children: [
                 SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: UriColors.accentInk),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: colors.accentInk),
                 ),
-                SizedBox(width: UriSpace.sm),
-                Text('Executing…', style: TextStyle(color: UriColors.accentInk, fontWeight: FontWeight.w600)),
+                const SizedBox(width: UriSpace.sm),
+                Text('Executing…', style: TextStyle(color: colors.accentInk, fontWeight: FontWeight.w600)),
               ],
             ),
           ],
@@ -323,6 +380,7 @@ class _ResultBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
     final result = turn.result!;
     final isCancelled = turn.stage == TurnStage.cancelled;
 
@@ -330,7 +388,7 @@ class _ResultBlock extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(UriSpace.md),
       decoration: BoxDecoration(
-        color: isCancelled ? UriColors.surfaceSunken : UriColors.successSoft,
+        color: isCancelled ? colors.surfaceSunken : colors.successSoft,
         borderRadius: BorderRadius.circular(UriRadius.sm),
       ),
       child: Column(
@@ -341,19 +399,19 @@ class _ResultBlock extends StatelessWidget {
               Icon(
                 isCancelled ? Icons.block_rounded : Icons.check_circle_rounded,
                 size: 16,
-                color: isCancelled ? UriColors.inkFaint : UriColors.success,
+                color: isCancelled ? colors.inkFaint : colors.success,
               ),
               const SizedBox(width: UriSpace.xs),
               Text(
                 isCancelled ? 'Cancelled' : 'Result',
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: isCancelled ? UriColors.inkFaint : UriColors.success,
+                  color: isCancelled ? colors.inkFaint : colors.success,
                 ),
               ),
             ],
           ),
           const SizedBox(height: UriSpace.xs),
-          Text(result.summary, style: theme.textTheme.bodyLarge?.copyWith(color: UriColors.ink)),
+          Text(result.summary, style: theme.textTheme.bodyLarge?.copyWith(color: colors.ink)),
           if (result.detail != null) ...[
             const SizedBox(height: 4),
             Text(result.detail!, style: theme.textTheme.bodyMedium),
@@ -366,7 +424,7 @@ class _ResultBlock extends StatelessWidget {
             Text(
               'Sources',
               style: theme.textTheme.labelLarge?.copyWith(
-                color: UriColors.inkFaint,
+                color: colors.inkFaint,
               ),
             ),
             const SizedBox(height: 4),

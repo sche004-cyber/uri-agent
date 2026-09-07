@@ -60,8 +60,10 @@ void main() {
     expect(appState.preferences.completedOnboarding, isTrue);
     expect(find.text('Good to see you.'), findsOneWidget);
 
-    // The persistent navigation shell is present.
-    expect(find.text('Ask URI'), findsWidgets);
+    // The persistent navigation shell is present. There is no separate
+    // "Ask URI" destination — Home itself is the one canonical
+    // conversation screen (see HomeScreen/AskUriScreen).
+    expect(find.text('Home'), findsWidgets);
     expect(find.text('Connections'), findsWidgets);
     expect(find.text('Activity'), findsWidgets);
     expect(find.text('Settings'), findsWidgets);

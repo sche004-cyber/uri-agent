@@ -1,7 +1,11 @@
 import '../models/activity_event.dart';
+import '../models/attachment.dart';
 import '../models/connection.dart';
+import '../models/memory_entry.dart';
 import '../models/task_item.dart';
 import '../models/uri_turn.dart';
+
+export '../models/attachment.dart' show Attachment;
 
 /// The boundary between this Flutter client and URI's runtime.
 ///
@@ -100,14 +104,43 @@ abstract class UriClient {
   /// Current connection state for known external services.
   Future<List<ServiceConnection>> listConnections();
 
-  /// Request (mock) authorization for a service that needs it.
-  Future<ServiceConnection> authorizeConnection(String connectionId);
+  /// Starts (or reports on) authorization for a service. This never
+  /// fakes success: for a Google service, the backend cannot complete
+  /// OAuth consent from an HTTP call (see server.py's
+  /// authorize_connection) - what actually comes back is the real,
+  /// current state plus an honest, actionable explanation of what is
+  /// needed, which the caller shows verbatim rather than silently
+  /// discarding.
+  Future<ConnectionAuthorizeOutcome> authorizeConnection(String connectionId);
 
   /// Disconnect a currently-connected service.
   Future<ServiceConnection> disconnectConnection(String connectionId);
 
   /// Structured activity/audit history, most recent first.
   Future<List<ActivityEvent>> listActivity();
+
+  /// Every fact URI currently holds about the user (see GET /memory).
+  Future<List<MemoryEntry>> listMemory();
+
+  /// The user explicitly telling URI to remember something. Throws
+  /// [AttachmentException]-style validation errors as
+  /// [MemoryWriteException] with the backend's real reason.
+  Future<MemoryEntry> addMemory({
+    required String category,
+    required String content,
+    double? confidence,
+    String? notes,
+  });
+
+  /// Real, complete removal. Returns whether anything was deleted.
+  Future<bool> deleteMemory(String memoryId);
+
+  /// This install's durable identity (see GET /identity): the
+  /// logged-in user's own portable user_id, and this device's
+  /// local-only device_id. Neither is a credential. Null on any
+  /// failure — Settings/About show it as unavailable rather than a
+  /// stale or fabricated value.
+  Future<UriIdentity?> getIdentity();
 
   /// A short summary of recent + pending work for the Home screen.
   Future<HomeSummary> loadHomeSummary();
@@ -161,6 +194,12 @@ abstract class UriClient {
   /// Remove an attachment. Returns whether anything was actually
   /// removed.
   Future<bool> deleteAttachment(String fileId);
+
+  /// The raw bytes of a previously attached file, so the user can open
+  /// it back up from the chat screen to verify what URI actually has —
+  /// the same file the Brain may separately choose to read via
+  /// read_attached_file, never a re-interpretation of it.
+  Future<List<int>> downloadAttachmentContent(String fileId);
 }
 
 /// M16: one capability from URI's real registry, with the honest
@@ -197,21 +236,24 @@ class CapabilityInfo {
   bool get isImplemented => status == 'implemented';
 }
 
-/// A file the user attached to the conversation. Mirrors the backend's
-/// bounded reference exactly (see StoredFile.to_reference) — metadata
-/// only, never content, and never a storage path.
-class Attachment {
-  const Attachment({
-    required this.fileId,
-    required this.filename,
-    required this.mediaType,
-    required this.sizeBytes,
-  });
+/// This install's durable identity, from GET /identity — see
+/// UriClient.getIdentity.
+class UriIdentity {
+  const UriIdentity({required this.userId, required this.deviceId});
 
-  final String fileId;
-  final String filename;
-  final String mediaType;
-  final int sizeBytes;
+  final String userId;
+  final String deviceId;
+}
+
+/// Raised when the backend refuses a memory write (see POST /memory's
+/// validation — server.py's MemoryValidationError).
+class MemoryWriteException implements Exception {
+  const MemoryWriteException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
 }
 
 /// Raised when the backend refuses an upload. [message] is the real,
@@ -226,6 +268,21 @@ class AttachmentException implements Exception {
 }
 
 /// Result of a [UriClient.login]/[UriClient.signup] attempt.
+/// Result of a [UriClient.authorizeConnection] call: the connection's
+/// real current state plus the backend's own plain-language
+/// explanation of what is (or was) needed — shown verbatim by the
+/// caller so tapping "Connect" always produces honest, visible
+/// feedback instead of a silent no-op.
+class ConnectionAuthorizeOutcome {
+  const ConnectionAuthorizeOutcome({
+    required this.connection,
+    required this.explanation,
+  });
+
+  final ServiceConnection connection;
+  final String explanation;
+}
+
 class AuthOutcome {
   const AuthOutcome.success() : success = true, message = null;
   const AuthOutcome.failure(this.message) : success = false;

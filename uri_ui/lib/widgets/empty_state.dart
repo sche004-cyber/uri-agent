@@ -20,17 +20,18 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: UriSpace.xxl, horizontal: UriSpace.lg),
       decoration: BoxDecoration(
-        color: UriColors.surfaceSunken,
+        color: colors.surfaceSunken,
         borderRadius: BorderRadius.circular(UriRadius.lg),
-        border: Border.all(color: UriColors.border),
+        border: Border.all(color: colors.border),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 30, color: UriColors.inkFaint),
+          Icon(icon, size: 30, color: colors.inkFaint),
           const SizedBox(height: UriSpace.md),
           Text(title, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
           const SizedBox(height: UriSpace.xs),

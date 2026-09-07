@@ -2,16 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../../services/app_state.dart';
 import '../../services/app_state_scope.dart';
+import '../../services/attachment_opener_service.dart';
 import '../../services/file_picker_service.dart';
 import '../../services/uri_client.dart' show Attachment;
 import '../../theme/uri_theme.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/empty_state.dart';
-import '../../widgets/screen_header.dart';
 import '../../widgets/turn_card.dart';
 
+/// The one canonical Ask URI conversation surface: turn history plus
+/// the composer. Embedded directly into [HomeScreen] rather than
+/// reachable as its own shell destination — there is exactly one place
+/// in the app a conversation ever renders, so nothing here owns a
+/// page-level title/header; the screen that embeds this supplies that
+/// framing (see HomeScreen's own heading).
 class AskUriScreen extends StatefulWidget {
-  const AskUriScreen({super.key, this.filePicker});
+  const AskUriScreen({super.key, this.filePicker, this.attachmentOpener});
 
   /// M16: how the user chooses a file to attach. Injected (see
   /// main.dart) rather than imported, so this screen — and every
@@ -19,6 +25,13 @@ class AskUriScreen extends StatefulWidget {
   /// plugin. When null, the attach control is simply not offered:
   /// the UI never shows an affordance it cannot actually fulfil.
   final FilePickerFn? filePicker;
+
+  /// How a tapped attachment (from any past turn) gets opened for the
+  /// user to verify — injected the same way, and for the same reason,
+  /// as [filePicker]. When null, tapping an attachment tells the user
+  /// it downloaded but this build can't open it, rather than silently
+  /// doing nothing.
+  final AttachmentOpenerFn? attachmentOpener;
 
   @override
   State<AskUriScreen> createState() => _AskUriScreenState();
@@ -77,15 +90,6 @@ class _AskUriScreenState extends State<AskUriScreen> {
 
         return Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(UriSpace.xl, UriSpace.xl, UriSpace.xl, 0),
-              child: ScreenHeader(
-                title: 'Ask URI',
-                subtitle:
-                    'Tell URI what you need. It will explain what it understood '
-                    'before it proposes doing anything.',
-              ),
-            ),
             Expanded(
               child: state.conversation.isEmpty
                   ? Center(
@@ -116,6 +120,8 @@ class _AskUriScreenState extends State<AskUriScreen> {
                           onApprove: () => state.approve(turn.id),
                           onCancel: () => state.cancel(turn.id),
                           onConnectService: _openConnections,
+                          onOpenAttachment: (attachment) =>
+                              _openAttachment(state, attachment),
                         );
                       },
                     ),
@@ -154,6 +160,57 @@ class _AskUriScreenState extends State<AskUriScreen> {
 
     await state.attachFile(filename: file.name, bytes: file.bytes);
   }
+
+  /// Downloads the real bytes URI has for [attachment] and asks the
+  /// platform to open them — the "tap a chat attachment to verify it"
+  /// affordance the composer's own strip already offered before a
+  /// message was sent, now offered again for whatever was sent with
+  /// past turns.
+  Future<void> _openAttachment(AppState state, Attachment attachment) async {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+
+    final List<int> bytes;
+    try {
+      bytes = await state.downloadAttachment(attachment.fileId);
+    } catch (error) {
+      if (!mounted) return;
+      messenger?.showSnackBar(
+        SnackBar(content: Text('Could not open ${attachment.filename}: $error')),
+      );
+      return;
+    }
+
+    final opener = widget.attachmentOpener;
+    if (opener == null) {
+      if (!mounted) return;
+      messenger?.showSnackBar(
+        SnackBar(
+          content: Text(
+            '${attachment.filename} downloaded, but this build cannot open it.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final outcome = await opener(filename: attachment.filename, bytes: bytes);
+    if (!mounted) return;
+
+    switch (outcome) {
+      case AttachmentOpenOutcome.opened:
+        break;
+      case AttachmentOpenOutcome.noViewerAvailable:
+        messenger?.showSnackBar(
+          SnackBar(
+            content: Text('No app on this device can open ${attachment.filename}.'),
+          ),
+        );
+      case AttachmentOpenOutcome.failed:
+        messenger?.showSnackBar(
+          SnackBar(content: Text('Could not open ${attachment.filename}.')),
+        );
+    }
+  }
 }
 
 class _Composer extends StatelessWidget {
@@ -183,11 +240,12 @@ class _Composer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     return Container(
       padding: const EdgeInsets.all(UriSpace.lg),
-      decoration: const BoxDecoration(
-        color: UriColors.surface,
-        border: Border(top: BorderSide(color: UriColors.border)),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(top: BorderSide(color: colors.border)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -220,10 +278,18 @@ class _Composer extends StatelessWidget {
               Expanded(
                 child: TextField(
                   controller: controller,
+                  // Grows with what's typed rather than capping it at
+                  // a cramped few lines — URI accepts normal long
+                  // natural-language requests (no character limit
+                  // anywhere in the request path), so the composer
+                  // should not visually suggest otherwise. Long input
+                  // scrolls within these 10 lines rather than pushing
+                  // the send button off-screen.
                   minLines: 1,
-                  maxLines: 4,
+                  maxLines: 10,
+                  keyboardType: TextInputType.multiline,
+                  textInputAction: TextInputAction.newline,
                   enabled: !sending,
-                  onSubmitted: onSend,
                   decoration: const InputDecoration(
                     hintText: 'Ask URI to help with something…',
                   ),
@@ -233,8 +299,8 @@ class _Composer extends StatelessWidget {
               IconButton.filled(
                 onPressed: sending ? null : () => onSend(controller.text),
                 style: IconButton.styleFrom(
-                  backgroundColor: UriColors.accent,
-                  disabledBackgroundColor: UriColors.border,
+                  backgroundColor: colors.accent,
+                  disabledBackgroundColor: colors.border,
                   padding: const EdgeInsets.all(14),
                 ),
                 icon: sending

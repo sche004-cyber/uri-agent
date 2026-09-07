@@ -63,9 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
 
     return Scaffold(
-      backgroundColor: UriColors.canvas,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -106,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: UriSpace.sm),
                     Text(
                       _errorText!,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: UriColors.danger),
+                      style: theme.textTheme.bodyMedium?.copyWith(color: colors.danger),
                     ),
                   ],
                   const SizedBox(height: UriSpace.lg),

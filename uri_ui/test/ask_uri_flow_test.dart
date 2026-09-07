@@ -40,7 +40,7 @@ void main() {
       find.byType(TextField),
       'Please draft a note about the insurance policy renewal',
     );
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Ask URI'));
+    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
     await tester.pumpAndSettle();
 
     // Navigated to Ask URI, and a proposal — not yet a result — is shown.
@@ -67,7 +67,7 @@ void main() {
     // Gmail is connected in the seed data, so this reaches a normal
     // proposal rather than the connection-gated path.
     await tester.enterText(find.byType(TextField), 'Draft a reply to that email');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Ask URI'));
+    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
     await tester.pumpAndSettle();
 
     expect(find.text('Cancel'), findsOneWidget);
@@ -82,7 +82,7 @@ void main() {
     await pumpPostOnboardingApp(tester);
 
     await tester.enterText(find.byType(TextField), 'What is on my calendar today');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Ask URI'));
+    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
     await tester.pumpAndSettle();
 
     expect(find.text('Proposed action'), findsNothing);
@@ -95,7 +95,7 @@ void main() {
 
     // Calendar is seeded as "needs authorization", not connected.
     await tester.enterText(find.byType(TextField), 'Schedule a meeting with the department');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Ask URI'));
+    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
     await tester.pumpAndSettle();
 
     // URI does not pretend it can proceed: no proposal, no approval

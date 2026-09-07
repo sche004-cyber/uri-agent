@@ -11,57 +11,60 @@ class StatusPill extends StatelessWidget {
   final Color foreground;
   final Color background;
 
-  factory StatusPill.forConnection(ConnectionStatus status) {
+  factory StatusPill.forConnection(BuildContext context, ConnectionStatus status) {
+    final colors = UriColors.of(context);
     switch (status) {
       case ConnectionStatus.connected:
-        return const StatusPill(
+        return StatusPill(
           label: 'Connected',
-          foreground: UriColors.success,
-          background: UriColors.successSoft,
+          foreground: colors.success,
+          background: colors.successSoft,
         );
       case ConnectionStatus.needsAuthorization:
-        return const StatusPill(
+        return StatusPill(
           label: 'Needs authorization',
-          foreground: UriColors.warning,
-          background: UriColors.warningSoft,
+          foreground: colors.warning,
+          background: colors.warningSoft,
         );
       case ConnectionStatus.notConnected:
-        return const StatusPill(
+        return StatusPill(
           label: 'Not connected',
-          foreground: UriColors.inkFaint,
-          background: UriColors.surfaceSunken,
+          foreground: colors.inkFaint,
+          background: colors.surfaceSunken,
         );
     }
   }
 
-  factory StatusPill.forStage(TurnStage stage) {
+  factory StatusPill.forStage(BuildContext context, TurnStage stage) {
+    final colors = UriColors.of(context);
     switch (stage) {
       case TurnStage.understanding:
-        return const StatusPill(label: 'Understanding', foreground: UriColors.inkFaint, background: UriColors.surfaceSunken);
+        return StatusPill(label: 'Understanding', foreground: colors.inkFaint, background: colors.surfaceSunken);
       case TurnStage.proposalReady:
       case TurnStage.awaitingApproval:
-        return const StatusPill(label: 'Awaiting your approval', foreground: UriColors.warning, background: UriColors.warningSoft);
+        return StatusPill(label: 'Awaiting your approval', foreground: colors.warning, background: colors.warningSoft);
       case TurnStage.executing:
-        return const StatusPill(label: 'Executing', foreground: UriColors.accentInk, background: UriColors.accentSoft);
+        return StatusPill(label: 'Executing', foreground: colors.accentInk, background: colors.accentSoft);
       case TurnStage.completed:
-        return const StatusPill(label: 'Completed', foreground: UriColors.success, background: UriColors.successSoft);
+        return StatusPill(label: 'Completed', foreground: colors.success, background: colors.successSoft);
       case TurnStage.cancelled:
-        return const StatusPill(label: 'Cancelled', foreground: UriColors.inkFaint, background: UriColors.surfaceSunken);
+        return StatusPill(label: 'Cancelled', foreground: colors.inkFaint, background: colors.surfaceSunken);
       case TurnStage.needsConnection:
-        return const StatusPill(label: 'Needs connection', foreground: UriColors.warning, background: UriColors.warningSoft);
+        return StatusPill(label: 'Needs connection', foreground: colors.warning, background: colors.warningSoft);
       case TurnStage.failed:
-        return const StatusPill(label: 'Failed', foreground: UriColors.danger, background: UriColors.dangerSoft);
+        return StatusPill(label: 'Failed', foreground: colors.danger, background: colors.dangerSoft);
     }
   }
 
-  factory StatusPill.forImpact(ActionImpact impact) {
+  factory StatusPill.forImpact(BuildContext context, ActionImpact impact) {
+    final colors = UriColors.of(context);
     switch (impact) {
       case ActionImpact.routine:
-        return const StatusPill(label: 'Routine', foreground: UriColors.inkFaint, background: UriColors.surfaceSunken);
+        return StatusPill(label: 'Routine', foreground: colors.inkFaint, background: colors.surfaceSunken);
       case ActionImpact.notable:
-        return const StatusPill(label: 'Notable', foreground: UriColors.accentInk, background: UriColors.accentSoft);
+        return StatusPill(label: 'Notable', foreground: colors.accentInk, background: colors.accentSoft);
       case ActionImpact.sensitive:
-        return const StatusPill(label: 'Sensitive', foreground: UriColors.warning, background: UriColors.warningSoft);
+        return StatusPill(label: 'Sensitive', foreground: colors.warning, background: colors.warningSoft);
     }
   }
 

@@ -11,22 +11,23 @@ class UriSection {
 }
 
 /// Section indices in [AppShell] — kept in one place so any screen can
-/// jump to another tab (e.g. Home's Ask box, or a blocked Ask URI turn
-/// pointing at Connections) without depending on the sections list.
+/// jump to another tab (e.g. a blocked Ask URI turn pointing at
+/// Connections) without depending on the sections list. There is no
+/// "ask" index: Home itself holds the one canonical conversation, so
+/// nothing ever needs to navigate to a separate Ask URI destination.
 class ShellIndex {
   ShellIndex._();
   static const home = 0;
-  static const ask = 1;
-  static const tasks = 2;
-  static const connections = 3;
-  static const activity = 4;
-  static const settings = 5;
+  static const tasks = 1;
+  static const connections = 2;
+  static const activity = 3;
+  static const settings = 4;
 }
 
 /// The persistent application shell: a sidebar on wide (desktop-first)
 /// layouts, collapsing to a bottom navigation bar on narrow/mobile
 /// widths. Screens are swapped in place — this is what makes
-/// Home -> Ask URI -> Connections navigable within one running app.
+/// Home -> Tasks -> Connections navigable within one running app.
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.sections, this.initialIndex = 0});
 
@@ -44,7 +45,8 @@ class AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= 900;
+    final colors = UriColors.of(context);
+    final isWide = UriBreakpoints.isWide(context);
 
     final content = KeyedSubtree(
       key: ValueKey(_index),
@@ -53,7 +55,7 @@ class AppShellState extends State<AppShell> {
 
     if (isWide) {
       return Scaffold(
-        backgroundColor: UriColors.canvas,
+        backgroundColor: colors.canvas,
         body: Row(
           children: [
             _Sidebar(sections: widget.sections, index: _index, onSelect: goTo),
@@ -68,21 +70,21 @@ class AppShellState extends State<AppShell> {
     }
 
     return Scaffold(
-      backgroundColor: UriColors.canvas,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
-        backgroundColor: UriColors.canvas,
+        backgroundColor: colors.canvas,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        title: Row(
+        title: const Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [_Wordmark()],
+          children: [_Wordmark()],
         ),
       ),
       body: SafeArea(child: content),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: goTo,
-        backgroundColor: UriColors.surface,
+        backgroundColor: colors.surface,
         destinations: [
           for (final section in widget.sections)
             NavigationDestination(icon: Icon(section.icon), label: section.label),
@@ -101,11 +103,12 @@ class _Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     return Container(
       width: 260,
-      decoration: const BoxDecoration(
-        color: UriColors.surface,
-        border: Border(right: BorderSide(color: UriColors.border)),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(right: BorderSide(color: colors.border)),
       ),
       child: SafeArea(
         child: Column(
@@ -138,6 +141,7 @@ class _Wordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -145,13 +149,13 @@ class _Wordmark extends StatelessWidget {
           width: 30,
           height: 30,
           decoration: BoxDecoration(
-            color: UriColors.ink,
+            color: colors.ink,
             borderRadius: BorderRadius.circular(9),
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: Text(
             'U',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
+            style: TextStyle(color: colors.canvas, fontWeight: FontWeight.w700, fontSize: 16),
           ),
         ),
         const SizedBox(width: 10),
@@ -170,10 +174,11 @@ class _SidebarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: UriSpace.sm, vertical: 2),
       child: Material(
-        color: selected ? UriColors.accentSoft : Colors.transparent,
+        color: selected ? colors.accentSoft : Colors.transparent,
         borderRadius: BorderRadius.circular(UriRadius.sm),
         child: InkWell(
           borderRadius: BorderRadius.circular(UriRadius.sm),
@@ -186,7 +191,7 @@ class _SidebarItem extends StatelessWidget {
                 height: 18,
                 margin: const EdgeInsets.only(left: 2),
                 decoration: BoxDecoration(
-                  color: selected ? UriColors.accent : Colors.transparent,
+                  color: selected ? colors.accent : Colors.transparent,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -198,7 +203,7 @@ class _SidebarItem extends StatelessWidget {
                       Icon(
                         section.icon,
                         size: 19,
-                        color: selected ? UriColors.accentInk : UriColors.inkFaint,
+                        color: selected ? colors.accentInk : colors.inkFaint,
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -206,7 +211,7 @@ class _SidebarItem extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                          color: selected ? UriColors.accentInk : UriColors.inkSoft,
+                          color: selected ? colors.accentInk : colors.inkSoft,
                         ),
                       ),
                     ],
@@ -226,15 +231,16 @@ class _SidebarFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
     return Container(
       padding: const EdgeInsets.all(UriSpace.md),
       decoration: BoxDecoration(
-        color: UriColors.surfaceSunken,
+        color: colors.surfaceSunken,
         borderRadius: BorderRadius.circular(UriRadius.sm),
       ),
       child: Row(
         children: [
-          const Icon(Icons.shield_outlined, size: 16, color: UriColors.inkFaint),
+          Icon(Icons.shield_outlined, size: 16, color: colors.inkFaint),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

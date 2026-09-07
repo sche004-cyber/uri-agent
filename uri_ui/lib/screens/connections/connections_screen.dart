@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/connection.dart';
+import '../../services/app_state.dart';
 import '../../services/app_state_scope.dart';
 import '../../theme/uri_theme.dart';
 import '../../widgets/loading_state.dart';
@@ -21,6 +22,31 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AppStateScope.of(context).loadConnections();
     });
+  }
+
+  /// Actually calls the backend's authorize endpoint (see
+  /// AppState.authorizeConnection / server.py's authorize_connection)
+  /// and always shows its real answer — a Google service can never be
+  /// authorized directly from this client, so the honest response is
+  /// either "already connected" or an explanation of what to do on the
+  /// URI server host. Tapping Connect/Reconnect must never look like
+  /// it did nothing.
+  Future<void> _authorize(AppState state, String connectionId) async {
+    final explanation = await state.authorizeConnection(connectionId);
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Google sign-in'),
+        content: Text(explanation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -47,7 +73,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
               else
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final columns = constraints.maxWidth >= 900 ? 2 : 1;
+                    final columns = constraints.maxWidth >= UriBreakpoints.wide ? 2 : 1;
                     return GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -62,7 +88,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
                         final connection = state.connections[index];
                         return _ConnectionCard(
                           connection: connection,
-                          onAuthorize: () => state.authorizeConnection(connection.id),
+                          onAuthorize: () => _authorize(state, connection.id),
                           onDisconnect: () => state.disconnectConnection(connection.id),
                         );
                       },
@@ -106,6 +132,7 @@ class _ConnectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
 
     return Card(
       child: Padding(
@@ -119,15 +146,15 @@ class _ConnectionCard extends StatelessWidget {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: UriColors.surfaceSunken,
+                    color: colors.surfaceSunken,
                     borderRadius: BorderRadius.circular(UriRadius.sm),
                   ),
                   alignment: Alignment.center,
-                  child: Icon(_icon, size: 18, color: UriColors.ink),
+                  child: Icon(_icon, size: 18, color: colors.ink),
                 ),
                 const SizedBox(width: UriSpace.sm),
                 Expanded(child: Text(connection.name, style: theme.textTheme.titleMedium)),
-                StatusPill.forConnection(connection.status),
+                StatusPill.forConnection(context, connection.status),
               ],
             ),
             const SizedBox(height: UriSpace.sm),

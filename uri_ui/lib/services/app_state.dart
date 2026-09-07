@@ -1,12 +1,15 @@
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/foundation.dart';
 
 import '../models/activity_event.dart';
 import '../models/connection.dart';
+import '../models/memory_entry.dart';
 import '../models/task_item.dart';
 import '../models/user_preferences.dart';
 import '../models/uri_turn.dart';
 import 'preferences_store.dart';
 import 'server_address_store.dart';
+import 'theme_store.dart';
 import 'uri_client.dart'
     show
         Attachment,
@@ -14,7 +17,9 @@ import 'uri_client.dart'
         AuthOutcome,
         CapabilityInfo,
         HomeSummary,
-        UriClient;
+        MemoryWriteException,
+        UriClient,
+        UriIdentity;
 
 /// Prototype 2 (multi-client + runtime awareness): the result of the
 /// last [AppState.checkConnection] call. Deliberately a separate type
@@ -33,17 +38,38 @@ class AppState extends ChangeNotifier {
     required UriClient client,
     PreferencesStore? preferencesStore,
     ServerAddressStore? serverAddressStore,
+    ThemeStore? themeStore,
     UserPreferences? initialPreferences,
   }) : _client = client,
        _preferencesStore = preferencesStore ?? PreferencesStore(),
        _serverAddressStore = serverAddressStore ?? ServerAddressStore(),
+       _themeStore = themeStore ?? ThemeStore(),
        preferences = initialPreferences ?? const UserPreferences.initial();
 
   final UriClient _client;
   final PreferencesStore _preferencesStore;
   final ServerAddressStore _serverAddressStore;
+  final ThemeStore _themeStore;
 
   UserPreferences preferences;
+
+  /// Settings → Appearance. Defaults to following the OS until the
+  /// user picks otherwise; persisted on-device only (see [ThemeStore])
+  /// — never sent to the backend, which has no concept of how any
+  /// client renders itself.
+  ThemeMode themeMode = ThemeMode.system;
+
+  Future<void> loadPersistedThemeMode() async {
+    themeMode = await _themeStore.load();
+    notifyListeners();
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    if (themeMode == mode) return;
+    themeMode = mode;
+    notifyListeners();
+    await _themeStore.save(mode);
+  }
 
   final List<UriTurn> conversation = <UriTurn>[];
   List<ServiceConnection> connections = <ServiceConnection>[];
@@ -214,10 +240,15 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> authorizeConnection(String id) async {
-    final updated = await _client.authorizeConnection(id);
-    _replaceConnection(updated);
+  /// Returns the backend's own explanation of what happened/what's
+  /// needed, so the caller can show it to the user — tapping
+  /// Connect/Reconnect must never be a silent no-op (see
+  /// UriClient.authorizeConnection).
+  Future<String> authorizeConnection(String id) async {
+    final outcome = await _client.authorizeConnection(id);
+    _replaceConnection(outcome.connection);
     notifyListeners();
+    return outcome.explanation;
   }
 
   Future<void> disconnectConnection(String id) async {
@@ -248,22 +279,103 @@ class AppState extends ChangeNotifier {
   Future<UriTurn> ask(String text) async {
     final pendingId = _generateTurnId();
 
+    // Attachments stick to the turn they were sent with - like a chat
+    // bubble's own attachment, not a standing part of the composer -
+    // so the snapshot is taken and the composer cleared right here,
+    // the moment the message is sent, not once the response arrives.
+    // The backend is untouched: it still keeps the file scoped to this
+    // session (see FileStore) so URI can reference it in a later turn
+    // even though its chip no longer shows as staged in the composer.
+    final sentAttachments = List<Attachment>.unmodifiable(attachments);
+    attachments = <Attachment>[];
+
     conversation.add(
       UriTurn(
         id: pendingId,
         userText: text,
         timestamp: DateTime.now(),
         stage: TurnStage.understanding,
+        attachments: sentAttachments,
       ),
     );
     isSendingAsk = true;
     notifyListeners();
 
-    final turn = await _client.ask(text, turnId: pendingId);
+    final response = await _client.ask(text, turnId: pendingId);
+    final turn = response.copyWith(attachments: sentAttachments);
     _replacePendingTurn(pendingId, turn);
     isSendingAsk = false;
     notifyListeners();
     return turn;
+  }
+
+  // ---------------------------------------------------------------
+  // Memory (Settings → Memory) — every fact URI holds about the user.
+  // ---------------------------------------------------------------
+
+  List<MemoryEntry> memories = <MemoryEntry>[];
+  bool hasLoadedMemory = false;
+  bool isSavingMemory = false;
+  String? memoryError;
+
+  Future<void> loadMemory() async {
+    memories = await _client.listMemory();
+    hasLoadedMemory = true;
+    notifyListeners();
+  }
+
+  Future<void> addMemory({
+    required String category,
+    required String content,
+    double? confidence,
+    String? notes,
+  }) async {
+    isSavingMemory = true;
+    memoryError = null;
+    notifyListeners();
+    try {
+      final entry = await _client.addMemory(
+        category: category,
+        content: content,
+        confidence: confidence,
+        notes: notes,
+      );
+      memories = [...memories, entry];
+    } on MemoryWriteException catch (error) {
+      memoryError = error.message;
+    } catch (_) {
+      memoryError = 'This memory could not be saved.';
+    } finally {
+      isSavingMemory = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteMemory(String memoryId) async {
+    final removed = await _client.deleteMemory(memoryId);
+    if (removed) {
+      memories = memories.where((m) => m.memoryId != memoryId).toList(growable: false);
+      notifyListeners();
+    }
+  }
+
+  void clearMemoryError() {
+    if (memoryError == null) return;
+    memoryError = null;
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------
+  // Identity (Settings → Profile / Diagnostics / About).
+  // ---------------------------------------------------------------
+
+  UriIdentity? identity;
+  bool hasLoadedIdentity = false;
+
+  Future<void> loadIdentity() async {
+    identity = await _client.getIdentity();
+    hasLoadedIdentity = true;
+    notifyListeners();
   }
 
   // ---------------------------------------------------------------
@@ -327,6 +439,13 @@ class AppState extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Raw bytes of a file the user (or a past turn) attached, so the
+  /// chat screen can let them open it back up and verify it's really
+  /// what they think it is — a plain passthrough; the caller decides
+  /// what "open" means on this platform.
+  Future<List<int>> downloadAttachment(String fileId) =>
+      _client.downloadAttachmentContent(fileId);
 
   void clearAttachmentError() {
     if (attachmentError == null) return;

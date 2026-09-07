@@ -1,5 +1,6 @@
 import '../models/activity_event.dart';
 import '../models/connection.dart';
+import '../models/memory_entry.dart';
 import '../models/task_item.dart';
 import '../models/uri_turn.dart';
 import 'uri_client.dart';
@@ -175,7 +176,7 @@ class MockUriClient implements UriClient {
   }
 
   @override
-  Future<ServiceConnection> authorizeConnection(String connectionId) async {
+  Future<ConnectionAuthorizeOutcome> authorizeConnection(String connectionId) async {
     await _latency();
     final index = _connections.indexWhere((c) => c.id == connectionId);
     if (index == -1) {
@@ -195,7 +196,7 @@ class MockUriClient implements UriClient {
         summary: '${updated.name} connected.',
       ),
     );
-    return updated;
+    return ConnectionAuthorizeOutcome(connection: updated, explanation: 'Connected.');
   }
 
   @override
@@ -353,6 +354,53 @@ class MockUriClient implements UriClient {
     return List.unmodifiable(_activity);
   }
 
+  // ---------------------------------------------------------------
+  // Memory
+  // ---------------------------------------------------------------
+
+  final List<MemoryEntry> _memories = <MemoryEntry>[];
+
+  @override
+  Future<List<MemoryEntry>> listMemory() async {
+    await _latency();
+    return List.unmodifiable(_memories);
+  }
+
+  @override
+  Future<MemoryEntry> addMemory({
+    required String category,
+    required String content,
+    double? confidence,
+    String? notes,
+  }) async {
+    await _latency();
+    if (content.trim().isEmpty) {
+      throw const MemoryWriteException('Content cannot be empty.');
+    }
+    final now = DateTime.now().toIso8601String();
+    final entry = MemoryEntry(
+      memoryId: _nextId('mem'),
+      category: category,
+      consent: 'user_provided',
+      content: content,
+      confidence: confidence,
+      notes: notes,
+      status: 'active',
+      createdAt: now,
+      updatedAt: now,
+    );
+    _memories.add(entry);
+    return entry;
+  }
+
+  @override
+  Future<bool> deleteMemory(String memoryId) async {
+    await _latency();
+    final before = _memories.length;
+    _memories.removeWhere((m) => m.memoryId == memoryId);
+    return _memories.length != before;
+  }
+
   @override
   Future<HomeSummary> loadHomeSummary() async {
     await _latency();
@@ -397,6 +445,12 @@ class MockUriClient implements UriClient {
   }
 
   @override
+  Future<UriIdentity?> getIdentity() async {
+    await _latency();
+    return const UriIdentity(userId: 'mock-user', deviceId: 'mock-device');
+  }
+
+  @override
   Future<List<CapabilityInfo>> listCapabilities() async {
     await _latency();
     return const [];
@@ -425,6 +479,7 @@ class MockUriClient implements UriClient {
   // client. This is explicitly test/dev scaffolding — HttpUriClient
   // never delegates here.
   final List<Attachment> _attachments = <Attachment>[];
+  final Map<String, List<int>> _attachmentBytes = <String, List<int>>{};
 
   @override
   Future<Attachment> uploadAttachment({
@@ -444,6 +499,7 @@ class MockUriClient implements UriClient {
       sizeBytes: bytes.length,
     );
     _attachments.add(attachment);
+    _attachmentBytes[attachment.fileId] = bytes;
     return attachment;
   }
 
@@ -458,7 +514,18 @@ class MockUriClient implements UriClient {
     await _latency();
     final before = _attachments.length;
     _attachments.removeWhere((a) => a.fileId == fileId);
+    _attachmentBytes.remove(fileId);
     return _attachments.length != before;
+  }
+
+  @override
+  Future<List<int>> downloadAttachmentContent(String fileId) async {
+    await _latency();
+    final bytes = _attachmentBytes[fileId];
+    if (bytes == null) {
+      throw const AttachmentException('This attachment no longer exists.');
+    }
+    return bytes;
   }
 
   String _riskFromImpact(ActionImpact? impact) {

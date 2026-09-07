@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../models/activity_event.dart';
 import '../models/connection.dart';
+import '../models/memory_entry.dart';
 import '../models/task_item.dart';
 import '../models/uri_turn.dart';
 import '../utils/capability_display.dart';
@@ -218,13 +219,26 @@ class HttpUriClient implements UriClient {
 
     http.Response response;
     try {
-      response = await _http
-          .post(
-            Uri.parse('$baseUrl/ask'),
-            headers: _jsonHeaders,
-            body: jsonEncode({'session_id': _sessionId, 'text': text}),
-          )
-          .timeout(const Duration(seconds: 30));
+      response = await _askOnce(text);
+    } on http.ClientException {
+      // A pooled keep-alive connection that went idle (e.g. over a
+      // Tailscale relay) dies with exactly this exception on its next
+      // reuse, before the request ever reaches the server - confirmed
+      // by the backend's access log never showing the attempt at all.
+      // A single retry opens a fresh connection; since the prior
+      // attempt provably never reached the server, this cannot result
+      // in the same ask being processed twice.
+      try {
+        response = await _askOnce(text);
+      } catch (error) {
+        return UriTurn(
+          id: id,
+          userText: text,
+          timestamp: timestamp,
+          stage: TurnStage.failed,
+          failureReason: 'Could not reach the URI backend: $error',
+        );
+      }
     } catch (error) {
       return UriTurn(
         id: id,
@@ -261,6 +275,27 @@ class HttpUriClient implements UriClient {
     final turn = _turnFromResponse(id: id, text: text, timestamp: timestamp, body: body);
     _turns[turn.id] = turn;
     return turn;
+  }
+
+  Future<http.Response> _askOnce(String text) {
+    return _http
+        .post(
+          Uri.parse('$baseUrl/ask'),
+          headers: _jsonHeaders,
+          body: jsonEncode({'session_id': _sessionId, 'text': text}),
+        )
+        // The backend runs a multi-step reasoning chain against a
+        // local LLM for every /ask (semantic analysis, planning,
+        // drafting are each a separate model call) - confirmed to take
+        // ~20s on its own even for a request that ends up failing, and
+        // Ollama reloading the model after ~5 minutes idle (its
+        // default keep_alive) adds several seconds more on top of
+        // that. 30s was tuned for a network problem (a dead pooled
+        // connection - see the retry above), not for how long this
+        // endpoint can legitimately take to answer; 120s leaves real
+        // headroom for a cold model load plus relay latency without
+        // that answer never even having a chance to arrive.
+        .timeout(const Duration(seconds: 120));
   }
 
   UriTurn _turnFromResponse({
@@ -595,21 +630,7 @@ class HttpUriClient implements UriClient {
       return const [];
     }
 
-    final raw = body['connections'];
-    if (raw is! List) return const [];
-
-    return raw
-        .whereType<Map<String, dynamic>>()
-        .map(
-          (item) => ServiceConnection(
-            id: item['id'] as String? ?? 'unknown',
-            name: item['name'] as String? ?? 'Unknown service',
-            description: item['description'] as String? ?? '',
-            status: _connectionStatusFrom(item['status'] as String?),
-            detail: item['detail'] as String?,
-          ),
-        )
-        .toList();
+    return _connectionsFrom(body['connections']);
   }
 
   /// Unknown/absent values map to [ConnectionStatus.notConnected] —
@@ -627,23 +648,83 @@ class HttpUriClient implements UriClient {
   }
 
   /// Google OAuth consent runs a local browser flow on the URI server
-  /// host, so it cannot be completed from a phone client. Rather than
-  /// fabricate a "Connected" result the way the mock did, this
-  /// re-reads the real state — so the button reflects whatever
-  /// actually changed on the host, and nothing if nothing did.
+  /// host, so it cannot be completed from a phone client - server.py's
+  /// authorize_connection deliberately never launches that flow from
+  /// an HTTP call, and returns the real state plus a plain-language
+  /// explanation instead. This actually calls that endpoint (a
+  /// previous version of this method silently never did, which is why
+  /// tapping Connect/Reconnect used to appear to do nothing at all)
+  /// and surfaces its "detail" string verbatim, so the caller can show
+  /// the user exactly what is required rather than a re-read of
+  /// unchanged state with no explanation.
   @override
-  Future<ServiceConnection> authorizeConnection(String connectionId) async {
-    final current = await listConnections();
-    return current.firstWhere(
-      (c) => c.id == connectionId,
-      orElse: () => ServiceConnection(
-        id: connectionId,
-        name: connectionId,
-        description: '',
-        status: ConnectionStatus.notConnected,
-        detail: 'Sign-in must be completed on the URI server host.',
-      ),
+  Future<ConnectionAuthorizeOutcome> authorizeConnection(String connectionId) async {
+    final fallback = ServiceConnection(
+      id: connectionId,
+      name: connectionId,
+      description: '',
+      status: ConnectionStatus.notConnected,
+      detail: 'Sign-in must be completed on the URI server host.',
     );
+
+    http.Response response;
+    try {
+      response = await _http
+          .post(
+            Uri.parse('$baseUrl/connections/$connectionId/authorize'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (error) {
+      return ConnectionAuthorizeOutcome(
+        connection: fallback,
+        explanation: 'Could not reach the URI backend: $error',
+      );
+    }
+
+    if (response.statusCode != 200) {
+      return ConnectionAuthorizeOutcome(
+        connection: fallback,
+        explanation: 'URI backend returned HTTP ${response.statusCode}.',
+      );
+    }
+
+    final Map<String, dynamic> body;
+    try {
+      body = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (error) {
+      return ConnectionAuthorizeOutcome(
+        connection: fallback,
+        explanation: 'URI backend returned a response that could not be parsed.',
+      );
+    }
+
+    final connections = _connectionsFrom(body['connections']);
+    final connection = connections.firstWhere(
+      (c) => c.id == connectionId,
+      orElse: () => fallback,
+    );
+    final explanation = body['detail'] as String? ?? connection.detail ?? 'No further detail was provided.';
+
+    return ConnectionAuthorizeOutcome(connection: connection, explanation: explanation);
+  }
+
+  /// Shared with [listConnections] - both read the exact same
+  /// "connections" list shape, just from different endpoints.
+  static List<ServiceConnection> _connectionsFrom(Object? raw) {
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (item) => ServiceConnection(
+            id: item['id'] as String? ?? 'unknown',
+            name: item['name'] as String? ?? 'Unknown service',
+            description: item['description'] as String? ?? '',
+            status: _connectionStatusFrom(item['status'] as String?),
+            detail: item['detail'] as String?,
+          ),
+        )
+        .toList();
   }
 
   /// A REAL disconnect: the backend removes the stored OAuth token, so
@@ -744,6 +825,116 @@ class HttpUriClient implements UriClient {
     return words
         .map((w) => w[0].toUpperCase() + w.substring(1))
         .join(' ');
+  }
+
+  /// Every fact URI holds about the user, from GET /memory. An
+  /// unreachable/failing backend yields an empty list — an honest
+  /// "nothing to show", never invented entries.
+  @override
+  Future<List<MemoryEntry>> listMemory() async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(Uri.parse('$baseUrl/memory'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return const [];
+    }
+
+    if (response.statusCode != 200) return const [];
+
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = body['memories'];
+      if (raw is! List) return const [];
+      return raw.whereType<Map<String, dynamic>>().map(_memoryFrom).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  static MemoryEntry _memoryFrom(Map<String, dynamic> item) {
+    return MemoryEntry(
+      memoryId: item['memory_id'] as String? ?? '',
+      category: item['category'] as String? ?? '',
+      consent: item['consent'] as String? ?? '',
+      content: item['content'] as String? ?? '',
+      confidence: (item['confidence'] as num?)?.toDouble(),
+      notes: item['notes'] as String?,
+      status: item['status'] as String? ?? '',
+      createdAt: item['created_at'] as String? ?? '',
+      updatedAt: item['updated_at'] as String? ?? '',
+    );
+  }
+
+  @override
+  Future<MemoryEntry> addMemory({
+    required String category,
+    required String content,
+    double? confidence,
+    String? notes,
+  }) async {
+    http.Response response;
+    try {
+      response = await _http
+          .post(
+            Uri.parse('$baseUrl/memory'),
+            headers: _jsonHeaders,
+            body: jsonEncode({
+              'category': category,
+              'content': content,
+              if (confidence != null) 'confidence': confidence,
+              if (notes != null) 'notes': notes,
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (error) {
+      throw MemoryWriteException('Could not reach the URI backend: $error');
+    }
+
+    if (response.statusCode != 200) {
+      String detail = 'URI backend returned HTTP ${response.statusCode}.';
+      try {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        if (body['detail'] is String) detail = body['detail'] as String;
+      } catch (_) {
+        // Keep the generic HTTP-status message above.
+      }
+      throw MemoryWriteException(detail);
+    }
+
+    return _memoryFrom(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<bool> deleteMemory(String memoryId) async {
+    try {
+      final response = await _http
+          .delete(Uri.parse('$baseUrl/memory/$memoryId'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return false;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return body['deleted'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<UriIdentity?> getIdentity() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/identity'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final userId = body['user_id'] as String?;
+      final deviceId = body['device_id'] as String?;
+      if (userId == null || deviceId == null) return null;
+      return UriIdentity(userId: userId, deviceId: deviceId);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// M16: URI's real capability catalogue from GET /capabilities.
@@ -934,6 +1125,29 @@ class HttpUriClient implements UriClient {
     } catch (_) {
       return false;
     }
+  }
+
+  @override
+  Future<List<int>> downloadAttachmentContent(String fileId) async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(
+            Uri.parse('$baseUrl/files/$fileId/content'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 60));
+    } catch (error) {
+      throw AttachmentException('Could not reach the URI backend: $error');
+    }
+
+    if (response.statusCode != 200) {
+      throw AttachmentException(
+        'URI backend returned HTTP ${response.statusCode} for this file.',
+      );
+    }
+
+    return response.bodyBytes;
   }
 
   /// Composed entirely from REAL data already fetched from real
