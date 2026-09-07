@@ -210,16 +210,30 @@ class DraftRequest:
     # omit this keep receiving exactly the pre-Milestone-10A payload
     # shape below.
     query_context: Optional[Dict[str, Any]] = None
+    # URI SOUL: URI's identity/character (soul.md), verbatim, from
+    # ModelReasoningGateway.load_soul() - kept as a distinct field from
+    # policy_text (behavioural rules) rather than merged, so a caller
+    # that omits this (every pre-soul.md caller) keeps drafting with
+    # exactly the same system prompt as before.
+    soul_text: Optional[str] = None
 
 
-def build_drafting_system_prompt(policy_text: str) -> str:
-    """policy_text is supplied by the caller (see orchestrator.py,
-    which already loads it via self.model_reasoning_gateway.load_policy()
-    - reused here rather than re-implemented) so this module carries no
+def build_drafting_system_prompt(
+    policy_text: str, soul_text: Optional[str] = None
+) -> str:
+    """policy_text/soul_text are supplied by the caller (see
+    orchestrator.py, which already loads them via
+    self.model_reasoning_gateway.load_policy()/.load_soul() - reused
+    here rather than re-implemented) so this module carries no
     file-path knowledge of its own and stays a pure function of its
-    inputs."""
+    inputs. soul_text is prepended when given (URI's identity, read
+    before the operating policy's rules) and simply omitted when not,
+    preserving the exact pre-soul.md prompt for any caller that leaves
+    it out."""
 
-    return f"{policy_text}\n{_DRAFTING_INSTRUCTIONS}"
+    soul_section = f"{soul_text}\n\n" if soul_text else ""
+
+    return f"{soul_section}{policy_text}\n{_DRAFTING_INSTRUCTIONS}"
 
 
 def draft_response(
@@ -229,7 +243,9 @@ def draft_response(
 
     provider = provider or OllamaProvider()
 
-    system = build_drafting_system_prompt(request.policy_text)
+    system = build_drafting_system_prompt(
+        request.policy_text, request.soul_text
+    )
 
     payload = {
         "user_request": request.user_text,

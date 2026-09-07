@@ -19,6 +19,11 @@ class ModelReasoningGatewayTests(unittest.TestCase):
             "policy.md"
         )
 
+        self.soul_path = os.path.join(
+            self.temp_dir.name,
+            "soul.md"
+        )
+
         self.registry_path = os.path.join(
             self.temp_dir.name,
             "registry.json"
@@ -32,6 +37,16 @@ class ModelReasoningGatewayTests(unittest.TestCase):
 
             file.write(
                 "URI test policy. Never execute model proposals directly."
+            )
+
+        with open(
+            self.soul_path,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            file.write(
+                "URI test soul. A grounded, loyal companion."
             )
 
         with open(
@@ -66,6 +81,7 @@ class ModelReasoningGatewayTests(unittest.TestCase):
 
         return ModelReasoningGateway(
             policy_path=self.policy_path,
+            soul_path=self.soul_path,
             registry_path=self.registry_path,
             model_callable=model_callable
         )
@@ -98,6 +114,37 @@ class ModelReasoningGatewayTests(unittest.TestCase):
                 "extract_student_records"
             }
         )
+
+    def test_load_soul_reads_the_soul_file_independently_of_policy(self):
+        # gateway.load_soul() itself is a real, independent load path
+        # (see model_reasoning_gateway.py) - proven here directly.
+        # It is deliberately NOT added to build_reasoning_request's
+        # structured-JSON payload: live testing against a real model
+        # showed unconditionally adding soul.md text to every
+        # reasoning/proposal call increased how often the model
+        # returned an unparseable response, the same prompt-bulk
+        # sensitivity already documented for system_policy - soul
+        # reaches the Brain instead via query_context (drafting/
+        # narrative calls), not this narrow structured-proposal path.
+        # See orchestrator.py's _run_model_reasoning for that decision.
+        gateway = self.gateway()
+
+        self.assertIn("grounded, loyal companion", gateway.load_soul())
+
+        request = gateway.build_reasoning_request("Prepare a note.")
+
+        self.assertNotIn("grounded, loyal companion", request["system_policy"])
+        self.assertNotIn("system_soul", request)
+
+    def test_missing_soul_file_degrades_to_empty_string(self):
+
+        gateway = ModelReasoningGateway(
+            policy_path=self.policy_path,
+            soul_path=os.path.join(self.temp_dir.name, "missing_soul.md"),
+            registry_path=self.registry_path,
+        )
+
+        self.assertEqual(gateway.load_soul(), "")
 
     def test_model_is_not_required_to_be_configured(self):
 

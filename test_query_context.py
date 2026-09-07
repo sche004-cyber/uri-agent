@@ -54,22 +54,68 @@ class BuildQueryContextTests(unittest.TestCase):
             set(context.keys()),
             {
                 "identity",
+                "soul",
                 "personalization",
                 "session",
                 "verified_facts",
                 "capabilities",
+                "diagnostics",
+                "experience",
             },
         )
         self.assertEqual(context["identity"], "")
+        self.assertEqual(context["soul"], "")
         self.assertEqual(context["personalization"], {})
         self.assertEqual(context["session"], {})
         self.assertEqual(context["verified_facts"], {})
         self.assertEqual(context["capabilities"], [])
+        self.assertEqual(context["experience"], [])
+        self.assertEqual(context["diagnostics"], {})
 
     def test_identity_policy_text_is_passed_through_verbatim(self):
         context = build_query_context(policy_text="UNIQUE-POLICY-MARKER")
 
         self.assertEqual(context["identity"], "UNIQUE-POLICY-MARKER")
+
+    def test_soul_text_is_passed_through_verbatim_and_separate_from_identity(
+        self,
+    ):
+        context = build_query_context(
+            policy_text="UNIQUE-POLICY-MARKER",
+            soul_text="UNIQUE-SOUL-MARKER",
+        )
+
+        self.assertEqual(context["soul"], "UNIQUE-SOUL-MARKER")
+        self.assertEqual(context["identity"], "UNIQUE-POLICY-MARKER")
+        self.assertNotEqual(context["soul"], context["identity"])
+
+    def test_diagnostics_is_passed_through_unchanged(self):
+        diagnostics = {
+            "last_operation": {"capability": "web_search", "status": "error"},
+            "recent_events": [],
+            "known_gaps": [],
+        }
+
+        context = build_query_context(diagnostics=diagnostics)
+
+        self.assertEqual(context["diagnostics"], diagnostics)
+
+    def test_experience_is_passed_through_unchanged(self):
+        experience = [
+            {
+                "category": "reference_pattern",
+                "intent": "draft an office order",
+                "summary": "Office orders follow a fixed format.",
+                "actions": [],
+                "results": "",
+                "unresolved": [],
+                "created_at": "2026-09-07T00:00:00+00:00",
+            }
+        ]
+
+        context = build_query_context(experience=experience)
+
+        self.assertEqual(context["experience"], experience)
 
     def test_session_context_is_passed_through_unchanged(self):
         session_context = {"task": "noting", "active_workflow_status": None}
@@ -234,6 +280,28 @@ class CapabilityDescriptorFieldsTests(unittest.TestCase):
         self.assertEqual(
             context["capabilities"][0]["gap_reason"],
             "unavailable_runtime",
+        )
+
+    def test_interface_schema_is_retained_for_body_awareness(self):
+        descriptor = CapabilityDescriptor(
+            id="pc_system_optimization",
+            description="Inspect/optimize this device.",
+            status="not_implemented",
+            availability="unavailable_missing_dependency",
+            interface={
+                "kind": "system_diagnostics",
+                "summary_fields": ["cpu_usage", "ram_usage"],
+            },
+        )
+
+        context = build_query_context(capabilities=[descriptor])
+
+        self.assertEqual(
+            context["capabilities"][0]["interface"],
+            {
+                "kind": "system_diagnostics",
+                "summary_fields": ["cpu_usage", "ram_usage"],
+            },
         )
 
     def test_available_capability_has_no_gap_reason(self):

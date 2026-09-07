@@ -36,12 +36,39 @@ class ModelReasoningGateway:
             "URI_Model_Centric_Architecture_Docs/"
             "URI_AI_OPERATING_POLICY.md"
         ),
+        soul_path=(
+            "URI_Model_Centric_Architecture_Docs/soul.md"
+        ),
         registry_path="uri_workspace/capabilities_registry.json",
         model_callable: Optional[Callable[[str], Any]] = None,
     ):
         self.policy_path = os.path.normpath(policy_path)
+        self.soul_path = os.path.normpath(soul_path)
         self.registry_path = os.path.normpath(registry_path)
         self.model_callable = model_callable
+
+    # ---------------------------------------------------------
+    # SOUL
+    # ---------------------------------------------------------
+
+    def load_soul(self) -> str:
+        """URI's identity/character source (soul.md) - kept as a
+        separate file and a separate load path from load_policy()
+        below, mirroring that method's exact discipline, so the two
+        can never be silently merged into one undifferentiated
+        "system prompt" blob. A missing file degrades to an empty
+        string, never raises, exactly like load_policy()."""
+
+        try:
+            with open(
+                self.soul_path,
+                "r",
+                encoding="utf-8-sig",
+            ) as file:
+                return file.read()
+
+        except FileNotFoundError:
+            return ""
 
     # ---------------------------------------------------------
     # POLICY

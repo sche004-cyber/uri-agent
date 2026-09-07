@@ -114,9 +114,20 @@ class TestOrchestratorSkillRouterShadow(
             "skill-router-shadow-2"
         )
 
-        self.assertEqual(len(events), 1)
+        # Item 8 (structured turn tracing): the real capability
+        # dispatch itself now also leaves one "capability_execution"
+        # audit record (see ApprovalGate.execute_tool) alongside this
+        # shadow-evaluation event - the two are independent, additive
+        # audit trails, not a single event this test should count as
+        # one.
+        shadow_events = [
+            e for e in events
+            if e.event_type == "skill_router_shadow_evaluation"
+        ]
 
-        event = events[0]
+        self.assertEqual(len(shadow_events), 1)
+
+        event = shadow_events[0]
 
         self.assertEqual(event.event_type, "skill_router_shadow_evaluation")
         self.assertEqual(event.capability, "draft_institutional_note")

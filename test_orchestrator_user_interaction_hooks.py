@@ -27,6 +27,7 @@ import unittest
 from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
 from uri_core.core.orchestrator import UriOrchestrator
 from uri_core.core.skill_memory import SkillMemory
+from uri_core.core.experience_store import ExperienceStore
 from uri_core.core.state import SessionManager
 
 
@@ -103,6 +104,11 @@ class _IsolatedOrchestratorCase(unittest.TestCase):
         )
         orchestrator.skill_memory.find_matching_skill = (
             lambda semantic_result: None
+        )
+        orchestrator.experience_store = ExperienceStore(
+            storage_path=os.path.join(
+                self.temp_dir.name, "experience.json"
+            )
         )
         orchestrator.capability_planner.plan = (
             lambda sr: dict(PLANNING_REQUIRED_PLAN)

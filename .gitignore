@@ -30,6 +30,7 @@ uri_workspace/logs/
 uri_workspace/skill_memory.json
 uri_workspace/uri_memory.json
 uri_workspace/friction_log.json
+uri_workspace/experience.json
 
 # Large institutional data directories, excluded by explicit decision
 # (uri_workspace/linked_documents/ contains real student PDF/xlsx records

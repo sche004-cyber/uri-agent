@@ -72,15 +72,24 @@ def _serialize_capability(descriptor: CapabilityDescriptor) -> Optional[Dict[str
         "risk": descriptor.risk,
         "limitations": descriptor.limitations,
         "gap_reason": descriptor.gap_reason,
+        # BODY: the capability's own interface/schema (when curated),
+        # e.g. {"kind": "system_diagnostics", "summary_fields": [...]}
+        # - lets the Brain reason about a capability's shape/purpose,
+        # not only whether it exists. None when the registry entry
+        # never curated one (the common case today).
+        "interface": descriptor.interface,
     }
 
 
 def build_query_context(
     policy_text: Optional[str] = None,
+    soul_text: Optional[str] = None,
     personalization: Optional[Dict[str, Any]] = None,
     session_context: Optional[Dict[str, Any]] = None,
     verified_facts: Optional[Dict[str, Any]] = None,
     capabilities: Optional[List[CapabilityDescriptor]] = None,
+    diagnostics: Optional[Dict[str, Any]] = None,
+    experience: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """Assembles one bounded, labeled dict for a single Brain query -
     never prose, never free-form instruction text, so a query prompt
@@ -91,9 +100,15 @@ def build_query_context(
     no filtering beyond dropping malformed entries, and no relevance
     judgment of its own:
 
-    - policy_text: URI's identity/character/principles, verbatim, from
-      ModelReasoningGateway.load_policy() (the sole source of URI's
-      identity - see model_reasoning_adapter.py's own note on this).
+    - policy_text: URI's operating policy - the behavioural rules and
+      guardrails URI must follow, verbatim, from
+      ModelReasoningGateway.load_policy().
+    - soul_text: URI's identity/character, verbatim, from
+      ModelReasoningGateway.load_soul() (soul.md) - deliberately a
+      separate section from policy_text: soul.md is who URI is, the
+      operating policy is what URI must/must not do. Neither one may
+      be inferred from the other; see soul.md's own module note on
+      this split.
     - personalization: the already-bounded, already-consent-filtered
       dict from personalization_context.build_personalization_context()
       - passed through unchanged; this module never re-derives or
@@ -115,6 +130,23 @@ def build_query_context(
       path uses, not a pre-filtered "available only" subset, so it can
       reason about what exists versus what it can rely on right now.
 
+    - diagnostics: the current turn's real, already-known runtime
+      state - e.g. from diagnostics_context.build_diagnostics_context()
+      - the last operation attempted, its component, its exact status/
+      error, and any known service-availability gaps. Never fabricated
+      here or by the caller: every field must trace back to a real
+      execution/audit record. Degrades to an empty dict when nothing is
+      known yet (a fresh turn with no prior operation).
+    - experience: a short list of past-interaction summaries the Brain
+      itself already judged worth retaining, e.g. from
+      experience_store.summarize_for_query_context(
+      ExperienceStore().recent()) - reusable experience, distinct from
+      personalization (facts ABOUT the user) and session_context
+      (THIS turn's state). Never a raw conversation dump: only already-
+      Brain-approved retention candidates ever reach this list (see
+      orchestrator.py's _run_acceptance_retention_step). Degrades to an
+      empty list when none exist yet.
+
     Any argument may be omitted (None) - the corresponding section
     degrades to an empty value rather than being guessed at, matching
     this codebase's existing "unknown-safe" discipline.
@@ -124,6 +156,7 @@ def build_query_context(
 
     return {
         "identity": policy_text or "",
+        "soul": soul_text or "",
         "personalization": personalization or {},
         "session": session_context or {},
         "verified_facts": verified_facts or {},
@@ -135,4 +168,6 @@ def build_query_context(
             )
             if item is not None
         ],
+        "diagnostics": diagnostics or {},
+        "experience": experience or [],
     }

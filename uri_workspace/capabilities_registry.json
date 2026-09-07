@@ -57,6 +57,20 @@
       "limitations": "Drafting only; does not issue, sign, or distribute the order.",
       "interface": null
     },
+    "gmail_search": {
+      "file_path": "uri_core/tools/gmail_search.py",
+      "class_name": "GmailSearchTool",
+      "method": "execute",
+      "description": "Search the user's Gmail for messages matching an administrative query, returning subject/date/snippet as evidence for the Brain to reason from - never an answer URI composes itself.",
+      "status": "implemented",
+      "availability": "unavailable_missing_dependency",
+      "permissions": ["gmail_readonly"],
+      "approval_requirement": "none",
+      "risk": "controlled",
+      "platform": "any",
+      "limitations": "Requires uri_workspace/credentials.json (a Google OAuth client secret) and a completed one-time OAuth consent; honestly reports when credentials are missing, authentication fails, or the search returns no results rather than inventing information.",
+      "interface": null
+    },
     "web_search": {
       "file_path": "uri_core/tools/web_search.py",
       "class_name": "WebSearchTool",

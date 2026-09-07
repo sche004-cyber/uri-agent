@@ -97,15 +97,32 @@ class ApprovalGate:
 
         if approval_requirement != APPROVAL_REQUIRED_VALUE:
 
-            # No new audit event here, deliberately: this is exactly
-            # ToolDispatcher.execute_tool()'s pre-existing behaviour
-            # for every capability that doesn't require approval (all
-            # 4 real tools today) - "existing 4 tools retain current
-            # behaviour" means no new side effect on this path either,
-            # not just an unchanged return value. Auditability is a
-            # requirement of the approval lifecycle itself (see
-            # decide() below), not of every ordinary execution.
-            return self.dispatcher.execute_tool(tool_name, **kwargs)
+            # Item 8 (structured turn tracing): every dispatch - not
+            # only the approval-gated lifecycle below - now leaves one
+            # real audit record of what was attempted and what actually
+            # happened, so diagnostics_context.py has real recent
+            # execution history to show the Brain even for the common,
+            # no-approval-required path (every real tool today). This
+            # changes no return value and no pre-existing dispatch
+            # behaviour - only an additive audit record, exactly like
+            # every other _record_audit_safely call in this class.
+            dispatch_result = self.dispatcher.execute_tool(
+                tool_name, **kwargs
+            )
+
+            self._record_audit_safely(
+                event_type="capability_execution",
+                status=dispatch_result.get("status", "unknown"),
+                session_id=session_id,
+                capability=tool_name,
+                metadata=(
+                    {"error_type": dispatch_result.get("error_type")}
+                    if dispatch_result.get("status") == "error"
+                    else {}
+                ),
+            )
+
+            return dispatch_result
 
         try:
             proposed = self.approval_store.propose(

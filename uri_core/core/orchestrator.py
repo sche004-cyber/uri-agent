@@ -42,6 +42,11 @@ from uri_core.core.evidence_context import (
     get_verified_evidence
 )
 from uri_core.core.query_context import build_query_context
+from uri_core.core.diagnostics_context import build_diagnostics_context
+from uri_core.core.experience_store import (
+    ExperienceStore,
+    summarize_for_query_context as summarize_experience_for_query_context
+)
 from uri_core.core.skill_evaluator import SkillEvaluator
 from uri_core.core.context_budget import ContextBudget
 from uri_core.core.audit_trail import AuditTrail
@@ -69,7 +74,8 @@ class UriOrchestrator:
         enable_response_narrative=False,
         response_drafting_provider=None,
         session_manager=None,
-        max_brain_iterations=3
+        max_brain_iterations=3,
+        experience_store=None
     ):
 
         # Milestone 11 Part 2 (Brain re-evaluation loop): a safety cap
@@ -230,6 +236,17 @@ class UriOrchestrator:
 
         self.enable_response_narrative = enable_response_narrative
         self.response_drafting_provider = response_drafting_provider
+
+        # Item 7 (structured experience/history records): ambient for
+        # now, mirroring self.skill_memory's own ambient-store
+        # precedent above - see experience_store.py's module docstring
+        # for why, and for the deliberate separation from user
+        # profile/personal memory/temporary session state.
+        self.experience_store = (
+            experience_store
+            if experience_store is not None
+            else ExperienceStore()
+        )
 
     # ==========================================================
     # SKILL REGISTRY LOADING
@@ -552,11 +569,26 @@ class UriOrchestrator:
             # milestone otherwise addresses via tolerant extraction.
             # Blanking out the duplicated sections here removes pure
             # noise the Brain already has through the other fields,
-            # without losing any information - only personalization
-            # and verified_facts in query_context are genuinely new for
-            # this call, so those two are kept.
+            # without losing any information - personalization,
+            # verified_facts, and diagnostics in query_context are
+            # genuinely new for this call, so those are kept. "soul" is
+            # ALSO blanked here, deliberately never loaded/passed for
+            # this call at all: live testing (reproduced against real
+            # Ollama/qwen3:14b) showed unconditionally adding soul.md's
+            # text to every structured-JSON reasoning/proposal call -
+            # even once, not duplicated - measurably increased how
+            # often the model returned an empty or unparseable response,
+            # the same prompt-bulk sensitivity already documented above
+            # for system_policy. This also matches
+            # REASONING_SYSTEM_PROMPT's own framing: this narrow
+            # structured-proposal role is explicitly "not URI's
+            # identity" - soul.md's identity/character content belongs
+            # in the response-drafting/narrative call (see
+            # _draft_narrative_safely), where the Brain actually speaks
+            # in URI's voice, not in this JSON-shaped planning call.
             query_context = dict(query_context)
             query_context["identity"] = ""
+            query_context["soul"] = ""
             query_context["session"] = {}
             query_context["capabilities"] = []
 
@@ -1592,6 +1624,41 @@ class UriOrchestrator:
 
                     persisted = True
 
+            # Item 7 (structured experience/history records): every
+            # candidate the Brain judged worth retaining - not only
+            # "successful_approach" for a multi-capability workflow -
+            # is additionally kept as one small, structured, retrievable
+            # ExperienceRecord (see experience_store.py). This is
+            # independent of `persisted` above, which stays scoped to
+            # the existing SkillMemory dedup discipline (see the
+            # milestone note on this method): "persisted" answers
+            # "was this also learned as a reusable tool sequence?",
+            # while `experience_recorded` answers "did URI keep a
+            # structured record of what happened?" - the two may
+            # legitimately differ. Never blocks the retention outcome
+            # already decided above - a write failure here degrades to
+            # experience_recorded=False, not an exception.
+            experience_recorded = False
+
+            try:
+
+                self.experience_store.add(
+                    category=category,
+                    intent=user_text,
+                    summary=summary,
+                    actions=self._executed_tool_names(response),
+                    results=str(
+                        (response.get("execution") or {}).get("status")
+                        if isinstance(response.get("execution"), dict)
+                        else ""
+                    ),
+                )
+
+                experience_recorded = True
+
+            except Exception:
+                experience_recorded = False
+
             self._record_retention_audit(
                 session_id=session_id,
                 outcome="candidate_received",
@@ -1605,6 +1672,7 @@ class UriOrchestrator:
                 "category": category,
                 "summary": summary,
                 "persisted": persisted,
+                "experience_recorded": experience_recorded,
             }
 
         except Exception:
@@ -2292,7 +2360,9 @@ class UriOrchestrator:
         self,
         session_id,
         policy_text,
-        personalization_context
+        personalization_context,
+        soul_text=None,
+        last_operation=None
     ):
         """Assembles Milestone 10A's bounded, model-facing query
         context purely from state this orchestrator already builds or
@@ -2352,12 +2422,54 @@ class UriOrchestrator:
         except Exception:
             capabilities = []
 
+        # DIAGNOSTICS (item 2/8): real, already-recorded runtime state
+        # only - never fabricated. recent_events reuses this session's
+        # own AuditTrail entries (already validated/capped at write
+        # time); known_gaps reuses the same CapabilityRegistry instance
+        # already constructed above. last_operation, when given by the
+        # caller, is this turn's own most recent real execution outcome
+        # (see _run_model_reasoning/_draft_narrative_safely).
+        try:
+            recent_events = (
+                self.audit_trail.for_session(session_id)
+                if session_id
+                else []
+            )
+        except Exception:
+            recent_events = []
+
+        try:
+            known_gaps = self.capability_registry.known_gaps()
+        except Exception:
+            known_gaps = []
+
+        diagnostics = build_diagnostics_context(
+            last_operation=last_operation,
+            recent_events=recent_events,
+            known_gaps=known_gaps,
+        )
+
+        # EXPERIENCE (item 7): a short, bounded list of past-interaction
+        # summaries the Brain itself already judged worth retaining -
+        # see experience_store.py/_run_acceptance_retention_step. A
+        # store failure (corrupted file, missing directory) degrades to
+        # "nothing known yet," never breaks context assembly.
+        try:
+            experience = summarize_experience_for_query_context(
+                self.experience_store.recent()
+            )
+        except Exception:
+            experience = []
+
         return build_query_context(
             policy_text=policy_text,
+            soul_text=soul_text,
             personalization=personalization_context,
             session_context=session_context,
             verified_facts=verified_facts,
             capabilities=capabilities,
+            diagnostics=diagnostics,
+            experience=experience,
         )
 
     # ==========================================================
@@ -2394,11 +2506,21 @@ class UriOrchestrator:
 
             policy_text = self.model_reasoning_gateway.load_policy()
 
+            # URI SOUL: loaded alongside policy_text - passed to
+            # DraftRequest.soul_text below, which build_drafting_system_prompt
+            # prepends as this call's own system prompt, so query_context's
+            # "soul" section is blanked below for the same reason
+            # "identity" already is.
+            soul_text = self.model_reasoning_gateway.load_soul()
+
             plan = response.get("plan")
 
+            execution = response.get("execution")
+            response_data = response.get("response")
+
             outcome = {
-                "execution": response.get("execution"),
-                "response": response.get("response"),
+                "execution": execution,
+                "response": response_data,
                 # The real evidence for "why can't URI do this" (see
                 # capability_planner.py's _known_gaps() /
                 # CapabilityRegistry.known_gaps()) - without this, the
@@ -2414,10 +2536,39 @@ class UriOrchestrator:
                 ),
             }
 
+            # DIAGNOSTICS: this turn's own just-decided outcome, in the
+            # same {"capability", "status", "error", "message"} shape
+            # diagnostics_context.py expects - real fields already
+            # present in execution/response_data, never invented here.
+            last_operation = {
+                "capability": (
+                    execution.get("tool")
+                    if isinstance(execution, dict)
+                    else None
+                ),
+                "status": (
+                    execution.get("status")
+                    if isinstance(execution, dict)
+                    else None
+                ),
+                "error": (
+                    response_data.get("error")
+                    if isinstance(response_data, dict)
+                    else None
+                ),
+                "message": (
+                    response_data.get("message")
+                    if isinstance(response_data, dict)
+                    else None
+                ),
+            }
+
             query_context = self._build_query_context(
                 session_id=session_id,
                 policy_text=policy_text,
                 personalization_context=personalization_context,
+                soul_text=soul_text,
+                last_operation=last_operation,
             )
 
             # M14 correction: query_context's identity/session/
@@ -2438,11 +2589,15 @@ class UriOrchestrator:
             # already fixed once for the reasoning gateway (see
             # _run_model_reasoning) and once for its own explanatory
             # addenda (see model_reasoning_adapter.py) - never
-            # previously applied here. verified_facts is the only
-            # genuinely new information in query_context for this call,
-            # so it is the only section kept.
+            # previously applied here. verified_facts and diagnostics
+            # are the genuinely new information in query_context for
+            # this call, so those are the sections kept. "soul" is
+            # blanked for the identical reason "identity" already is -
+            # soul_text is passed to DraftRequest below and already
+            # becomes this call's own system prompt.
             query_context = dict(query_context)
             query_context["identity"] = ""
+            query_context["soul"] = ""
             query_context["session"] = {}
             query_context["capabilities"] = []
             query_context["personalization"] = {}
@@ -2452,6 +2607,7 @@ class UriOrchestrator:
                 outcome=outcome,
                 personalization=personalization_context,
                 policy_text=policy_text,
+                soul_text=soul_text,
                 query_context=query_context,
             )
 

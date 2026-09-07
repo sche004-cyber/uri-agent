@@ -54,11 +54,12 @@ class ApprovalGateNoApprovalRequiredTests(unittest.TestCase):
                 self.temp_dir.name, "approvals.json"
             )
         )
+        self.audit = AuditTrail()
         self.gate = ApprovalGate(
             dispatcher=self.dispatcher,
             capability_registry=self.registry,
             approval_store=self.approval_store,
-            audit_trail=AuditTrail(),
+            audit_trail=self.audit,
         )
 
     def tearDown(self):
@@ -79,6 +80,24 @@ class ApprovalGateNoApprovalRequiredTests(unittest.TestCase):
         )
 
         self.assertEqual(self.approval_store._load(), [])
+
+    def test_direct_dispatch_still_leaves_a_diagnostic_audit_record(self):
+        # Item 8 (structured turn tracing): the no-approval-required
+        # path is the common one - it must still leave a real,
+        # inspectable trace of what was attempted and what happened,
+        # not just execute silently.
+        self.gate.execute_tool(
+            "draft_note", session_id="s1", request_text="hello"
+        )
+
+        events = self.audit.for_session("s1")
+        matching = [
+            e for e in events if e.event_type == "capability_execution"
+        ]
+
+        self.assertEqual(len(matching), 1)
+        self.assertEqual(matching[0].status, "success")
+        self.assertEqual(matching[0].capability, "draft_note")
 
     def test_unregistered_capability_still_passes_through_unchanged(
         self,
