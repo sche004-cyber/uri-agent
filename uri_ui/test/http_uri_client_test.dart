@@ -13,6 +13,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:uri_ui/models/connection.dart';
 import 'package:uri_ui/models/uri_turn.dart';
 import 'package:uri_ui/services/http_uri_client.dart';
 
@@ -388,6 +389,92 @@ void main() {
       final tasks = await client.listTasks();
 
       expect(tasks, isEmpty);
+    });
+  });
+
+  group('listConnections()', () {
+    test('real backend authorization state is used, not mock seed data', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          expect(request.url.path, '/connections');
+          return _json({
+            'connections': [
+              {
+                'id': 'gmail',
+                'name': 'Gmail',
+                'description': 'Read relevant messages.',
+                'status': 'not_connected',
+                'detail': 'No Google client secret is configured.',
+              },
+            ],
+          });
+        }),
+      );
+
+      final connections = await client.listConnections();
+
+      expect(connections, hasLength(1));
+      expect(connections.first.id, 'gmail');
+      // The mock fallback would have claimed connected here.
+      expect(connections.first.status, ConnectionStatus.notConnected);
+      expect(connections.first.detail, contains('client secret'));
+    });
+
+    test('needs_authorization is mapped through faithfully', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          return _json({
+            'connections': [
+              {
+                'id': 'gmail',
+                'name': 'Gmail',
+                'description': '',
+                'status': 'needs_authorization',
+                'detail': 'Sign-in not completed.',
+              },
+            ],
+          });
+        }),
+      );
+
+      final connections = await client.listConnections();
+
+      expect(connections.first.status, ConnectionStatus.needsAuthorization);
+    });
+
+    test('an unrecognized status is never shown as connected', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          return _json({
+            'connections': [
+              {
+                'id': 'gmail',
+                'name': 'Gmail',
+                'description': '',
+                'status': 'something_unexpected',
+                'detail': null,
+              },
+            ],
+          });
+        }),
+      );
+
+      final connections = await client.listConnections();
+
+      expect(connections.first.status, ConnectionStatus.notConnected);
+    });
+
+    test('a network error returns empty rather than falling back to mock data', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          throw Exception('connection refused');
+        }),
+      );
+
+      final connections = await client.listConnections();
+
+      // Crucially empty, NOT the mock's seeded "Gmail connected".
+      expect(connections, isEmpty);
     });
   });
 }

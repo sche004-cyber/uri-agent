@@ -33,6 +33,7 @@ from uri_core.core.audit_comparison import build_shadow_comparison_report
 from uri_core.core.audit_trail import AuditTrail
 from uri_core.core.auth_session import AuthSessionStore
 from uri_core.core.capability_registry import CapabilityRegistry
+from uri_core.core.connection_status import list_connection_status
 from uri_core.core.dispatcher import ToolDispatcher
 from uri_core.core.growth_ledger import GrowthLedgerStore
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
@@ -1077,3 +1078,22 @@ def capabilities() -> dict:
             for descriptor in _capability_registry.list_capabilities()
         ],
     }
+
+
+@app.get("/connections")
+def connections() -> dict:
+    """Real authorization state of URI's external service connections
+    (Gmail, Drive), read-only and non-interactive - see
+    connection_status.py. This exists so the client can show what is
+    actually authorized instead of a hardcoded badge: before this
+    endpoint, the Flutter client had no backend surface for
+    connections at all and fell back to seeded mock data that always
+    claimed "Connected".
+
+    Like /capabilities above, this is purely informational - nothing
+    here is ever consulted by _orchestrator, capability selection,
+    approval, or execution, and querying it can never trigger an
+    interactive OAuth sign-in on the server host.
+    """
+
+    return {"connections": list_connection_status()}

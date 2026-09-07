@@ -535,16 +535,90 @@ class HttpUriClient implements UriClient {
         .toList();
   }
 
+  /// Real authorization state from the backend's GET /connections
+  /// (see uri_core/core/connection_status.py). Previously this
+  /// delegated to [_fallback], whose seeded mock data always claimed
+  /// Gmail was "Connected" whether or not any credential existed —
+  /// a badge the backend could not back with anything real.
+  ///
+  /// An unreachable backend or unreadable body degrades to an empty
+  /// list (the Connections screen then simply shows nothing) rather
+  /// than falling back to mock data, because a fabricated
+  /// "Connected" is worse than showing no state at all.
+  @override
+  Future<List<ServiceConnection>> listConnections() async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(Uri.parse('$baseUrl/connections'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return const [];
+    }
+
+    if (response.statusCode != 200) return const [];
+
+    final Map<String, dynamic> body;
+    try {
+      body = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      return const [];
+    }
+
+    final raw = body['connections'];
+    if (raw is! List) return const [];
+
+    return raw
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (item) => ServiceConnection(
+            id: item['id'] as String? ?? 'unknown',
+            name: item['name'] as String? ?? 'Unknown service',
+            description: item['description'] as String? ?? '',
+            status: _connectionStatusFrom(item['status'] as String?),
+            detail: item['detail'] as String?,
+          ),
+        )
+        .toList();
+  }
+
+  /// Unknown/absent values map to [ConnectionStatus.notConnected] —
+  /// never to connected — so an unrecognized backend value can never
+  /// be displayed as an authorization URI does not actually have.
+  static ConnectionStatus _connectionStatusFrom(String? raw) {
+    switch (raw) {
+      case 'connected':
+        return ConnectionStatus.connected;
+      case 'needs_authorization':
+        return ConnectionStatus.needsAuthorization;
+      default:
+        return ConnectionStatus.notConnected;
+    }
+  }
+
+  /// Google OAuth consent runs a local browser flow on the URI server
+  /// host, so it cannot be completed from a phone client. Rather than
+  /// fabricate a "Connected" result the way the mock did, this
+  /// re-reads the real state — so the button reflects whatever
+  /// actually changed on the host, and nothing if nothing did.
+  @override
+  Future<ServiceConnection> authorizeConnection(String connectionId) async {
+    final current = await listConnections();
+    return current.firstWhere(
+      (c) => c.id == connectionId,
+      orElse: () => ServiceConnection(
+        id: connectionId,
+        name: connectionId,
+        description: '',
+        status: ConnectionStatus.notConnected,
+        detail: 'Sign-in must be completed on the URI server host.',
+      ),
+    );
+  }
+
   // ---------------------------------------------------------------
   // No real backend surface exists for these yet — see class doc.
   // ---------------------------------------------------------------
-
-  @override
-  Future<List<ServiceConnection>> listConnections() => _fallback.listConnections();
-
-  @override
-  Future<ServiceConnection> authorizeConnection(String connectionId) =>
-      _fallback.authorizeConnection(connectionId);
 
   @override
   Future<ServiceConnection> disconnectConnection(String connectionId) =>

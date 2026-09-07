@@ -189,6 +189,111 @@ class OffSchemaSingleCapabilityRecoveryTests(_IsolatedOrchestratorCase):
         )
 
 
+class CapabilityNamedAsListItemRecoveryTests(_IsolatedOrchestratorCase):
+    """The shape a real model returns when given the FULL orchestrator
+    context: the capability named as a list item under a plural,
+    still identifier-shaped key, rather than as a single string under
+    a singular one. Observed live with qwen3:14b for a Gmail-search
+    request, where it was the difference between reaching the
+    capability and reporting 'no implemented capability'."""
+
+    def test_capabilities_required_list_is_recognized(self):
+        # Verbatim shape observed live.
+        gateway = ModelReasoningGateway(
+            model_callable=_fake_model_callable(
+                {
+                    "proposal": {
+                        "objective": "Search Gmail for the renewal email.",
+                        "approach": "Use the gmail_search tool.",
+                        "capabilities_required": ["gmail_search"],
+                        "next_steps": [
+                            {"action": "Execute the gmail_search tool."}
+                        ],
+                    },
+                    "status": "proposal",
+                }
+            )
+        )
+        orchestrator = self._orchestrator(model_reasoning_gateway=gateway)
+
+        dispatcher = _FakeDispatcher()
+        orchestrator.dispatcher.execute_tool = dispatcher.execute_tool
+
+        result = orchestrator.process_user_input(
+            session_id="s1", user_text="search my gmail"
+        )
+
+        self.assertEqual(result["plan"]["source"], "model_reasoning")
+        self.assertEqual(result["execution"]["tool"], "gmail_search")
+        self.assertEqual(len(dispatcher.calls), 1)
+        self.assertEqual(dispatcher.calls[0][0], "gmail_search")
+
+    def test_singular_string_value_still_works_unchanged(self):
+        # The pre-existing single-string path must be untouched.
+        gateway = ModelReasoningGateway(
+            model_callable=_fake_model_callable(
+                {"proposed_actions": [{"capability": "gmail_search"}]}
+            )
+        )
+        orchestrator = self._orchestrator(model_reasoning_gateway=gateway)
+
+        dispatcher = _FakeDispatcher()
+        orchestrator.dispatcher.execute_tool = dispatcher.execute_tool
+
+        result = orchestrator.process_user_input(
+            session_id="s1", user_text="search my gmail"
+        )
+
+        self.assertEqual(result["execution"]["tool"], "gmail_search")
+
+    def test_unregistered_name_in_a_list_is_still_ignored(self):
+        # The registry check still guards every list item individually.
+        gateway = ModelReasoningGateway(
+            model_callable=_fake_model_callable(
+                {"capabilities_required": ["totally_made_up_capability_xyz"]}
+            )
+        )
+        orchestrator = self._orchestrator(model_reasoning_gateway=gateway)
+
+        dispatcher = _FakeDispatcher()
+        orchestrator.dispatcher.execute_tool = dispatcher.execute_tool
+
+        result = orchestrator.process_user_input(
+            session_id="s1", user_text="do something"
+        )
+
+        self.assertNotEqual(
+            result.get("plan", {}).get("source"), "model_reasoning"
+        )
+        self.assertEqual(dispatcher.calls, [])
+
+    def test_prose_sentence_in_a_list_is_ignored(self):
+        # A list item must be an EXACT registered id - a sentence that
+        # merely mentions one is not a decision.
+        gateway = ModelReasoningGateway(
+            model_callable=_fake_model_callable(
+                {
+                    "capabilities_required": [
+                        "I considered gmail_search but decided against it."
+                    ]
+                }
+            )
+        )
+        orchestrator = self._orchestrator(model_reasoning_gateway=gateway)
+
+        dispatcher = _FakeDispatcher()
+        orchestrator.dispatcher.execute_tool = dispatcher.execute_tool
+
+        result = orchestrator.process_user_input(
+            session_id="s1", user_text="do something"
+        )
+
+        self.assertNotEqual(
+            result.get("plan", {}).get("source"), "model_reasoning"
+        )
+        self.assertEqual(dispatcher.calls, [])
+
+
 class OffSchemaMultiCapabilityImpliesWorkflowTests(_IsolatedOrchestratorCase):
     """Two or more distinct, real capabilities named off-schema are
     treated as an implied sequential workflow, dependency order

@@ -658,8 +658,32 @@ class UriOrchestrator:
     # identifier when it does not use the exact action.capability/
     # workflow.steps[].capability path - see
     # _recover_capability_mentions.
+    # The plural forms below were added after live testing against
+    # qwen3:14b: given the FULL orchestrator context (session, query,
+    # capability catalogue), the same model that returns a strict
+    # {"steps": [{"capability": ...}]} shape on a lean prompt instead
+    # returns {"capabilities_required": ["gmail_search"], ...} - the
+    # capability named as a LIST ITEM under a plural, still
+    # self-evidently identifier-shaped key. That is the identical
+    # class of off-contract shape this recovery already exists to
+    # recognize, so it is handled the same way and under the same two
+    # guards: an identifier-shaped KEY, and a value independently
+    # confirmed against the authoritative capability registry. Keys
+    # that would mean the opposite ("gaps", "unavailable",
+    # "missing_capabilities") are deliberately NOT listed - this set
+    # only ever names "capabilities to use".
     _TOLERANT_CAPABILITY_KEYS = frozenset(
-        {"capability", "capability_id", "tool", "tool_name"}
+        {
+            "capability",
+            "capability_id",
+            "tool",
+            "tool_name",
+            "capabilities",
+            "capabilities_required",
+            "required_capabilities",
+            "tools",
+            "tools_required",
+        }
     )
 
     def _executable_capability_ids(self):
@@ -722,13 +746,29 @@ class UriOrchestrator:
 
                 for key, value in node.items():
 
-                    if (
-                        isinstance(value, str)
-                        and key in self._TOLERANT_CAPABILITY_KEYS
-                        and value in executable_capability_ids
-                        and value not in found
-                    ):
-                        found.append(value)
+                    if key in self._TOLERANT_CAPABILITY_KEYS:
+
+                        # A single identifier, or a list of them - both
+                        # under the same identifier-shaped key, and both
+                        # still confirmed one by one against the
+                        # authoritative registry below. A list item that
+                        # is not an exact registered capability id (a
+                        # sentence, a nested object, a made-up name) is
+                        # simply not matched, exactly as before.
+                        candidates = (
+                            [value] if isinstance(value, str) else value
+                        )
+
+                        if isinstance(candidates, list):
+
+                            for candidate in candidates:
+
+                                if (
+                                    isinstance(candidate, str)
+                                    and candidate in executable_capability_ids
+                                    and candidate not in found
+                                ):
+                                    found.append(candidate)
 
                     self._recover_capability_mentions(
                         value, executable_capability_ids, found
