@@ -2,6 +2,8 @@ import json
 import os
 from typing import Any, Callable, Optional
 
+from uri_core.core.capability_feasibility import CapabilityFeasibility
+
 
 class ModelReasoningGateway:
     """
@@ -46,6 +48,12 @@ class ModelReasoningGateway:
         self.soul_path = os.path.normpath(soul_path)
         self.registry_path = os.path.normpath(registry_path)
         self.model_callable = model_callable
+        # M20: same registry file, composed with real connection state
+        # to tell the Brain what is genuinely usable right now - see
+        # capability_feasibility.py. Read-only, never authoritative.
+        self.capability_feasibility = CapabilityFeasibility(
+            registry_path=self.registry_path
+        )
 
     # ---------------------------------------------------------
     # SOUL
@@ -139,8 +147,6 @@ class ModelReasoningGateway:
         retention_request: bool = False,
     ) -> dict:
 
-        capabilities = self.load_capabilities()
-
         return {
             "contract_version":
                 self.CONTRACT_VERSION,
@@ -197,10 +203,23 @@ class ModelReasoningGateway:
                 )
                 else [],
 
+            # M20: sourced from CapabilityFeasibility.snapshot(), not
+            # a raw dump of each registry entry's execution internals
+            # (file_path/class_name/method - noise the Brain never
+            # needed) - see _capability_catalogue(). Each entry now
+            # also carries "usable"/"gap_reason"/"blocked_by", closing
+            # the gap where an "implemented" capability with no
+            # working credential (e.g. gmail_search with no stored
+            # Gmail token) looked identical to a genuinely usable one.
+            # validate_proposal() below still rejects an unregistered
+            # name; a registered-but-currently-unusable one is rejected
+            # one layer up at the orchestrator (see
+            # UriOrchestrator._executable_capability_ids()) - this
+            # field only gives the Brain better information to avoid
+            # proposing a currently-unusable capability in the first
+            # place.
             "available_capabilities":
-                self._capability_descriptions(
-                    capabilities
-                ),
+                self._capability_catalogue(),
 
             # Milestone 13 Part 1 (canonical loop's pre-execution
             # step): present only on the sanity-check call that
@@ -253,36 +272,45 @@ class ModelReasoningGateway:
             ),
         }
 
-    def _capability_descriptions(
-        self,
-        capabilities: dict,
-    ) -> list[dict]:
+    def _capability_catalogue(self) -> list[dict]:
+        """M20: the Brain-facing capability catalogue, sourced from
+        CapabilityFeasibility.snapshot() (implemented AND planned
+        capabilities alike, each with a real usable/gap_reason/
+        blocked_by verdict) rather than a raw dump of each registry
+        entry's execution internals. Bounded to only the fields the
+        Brain's reasoning actually needs - "name" (kept as the field
+        name REASONING_SYSTEM_PROMPT already documents, even though
+        CapabilityFeasibility itself calls it "id"), "description",
+        "usable", "gap_reason", "blocked_by", "requires_approval", and
+        "risk". validate_proposal() (registered_capability_names(),
+        unchanged) still rejects an UNREGISTERED capability name here;
+        rejecting a registered-but-currently-UNUSABLE one is enforced
+        one layer up, at the orchestrator (see
+        UriOrchestrator._executable_capability_ids(), which narrows by
+        this same CapabilityFeasibility snapshot before a proposal is
+        promoted to the real plan) - this method never filters
+        anything out itself, it only gives the Brain enough
+        information to avoid proposing a poor choice in the first
+        place. Never raises - CapabilityFeasibility.snapshot() itself
+        degrades to an empty dict on any failure."""
 
-        descriptions = []
+        try:
+            snapshot = self.capability_feasibility.snapshot()
+        except Exception:
+            snapshot = {}
 
-        for name, definition in capabilities.items():
-
-            if isinstance(
-                definition,
-                dict,
-            ):
-                item = dict(definition)
-                item.setdefault(
-                    "name",
-                    name,
-                )
-
-            else:
-                item = {
-                    "name": name,
-                    "description": str(
-                        definition
-                    ),
-                }
-
-            descriptions.append(item)
-
-        return descriptions
+        return [
+            {
+                "name": capability_id,
+                "description": entry.get("description", ""),
+                "usable": entry.get("usable", False),
+                "gap_reason": entry.get("gap_reason"),
+                "blocked_by": entry.get("blocked_by", []),
+                "requires_approval": entry.get("requires_approval", False),
+                "risk": entry.get("risk", "unknown"),
+            }
+            for capability_id, entry in snapshot.items()
+        ]
 
     # ---------------------------------------------------------
     # MODEL INVOCATION

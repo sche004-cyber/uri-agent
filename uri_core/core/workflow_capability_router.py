@@ -12,6 +12,7 @@ from uri_core.core.evidence_context import (
 from uri_core.core.clarification import (
     get_next_question
 )
+from uri_core.core.capability_planner import CapabilityPlanner
 
 
 class WorkflowCapabilityRouter:
@@ -25,13 +26,32 @@ class WorkflowCapabilityRouter:
         self,
         dispatcher,
         session=None,
-        evidence_processor=None
+        evidence_processor=None,
+        capability_planner=None
     ):
 
         self.dispatcher = dispatcher
         self.session = session
         self.evidence_processor = (
             evidence_processor
+        )
+
+        # M20 (W6/fifth-authority cleanup): draft_output used to
+        # re-implement its OWN note/order/generic-document keyword
+        # decision, duplicating (and able to drift from)
+        # CapabilityPlanner._score_tool's identical note_signal/
+        # order_signal/format_hint logic - a second, independent
+        # selection authority for the exact same choice. Reusing the
+        # SAME CapabilityPlanner instance the rest of a turn already
+        # uses (see UriOrchestrator._create_workflow_executor, the
+        # only real caller) means this decision is made in exactly one
+        # place now - see draft_output below. Defaults to a fresh
+        # CapabilityPlanner() only for a caller (e.g. a test) that
+        # doesn't inject one.
+        self.capability_planner = (
+            capability_planner
+            if capability_planner is not None
+            else CapabilityPlanner()
         )
 
     def create_executor(self):
@@ -422,45 +442,49 @@ class WorkflowCapabilityRouter:
         workflow: dict
     ) -> dict:
 
-        requested_output = str(
-            workflow.get(
-                "semantic_context",
-                {}
-            ).get(
-                "requested_output",
-                ""
-            )
-        ).lower()
+        # M20: delegates to CapabilityPlanner.plan() - the same
+        # deterministic note/order/generic-document scoring every
+        # other selection path in this codebase already uses (see
+        # capability_planner.py's note_signal/order_signal/format_hint
+        # logic) - instead of an independent, duplicate keyword
+        # decision. workflow["semantic_context"] is already in exactly
+        # the shape CapabilityPlanner.plan() expects (the same
+        # semantic_result produced by the semantic interpreter for
+        # this request). generate_document remains the fallback
+        # whenever the planner has no confident match (an empty or
+        # generic semantic_context) - preserving M19 audit finding
+        # #8's guarantee that a drafting step never dead-ends waiting
+        # for a "supported output format" that only ever meant
+        # note/order.
+        semantic_context = (
+            workflow.get("semantic_context") or {}
+        )
 
-        tool_name = None
+        plan = self.capability_planner.plan(semantic_context)
+
+        # A draft_output step must always draft SOMETHING - never
+        # accidentally re-select an unrelated registered capability
+        # (e.g. extract_student_records) that happens to score highly
+        # against this step's own carried-over semantic_context.
+        # CapabilityPlanner.plan() scores the WHOLE catalogue, so its
+        # pick is only honored here when it is actually one of the
+        # three drafting tools; anything else (including
+        # "planning_required") falls back to generate_document exactly
+        # as this method always has.
+        _DRAFTING_TOOL_NAMES = frozenset(
+            {
+                "draft_institutional_note",
+                "draft_institutional_order",
+                "generate_document",
+            }
+        )
 
         if (
-            "office note" in requested_output
-            or "noting" in requested_output
+            plan.get("status") == "capability_selected"
+            and plan.get("tool_name") in _DRAFTING_TOOL_NAMES
         ):
-
-            tool_name = (
-                "draft_institutional_note"
-            )
-
-        elif (
-            "office order" in requested_output
-            or "order" in requested_output
-        ):
-
-            tool_name = (
-                "draft_institutional_order"
-            )
-
+            tool_name = plan.get("tool_name")
         else:
-
-            # M19 (audit finding #8): a requested output that is not an
-            # institutional note or order (a proposal, a presentation,
-            # a spreadsheet, a PDF report, or anything else) no longer
-            # dead-ends this step waiting for a "supported output
-            # format" that only ever meant note/order - it drafts via
-            # the generic Brain-authored document capability instead,
-            # which detects DOCX/XLSX/PPTX/PDF from the request itself.
             tool_name = "generate_document"
 
         decision_context = (

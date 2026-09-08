@@ -88,6 +88,7 @@ class _IsolatedOrchestratorCase(unittest.TestCase):
         self,
         model_reasoning_gateway=None,
         approval_gate=None,
+        capability_registry=None,
     ):
         orchestrator = UriOrchestrator(
             semantic_interpreter=_FixedSemanticInterpreter(
@@ -95,6 +96,7 @@ class _IsolatedOrchestratorCase(unittest.TestCase):
             ),
             model_reasoning_gateway=model_reasoning_gateway,
             approval_gate=approval_gate,
+            capability_registry=capability_registry,
             enable_model_reasoning_shadow=True,
             enable_skill_router_shadow=False,
             enable_response_narrative=False,
@@ -196,6 +198,7 @@ class ApprovalRequiredStillPausesTests(_IsolatedOrchestratorCase):
         orchestrator = self._orchestrator(
             model_reasoning_gateway=gateway,
             approval_gate=approval_gate,
+            capability_registry=registry,
         )
 
         result = orchestrator.process_user_input(

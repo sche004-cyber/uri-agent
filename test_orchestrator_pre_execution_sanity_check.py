@@ -98,6 +98,18 @@ class _IsolatedOrchestratorCase(unittest.TestCase):
         orchestrator.capability_planner.plan = (
             lambda sr: dict(PLANNING_REQUIRED_PLAN)
         )
+        # M20 Gate B (_should_run_pre_execution_sanity_check) skips
+        # the sanity check entirely for an ordinary, low-risk,
+        # strictly-shaped single-action proposal - exactly the shape
+        # every fixture in this file uses. This test file exists to
+        # prove _run_pre_execution_sanity_check's OWN behavior
+        # (Milestone 13 Part 1), not Gate B's separate decision of
+        # whether to call it (see test_m20_call_budget.py for that) -
+        # forced on here so this file keeps testing the mechanism it
+        # was written for regardless of Gate B's gating.
+        orchestrator._should_run_pre_execution_sanity_check = (
+            lambda **kwargs: True
+        )
         return orchestrator
 
 

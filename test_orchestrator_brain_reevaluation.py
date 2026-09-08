@@ -331,9 +331,10 @@ class ApprovalRequiredProtectedTests(_IsolatedOrchestratorCase):
         )
 
         orchestrator = self._orchestrator(
-            model_reasoning_gateway=gateway, approval_gate=approval_gate
+            model_reasoning_gateway=gateway,
+            approval_gate=approval_gate,
+            capability_registry=registry,
         )
-        orchestrator.capability_registry = registry
         orchestrator.capability_planner.plan = (
             lambda sr: dict(PLANNING_REQUIRED_PLAN)
         )
@@ -345,10 +346,12 @@ class ApprovalRequiredProtectedTests(_IsolatedOrchestratorCase):
         self.assertEqual(result["execution"]["status"], "awaiting_approval")
         self.assertEqual(fake_dispatcher.calls, [])
         # Exactly two reasoning calls - the initial proposal and the
-        # Milestone 13 pre-execution sanity check (which confirms the
-        # same capability here, since this fixture always returns it)
-        # - the POST-execution evaluation loop must not have attempted
-        # a third, evaluation call, since nothing actually executed.
+        # Milestone 13 pre-execution sanity check (M20 Gate B: this
+        # capability has approval_requirement="user_approval_required"
+        # in the registry, so the sanity check still always runs for
+        # it - see _should_run_pre_execution_sanity_check) - the
+        # POST-execution evaluation loop must not have attempted a
+        # third, evaluation call, since nothing actually executed.
         self.assertEqual(call_count["n"], 2)
         self.assertNotIn("brain_evaluation", result)
 

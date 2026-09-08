@@ -168,6 +168,30 @@ retention_candidate: {"should_retain": true|false, "category":
 "summary": "..."} or null; null/false is the normal, expected answer
 for an ordinary success."""
 
+# M20 (W5, research recovery): appended only when attempt_history is
+# non-empty - i.e. only on a re-evaluation call, following the exact
+# same "don't add prompt bulk the initial proposal call doesn't need"
+# discipline as _INTERACTION_SIGNAL_ADDENDUM above. Tells the Brain
+# that web_search/fetch_url exist for closing an information gap, not
+# for accomplishing the goal itself, and that the runtime enforces a
+# hard limit regardless of what is proposed here - the instruction
+# below only asks for restraint the runtime does not depend on.
+_RESEARCH_RECOVERY_ADDENDUM = """
+
+If no registered capability in available_capabilities can satisfy
+user_request, and web_search or fetch_url are present in that
+catalogue, you may propose one of them to gather real information
+relevant to the gap - e.g. to understand what the user is actually
+asking about, or to find a public source that answers it directly.
+Research never creates a capability and never substitutes for one URI
+actually has: after research runs, its real result is added to
+attempt_history for you to evaluate again, exactly like any other
+action's result. Propose research at most once per request - if it
+already appears in attempt_history, do not propose it again; either
+evaluate its result as sufficient, propose a genuinely different
+registered capability, or honestly report that nothing available can
+satisfy this request."""
+
 
 class OllamaReasoningAdapter:
     """Callable[[str], str] - the exact shape ModelReasoningGateway
@@ -199,6 +223,9 @@ class OllamaReasoningAdapter:
 
             if request.get("retention_request"):
                 system += _RETENTION_REQUEST_ADDENDUM
+
+            if request.get("attempt_history"):
+                system += _RESEARCH_RECOVERY_ADDENDUM
 
         response = self.provider.complete(
             system=system,

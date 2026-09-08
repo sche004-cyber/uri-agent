@@ -139,6 +139,18 @@ class _IsolatedOrchestratorCase(unittest.TestCase):
                 self.temp_dir.name, "skill_memory.json"
             )
         )
+        # M20 Gate B (_should_run_pre_execution_sanity_check) skips
+        # the sanity check for an ordinary, low-risk, strictly-shaped
+        # single-action proposal - exactly the registered capabilities
+        # (extract_student_records/draft_institutional_note) every
+        # fixture in this file uses. This file tests the Milestone 11
+        # Correction Part 1 attempt-history/advisory-skill mechanics,
+        # which assume the sanity check's call always happens - forced
+        # on here so those mechanics keep being exercised regardless
+        # of Gate B's separate, independently-tested gating decision.
+        orchestrator._should_run_pre_execution_sanity_check = (
+            lambda **kwargs: True
+        )
         return orchestrator
 
 

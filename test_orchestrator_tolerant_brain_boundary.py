@@ -61,6 +61,44 @@ NOTE_SEMANTIC_RESULT = {
 PLANNING_REQUIRED_PLAN = {"status": "planning_required", "tool_name": None}
 
 
+def _gmail_search_registry(temp_dir):
+    """M20: an isolated, deterministic registry declaring gmail_search
+    as implemented AND available - independent of whatever real Gmail
+    credential state happens to exist on the machine running these
+    tests. Before M20, _executable_capability_ids() only checked
+    status == "implemented", so these recovery tests happened to pass
+    against the real uri_workspace/capabilities_registry.json
+    regardless of its "availability" field; CapabilityFeasibility (see
+    capability_feasibility.py) now correctly excludes an "implemented"
+    capability that is genuinely unavailable right now (e.g.
+    gmail_search with no stored Gmail token), which is exactly what
+    these tests must NOT be sensitive to - they test the tolerant
+    EXTRACTION mechanism, not real credential state."""
+
+    from uri_core.core.capability_registry import CapabilityRegistry
+
+    registry_path = os.path.join(
+        temp_dir.name, "capabilities_registry.json"
+    )
+    with open(registry_path, "w", encoding="utf-8") as file:
+        json.dump(
+            {
+                "active_tools": {
+                    "gmail_search": {
+                        "file_path": "x.py",
+                        "class_name": "X",
+                        "method": "run",
+                        "status": "implemented",
+                        "availability": "available",
+                    }
+                }
+            },
+            file,
+        )
+
+    return registry_path, CapabilityRegistry(registry_path=registry_path)
+
+
 class _IsolatedOrchestratorCase(unittest.TestCase):
 
     def setUp(self):
@@ -199,7 +237,9 @@ class CapabilityNamedAsListItemRecoveryTests(_IsolatedOrchestratorCase):
 
     def test_capabilities_required_list_is_recognized(self):
         # Verbatim shape observed live.
+        registry_path, registry = _gmail_search_registry(self.temp_dir)
         gateway = ModelReasoningGateway(
+            registry_path=registry_path,
             model_callable=_fake_model_callable(
                 {
                     "proposal": {
@@ -214,7 +254,9 @@ class CapabilityNamedAsListItemRecoveryTests(_IsolatedOrchestratorCase):
                 }
             )
         )
-        orchestrator = self._orchestrator(model_reasoning_gateway=gateway)
+        orchestrator = self._orchestrator(
+            model_reasoning_gateway=gateway, capability_registry=registry
+        )
 
         dispatcher = _FakeDispatcher()
         orchestrator.dispatcher.execute_tool = dispatcher.execute_tool
@@ -230,12 +272,16 @@ class CapabilityNamedAsListItemRecoveryTests(_IsolatedOrchestratorCase):
 
     def test_singular_string_value_still_works_unchanged(self):
         # The pre-existing single-string path must be untouched.
+        registry_path, registry = _gmail_search_registry(self.temp_dir)
         gateway = ModelReasoningGateway(
+            registry_path=registry_path,
             model_callable=_fake_model_callable(
                 {"proposed_actions": [{"capability": "gmail_search"}]}
             )
         )
-        orchestrator = self._orchestrator(model_reasoning_gateway=gateway)
+        orchestrator = self._orchestrator(
+            model_reasoning_gateway=gateway, capability_registry=registry
+        )
 
         dispatcher = _FakeDispatcher()
         orchestrator.dispatcher.execute_tool = dispatcher.execute_tool

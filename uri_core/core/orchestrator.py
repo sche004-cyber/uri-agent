@@ -8,6 +8,7 @@ from uri_core.core.prompt_builder import PromptBuilder
 from uri_core.core.dispatcher import ToolDispatcher, real_tool_status
 from uri_core.core.approval_gate import ApprovalGate
 from uri_core.core.capability_registry import CapabilityRegistry
+from uri_core.core.capability_feasibility import CapabilityFeasibility
 from uri_core.core.provider_semantic_interpreter import (
     ProviderSemanticInterpreter
 )
@@ -50,8 +51,6 @@ from uri_core.core.experience_store import (
 )
 from uri_core.core.file_store import FileStore
 from uri_core.core.conversation_history import ConversationHistoryStore
-from uri_core.core.skill_evaluator import SkillEvaluator
-from uri_core.core.context_budget import ContextBudget
 from uri_core.core.audit_trail import AuditTrail
 from uri_core.core.workflow_recovery import (
     WorkflowRecoveryValidator
@@ -67,11 +66,8 @@ class UriOrchestrator:
         self,
         model_reasoning_gateway=None,
         enable_model_reasoning_shadow=True,
-        skill_evaluator=None,
-        context_budget=None,
         audit_trail=None,
         enable_skill_router_shadow=True,
-        skill_registry_path="uri_workspace/skill_registry.json",
         semantic_interpreter=None,
         approval_gate=None,
         enable_response_narrative=False,
@@ -81,7 +77,9 @@ class UriOrchestrator:
         experience_store=None,
         file_store=None,
         skill_memory=None,
-        conversation_history=None
+        conversation_history=None,
+        capability_registry=None,
+        capability_feasibility=None
     ):
 
         # Milestone 11 Part 2 (Brain re-evaluation loop): a safety cap
@@ -156,10 +154,28 @@ class UriOrchestrator:
             )
 
         # ------------------------------------------------------
-        # Skill Router V1 shadow wiring.
+        # Skill Router V1 shadow - UNWIRED (M20, W7).
         #
-        # Observational only - see _run_skill_router_shadow.
-        # It never influences `plan` or `execution`.
+        # The shadow pipeline (ContextBudget -> SkillEvaluator against
+        # uri_workspace/skill_registry.json) is no longer run on any
+        # live turn: that registry is a stale, machine-specific
+        # inventory-scan artifact (absolute paths from a different
+        # development machine, mostly-empty descriptive fields), and
+        # SkillEvaluator.evaluate_from_context_budget() never applied
+        # its own best_score floor, so it silently reported
+        # capability_gap=False on effectively every request regardless
+        # of relevance - see SKILL_ROUTER_V1_ARCHITECTURE_AUDIT.md and
+        # the M20 audit's W7 finding. It never influenced `plan` or
+        # `execution` even while wired (fully observational, proven by
+        # test_capability_authority_boundary.py), so removing it
+        # changes no runtime decision - only removes a needless
+        # per-turn file read/score pass and an uninformative audit
+        # event. enable_skill_router_shadow is kept as an accepted,
+        # now-inert constructor parameter/attribute purely so existing
+        # callers that toggle it are unaffected; nothing reads it
+        # anymore. The standalone skill_evaluator.py/skill_router_v1.py
+        # modules and their own unit tests are untouched - only this
+        # orchestrator's wiring into the live turn is removed.
         # ------------------------------------------------------
 
         self.enable_skill_router_shadow = (
@@ -171,32 +187,6 @@ class UriOrchestrator:
             if audit_trail is not None
             else AuditTrail()
         )
-
-        self._skill_registry_items = (
-            self._load_skill_registry_items(
-                skill_registry_path
-            )
-        )
-
-        if skill_evaluator is not None:
-
-            self.skill_evaluator = skill_evaluator
-
-        else:
-
-            self.skill_evaluator = SkillEvaluator(
-                registry_items=self._skill_registry_items
-            )
-
-        if context_budget is not None:
-
-            self.context_budget = context_budget
-
-        else:
-
-            self.context_budget = ContextBudget(
-                registry_items=self._skill_registry_items
-            )
 
         # ------------------------------------------------------
         # Real approval gate (Milestone 7).
@@ -214,7 +204,36 @@ class UriOrchestrator:
         # reordering anything above.
         # ------------------------------------------------------
 
-        self.capability_registry = CapabilityRegistry()
+        # capability_registry is injectable (mirroring approval_gate/
+        # semantic_interpreter above) so a caller that already
+        # constructs its own CapabilityRegistry against a non-default
+        # registry_path - e.g. a test fixture - gets a fully
+        # consistent orchestrator: every internal decision that reads
+        # capabilities (_executable_capability_ids,
+        # _strict_model_proposed_workflow, this instance's own
+        # capability_feasibility below) reads the SAME registry a
+        # caller-supplied ApprovalGate/ModelReasoningGateway already
+        # uses, rather than silently falling back to the real
+        # uri_workspace/capabilities_registry.json.
+        self.capability_registry = (
+            capability_registry
+            if capability_registry is not None
+            else CapabilityRegistry()
+        )
+
+        # M20: read-only "is this genuinely usable right now" snapshot,
+        # composed from self.capability_registry + real connection
+        # state - see capability_feasibility.py. Narrows
+        # _executable_capability_ids() and the Brain-facing catalogue
+        # (ModelReasoningGateway._capability_catalogue()); never
+        # itself authoritative over selection or execution.
+        self.capability_feasibility = (
+            capability_feasibility
+            if capability_feasibility is not None
+            else CapabilityFeasibility(
+                capability_registry=self.capability_registry
+            )
+        )
 
         if approval_gate is not None:
 
@@ -288,47 +307,41 @@ class UriOrchestrator:
     # SKILL REGISTRY LOADING
     # ==========================================================
 
-    def _load_skill_registry_items(
-        self,
-        registry_path
-    ):
-        """
-        Load the Skill Router V1 registry (uri_workspace/skill_registry.json).
-
-        Loaded once at construction, not per-request - the file is
-        ~300KB and its contents don't change during a session.
-
-        Missing or malformed registries degrade to an empty list so
-        the shadow path reports "no suitable capability" rather than
-        raising and disturbing the live request.
-        """
-
-        normalized_path = os.path.normpath(
-            registry_path
-        )
+    # M20 (W9): the exact 8-key contract every semantic interpreter
+    # implementation in this codebase already returns on success (see
+    # provider_semantic_interpreter.py's REQUIRED_KEYS) - used only as
+    # a degraded fallback shape, never as a real classification.
+    # requires_clarification is deliberately True (the SAFE direction
+    # on genuine uncertainty - see conversational_classifier.py and
+    # _should_run_pre_execution_sanity_check, the two places that read
+    # this field): an interpreter failure must never be silently
+    # treated as "this is an ordinary greeting, no capability needed"
+    # or "this proposal is obviously low-risk, skip the extra look".
+    def _interpret_semantic_result_safely(self, user_text):
+        """Calls self.semantic_interpreter.interpret(user_text) and
+        degrades to a minimal, honestly-empty result on any failure
+        (a real provider returning non-JSON, missing keys, or being
+        unreachable) instead of raising - see the call site's own
+        comment for why this must never take the whole turn down.
+        Never raises."""
 
         try:
+            return self.semantic_interpreter.interpret(user_text)
 
-            with open(
-                normalized_path,
-                "r",
-                encoding="utf-8-sig"
-            ) as file:
-
-                registry = json.load(file)
-
-        except (
-            FileNotFoundError,
-            json.JSONDecodeError
-        ):
-            return []
-
-        items = registry.get("items", [])
-
-        if not isinstance(items, list):
-            return []
-
-        return items
+        except Exception:
+            return {
+                "goal": user_text,
+                "task_type": "",
+                "domain": "",
+                "entities": [],
+                "requested_output": "",
+                "requires_evidence": False,
+                "requires_clarification": True,
+                "suggested_next_step": (
+                    "URI could not classify this request automatically; "
+                    "the Brain will still reason about it directly."
+                ),
+            }
 
     # ==========================================================
     # MODEL REASONING SHADOW
@@ -723,23 +736,52 @@ class UriOrchestrator:
     )
 
     def _executable_capability_ids(self):
-        """The authoritative, currently-executable capability id set -
-        the single source every extraction path (strict or tolerant)
+        """The authoritative, currently-USABLE capability id set - the
+        single source every extraction path (strict or tolerant)
         checks a proposed capability name against. Reused, not
         reimplemented, from self.capability_registry (the same
         instance ApprovalGate/approval-requirement lookups already use
-        elsewhere in this class). Never raises."""
+        elsewhere in this class), narrowed by self.capability_feasibility
+        (M20) so a capability that IS registered as "implemented" but
+        is currently unavailable (missing dependency, unauthorized
+        connection) is never handed to the Brain as something it may
+        select - see capability_feasibility.py for why is_executable
+        alone was insufficient (an "implemented" gmail_search entry is
+        is_executable=True even with no Gmail token on this host).
+
+        Fail-safe: CapabilityFeasibility.snapshot() itself never
+        raises and degrades to an empty dict on any failure - in that
+        case every descriptor here falls back to is_executable alone
+        (today's pre-M20 behaviour), so a feasibility-detection failure
+        can only ever make this set LARGER than the M20-narrowed set,
+        never smaller than the original is_executable set. Never
+        raises."""
 
         try:
-            return {
-                descriptor.id
-                for descriptor in (
-                    self.capability_registry.list_capabilities()
-                )
-                if descriptor.is_executable
-            }
+            descriptors = self.capability_registry.list_capabilities()
         except Exception:
             return set()
+
+        try:
+            feasibility_snapshot = self.capability_feasibility.snapshot()
+        except Exception:
+            feasibility_snapshot = {}
+
+        ids = set()
+
+        for descriptor in descriptors:
+
+            if not descriptor.is_executable:
+                continue
+
+            entry = feasibility_snapshot.get(descriptor.id)
+
+            if isinstance(entry, dict) and entry.get("usable") is False:
+                continue
+
+            ids.add(descriptor.id)
+
+        return ids
 
     def _recover_capability_mentions(
         self,
@@ -860,6 +902,21 @@ class UriOrchestrator:
         multiple mentions as an implied sequential workflow rather
         than this method guessing which single one to use.
 
+        M20: the strict action.capability path is now also checked
+        against self._executable_capability_ids() (implemented AND
+        currently usable - see capability_feasibility.py), the exact
+        same set the tolerant recovery path below it already used.
+        Previously this strict path returned ANY string ModelReasoningGateway.
+        validate_proposal() had accepted as a REGISTERED name - which
+        only means status == "implemented", not "usable right now" -
+        so a Brain proposal naming e.g. gmail_search with no stored
+        Gmail token would be promoted to the real plan and only fail
+        once actually dispatched. A capability that fails this check
+        falls through to the tolerant recovery path exactly like a
+        missing action.capability always has, and from there to the
+        deterministic CapabilityPlanner fallback if nothing else
+        applies - never a hard failure.
+
         Never raises: any unexpected shape degrades to None, the same
         as "no usable proposal," so a malformed result can never break
         real decision-making.
@@ -883,17 +940,23 @@ class UriOrchestrator:
             if proposal.get("workflow") is not None:
                 return None
 
+            executable_capability_ids = self._executable_capability_ids()
+
             action = proposal.get("action")
 
             if isinstance(action, dict):
 
                 capability = action.get("capability")
 
-                if isinstance(capability, str) and capability.strip():
+                if (
+                    isinstance(capability, str)
+                    and capability.strip()
+                    and capability in executable_capability_ids
+                ):
                     return capability
 
             mentions = self._recover_capability_mentions(
-                proposal, self._executable_capability_ids()
+                proposal, executable_capability_ids
             )
 
             if len(mentions) == 1:
@@ -975,11 +1038,13 @@ class UriOrchestrator:
             if not isinstance(steps, list) or not steps:
                 return None
 
-            executable_capability_ids = {
-                descriptor.id
-                for descriptor in self.capability_registry.list_capabilities()
-                if descriptor.is_executable
-            }
+            # M20: was a second, independent is_executable-only
+            # computation duplicating _executable_capability_ids -
+            # reused now so a workflow step naming an "implemented"
+            # but currently-unusable capability (e.g. gmail_search
+            # with no stored Gmail token) is rejected pre-execution
+            # exactly like the single-action strict path already is.
+            executable_capability_ids = self._executable_capability_ids()
 
             normalized_steps = []
 
@@ -1365,6 +1430,132 @@ class UriOrchestrator:
 
         except Exception:
             return None
+
+    _SANITY_CHECK_HIGH_RISK_LEVELS = frozenset({"high", "variable"})
+
+    def _proposal_used_tolerant_extraction(
+        self, model_reasoning, model_capability_proposal
+    ):
+        """M20 (Gate B input): True when model_capability_proposal (an
+        already-validated capability name) did NOT come from the
+        strict action.capability contract - i.e.
+        _recover_capability_mentions found it instead (see
+        _model_proposed_capability). A cheap, read-only re-derivation
+        of the exact same check that method already performed - the
+        Brain not using its own documented output shape is itself a
+        signal of genuine uncertainty worth one more look before
+        executing. Never raises; degrades to True (the safe direction
+        for this specific check - see _should_run_pre_execution_sanity_
+        check's own docstring on why the safe default is "run the
+        check")."""
+
+        if model_capability_proposal is None:
+            return False
+
+        try:
+            result = model_reasoning.get("result", {})
+            proposal = result.get("proposal")
+
+            if not isinstance(proposal, dict):
+                return True
+
+            action = proposal.get("action")
+
+            if (
+                isinstance(action, dict)
+                and action.get("capability") == model_capability_proposal
+            ):
+                return False
+
+            return True
+
+        except Exception:
+            return True
+
+    def _should_run_pre_execution_sanity_check(
+        self,
+        model_reasoning,
+        model_capability_proposal,
+        model_workflow_proposal,
+        semantic_result,
+    ):
+        """M20 (Gate B): the pre-execution sanity check
+        (_run_pre_execution_sanity_check) is a full extra Brain call -
+        real value on a genuinely uncertain or consequential proposal,
+        pure added latency on an ordinary, low-risk read. This gate
+        decides whether that call is worth making, using only
+        properties of the REGISTRY ENTRY (via self.capability_
+        feasibility, the same M20 snapshot _executable_capability_ids
+        already uses) and the EXTRACTION PATH already computed for
+        this turn - never a task taxonomy, never what the request is
+        ABOUT, matching this codebase's standing rule against
+        keyword-scored cognitive templates.
+
+        Runs (returns True) whenever ANY of:
+        - semantic_result already flagged requires_clarification (the
+          deterministic interpreter itself found the request
+          ambiguous);
+        - the proposal is a workflow (multi-step composition is
+          exactly what Milestone 13 Part 1 exists to double-check -
+          every workflow shape, strict or tolerant-recovered, is
+          treated uniformly rather than branching on step count);
+        - the proposed single capability requires user approval, or
+          its registry-declared risk is "high"/"variable" - a
+          side-effecting or consequential action deserves one more
+          look before it executes;
+        - the single-capability proposal came from the TOLERANT
+          extraction path rather than the strict action.capability
+          contract (see _proposal_used_tolerant_extraction).
+
+        Skipped only for an ordinary, low-risk, strictly-shaped,
+        single-action proposal - e.g. a plain gmail_search/
+        extract_student_records read with no approval requirement.
+
+        Never raises: any lookup failure degrades to True (run the
+        check) - skipping is the optimization, so a failure must never
+        silently take the safety net away."""
+
+        try:
+
+            if isinstance(semantic_result, dict) and semantic_result.get(
+                "requires_clarification"
+            ):
+                return True
+
+            if model_workflow_proposal is not None:
+                return True
+
+            if model_capability_proposal is not None:
+
+                try:
+                    feasibility_entry = (
+                        self.capability_feasibility.snapshot().get(
+                            model_capability_proposal, {}
+                        )
+                    )
+                except Exception:
+                    feasibility_entry = {}
+
+                if feasibility_entry.get("requires_approval"):
+                    return True
+
+                if (
+                    feasibility_entry.get("risk")
+                    in self._SANITY_CHECK_HIGH_RISK_LEVELS
+                ):
+                    return True
+
+                if self._proposal_used_tolerant_extraction(
+                    model_reasoning, model_capability_proposal
+                ):
+                    return True
+
+                return False
+
+            return True
+
+        except Exception:
+            return True
 
     def _run_pre_execution_sanity_check(
         self,
@@ -2201,6 +2392,52 @@ class UriOrchestrator:
 
         return execution, response_data, workflow
 
+    # M20 (W5, research recovery): a small, fixed set of registered
+    # capabilities that gather information rather than accomplish the
+    # user's actual goal - never a task taxonomy, just the two
+    # research-shaped tools already registered (web_search.py/
+    # fetch_url.py). The Brain decides WHETHER research is worth
+    # proposing (see REASONING_SYSTEM_PROMPT's research clause,
+    # appended in model_reasoning_adapter.py only when attempt_history
+    # is non-empty); URI only enforces the bound below
+    # (_MAX_RESEARCH_ROUNDS) so research can never become an
+    # open-ended browsing loop. Research never installs, registers, or
+    # promotes a capability - it only adds real evidence to
+    # attempt_history for the Brain's next evaluation, exactly like
+    # any other action's real result already does.
+    _RESEARCH_CAPABILITY_IDS = frozenset({"web_search", "fetch_url"})
+
+    _MAX_RESEARCH_ROUNDS = 1
+
+    def _research_rounds_used(self, attempt_history):
+        """How many entries in THIS turn's attempt_history already used
+        a research capability (single-action proposals only - see this
+        class's module-level note on why workflow-embedded research is
+        deliberately out of scope for this bound). Never raises."""
+
+        count = 0
+
+        try:
+            for entry in attempt_history:
+
+                if not isinstance(entry, dict):
+                    continue
+
+                proposal = entry.get("proposal")
+
+                if (
+                    isinstance(proposal, dict)
+                    and proposal.get("type") == "capability"
+                    and proposal.get("capability")
+                    in self._RESEARCH_CAPABILITY_IDS
+                ):
+                    count += 1
+
+        except Exception:
+            return count
+
+        return count
+
     def _continue_brain_evaluation_loop(
         self,
         user_text,
@@ -2240,6 +2477,19 @@ class UriOrchestrator:
 
         if self._is_paused_execution(response.get("execution")):
             return
+
+        # M20 (W5): the sole writer of this field for this turn - set
+        # once here (honestly reflecting whether the turn's ORIGINAL
+        # proposal already was a research capability) so every return
+        # path below leaves it present and correct, and flipped to
+        # True if a research capability additionally executes during
+        # recovery (see the attempt_history.append site below).
+        response["research_attempted"] = (
+            isinstance(first_proposal_description, dict)
+            and first_proposal_description.get("type") == "capability"
+            and first_proposal_description.get("capability")
+            in self._RESEARCH_CAPABILITY_IDS
+        )
 
         attempt_history = [
             {
@@ -2345,6 +2595,43 @@ class UriOrchestrator:
             next_workflow = self._model_proposed_workflow(
                 model_reasoning, fallback_goal=user_text
             )
+
+            # M20 (W5): a bounded, deterministic ceiling on research -
+            # never relies on the Brain's own prompt-level restraint
+            # alone (matching this codebase's standing pattern of a
+            # hard runtime cap backing every prompt instruction - see
+            # self.max_brain_iterations). A second research proposal
+            # this turn is treated exactly like "nothing further to
+            # propose", not executed again.
+            if (
+                next_capability in self._RESEARCH_CAPABILITY_IDS
+                and self._research_rounds_used(attempt_history)
+                >= self._MAX_RESEARCH_ROUNDS
+            ):
+
+                self._record_brain_reevaluation_audit(
+                    session_id=session_id,
+                    iteration=iteration,
+                    satisfied=False,
+                    used_next_proposal=False,
+                    stop_reason="research_budget_exhausted",
+                )
+
+                self._carry_forward_goal_attempt_history(
+                    session=session,
+                    session_id=session_id,
+                    user_text=user_text,
+                    attempt_history=attempt_history,
+                )
+
+                response["brain_evaluation"] = {
+                    "satisfied": False,
+                    "reason": evaluation["reason"],
+                    "iterations": iteration,
+                    "status": "research_budget_exhausted",
+                }
+
+                return
 
             if next_capability is None and next_workflow is None:
 
@@ -2454,6 +2741,9 @@ class UriOrchestrator:
                     "type": "capability",
                     "capability": next_capability,
                 }
+
+                if next_capability in self._RESEARCH_CAPABILITY_IDS:
+                    response["research_attempted"] = True
 
             attempt_history.append(
                 {
@@ -2856,141 +3146,6 @@ class UriOrchestrator:
     # SKILL ROUTER SHADOW
     # ==========================================================
 
-    def _run_skill_router_shadow(
-        self,
-        user_text
-    ):
-        """
-        Run the Skill Router V1 (ContextBudget -> SkillEvaluator)
-        pipeline as a shadow evaluation only.
-
-        It cannot execute anything. It cannot replace the
-        deterministic CapabilityPlanner. Its result is attached to
-        the response for observability and recorded via AuditTrail
-        so the router's picks can be compared against
-        CapabilityPlanner's picks before any migration decision is
-        made.
-        """
-
-        if not self.enable_skill_router_shadow:
-
-            return {
-                "status":
-                    "shadow_disabled"
-            }
-
-        try:
-
-            context_budget_output = (
-                self.context_budget.build_context(
-                    request_text=user_text
-                )
-            )
-
-            result = (
-                self.skill_evaluator
-                .evaluate_from_context_budget(
-                    user_request=user_text,
-                    context_budget_output=
-                        context_budget_output
-                )
-            )
-
-            return {
-                "status":
-                    "shadow_completed",
-
-                "result":
-                    result
-            }
-
-        except Exception as exc:
-
-            return {
-                "status":
-                    "shadow_failed",
-
-                "error":
-                    str(exc)
-            }
-
-    def _record_skill_router_audit(
-        self,
-        session_id,
-        skill_router_shadow,
-        comparison_tool_name
-    ):
-        """
-        Record a single, small audit event comparing the Skill
-        Router V1 shadow's pick against the tool actually selected
-        on this turn (by SkillMemory or CapabilityPlanner).
-
-        Never raises - a failure to audit must not break the live
-        request the shadow is only observing.
-        """
-
-        try:
-
-            shadow_status = skill_router_shadow.get(
-                "status"
-            )
-
-            router_capability = None
-            router_destination = None
-
-            if shadow_status == "shadow_completed":
-
-                result = skill_router_shadow.get(
-                    "result",
-                    {}
-                )
-
-                best_match = result.get(
-                    "best_match"
-                )
-
-                if isinstance(best_match, dict):
-                    router_capability = best_match.get(
-                        "name"
-                    )
-
-                routing_recommendation = result.get(
-                    "routing_recommendation",
-                    {}
-                )
-
-                router_destination = (
-                    routing_recommendation.get(
-                        "destination"
-                    )
-                )
-
-            self.audit_trail.record(
-                event_type=
-                    "skill_router_shadow_evaluation",
-
-                status=shadow_status or "unknown",
-
-                session_id=session_id,
-
-                capability=router_capability,
-
-                metadata={
-                    "router_destination":
-                        str(router_destination),
-
-                    "planner_tool_name":
-                        str(comparison_tool_name),
-
-                    "agrees_with_planner":
-                        router_capability
-                        == comparison_tool_name
-                }
-            )
-
-        except Exception:
-            return
-
     def _record_model_reasoning_audit(
         self,
         session_id,
@@ -3144,7 +3299,8 @@ class UriOrchestrator:
             session=session,
             evidence_processor=(
                 self._get_evidence_processor()
-            )
+            ),
+            capability_planner=self.capability_planner
         )
 
         return router.create_executor()
@@ -3899,12 +4055,32 @@ class UriOrchestrator:
 
             # --------------------------------------------------
             # Existing deterministic semantic interpretation.
+            #
+            # M20 (W9): a malformed/incomplete model response from
+            # self.semantic_interpreter.interpret() (e.g. a real
+            # provider returning non-JSON, or JSON missing a required
+            # key) used to raise and be caught only by this method's
+            # own broad except at the bottom, which returns
+            # {"status": "failed"} - no Brain call, no narrative, no
+            # honest explanation, for what is genuinely just one
+            # flaky classification call. Every OTHER model call in
+            # this pipeline (_run_model_reasoning, _draft_narrative_
+            # safely, the retention/sanity-check calls) already
+            # degrades safely instead of taking the turn down; this
+            # is the one that didn't. Degrading here does not weaken
+            # anything downstream: _run_model_reasoning below is given
+            # user_text directly, never semantic_result, so the
+            # Brain's own reasoning is completely unaffected by this
+            # fallback - only the deterministic CapabilityPlanner/
+            # WorkflowPlanner/SkillMemory fallback paths read
+            # semantic_result, and an honestly-empty one simply yields
+            # no confident deterministic match (the same outcome an
+            # ordinary "nothing matched" request already produces),
+            # correctly deferring to the Brain's own proposal.
             # --------------------------------------------------
 
             semantic_result = (
-                self.semantic_interpreter.interpret(
-                    user_text
-                )
+                self._interpret_semantic_result_safely(user_text)
             )
 
             learned_skill = (
@@ -3985,21 +4161,6 @@ class UriOrchestrator:
                 )
             )
 
-            # --------------------------------------------------
-            # NEW:
-            # Run the Skill Router V1 (ContextBudget ->
-            # SkillEvaluator) pipeline as a shadow evaluation only.
-            #
-            # It cannot execute anything.
-            # It cannot replace the deterministic planner.
-            # --------------------------------------------------
-
-            skill_router_shadow = (
-                self._run_skill_router_shadow(
-                    user_text=user_text
-                )
-            )
-
             # The deterministic fallback pick - what would have
             # executed without any Brain involvement at all. Computed
             # once and reused both as the comparison baseline for the
@@ -4045,12 +4206,6 @@ class UriOrchestrator:
                 model_workflow_proposal is not None
             )
 
-            self._record_skill_router_audit(
-                session_id=session_id,
-                skill_router_shadow=skill_router_shadow,
-                comparison_tool_name=comparison_tool_name
-            )
-
             self._record_model_reasoning_audit(
                 session_id=session_id,
                 model_reasoning_shadow=model_reasoning,
@@ -4073,9 +4228,6 @@ class UriOrchestrator:
 
                 "model_reasoning":
                     model_reasoning,
-
-                "skill_router_shadow":
-                    skill_router_shadow,
 
                 "learned_skill":
                     learned_skill,
@@ -4114,70 +4266,92 @@ class UriOrchestrator:
                 or model_workflow_proposal_present
             ):
 
-                pre_execution_check = (
-                    self._run_pre_execution_sanity_check(
-                        user_text=user_text,
-                        session=session,
-                        session_id=session_id,
-                        personalization_context=personalization_context,
-                        learned_skill=learned_skill,
-                        model_capability_proposal=model_capability_proposal,
-                        model_workflow_proposal=model_workflow_proposal,
-                    )
-                )
+                # M20 (Gate B): the sanity check is a full extra Brain
+                # call - only worth making for a genuinely uncertain or
+                # consequential proposal. See
+                # _should_run_pre_execution_sanity_check's own
+                # docstring for the exact, deterministic (0 model
+                # calls) conditions. An ordinary, low-risk, strictly-
+                # shaped single-action proposal skips straight to
+                # execution, exactly as if this milestone's own extra
+                # look had already confirmed it unchanged.
+                if self._should_run_pre_execution_sanity_check(
+                    model_reasoning=model_reasoning,
+                    model_capability_proposal=model_capability_proposal,
+                    model_workflow_proposal=model_workflow_proposal,
+                    semantic_result=semantic_result,
+                ):
 
-                self._record_pre_execution_sanity_check_audit(
-                    session_id=session_id,
-                    outcome=pre_execution_check["status"],
-                )
-
-                response["pre_execution_check"] = {
-                    "outcome": pre_execution_check["status"],
-                }
-
-                if pre_execution_check["status"] == "revised_or_confirmed":
-
-                    # Whatever the Brain now says - confirmed unchanged
-                    # or genuinely modified/replaced - becomes the
-                    # proposal every downstream branch (single-action
-                    # or workflow-building) independently re-derives
-                    # from model_reasoning, with no further change
-                    # needed to any of that existing code.
-                    model_reasoning = pre_execution_check["model_reasoning"]
-                    response["model_reasoning"] = model_reasoning
-
-                    model_capability_proposal = (
-                        self._model_proposed_capability(model_reasoning)
-                    )
-                    model_workflow_proposal = (
-                        self._model_proposed_workflow(
-                            model_reasoning, fallback_goal=user_text
+                    pre_execution_check = (
+                        self._run_pre_execution_sanity_check(
+                            user_text=user_text,
+                            session=session,
+                            session_id=session_id,
+                            personalization_context=personalization_context,
+                            learned_skill=learned_skill,
+                            model_capability_proposal=model_capability_proposal,
+                            model_workflow_proposal=model_workflow_proposal,
                         )
                     )
-                    model_workflow_proposal_present = (
-                        model_workflow_proposal is not None
-                    )
 
-                elif pre_execution_check["status"] == "clarification_needed":
-
-                    question = (
-                        pre_execution_check["clarification"]["question"]
-                    )
-
-                    return self._apply_clarification_pause(
-                        response,
-                        question,
-                        stage="pre_execution_check",
-                        session=session,
+                    self._record_pre_execution_sanity_check_audit(
                         session_id=session_id,
-                        user_text=user_text,
+                        outcome=pre_execution_check["status"],
                     )
 
-                # "unavailable": the sanity check itself produced
-                # nothing usable - keep the ORIGINAL proposal exactly
-                # as first formulated, never discarding an
-                # already-valid Brain decision because this second
-                # call could not run.
+                    response["pre_execution_check"] = {
+                        "outcome": pre_execution_check["status"],
+                    }
+
+                    if pre_execution_check["status"] == "revised_or_confirmed":
+
+                        # Whatever the Brain now says - confirmed unchanged
+                        # or genuinely modified/replaced - becomes the
+                        # proposal every downstream branch (single-action
+                        # or workflow-building) independently re-derives
+                        # from model_reasoning, with no further change
+                        # needed to any of that existing code.
+                        model_reasoning = pre_execution_check["model_reasoning"]
+                        response["model_reasoning"] = model_reasoning
+
+                        model_capability_proposal = (
+                            self._model_proposed_capability(model_reasoning)
+                        )
+                        model_workflow_proposal = (
+                            self._model_proposed_workflow(
+                                model_reasoning, fallback_goal=user_text
+                            )
+                        )
+                        model_workflow_proposal_present = (
+                            model_workflow_proposal is not None
+                        )
+
+                    elif pre_execution_check["status"] == "clarification_needed":
+
+                        question = (
+                            pre_execution_check["clarification"]["question"]
+                        )
+
+                        return self._apply_clarification_pause(
+                            response,
+                            question,
+                            stage="pre_execution_check",
+                            session=session,
+                            session_id=session_id,
+                            user_text=user_text,
+                        )
+
+                    # "unavailable": the sanity check itself produced
+                    # nothing usable - keep the ORIGINAL proposal exactly
+                    # as first formulated, never discarding an
+                    # already-valid Brain decision because this second
+                    # call could not run.
+
+                else:
+
+                    response["pre_execution_check"] = {
+                        "outcome": "skipped_low_risk",
+                    }
 
             else:
 
@@ -4405,12 +4579,37 @@ class UriOrchestrator:
                     except Exception:
                         pass
 
-                # Milestone 11 Part 2: only a Brain-proposed plan gets
-                # re-evaluated - a learned skill or a CapabilityPlanner
-                # selection is untouched, exactly as before. No-ops
-                # immediately if this result is still awaiting
-                # approval.
-                if plan.get("source") == "model_reasoning":
+                # Milestone 11 Part 2: a Brain-proposed plan always
+                # gets re-evaluated, exactly as before.
+                #
+                # M20 (W3): a learned-skill or CapabilityPlanner
+                # selection that FAILS now also reaches the Brain for
+                # recovery, instead of ending the turn with only an
+                # honest error and no attempt to find another route -
+                # see _continue_brain_evaluation_loop, which already
+                # asks the Brain to evaluate attempt_history and
+                # propose an alternative capability/workflow
+                # (including web_search/fetch_url as a bounded research
+                # step - see REASONING_SYSTEM_PROMPT) using the exact
+                # same ApprovalGate-gated execution path as any other
+                # Brain proposal. A non-Brain-sourced SUCCESS is
+                # deliberately left untouched (no extra Brain call on
+                # the deterministic happy path - see this milestone's
+                # audit on call-budget). _continue_brain_evaluation_loop
+                # itself still no-ops immediately for a still-paused
+                # result (_is_paused_execution), so an
+                # awaiting_approval/awaiting_user_response outcome from
+                # any source is unaffected either way.
+                execution_failed = real_status not in (
+                    "success",
+                    "awaiting_approval",
+                    "awaiting_user_response",
+                )
+
+                if (
+                    plan.get("source") == "model_reasoning"
+                    or execution_failed
+                ):
 
                     self._continue_brain_evaluation_loop(
                         user_text=user_text,
