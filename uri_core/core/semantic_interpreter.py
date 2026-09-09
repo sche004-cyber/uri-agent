@@ -1,4 +1,19 @@
-﻿import json
+﻿"""M22.1: superseded by ModelProvider/build_provider (see
+model_providers/base.py, config/model_roles.py, and
+provider_semantic_interpreter.py for the live semantic_interpretation
+role) - this pre-M21 direct Groq client is no longer part of any live
+call path. Its only other importer was the dead
+orchestrator.before_compatibility_fix.py, removed in M22.1; see
+test_shadow_provider_unreachable.py for the enforced proof.
+
+Retained only for test_semantic_interpreter.py's regression coverage on
+environment-only credential handling (never hardcoded, never silently
+substituted when absent) - see URI_M22_ARCHITECTURE.md section 18. This
+module is scheduled for deletion once M22.5 (provider registry) ports
+that same guarantee onto the real per-user API-key store; do not import
+it from any new code."""
+
+import json
 import os
 from typing import Any, Optional
 

@@ -217,8 +217,6 @@ class TestContextBudget(unittest.TestCase):
             budget.max_tokens,
             "Selected capabilities must fit within the token budget",
         )
-        min_token_size = estimate_json_size(
-            _capability_snapshot(context["capabilities"][0]...[truncated]
 
     def test_max_capability_count_is_respected(self):
         registry = [
