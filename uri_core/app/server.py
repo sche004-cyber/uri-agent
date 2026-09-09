@@ -60,13 +60,16 @@ from uri_core.core.orchestrator import UriOrchestrator
 from uri_core.core.personalization_context import (
     build_personalization_context,
 )
+from uri_core.core.devices import list_devices_for_user, revoke_device
 from uri_core.core.portable_paths import (
     PortablePathValidationError,
     migrate_legacy_file_if_needed,
     user_scoped_path,
 )
+from uri_core.core.principal_context import PrincipalContext
 from uri_core.core.state import SessionManager
 from uri_core.core.user_accounts import (
+    VALID_EXPERIENCE_TIERS,
     UserAccountError,
     UserAccountStore,
 )
@@ -402,6 +405,45 @@ def _resolve_authenticated_user_id(
     return user_id
 
 
+def _resolve_principal(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+    authorization: Optional[str] = Header(default=None),
+) -> PrincipalContext:
+    """FastAPI dependency: the M22.2 PrincipalContext for the calling
+    request, built only here (the edge - see principal_context.py's
+    own docstring on why construction is confined to this file). Chains
+    off _resolve_authenticated_user_id unmodified, so every existing
+    401/legacy-ambient behaviour that dependency already provides is
+    preserved exactly - this only ADDS role/device_id once user_id is
+    already known.
+
+    role is None whenever user_id is None (no login at all) - never
+    guessed, never defaulted to a privileged value. device_id is looked
+    up the same way GET /auth/me already does (via the raw token bound
+    to THIS request), not persisted anywhere as authoritative state.
+
+    M22.2 uses this only for its own new self-scoped endpoints (see
+    POST /auth/experience-tier, GET/DELETE /auth/devices below) -
+    existing endpoints are not retrofitted to depend on this in this
+    milestone; see principal_context.py's module docstring."""
+
+    if user_id is None:
+        return PrincipalContext(user_id=None, role=None, device_id=None)
+
+    account = _user_account_store.get_by_user_id(user_id)
+    role = account.role if account is not None else None
+
+    device_id = None
+    if authorization is not None and authorization.startswith("Bearer "):
+        device_id = _auth_session_store.get_device_id(
+            authorization[len("Bearer "):].strip()
+        )
+
+    return PrincipalContext(
+        user_id=user_id, role=role, device_id=device_id
+    )
+
+
 def _record_growth_event_safely(
     growth_ledger_store: GrowthLedgerStore,
     event_type: str,
@@ -686,12 +728,24 @@ def auth_me(
           runtime_device_id, even though each has its own device_id.
     Neither field is a credential and neither grants access to
     anything by itself.
+
+    M22.2 adds two more read-only fields, sourced from the same
+    account this endpoint already loads - see user_accounts.py's
+    module docstring for why these are two deliberately separate,
+    non-interchangeable concepts:
+        - role: USER | ADMIN - a privilege, never self-assigned.
+        - experience_tier: BASIC | ADVANCED - a zero-authority
+          preference; see POST /auth/experience-tier to change it.
+    Both are null only when not authenticated at all, exactly like
+    every other field here.
     """
     if user_id is None:
         return {
             "authenticated": False,
             "user_id": None,
             "username": None,
+            "role": None,
+            "experience_tier": None,
             "device_id": None,
             "runtime_device_id": None,
         }
@@ -710,9 +764,118 @@ def auth_me(
         "authenticated": True,
         "user_id": user_id,
         "username": account.username if account is not None else None,
+        "role": account.role if account is not None else None,
+        "experience_tier": (
+            account.experience_tier if account is not None else None
+        ),
         "device_id": device_id,
         "runtime_device_id": runtime_device_id,
     }
+
+
+class ExperienceTierUpdateRequest(BaseModel):
+    experience_tier: str
+
+
+@app.post("/auth/experience-tier")
+def update_experience_tier(
+    payload: ExperienceTierUpdateRequest,
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> dict:
+    """M22.2: the user changing their OWN experience_tier - a
+    zero-authority display/guidance preference (see user_accounts.py's
+    module docstring). principal.user_id is resolved only from the
+    caller's own authenticated token (see _resolve_principal), never
+    accepted as a request field, so this can never be used to change
+    another account's tier. Requires a valid login (401 otherwise) -
+    there is no legacy-ambient account to update for an unauthenticated
+    caller."""
+
+    if principal.user_id is None:
+        raise HTTPException(
+            status_code=401, detail="Login is required to change this."
+        )
+
+    if payload.experience_tier not in VALID_EXPERIENCE_TIERS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "experience_tier must be one of "
+                f"{sorted(VALID_EXPERIENCE_TIERS)}."
+            ),
+        )
+
+    updated = _user_account_store.set_experience_tier(
+        principal.user_id, payload.experience_tier
+    )
+
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Account not found.")
+
+    return {
+        "user_id": updated.user_id,
+        "experience_tier": updated.experience_tier,
+    }
+
+
+@app.get("/auth/devices")
+def list_my_devices(
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> dict:
+    """M22.2: the logged-in user's own currently-active devices (see
+    devices.py) - each a distinct client-reported device_id with at
+    least one still-valid login session. Self-scoped only:
+    principal.user_id comes from the caller's own token (see
+    _resolve_principal), never a request parameter, so this can never
+    list another account's devices. Requires a valid login (401
+    otherwise)."""
+
+    if principal.user_id is None:
+        raise HTTPException(
+            status_code=401, detail="Login is required to view this."
+        )
+
+    devices = list_devices_for_user(
+        _auth_session_store, principal.user_id
+    )
+
+    return {
+        "devices": [
+            {
+                "device_id": device.device_id,
+                "session_count": device.session_count,
+                "most_recent_expires_at": device.most_recent_expires_at,
+            }
+            for device in devices
+        ]
+    }
+
+
+@app.delete("/auth/devices/{device_id}")
+def revoke_my_device(
+    device_id: str,
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> dict:
+    """M22.2: revokes every session the logged-in user has on ONE of
+    their own devices (see devices.py.revoke_device) - e.g. "log out my
+    phone from my desktop". Self-scoped only: only ever revokes
+    sessions bound to the caller's OWN principal.user_id (see
+    _resolve_principal), even if another account happens to report the
+    identical device_id string (see devices.py's own test coverage on
+    this). Reports honestly how many sessions were actually revoked; 0
+    for an unknown device_id rather than an error. Requires a valid
+    login (401 otherwise)."""
+
+    if principal.user_id is None:
+        raise HTTPException(
+            status_code=401, detail="Login is required to do this."
+        )
+
+    revoked_count = revoke_device(
+        _auth_session_store, principal.user_id, device_id
+    )
+
+    return {"device_id": device_id, "revoked_sessions": revoked_count}
 
 
 @app.post("/ask")

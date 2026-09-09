@@ -87,7 +87,11 @@ class MultiUserIsolationTests(unittest.TestCase):
                 self.temp_dir.name, "user_accounts.json"
             )
         )
-        server._auth_session_store = AuthSessionStore()
+        server._auth_session_store = AuthSessionStore(
+            storage_path=os.path.join(
+                self.temp_dir.name, "auth_sessions.json"
+            )
+        )
         server._user_contexts = {}
         # Every per-user profile/memory/growth/session/approval store
         # this test's _get_user_context()/_build_user_context() calls

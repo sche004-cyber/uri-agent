@@ -529,16 +529,23 @@ M22.4 (CapabilityResolver)   M22.5 (provider registry, 2 adapters)
 
 ---
 
-**M22.2 — Roles, accounts, durable sessions**
+**M22.2 — Roles, accounts, durable sessions — COMPLETE**
 - **Objective:** add `role`/`experience_tier`/`status` to accounts; first-account-becomes-ADMIN bootstrap; persist sessions (hashed tokens) so restart doesn't log out every device; device registry with revocation; introduce `PrincipalContext`.
 - **Dependencies:** M22.1 (clean baseline).
-- **Files affected:** `user_accounts.py`, `auth_session.py` (→ persisted store), new `devices.py`, `server.py` (construct `PrincipalContext` in `_resolve_authenticated_user_id`'s call chain).
+- **Files affected:** `user_accounts.py`, `auth_session.py` (→ persisted store), new `devices.py`, new `principal_context.py`, `server.py` (new self-scoped `/auth/*` endpoints; `_resolve_principal` dependency).
 - **Security considerations:** token hashing (never store raw tokens), migration must not grant ADMIN to more than exactly one account, revocation must be immediate.
 - **Tests required:** migration idempotency; isolation suite extended for role/tier; invariant #3 (§19.4) — first version of the "experience_tier never read by authorization" test, even before there is much authorization logic to check it against.
 - **Acceptance criteria:** existing suite green with roles migrated; a server restart no longer invalidates a still-valid session; `experience_tier` provably unread outside client-facing code.
 - **Commit checkpoint:** yes.
 - **APK/review build required:** no.
 - **Review tier: independent deep review recommended.** Touches authentication; a mistake here (e.g. two accounts becoming ADMIN, or token hashing done wrong) is high-blast-radius and easy to miss in a fast implementation pass.
+
+**As-built notes (two things this entry left underspecified, resolved during implementation):**
+
+1. **`devices.py`'s actual shape.** The entry named the file but not its data model. Implemented as a genuinely thin module with **no persisted state of its own** — "a device" is a grouping, by client-reported `device_id`, of the session records `AuthSessionStore` already persists, not a second registered-device concept with its own lifecycle (no `first_seen`/`display_name`/etc., since nothing in M22.2 needs them). This required extending `AuthSessionStore` with `list_for_user()` and `revoke_by_ref()` — revocation-by-device must work from a *different* client than the one being revoked (e.g. revoking a phone's session from a desktop), which by construction never has the phone's raw token, only its `device_id`. `revoke_by_ref()` takes an opaque `session_ref` (the token's own hash, exposed only to its owning user) rather than a raw token — documented explicitly as non-credential, the same way `file_store.py`'s `StoredFile.to_reference()` is documented as non-authoritative.
+2. **`PrincipalContext`'s actual footprint.** Introduced as specified, but deliberately **not** wired into the ~25 pre-existing endpoints — only the three new self-scoped M22.2 endpoints (`POST /auth/experience-tier`, `GET /auth/devices`, `DELETE /auth/devices/{device_id}`) construct and consume it. Retrofitting every existing endpoint's signature is exactly the endpoint-by-endpoint classification work §22's own M22.3 entry describes; doing it here would have widened this milestone's diff well past "add role/experience_tier/status to accounts" for no M22.2 benefit, since nothing yet gates on `role`.
+
+Legacy-account migration was implemented as a **pure, deterministic computation inside `UserAccountStore._load()`** rather than a separate migration script: because `_load()` already reads every account in the file at once, it can correctly apply "the earliest `created_at` among accounts with no persisted `role` key becomes ADMIN, the rest become USER" without extra bookkeeping, and the result is stable/idempotent (a record that already has a persisted `role` is never recomputed) — see `test_user_accounts.py`'s `RoleExperienceTierAndMigrationTests` for the full behavioural proof, including that a fresh signup after migration never produces a second ADMIN.
 
 ---
 

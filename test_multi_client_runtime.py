@@ -47,7 +47,11 @@ class MultiClientRuntimeTests(unittest.TestCase):
                 self.temp_dir.name, "user_accounts.json"
             )
         )
-        server._auth_session_store = AuthSessionStore()
+        server._auth_session_store = AuthSessionStore(
+            storage_path=os.path.join(
+                self.temp_dir.name, "auth_sessions.json"
+            )
+        )
         server._user_contexts = {}
         server._USER_STATE_ROOT = os.path.join(self.temp_dir.name, "users")
         # A dedicated, temp-backed runtime device identity so this test
