@@ -41,16 +41,44 @@ class ProviderResponseError(ProviderError):
 class ModelResponse:
     """A completed model response. Deliberately minimal - no raw backend
     payload is carried here, so a provider can never leak backend-internal
-    debugging data to callers by accident."""
+    debugging data to callers by accident.
+
+    M21: prompt_tokens/eval_tokens/duration_seconds are plain numbers, not
+    raw payload - the same "reporting-only self-knowledge" discipline
+    ModelProviderStatus already applies. They exist so a caller (or a test)
+    can verify a real prompt was NOT silently truncated by comparing
+    prompt_tokens against what was actually sent, and so latency is
+    measurable at all - see the M21 audit's finding that no latency
+    instrumentation existed anywhere in this pipeline. All three default to
+    None (unknown) rather than 0, so a provider that cannot report them is
+    never mistaken for one that measured zero."""
 
     content: str
     model: str
     provider: str
+    prompt_tokens: Optional[int] = None
+    eval_tokens: Optional[int] = None
+    duration_seconds: Optional[float] = None
 
 
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "qwen3:14b"
 DEFAULT_TIMEOUT_SECONDS = 60.0
+
+# M21: the actual runtime context window Ollama loads a model with when a
+# request does not otherwise specify options.num_ctx - measured during the
+# M21 audit at 4096 (Ollama's own hardcoded default), far below qwen3:14b's
+# real 40960-token trained context. Every URI Brain call was silently
+# truncated to this window (prompt_eval_count == ~num_ctx/2 on a prompt
+# almost 5000 tokens long) with no error, no log, and no field anywhere
+# reporting the true number - see ModelProviderStatus.context_window below,
+# previously hardcoded to None. 8192 is a deliberate, conservative default:
+# comfortably larger than URI's real measured reasoning (~4935 tok) and
+# drafting (~4595 tok) prompts even before the M21 request-shrinking work,
+# while staying far under qwen3:14b's 40960-token ceiling so ordinary
+# hardware is not forced to allocate a window it will rarely use.
+# Overridable per deployment via OLLAMA_NUM_CTX - see ModelProviderConfig.
+DEFAULT_CONTEXT_TOKENS = 8192
 
 # Self-knowledge status checks must stay cheap regardless of how long a
 # real completion is allowed to take (ModelProviderConfig.timeout_seconds
@@ -91,6 +119,12 @@ class ModelProviderConfig:
     base_url: str = DEFAULT_OLLAMA_BASE_URL
     model: str = DEFAULT_OLLAMA_MODEL
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS
+    # M21: the num_ctx sent on every real completion request - see
+    # DEFAULT_CONTEXT_TOKENS above for why this exists and what its default
+    # covers. Never inferred from the model - always an explicit, known
+    # value so "how much context does this call actually have" is answered
+    # by config, not by an undocumented backend default.
+    context_tokens: int = DEFAULT_CONTEXT_TOKENS
 
     @classmethod
     def from_env(cls) -> "ModelProviderConfig":
@@ -99,6 +133,9 @@ class ModelProviderConfig:
             model=os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL),
             timeout_seconds=float(
                 os.environ.get("OLLAMA_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS)
+            ),
+            context_tokens=int(
+                os.environ.get("OLLAMA_NUM_CTX", DEFAULT_CONTEXT_TOKENS)
             ),
         )
 

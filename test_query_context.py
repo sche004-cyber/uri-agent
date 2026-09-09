@@ -62,6 +62,7 @@ class BuildQueryContextTests(unittest.TestCase):
                 "diagnostics",
                 "experience",
                 "attachments",
+                "conversation",
             },
         )
         self.assertEqual(context["identity"], "")
@@ -73,6 +74,7 @@ class BuildQueryContextTests(unittest.TestCase):
         self.assertEqual(context["experience"], [])
         self.assertEqual(context["attachments"], [])
         self.assertEqual(context["diagnostics"], {})
+        self.assertEqual(context["conversation"], [])
 
     def test_identity_policy_text_is_passed_through_verbatim(self):
         context = build_query_context(policy_text="UNIQUE-POLICY-MARKER")

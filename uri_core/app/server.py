@@ -53,7 +53,7 @@ from uri_core.core.experience_store import ExperienceStore
 from uri_core.core.skill_memory import SkillMemory
 from uri_core.skills.skill_installer import SkillInstaller
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
-from uri_core.core.model_providers import OllamaProvider
+from uri_core.config.model_roles import ROLE_REASONING, build_provider
 from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
 from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
 from uri_core.core.orchestrator import UriOrchestrator
@@ -165,13 +165,18 @@ _growth_ledger_store = GrowthLedgerStore()
 # is the only thing that combines them, purely for display.
 _capability_registry = CapabilityRegistry()
 
-# A distinct OllamaProvider instance from whatever _orchestrator's
-# semantic interpreter uses internally - deliberately not the same
-# object, so this reporting-only self-knowledge query can never become
-# entangled with the live request path. describe() is a cheap,
+# A distinct provider instance from whatever _orchestrator's semantic
+# interpreter/reasoning adapter use internally - deliberately not the
+# same object, so this reporting-only self-knowledge query can never
+# become entangled with the live request path. describe() is a cheap,
 # timeout-bounded health check, never a real completion - see
 # ModelProvider.describe's contract in model_providers/base.py.
-_model_provider = OllamaProvider()
+#
+# M21: built via the same role-based factory every real call site now
+# uses (see config/model_roles.py), configured for ROLE_REASONING - the
+# role GET /capabilities is most meaningfully reporting on, since that
+# is the call that actually selects/proposes what URI does.
+_model_provider = build_provider(ROLE_REASONING)
 
 # ------------------------------------------------------------------
 # Prototype 1 — multi-user identity + login foundation.
@@ -225,6 +230,7 @@ class _UserContext:
     memory_store: MemoryStore
     growth_ledger_store: GrowthLedgerStore
     orchestrator: UriOrchestrator
+    file_store: FileStore
 
 
 _user_contexts: dict = {}
@@ -298,6 +304,23 @@ def _build_user_context(user_id: str) -> _UserContext:
         )
     )
 
+    # M21: file_store now follows the exact same per-user-directory
+    # discipline as experience_store/skill_memory/conversation_history
+    # above - before this, file_store.py's own docstring CLAIMED user
+    # scoping "mirrors the existing convention exactly", but server.py
+    # never actually constructed a per-user FileStore or passed one into
+    # UriOrchestrator; every logged-in user shared the single ambient
+    # _file_store (see below), so a client-supplied session_id could
+    # collide across different user_id's and leak attachments between
+    # them. Passed into UriOrchestrator(file_store=...) so the Brain's
+    # own attachment_context (see orchestrator.py's file_store usage)
+    # is scoped identically to the /files endpoints below.
+    file_store = FileStore(
+        storage_dir=user_scoped_path(
+            user_id, "uploads", root=_USER_STATE_ROOT
+        )
+    )
+
     orchestrator = UriOrchestrator(
         model_reasoning_gateway=ModelReasoningGateway(
             model_callable=OllamaReasoningAdapter()
@@ -306,6 +329,7 @@ def _build_user_context(user_id: str) -> _UserContext:
         approval_gate=approval_gate,
         session_manager=session_manager,
         experience_store=experience_store,
+        file_store=file_store,
         skill_memory=skill_memory,
         conversation_history=conversation_history,
     )
@@ -315,6 +339,7 @@ def _build_user_context(user_id: str) -> _UserContext:
         memory_store=memory_store,
         growth_ledger_store=growth_ledger_store,
         orchestrator=orchestrator,
+        file_store=file_store,
     )
 
 
@@ -340,6 +365,7 @@ def _resolve_context(user_id: Optional[str]) -> _UserContext:
             memory_store=_memory_store,
             growth_ledger_store=_growth_ledger_store,
             orchestrator=_orchestrator,
+            file_store=_file_store,
         )
 
     return _get_user_context(user_id)
@@ -1322,10 +1348,20 @@ def connections() -> dict:
 # executed through the ordinary ApprovalGate/ToolDispatcher path (see
 # uri_core/tools/read_attached_file.py).
 #
-# _file_store is ambient/global, matching the orchestrator's own
-# default (see UriOrchestrator.__init__) so an upload made here is the
-# same store the capability reads from. Files are keyed by the
-# conversation session_id the client supplies.
+# M21 (file store isolation fix): _file_store below is now ONLY the
+# legacy ambient default used for a request with no (or no valid) login
+# - identical in spirit to _user_profile_store/_memory_store above -
+# never a store every user implicitly shares. Every endpoint resolves
+# its actual store via _resolve_context(user_id), exactly like every
+# other user-scoped endpoint in this file: a logged-in user_id gets its
+# own FileStore, rooted at that user_id's own uri_workspace/users/
+# <user_id>/uploads/ directory (see _build_user_context), so two
+# different logged-in users who happen to reuse the same client-supplied
+# session_id can never see or delete each other's attachments. Before
+# this fix, file_store.py's own module docstring INCORRECTLY claimed
+# this scoping already existed ("mirrors the existing convention
+# exactly... identical to how MemoryStore/UserProfileStore are already
+# wired") - this is the fix that makes that claim true.
 # ------------------------------------------------------------------
 
 _file_store = FileStore()
@@ -1343,16 +1379,20 @@ def _repo_root_for_credentials() -> str:
 async def upload_file(
     session_id: str = Form(...),
     file: UploadFile = File(...),
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
 ) -> dict:
     """Accepts one user file for a conversation. Validation
     (type/size/name) is enforced in FileStore, not trusted from the
     client - see file_store.py. A rejected upload returns 400 with the
-    real reason so the user can act on it, never a silent drop."""
+    real reason so the user can act on it, never a silent drop. Stored
+    in the logged-in user's own isolated FileStore when authenticated
+    (see _resolve_context), the legacy ambient store otherwise."""
 
+    context = _resolve_context(user_id)
     content = await file.read()
 
     try:
-        record = _file_store.save(
+        record = context.file_store.save(
             filename=file.filename,
             content=content,
             media_type=file.content_type,
@@ -1366,38 +1406,57 @@ async def upload_file(
 
 
 @app.get("/files")
-def list_files(session_id: str) -> dict:
+def list_files(
+    session_id: str,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """Bounded references to the files attached to one conversation -
-    never content, matching what the Brain itself is shown."""
+    never content, matching what the Brain itself is shown. Resolved
+    against the logged-in user's own FileStore, so a session_id another
+    user also happens to use never surfaces that user's attachments."""
+
+    context = _resolve_context(user_id)
 
     return {
         "files": [
             record.to_reference()
-            for record in _file_store.list_for_session(session_id)
+            for record in context.file_store.list_for_session(session_id)
         ]
     }
 
 
 @app.delete("/files/{file_id}")
-def delete_file(file_id: str) -> dict:
+def delete_file(
+    file_id: str,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """Removes an attachment the user no longer wants URI to have.
-    Reports honestly whether anything was actually deleted."""
+    Reports honestly whether anything was actually deleted. Scoped to
+    the logged-in user's own FileStore - a file_id belonging to another
+    user's store is simply not found there, matching that store's own
+    honest "nothing deleted" report for any other unknown id."""
 
-    return {"deleted": _file_store.delete(file_id)}
+    context = _resolve_context(user_id)
+
+    return {"deleted": context.file_store.delete(file_id)}
 
 
 @app.get("/files/{file_id}/content")
-def file_content(file_id: str) -> FileResponse:
+def file_content(
+    file_id: str,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> FileResponse:
     """Raw bytes of one previously uploaded attachment, so the client
     can let the user open/verify what they actually attached (the same
     file_id shown in an /ask turn's response, not a separate lookup).
-    Scoped by unguessable file_id only, matching the other /files
-    endpoints' existing session_id-based (not per-user) authorization
-    model - see the M16 module docstring above. 404 for an unknown id
-    rather than leaking whether one exists."""
+    Scoped to the logged-in user's own FileStore (see _resolve_context)
+    - a file_id belonging to another user's store resolves to nothing
+    here, exactly like an unknown id. 404 either way, rather than
+    leaking whether the id exists in someone else's store."""
 
-    record = _file_store.get(file_id)
-    path = _file_store.path_for(file_id)
+    context = _resolve_context(user_id)
+    record = context.file_store.get(file_id)
+    path = context.file_store.path_for(file_id)
 
     if record is None or path is None:
         raise HTTPException(status_code=404, detail="Attachment not found.")

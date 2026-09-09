@@ -63,6 +63,22 @@ class ModelProviderConfigTests(unittest.TestCase):
         self.assertEqual(config.model, "llama3:8b")
         self.assertEqual(config.timeout_seconds, 12.0)
 
+    def test_context_tokens_default_when_env_unset(self):
+        with patch.dict("os.environ", {}, clear=True):
+            config = ModelProviderConfig.from_env()
+
+        self.assertEqual(config.context_tokens, 8192)
+
+    def test_context_tokens_reads_override_from_env(self):
+        with patch.dict(
+            "os.environ",
+            {"OLLAMA_NUM_CTX": "16384"},
+            clear=True,
+        ):
+            config = ModelProviderConfig.from_env()
+
+        self.assertEqual(config.context_tokens, 16384)
+
 
 class OllamaProviderMockedTests(unittest.TestCase):
     """No real network access - Ollama's HTTP layer is faked so these
@@ -171,6 +187,88 @@ class OllamaProviderMockedTests(unittest.TestCase):
             with self.assertRaises(ProviderResponseError):
                 provider.complete(system="sys", user="hello")
 
+    def test_sends_configured_num_ctx(self):
+        # M21: the actual fix for the audit's core finding - every real
+        # completion must send options.num_ctx, since Ollama otherwise
+        # silently loads the model at its own 4096-token default regardless
+        # of prompt size.
+        provider = OllamaProvider(
+            config=ModelProviderConfig(
+                base_url="http://localhost:11434",
+                model="qwen3:14b",
+                timeout_seconds=5.0,
+                context_tokens=16384,
+            )
+        )
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=_fake_ok_response("{}"),
+        ) as mock_post:
+            provider.complete(system="sys", user="hello")
+
+        _, kwargs = mock_post.call_args
+        self.assertEqual(kwargs["json"]["options"]["num_ctx"], 16384)
+
+    def test_response_carries_prompt_and_eval_token_counts(self):
+        provider = OllamaProvider(config=_config())
+
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {
+            "model": "qwen3:14b",
+            "message": {"role": "assistant", "content": "hi"},
+            "prompt_eval_count": 123,
+            "eval_count": 45,
+        }
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=response,
+        ):
+            result = provider.complete(system="sys", user="hello")
+
+        self.assertEqual(result.prompt_tokens, 123)
+        self.assertEqual(result.eval_tokens, 45)
+        self.assertIsInstance(result.duration_seconds, float)
+        self.assertGreaterEqual(result.duration_seconds, 0.0)
+
+    def test_response_without_token_counts_degrades_to_none(self):
+        # An older/different backend that doesn't report these fields must
+        # never be mistaken for one reporting zero tokens.
+        provider = OllamaProvider(config=_config())
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=_fake_ok_response("{}"),
+        ):
+            result = provider.complete(system="sys", user="hello")
+
+        self.assertIsNone(result.prompt_tokens)
+        self.assertIsNone(result.eval_tokens)
+
+    def test_oversized_prompt_estimate_logs_a_warning(self):
+        provider = OllamaProvider(
+            config=ModelProviderConfig(
+                base_url="http://localhost:11434",
+                model="qwen3:14b",
+                timeout_seconds=5.0,
+                context_tokens=10,
+            )
+        )
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=_fake_ok_response("{}"),
+        ), self.assertLogs(
+            "uri_core.core.model_providers.ollama_provider", level="WARNING"
+        ) as logs:
+            provider.complete(system="a" * 200, user="hello")
+
+        self.assertTrue(
+            any("exceeding" in message for message in logs.output)
+        )
+
 
 class OllamaProviderDescribeTests(unittest.TestCase):
     """describe() must be cheap, timeout-bounded, and exception-safe -
@@ -195,7 +293,11 @@ class OllamaProviderDescribeTests(unittest.TestCase):
         self.assertEqual(status.provider_name, "ollama")
         self.assertEqual(status.model_name, "qwen3:14b")
         self.assertEqual(status.location, "local")
-        self.assertIsNone(status.context_window)
+        # M21: context_window now reports the actual configured num_ctx
+        # every complete() call sends (see ModelProviderConfig.context_tokens)
+        # instead of always being None - a mocked /api/tags body carries no
+        # real model details, so no model-max warning is appended to detail.
+        self.assertEqual(status.context_window, 8192)
         self.assertEqual(status.supports, ("text",))
 
         _, kwargs = mock_get.call_args
@@ -291,6 +393,85 @@ class OllamaProviderDescribeTests(unittest.TestCase):
             status = provider.describe()
 
         self.assertEqual(status.location, "external")
+
+    def test_context_window_reports_configured_value(self):
+        provider = OllamaProvider(
+            config=ModelProviderConfig(
+                base_url="http://localhost:11434",
+                model="qwen3:14b",
+                timeout_seconds=5.0,
+                context_tokens=16384,
+            )
+        )
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            return_value=MagicMock(status_code=200),
+        ):
+            status = provider.describe()
+
+        self.assertEqual(status.context_window, 16384)
+
+    def test_model_max_context_parsed_from_tags_body_free_of_extra_call(self):
+        # M21: the model's own maximum supported context is available in
+        # the SAME /api/tags body describe() already fetches for
+        # availability - no /api/show call is made.
+        provider = OllamaProvider(
+            config=ModelProviderConfig(
+                base_url="http://localhost:11434",
+                model="qwen3:14b",
+                timeout_seconds=5.0,
+                context_tokens=100000,
+            )
+        )
+
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {
+            "models": [
+                {
+                    "name": "qwen3:14b",
+                    "details": {"context_length": 40960},
+                }
+            ]
+        }
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            return_value=response,
+        ) as mock_get:
+            status = provider.describe()
+
+        mock_get.assert_called_once()
+        self.assertEqual(status.context_window, 100000)
+        self.assertIn("exceeds this model's maximum", status.detail)
+        self.assertIn("40960", status.detail)
+
+    def test_model_max_context_within_configured_window_reports_no_warning(self):
+        provider = OllamaProvider(
+            config=ModelProviderConfig(
+                base_url="http://localhost:11434",
+                model="qwen3:14b",
+                timeout_seconds=5.0,
+                context_tokens=8192,
+            )
+        )
+
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {
+            "models": [
+                {"name": "qwen3:14b", "details": {"context_length": 40960}}
+            ]
+        }
+
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.get",
+            return_value=response,
+        ):
+            status = provider.describe()
+
+        self.assertIsNone(status.detail)
 
 
 if __name__ == "__main__":

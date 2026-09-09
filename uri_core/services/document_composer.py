@@ -22,11 +22,8 @@ import re
 from typing import Any, Dict, Optional
 
 from uri_core.core.document_validation import validate_drafted_document
-from uri_core.core.model_providers import (
-    ModelProvider,
-    OllamaProvider,
-    ProviderError,
-)
+from uri_core.core.model_providers import ModelProvider, ProviderError
+from uri_core.config.model_roles import ROLE_DOCUMENT_COMPOSITION, build_provider
 
 
 # Strips a leading drafting instruction so the remainder is the subject
@@ -64,7 +61,7 @@ class DocumentComposer:
 
     def _get_provider(self) -> ModelProvider:
         if self._provider is None:
-            self._provider = OllamaProvider()
+            self._provider = build_provider(ROLE_DOCUMENT_COMPOSITION)
         return self._provider
 
     def compose(

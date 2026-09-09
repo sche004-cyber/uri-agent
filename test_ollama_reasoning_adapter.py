@@ -83,6 +83,44 @@ class OllamaReasoningAdapterCallableContractTests(unittest.TestCase):
         self.assertEqual(result["status"], "proposal_ready")
         self.assertTrue(result["validation"]["valid"])
 
+    def test_system_policy_moves_to_system_role_and_is_not_duplicated(self):
+        # M21: system_policy is static within a session; keeping it out of
+        # the variable `user` payload lets Ollama reuse its prompt prefix
+        # across repeated calls instead of resending ~9.5k identical
+        # characters every time.
+        fake = _FakeProvider('{"action": null}')
+        adapter = OllamaReasoningAdapter(provider=fake)
+
+        request = {
+            "system_policy": "OPERATING POLICY TEXT",
+            "user_request": "draft a note",
+        }
+        result = adapter(json.dumps(request))
+
+        self.assertEqual(result, '{"action": null}')
+        sent = fake.calls[0]
+        self.assertIn("OPERATING POLICY TEXT", sent["system"])
+        self.assertIn(REASONING_SYSTEM_PROMPT, sent["system"])
+        self.assertNotIn("OPERATING POLICY TEXT", sent["user"])
+
+        # The key stays present (contract shape unchanged) with its
+        # content moved, not lost.
+        transmitted = json.loads(sent["user"])
+        self.assertIn("system_policy", transmitted)
+        self.assertEqual(transmitted["system_policy"], "")
+        self.assertEqual(transmitted["user_request"], "draft a note")
+
+    def test_request_with_no_system_policy_is_transmitted_unchanged(self):
+        fake = _FakeProvider('{"action": null}')
+        adapter = OllamaReasoningAdapter(provider=fake)
+
+        request_json = json.dumps({"user_request": "draft a note"})
+        adapter(request_json)
+
+        sent = fake.calls[0]
+        self.assertEqual(sent["system"], REASONING_SYSTEM_PROMPT)
+        self.assertEqual(sent["user"], request_json)
+
     def test_gateway_rejects_hallucinated_capability_from_adapter(self):
         # The adapter has no authority to make a bad proposal stick -
         # ModelReasoningGateway.validate_proposal() (unmodified) still

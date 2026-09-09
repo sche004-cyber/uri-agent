@@ -58,6 +58,40 @@ from uri_core.core.workflow_recovery import (
 from uri_core.services.evidence_processor import (
     EvidenceProcessor
 )
+from uri_core.core.context_budget import bound_json_value, fit_within_budget
+
+
+# M21: bounds on the persisted session state fed into every Brain call's
+# session_context (see _build_model_session_context below). A real
+# long-running workflow's execution_history is an unbounded, ever-growing
+# list (see workflow_executor.py - every step appends, nothing ever trims)
+# and was measured during the M21 audit at 65,634 characters (~16,400
+# tokens) in one real persisted session - larger than URI's entire
+# reasoning prompt budget on its own. Mirrors the exact "small, bounded
+# reference, never an unbounded dump" discipline orchestrator.py's own
+# _compact_attempt_result already applies to attempt_history, applied here
+# to the session's OWN execution_history instead. This bounds what reaches
+# the Brain, not what is persisted to disk - the full history remains
+# intact in the session file for the UI/audit trail.
+MAX_EXECUTION_HISTORY_ENTRIES = 5
+MAX_EXECUTION_HISTORY_ENTRY_CHARS = 400
+MAX_SESSION_FACT_FIELD_CHARS = 800
+
+# M21: token budgets for the two query_context sections that were
+# previously injected into every Brain call unconditionally and
+# unbounded in principle (experience) or not sent at all (conversation -
+# see conversation_history.py, which recorded every turn but was never
+# read back into a Brain request). Both use context_budget.fit_within_budget
+# - a fit-or-drop check, never a keyword/relevance scorer - over items
+# the caller has already ordered by priority (most-recent-first). Real
+# measured turn sizes during the M21 audit: p50 ~89 chars/~22 tokens,
+# p90 ~208 chars/~52 tokens per verbatim turn - MAX_CONVERSATION_CONTEXT_
+# TOKENS comfortably covers a real multi-turn window at these sizes
+# while still bounding the pathological case (a single turn up to
+# conversation_history.py's own 8000-character MAX_TEXT_LENGTH cap).
+MAX_EXPERIENCE_CONTEXT_TOKENS = 300
+MAX_CONVERSATION_CONTEXT_TOKENS = 500
+MAX_CONVERSATION_TURNS_CONSIDERED = 20
 
 
 class UriOrchestrator:
@@ -394,6 +428,42 @@ class UriOrchestrator:
 
         return str(value)
 
+    def _bounded_active_workflow(self, active_workflow):
+        """M21: active_workflow, bounded before it ever reaches a Brain
+        call - specifically its execution_history, the field measured
+        growing to 65,634 characters in a real persisted session (see
+        module-level MAX_EXECUTION_HISTORY_ENTRIES/_CHARS comment). Every
+        other field (steps/status/goal/etc.) is left exactly as
+        _serialize_model_context already produced it - only the one
+        unbounded list is capped, keeping the most recent entries (the
+        ones most relevant to "what just happened") rather than the
+        oldest. Never raises: a malformed/non-dict workflow degrades to
+        plain serialization, matching this class's existing unknown-safe
+        discipline."""
+
+        serialized = self._serialize_model_context(active_workflow)
+
+        if not isinstance(serialized, dict):
+            return serialized
+
+        history = serialized.get("execution_history")
+
+        if not isinstance(history, list) or (
+            len(history) <= MAX_EXECUTION_HISTORY_ENTRIES
+        ):
+            return serialized
+
+        workflow = dict(serialized)
+        recent = history[-MAX_EXECUTION_HISTORY_ENTRIES:]
+        workflow["execution_history"] = [
+            bound_json_value(entry, MAX_EXECUTION_HISTORY_ENTRY_CHARS)
+            for entry in recent
+        ]
+        workflow["execution_history_omitted_count"] = (
+            len(history) - MAX_EXECUTION_HISTORY_ENTRIES
+        )
+        return workflow
+
     def _build_model_session_context(
         self,
         session
@@ -415,30 +485,39 @@ class UriOrchestrator:
                 ),
 
             "current_facts":
-                self._serialize_model_context(
-                    getattr(
-                        session,
-                        "current_facts",
-                        {}
-                    )
+                bound_json_value(
+                    self._serialize_model_context(
+                        getattr(
+                            session,
+                            "current_facts",
+                            {}
+                        )
+                    ),
+                    MAX_SESSION_FACT_FIELD_CHARS,
                 ),
 
             "evidence_facts":
-                self._serialize_model_context(
-                    getattr(
-                        session,
-                        "evidence_facts",
-                        {}
-                    )
+                bound_json_value(
+                    self._serialize_model_context(
+                        getattr(
+                            session,
+                            "evidence_facts",
+                            {}
+                        )
+                    ),
+                    MAX_SESSION_FACT_FIELD_CHARS,
                 ),
 
             "historical_facts":
-                self._serialize_model_context(
-                    getattr(
-                        session,
-                        "historical_facts",
-                        {}
-                    )
+                bound_json_value(
+                    self._serialize_model_context(
+                        getattr(
+                            session,
+                            "historical_facts",
+                            {}
+                        )
+                    ),
+                    MAX_SESSION_FACT_FIELD_CHARS,
                 ),
 
             "last_question_field":
@@ -463,7 +542,7 @@ class UriOrchestrator:
                 ),
 
             "active_workflow":
-                self._serialize_model_context(
+                self._bounded_active_workflow(
                     getattr(
                         session,
                         "active_workflow",
@@ -2882,9 +2961,19 @@ class UriOrchestrator:
         # see experience_store.py/_run_acceptance_retention_step. A
         # store failure (corrupted file, missing directory) degrades to
         # "nothing known yet," never breaks context assembly.
+        #
+        # M21: previously injected unconditionally and unbounded in
+        # principle (ExperienceStore.recent()'s default limit=5 bounds
+        # record COUNT, never total size) - the exact "inject only when
+        # it fits, not everything every time" gap the M21 audit found.
+        # fit_within_budget keeps ExperienceStore's own most-recent-first
+        # ordering and only trims for size - no relevance scoring added.
         try:
-            experience = summarize_experience_for_query_context(
-                self.experience_store.recent()
+            experience = fit_within_budget(
+                summarize_experience_for_query_context(
+                    self.experience_store.recent()
+                ),
+                MAX_EXPERIENCE_CONTEXT_TOKENS,
             )
         except Exception:
             experience = []
@@ -2906,6 +2995,15 @@ class UriOrchestrator:
         except Exception:
             attachments = []
 
+        # CONVERSATION (M21): a small, token-budgeted window of this
+        # session's own recent verbatim turns - see
+        # _build_conversation_context. Genuinely new: nothing else in
+        # query_context carries the actual back-and-forth (session_context
+        # carries task/fact state, not dialogue - see
+        # conversation_history.py's own module docstring on that
+        # distinction).
+        conversation = self._build_conversation_context(session_id)
+
         return build_query_context(
             policy_text=policy_text,
             soul_text=soul_text,
@@ -2916,7 +3014,55 @@ class UriOrchestrator:
             diagnostics=diagnostics,
             experience=experience,
             attachments=attachments,
+            conversation=conversation,
         )
+
+    def _build_conversation_context(self, session_id):
+        """M21: a bounded, historical-only window of this session's own
+        recent verbatim turns, read from ConversationHistoryStore (M18) -
+        which recorded every turn from the start but was, until this
+        method, never read back into any Brain request (see the M21
+        audit). Deliberately plain recorded text, oldest-of-the-kept-
+        window first: never a judgment, never a summary, never promoted
+        to MemoryStore/ExperienceStore/SkillMemory by this method or
+        anything it calls - it carries exactly the same "historical
+        context, not authority" status query_context.py's other sections
+        already document. Bounded twice: MAX_CONVERSATION_TURNS_CONSIDERED
+        caps how many recent turns are even looked at, then
+        fit_within_budget trims by actual size (most-recent-first) to
+        MAX_CONVERSATION_CONTEXT_TOKENS - no keyword/relevance filtering,
+        only recency and fit. Never raises: a missing/corrupt transcript
+        (ConversationHistoryStore itself already degrades to an empty
+        list) or an unknown session_id yields an empty window."""
+
+        if not session_id:
+            return []
+
+        try:
+            turns = self.conversation_history.get_session(session_id)
+        except Exception:
+            return []
+
+        if not turns:
+            return []
+
+        recent_oldest_first = turns[-MAX_CONVERSATION_TURNS_CONSIDERED:]
+
+        candidates_newest_first = [
+            {
+                "user": turn.get("user_text"),
+                "uri": turn.get("response_text"),
+                "status": turn.get("status"),
+            }
+            for turn in reversed(recent_oldest_first)
+            if isinstance(turn, dict)
+        ]
+
+        kept_newest_first = fit_within_budget(
+            candidates_newest_first, MAX_CONVERSATION_CONTEXT_TOKENS
+        )
+
+        return list(reversed(kept_newest_first))
 
     # ==========================================================
     # LIVE RESPONSE NARRATIVE (Milestone 8A)

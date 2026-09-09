@@ -35,7 +35,8 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from uri_core.core.model_providers import ModelProvider, OllamaProvider
+from uri_core.core.model_providers import ModelProvider
+from uri_core.config.model_roles import ROLE_DRAFTING, build_provider
 
 _DRAFTING_INSTRUCTIONS = """
 ---
@@ -241,7 +242,7 @@ def draft_response(
     provider: Optional[ModelProvider] = None,
 ) -> str:
 
-    provider = provider or OllamaProvider()
+    provider = provider or build_provider(ROLE_DRAFTING)
 
     system = build_drafting_system_prompt(
         request.policy_text, request.soul_text

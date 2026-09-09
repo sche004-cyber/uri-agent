@@ -23,7 +23,8 @@ first time - see attempt_history below.
 import json
 from typing import Optional
 
-from .model_providers import ModelProvider, OllamaProvider
+from .model_providers import ModelProvider
+from uri_core.config.model_roles import ROLE_REASONING, build_provider
 
 REASONING_SYSTEM_PROMPT = """
 This is a reasoning-assistant role in service of URI's deterministic
@@ -205,7 +206,7 @@ class OllamaReasoningAdapter:
     """
 
     def __init__(self, provider: Optional[ModelProvider] = None):
-        self.provider = provider or OllamaProvider()
+        self.provider = provider or build_provider(ROLE_REASONING)
 
     def __call__(self, request_json: str) -> str:
 
@@ -215,6 +216,37 @@ class OllamaReasoningAdapter:
             request = json.loads(request_json)
         except (TypeError, ValueError):
             request = {}
+
+        # M21: system_policy (URI_AI_OPERATING_POLICY.md, ~9.5k characters)
+        # is fully static within a session - the same file, reloaded
+        # verbatim, on every one of the up to ~9 Brain calls one turn can
+        # make (see orchestrator.py's _continue_brain_evaluation_loop). It
+        # previously travelled inside the variable `user` JSON payload,
+        # which changes shape every call - defeating Ollama's own prefix/
+        # KV-cache reuse across those calls and making system_policy the
+        # single largest slice of every reasoning prompt (measured at 58.8%
+        # of payload size during the M21 audit). Moving it into `system`
+        # instead - a stable prefix across calls to the same loaded model -
+        # sends the Brain exactly the same information in a position the
+        # runtime can actually reuse. The "system_policy" key stays present
+        # in the transmitted JSON (the documented request contract is
+        # unchanged) with its content emptied, since the content itself now
+        # lives in `system`. A request with no (or an empty) system_policy
+        # is transmitted completely unchanged - see
+        # test_ollama_reasoning_adapter.py's narrow adapter-only test,
+        # which never sets this key at all.
+        user_json = request_json
+        policy_text = (
+            request.get("system_policy")
+            if isinstance(request, dict)
+            else None
+        )
+
+        if isinstance(policy_text, str) and policy_text.strip():
+            system = policy_text + "\n\n" + system
+            request_without_policy = dict(request)
+            request_without_policy["system_policy"] = ""
+            user_json = json.dumps(request_without_policy, ensure_ascii=False)
 
         if isinstance(request, dict):
 
@@ -229,7 +261,7 @@ class OllamaReasoningAdapter:
 
         response = self.provider.complete(
             system=system,
-            user=request_json,
+            user=user_json,
             temperature=0,
             max_tokens=800,
         )

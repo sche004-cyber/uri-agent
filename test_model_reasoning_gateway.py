@@ -452,12 +452,20 @@ class ModelReasoningGatewayDefaultPolicyPathTests(unittest.TestCase):
         self.assertIn("system", captured)
         self.assertIn("user", captured)
 
-        # The full JSON request (including system_policy) is sent as
-        # the user message - see OllamaReasoningAdapter.__call__.
-        self.assertIn("You are URI", captured["user"])
+        # M21: system_policy now travels in the `system` role, not inside
+        # the variable `user` JSON - a stable prefix lets Ollama reuse its
+        # own prompt/KV cache across the several Brain calls one turn can
+        # make, instead of resending ~9.5k characters of identical text
+        # inside content that changes shape every call. See
+        # OllamaReasoningAdapter.__call__ and its M21 comment. The
+        # guarantee this test exists to prove - that the real policy
+        # document's text actually reaches what is sent to the model - is
+        # unchanged; only its position moved.
+        self.assertIn("You are URI", captured["system"])
         self.assertIn(
-            "NIT Sikkim Administrative AI Assistant", captured["user"]
+            "NIT Sikkim Administrative AI Assistant", captured["system"]
         )
+        self.assertNotIn("You are URI", captured["user"])
 
 
 if __name__ == "__main__":

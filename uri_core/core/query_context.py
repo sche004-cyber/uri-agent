@@ -91,6 +91,7 @@ def build_query_context(
     diagnostics: Optional[Dict[str, Any]] = None,
     experience: Optional[List[Dict[str, Any]]] = None,
     attachments: Optional[List[Dict[str, Any]]] = None,
+    conversation: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """Assembles one bounded, labeled dict for a single Brain query -
     never prose, never free-form instruction text, so a query prompt
@@ -155,6 +156,18 @@ def build_query_context(
       read_attached_file capability for URI to actually extract and
       return its text. Degrades to an empty list when nothing is
       attached.
+    - conversation (M21): a small, token-budgeted window of the most
+      recent real turns of THIS session's own verbatim dialogue - e.g.
+      from orchestrator.py's _build_conversation_context, which reads
+      conversation_history.ConversationHistoryStore.get_session() and
+      trims it with context_budget.fit_within_budget(). Each entry is
+      {"user": ..., "uri": ..., "status": ...} - plain recorded text,
+      never a judgment or a summary. This is historical context for the
+      Brain to read, exactly like experience below - it is never
+      written to MemoryStore/ExperienceStore/SkillMemory by anything in
+      this module or its caller, and carries no more authority than any
+      other section here. Degrades to an empty list when no
+      conversation_history is available or session_id is unknown.
 
     Any argument may be omitted (None) - the corresponding section
     degrades to an empty value rather than being guessed at, matching
@@ -180,4 +193,5 @@ def build_query_context(
         "diagnostics": diagnostics or {},
         "experience": experience or [],
         "attachments": attachments or [],
+        "conversation": conversation or [],
     }

@@ -18,7 +18,8 @@ or in the orchestrator, changes.
 import json
 from typing import Optional
 
-from .model_providers import ModelProvider, OllamaProvider
+from .model_providers import ModelProvider
+from uri_core.config.model_roles import ROLE_SEMANTIC_INTERPRETATION, build_provider
 
 SYSTEM_PROMPT = """
 This is the semantic understanding layer used by URI's deterministic
@@ -68,7 +69,7 @@ REQUIRED_KEYS = [
 
 class ProviderSemanticInterpreter:
     def __init__(self, provider: Optional[ModelProvider] = None):
-        self.provider = provider or OllamaProvider()
+        self.provider = provider or build_provider(ROLE_SEMANTIC_INTERPRETATION)
 
     def interpret(self, user_text: str) -> dict:
         response = self.provider.complete(

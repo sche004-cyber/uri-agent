@@ -1,8 +1,94 @@
 import json
 import re
-from typing import Any, Callable, Optional
+from typing import Any, Callable, List, Optional
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
+
+# ---------------------------------------------------------------------------
+# M21: shared, deterministic bounding utilities used at the actual model-call
+# boundary (model_providers/ollama_provider.py) and in per-turn context
+# assembly (orchestrator.py's _build_model_session_context) - the M21 audit's
+# two largest measured prompt-bloat sources: an unmeasured context window and
+# an unbounded persisted execution_history. Deliberately plain, pure
+# functions (no ContextBudget class involvement - that class's keyword-
+# overlap capability scoring stays unwired per the M20 decision) so any
+# caller can bound one value without adopting scoring/selection behaviour it
+# doesn't want.
+# ---------------------------------------------------------------------------
+
+def estimate_tokens(text: str) -> int:
+    """Rough, deterministic characters/4 proxy for token count - the same
+    order-of-magnitude approximation the M21 audit used to measure real URI
+    prompts against a live model. Not a real tokenizer: good enough to warn
+    before a prompt is sent, never used to bill or to guarantee a hard
+    limit."""
+    return max(0, len(text or "")) // 4
+
+
+def fit_within_budget(
+    items: List[Any],
+    max_tokens: int,
+    item_estimator: Optional[Callable[[Any], int]] = None,
+) -> List[Any]:
+    """Given `items` already ordered most-important-first by the caller,
+    returns the longest leading prefix whose combined estimated size fits
+    within max_tokens. Deliberately NOT a relevance-scoring or keyword
+    mechanism - it makes no judgment about what an item IS, only whether
+    it fits, matching this codebase's standing rule against hard-coded
+    task-taxonomy selection (see query_context.py's own module docstring
+    on the same point). The caller decides priority (e.g. most-recent-
+    first for a conversation window); this function only enforces the
+    budget. Always keeps at least the first item (if any) even if it
+    alone exceeds the budget, so one oversized entry cannot silently
+    empty the whole list - the same "never blank out everything" instinct
+    query_context.py's per-section degrade-to-empty discipline already
+    follows. Never raises: an item that fails to estimate is dropped
+    rather than allowed to break the whole pass."""
+
+    estimator = item_estimator or (
+        lambda item: estimate_tokens(
+            json.dumps(item, ensure_ascii=False, default=str)
+        )
+    )
+
+    kept: List[Any] = []
+    used = 0
+
+    for item in items:
+        try:
+            size = estimator(item)
+        except Exception:
+            continue
+        if kept and used + size > max_tokens:
+            break
+        kept.append(item)
+        used += size
+
+    return kept
+
+
+def bound_json_value(value: Any, max_chars: int = 800) -> Any:
+    """Returns `value` unchanged when its JSON serialization already fits
+    within max_chars; otherwise returns a small, honest replacement carrying
+    a truncated preview instead of the full value. Generalizes the exact
+    truncation shape orchestrator.py's _compact_attempt_result already
+    established for attempt_history (text[:N].rstrip() + "...(truncated)")
+    so any other oversized, JSON-serializable context field - e.g. a
+    long-running workflow's execution_history, measured at 65,000+
+    characters in a real session during the M21 audit - can be bounded the
+    same way instead of being resent in full on every Brain call. Never
+    raises: a value that cannot be JSON-serialized falls back to str()."""
+    try:
+        text = json.dumps(value, ensure_ascii=False, default=str)
+    except Exception:
+        text = str(value)
+    if len(text) <= max_chars:
+        return value
+    return {
+        "_truncated": True,
+        "preview": text[:max_chars].rstrip() + "...(truncated)",
+    }
+
 
 # ---------------------------------------------------------------------------
 # Token / context-size estimation

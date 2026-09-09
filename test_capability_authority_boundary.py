@@ -397,6 +397,101 @@ class CapabilityAuthorityBoundaryTests(unittest.TestCase):
 
             self.assertEqual(offending, set(), relative_path)
 
+    # ------------------------------------------------------------
+    # M21 (provider configuration seam) invariants.
+    #
+    # model_roles.py (uri_core/config/model_roles.py) adds a second way
+    # to reach model_providers - build_provider(role) - on top of the
+    # model_providers import itself. Both must stay just as unable to
+    # reach or influence execution/approval/authority as the
+    # Milestone 6/7 invariants above already require of model_providers
+    # directly: which provider answers a role's prompt must never
+    # become a routing, execution, or authorization input.
+    # ------------------------------------------------------------
+
+    def test_dispatcher_never_imports_model_roles(self):
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "dispatcher.py")
+        )
+
+        offending = {name for name in imports if "model_roles" in name}
+
+        self.assertEqual(
+            offending,
+            set(),
+            "dispatcher.py must never import model_roles - provider "
+            "selection is never an execution input.",
+        )
+
+    def test_capability_planner_never_imports_model_roles(self):
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "capability_planner.py")
+        )
+
+        offending = {name for name in imports if "model_roles" in name}
+
+        self.assertEqual(
+            offending,
+            set(),
+            "capability_planner.py must never import model_roles - "
+            "provider selection is never a routing/selection input.",
+        )
+
+    def test_approval_gate_never_imports_model_roles_or_providers(self):
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "approval_gate.py")
+        )
+
+        offending = {
+            name
+            for name in imports
+            if "model_roles" in name or "model_providers" in name
+        }
+
+        self.assertEqual(
+            offending,
+            set(),
+            "approval_gate.py must never import model_roles/"
+            "model_providers - approval decisions must stay "
+            "uninfluenced by, and unable to influence, provider "
+            "identity.",
+        )
+
+    def test_workflow_executor_never_imports_model_roles(self):
+        imports = _imported_module_names(
+            os.path.join("uri_core", "core", "workflow_executor.py")
+        )
+
+        offending = {name for name in imports if "model_roles" in name}
+
+        self.assertEqual(offending, set())
+
+    def test_model_roles_never_imports_approval_or_execution_modules(self):
+        # Symmetric to the above: the provider-configuration seam itself
+        # must have no path INTO approval or execution either - it can
+        # only ever be asked to build a ModelProvider, never to decide
+        # or perform anything.
+        imports = _imported_module_names(
+            os.path.join("uri_core", "config", "model_roles.py")
+        )
+
+        offending = {
+            name
+            for name in imports
+            if any(
+                fragment in name
+                for fragment in (
+                    "approval_store",
+                    "approval_gate",
+                    "dispatcher",
+                    "capability_registry",
+                    "capability_planner",
+                )
+            )
+        }
+
+        self.assertEqual(offending, set())
+
 
 if __name__ == "__main__":
     unittest.main()
