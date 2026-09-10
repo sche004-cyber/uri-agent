@@ -950,6 +950,46 @@ class HttpUriClient implements UriClient {
   }
 
   @override
+  Future<MemoryEntry> updateMemory({
+    required String memoryId,
+    required String category,
+    required String content,
+    double? confidence,
+    String? notes,
+  }) async {
+    http.Response response;
+    try {
+      response = await _http
+          .put(
+            Uri.parse('$baseUrl/memory/$memoryId'),
+            headers: _jsonHeaders,
+            body: jsonEncode({
+              'category': category,
+              'content': content,
+              if (confidence != null) 'confidence': confidence,
+              if (notes != null) 'notes': notes,
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (error) {
+      throw MemoryWriteException('Could not reach the URI backend: $error');
+    }
+
+    if (response.statusCode != 200) {
+      String detail = 'URI backend returned HTTP ${response.statusCode}.';
+      try {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        if (body['detail'] is String) detail = body['detail'] as String;
+      } catch (_) {
+        // Keep the generic HTTP-status message above.
+      }
+      throw MemoryWriteException(detail);
+    }
+
+    return _memoryFrom(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  @override
   String get sessionId => _sessionId;
 
   @override
@@ -1059,6 +1099,110 @@ class HttpUriClient implements UriClient {
       return body['deleted'] == true;
     } catch (_) {
       return false;
+    }
+  }
+
+  @override
+  Future<AccountInfo?> getAccountInfo() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/auth/me'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      if (body['authenticated'] != true) return null;
+      final userId = body['user_id'] as String?;
+      if (userId == null) return null;
+      return AccountInfo(
+        userId: userId,
+        username: body['username'] as String?,
+        role: body['role'] as String?,
+        experienceTier: body['experience_tier'] as String?,
+        deviceId: body['device_id'] as String?,
+        runtimeDeviceId: body['runtime_device_id'] as String?,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> setExperienceTier(String tier) async {
+    try {
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/auth/experience-tier'),
+            headers: _jsonHeaders,
+            body: jsonEncode({'experience_tier': tier}),
+          )
+          .timeout(const Duration(seconds: 30));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<List<DeviceSession>> listDevices() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/auth/devices'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return const [];
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = body['devices'];
+      if (raw is! List) return const [];
+      return raw.whereType<Map<String, dynamic>>().map((item) {
+        return DeviceSession(
+          deviceId: item['device_id'] as String? ?? '',
+          sessionCount: (item['session_count'] as num?)?.toInt() ?? 0,
+          mostRecentExpiresAt: item['most_recent_expires_at'] as String?,
+        );
+      }).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
+  Future<int> revokeDevice(String deviceId) async {
+    try {
+      final response = await _http
+          .delete(
+            Uri.parse('$baseUrl/auth/devices/$deviceId'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return 0;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return (body['revoked_sessions'] as num?)?.toInt() ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  @override
+  Future<ModelStatus?> getModelStatus() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/capabilities'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final model = body['model'];
+      if (model is! Map<String, dynamic>) return null;
+      final providerName = model['provider_name'] as String?;
+      final modelName = model['model_name'] as String?;
+      if (providerName == null || modelName == null) return null;
+      return ModelStatus(
+        providerName: providerName,
+        modelName: modelName,
+        location: model['location'] as String? ?? 'unknown',
+        available: model['available'] as bool? ?? false,
+        detail: model['detail'] as String?,
+      );
+    } catch (_) {
+      return null;
     }
   }
 

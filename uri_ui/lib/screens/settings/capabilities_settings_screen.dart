@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../services/app_state_scope.dart';
-import '../../services/uri_client.dart' show CapabilityInfo;
+import '../../services/uri_client.dart' show CapabilityInfo, ModelStatus;
 import '../../theme/uri_theme.dart';
+import '../../utils/capability_display.dart';
 
 /// M16: renders the backend's real capability catalogue. A capability
 /// that cannot run right now is shown as such, with the honest reason -
@@ -23,6 +24,7 @@ class _CapabilitiesSettingsScreenState extends State<CapabilitiesSettingsScreen>
       if (!mounted) return;
       final state = AppStateScope.of(context);
       if (!state.hasLoadedCapabilities) state.loadCapabilities();
+      if (!state.hasLoadedModelStatus) state.loadModelStatus();
     });
   }
 
@@ -32,8 +34,78 @@ class _CapabilitiesSettingsScreenState extends State<CapabilitiesSettingsScreen>
       listenable: AppStateScope.of(context),
       builder: (context, _) {
         final state = AppStateScope.of(context);
-        return _CapabilityList(capabilities: state.capabilities, loaded: state.hasLoadedCapabilities);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _ModelStatusSection(
+              status: state.modelStatus,
+              loaded: state.hasLoadedModelStatus,
+            ),
+            const SizedBox(height: UriSpace.lg),
+            _CapabilityList(capabilities: state.capabilities, loaded: state.hasLoadedCapabilities),
+          ],
+        );
       },
+    );
+  }
+}
+
+/// The "model" section of GET /capabilities - which provider/model is
+/// actually powering URI right now, and whether it's currently
+/// reachable. Read-only self-knowledge, never a control - there is no
+/// way to change the model from this screen.
+class _ModelStatusSection extends StatelessWidget {
+  const _ModelStatusSection({required this.status, required this.loaded});
+
+  final ModelStatus? status;
+  final bool loaded;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = UriColors.of(context);
+
+    if (!loaded) {
+      return const _PlaceholderRow(label: 'Checking model status…');
+    }
+
+    final current = status;
+    if (current == null) {
+      return const _PlaceholderRow(label: 'Could not read model status from the server');
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(UriSpace.md),
+      decoration: BoxDecoration(
+        color: colors.surfaceSunken,
+        borderRadius: BorderRadius.circular(UriRadius.sm),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            current.available ? Icons.check_circle_outline : Icons.error_outline_rounded,
+            size: 16,
+            color: current.available ? colors.success : colors.warning,
+          ),
+          const SizedBox(width: UriSpace.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${current.providerName} · ${current.modelName}', style: theme.textTheme.bodyMedium),
+                Text(
+                  current.available
+                      ? 'Available (${current.location})'
+                      : (current.detail ?? 'Currently unavailable'),
+                  style: theme.textTheme.bodySmall?.copyWith(color: colors.inkFaint),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -78,7 +150,10 @@ class _CapabilityList extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(capability.id, style: theme.textTheme.bodyMedium?.copyWith(color: colors.ink)),
+                      Text(
+                        humanizeIdentifier(capability.id),
+                        style: theme.textTheme.bodyMedium?.copyWith(color: colors.ink),
+                      ),
                       if (capability.description.isNotEmpty)
                         Text(capability.description, style: theme.textTheme.bodySmall),
                       if (capability.gapReason != null)

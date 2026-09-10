@@ -401,6 +401,38 @@ class MockUriClient implements UriClient {
     return _memories.length != before;
   }
 
+  @override
+  Future<MemoryEntry> updateMemory({
+    required String memoryId,
+    required String category,
+    required String content,
+    double? confidence,
+    String? notes,
+  }) async {
+    await _latency();
+    if (content.trim().isEmpty) {
+      throw const MemoryWriteException('Content cannot be empty.');
+    }
+    final index = _memories.indexWhere((m) => m.memoryId == memoryId);
+    if (index == -1) {
+      throw const MemoryWriteException('Memory not found.');
+    }
+    final existing = _memories[index];
+    final updated = MemoryEntry(
+      memoryId: existing.memoryId,
+      category: category,
+      consent: existing.consent,
+      content: content,
+      confidence: confidence,
+      notes: notes,
+      status: existing.status,
+      createdAt: existing.createdAt,
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+    _memories[index] = updated;
+    return updated;
+  }
+
   // M18: session id + history + memory-confirmation stand-ins for tests
   // and offline development. HttpUriClient never delegates here.
   String _sessionId = 'mock-session';
@@ -520,10 +552,95 @@ class MockUriClient implements UriClient {
     return const UriIdentity(userId: 'mock-user', deviceId: 'mock-device');
   }
 
+  // A couple of seeded, realistic-shaped entries (mirroring
+  // capability_registry.py's real vocabulary) so widget tests/demo runs
+  // against this mock have something to render - real capability data
+  // always comes from HttpUriClient's GET /capabilities; this is never
+  // read by HttpUriClient.
   @override
   Future<List<CapabilityInfo>> listCapabilities() async {
     await _latency();
-    return const [];
+    return const [
+      CapabilityInfo(
+        id: 'draft_institutional_note',
+        description: 'Draft a note in NIT Sikkim\'s institutional style.',
+        status: 'implemented',
+        availability: 'available',
+        approvalRequirement: 'required',
+        risk: 'low',
+      ),
+      CapabilityInfo(
+        id: 'pc_system_optimization',
+        description: 'Optimize this PC\'s performance settings.',
+        status: 'not_implemented',
+        availability: 'unavailable',
+        approvalRequirement: 'required',
+        risk: 'high',
+        gapReason: 'not_implemented',
+      ),
+    ];
+  }
+
+  // M22.2/M22.3 UI parity stand-ins - a single fixed ADMIN account
+  // (first-account-becomes-ADMIN, matching the real backend's own
+  // bootstrap rule) with one other device already logged in, so the
+  // Devices section and role/tier controls have something real to
+  // render offline/in widget tests. HttpUriClient never delegates here.
+  String _experienceTier = 'BASIC';
+  final List<DeviceSession> _devices = <DeviceSession>[
+    const DeviceSession(
+      deviceId: 'mock-device',
+      sessionCount: 1,
+      mostRecentExpiresAt: null,
+    ),
+  ];
+
+  @override
+  Future<AccountInfo?> getAccountInfo() async {
+    await _latency();
+    if (_username == null) return null;
+    return AccountInfo(
+      userId: 'mock-user',
+      username: _username,
+      role: 'ADMIN',
+      experienceTier: _experienceTier,
+      deviceId: 'mock-device',
+      runtimeDeviceId: 'mock-runtime-device',
+    );
+  }
+
+  @override
+  Future<bool> setExperienceTier(String tier) async {
+    await _latency();
+    _experienceTier = tier;
+    return true;
+  }
+
+  @override
+  Future<List<DeviceSession>> listDevices() async {
+    await _latency();
+    return List.unmodifiable(_devices);
+  }
+
+  @override
+  Future<int> revokeDevice(String deviceId) async {
+    await _latency();
+    final index = _devices.indexWhere((d) => d.deviceId == deviceId);
+    if (index == -1) return 0;
+    final revoked = _devices[index].sessionCount;
+    _devices.removeAt(index);
+    return revoked;
+  }
+
+  @override
+  Future<ModelStatus?> getModelStatus() async {
+    await _latency();
+    return const ModelStatus(
+      providerName: 'Ollama',
+      modelName: 'qwen3:14b',
+      location: 'local',
+      available: true,
+    );
   }
 
   @override

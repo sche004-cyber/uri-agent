@@ -12,13 +12,16 @@ import 'server_address_store.dart';
 import 'theme_store.dart';
 import 'uri_client.dart'
     show
+        AccountInfo,
         Attachment,
         AttachmentException,
         AuthOutcome,
         CapabilityInfo,
         ConversationSummary,
+        DeviceSession,
         HomeSummary,
         MemoryWriteException,
+        ModelStatus,
         UriClient,
         UriIdentity;
 
@@ -352,6 +355,44 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Whole-entry edit of an existing memory (distinct from [addMemory],
+  /// which creates a new one). Same error-handling shape as
+  /// [addMemory]: a rejected edit surfaces the backend's real reason via
+  /// [memoryError] rather than throwing into the caller.
+  Future<void> updateMemory({
+    required String memoryId,
+    required String category,
+    required String content,
+    double? confidence,
+    String? notes,
+  }) async {
+    isSavingMemory = true;
+    memoryError = null;
+    notifyListeners();
+    try {
+      final updated = await _client.updateMemory(
+        memoryId: memoryId,
+        category: category,
+        content: content,
+        confidence: confidence,
+        notes: notes,
+      );
+      final index = memories.indexWhere((m) => m.memoryId == memoryId);
+      if (index != -1) {
+        memories = [...memories]..[index] = updated;
+      } else {
+        memories = [...memories, updated];
+      }
+    } on MemoryWriteException catch (error) {
+      memoryError = error.message;
+    } catch (_) {
+      memoryError = 'This memory could not be updated.';
+    } finally {
+      isSavingMemory = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> deleteMemory(String memoryId) async {
     final removed = await _client.deleteMemory(memoryId);
     if (removed) {
@@ -376,6 +417,73 @@ class AppState extends ChangeNotifier {
   Future<void> loadIdentity() async {
     identity = await _client.getIdentity();
     hasLoadedIdentity = true;
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------
+  // M22.2/M22.3: role, experience tier, and device/session
+  // management (Settings → Profile). role is a privilege the backend
+  // alone decides (USER|ADMIN) - this client only ever displays it,
+  // never uses it to gate anything itself beyond deciding whether an
+  // ADMIN-only action's control is even offered (the backend's own
+  // authorization check is what actually protects the action; see
+  // connections_screen.dart). experience_tier remains a zero-authority
+  // display preference, exactly as the backend treats it - nothing in
+  // this class ever branches on it for anything other than which
+  // Preferences UI to show.
+  // ---------------------------------------------------------------
+
+  AccountInfo? accountInfo;
+  bool hasLoadedAccountInfo = false;
+
+  Future<void> loadAccountInfo() async {
+    accountInfo = await _client.getAccountInfo();
+    hasLoadedAccountInfo = true;
+    notifyListeners();
+  }
+
+  /// True only once the backend has actually said so (see
+  /// [AccountInfo.isAdmin]) - false (never assumed true) before
+  /// [loadAccountInfo] resolves, so an ADMIN-only control never
+  /// flashes visible-then-hidden, only hidden-then-visible.
+  bool get isAdmin => accountInfo?.isAdmin ?? false;
+
+  Future<bool> setExperienceTier(String tier) async {
+    final accepted = await _client.setExperienceTier(tier);
+    if (accepted) {
+      await loadAccountInfo();
+    }
+    return accepted;
+  }
+
+  List<DeviceSession> devices = <DeviceSession>[];
+  bool hasLoadedDevices = false;
+
+  Future<void> loadDevices() async {
+    devices = await _client.listDevices();
+    hasLoadedDevices = true;
+    notifyListeners();
+  }
+
+  /// Logs out every session on one of the CALLER's OWN devices (see
+  /// UriClient.revokeDevice) - reloads the device list afterwards so it
+  /// reflects reality rather than being guessed at client-side.
+  Future<int> revokeDevice(String deviceId) async {
+    final revoked = await _client.revokeDevice(deviceId);
+    await loadDevices();
+    return revoked;
+  }
+
+  // ---------------------------------------------------------------
+  // Model/provider self-knowledge (Settings → Capabilities).
+  // ---------------------------------------------------------------
+
+  ModelStatus? modelStatus;
+  bool hasLoadedModelStatus = false;
+
+  Future<void> loadModelStatus() async {
+    modelStatus = await _client.getModelStatus();
+    hasLoadedModelStatus = true;
     notifyListeners();
   }
 

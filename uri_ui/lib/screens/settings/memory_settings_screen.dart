@@ -7,11 +7,28 @@ import '../../theme/uri_theme.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/loading_state.dart';
 
-/// Real CRUD against GET/POST/DELETE /memory — every fact shown here
-/// is something URI actually holds and could use, never a mock list.
-/// consent is always "user_provided" (see server.py's add_memory):
-/// there is no path yet for URI to write a memory on its own, so this
-/// screen has nothing to distinguish for that case.
+/// The exact category vocabulary user_memory.py's VALID_CATEGORIES
+/// accepts - kept as a fixed picker rather than free text, because a
+/// category outside this set is unconditionally rejected by the
+/// backend (see MemoryValidationError). A free-text field's plausible
+/// default ("general") is not actually one of these values and would
+/// always be rejected - this picker exists specifically so that
+/// mismatch can never happen.
+const _kMemoryCategories = <String, String>{
+  'preference': 'Preference',
+  'interest': 'Interest',
+  'interaction_pattern': 'Interaction pattern',
+  'explicit_statement': 'Explicit statement',
+  'other': 'Other',
+};
+
+/// Real CRUD against GET/POST/PUT/DELETE /memory — every fact shown
+/// here is something URI actually holds and could use, never a mock
+/// list. consent is always "user_provided" for a user-created entry
+/// (see server.py's add_memory): there is no path yet for URI to write
+/// a memory on its own, so this screen has nothing to distinguish for
+/// that case. Editing (PUT) preserves the existing consent value -
+/// this screen never changes it.
 class MemorySettingsScreen extends StatefulWidget {
   const MemorySettingsScreen({super.key});
 
@@ -31,46 +48,84 @@ class _MemorySettingsScreenState extends State<MemorySettingsScreen> {
   }
 
   Future<void> _openAddDialog(AppState state) async {
-    final categoryController = TextEditingController();
-    final contentController = TextEditingController();
+    final result = await _showMemoryDialog(title: 'Remember something', saveLabel: 'Save');
+    if (result == null || !mounted) return;
+    await state.addMemory(category: result.category, content: result.content);
+  }
 
-    final saved = await showDialog<bool>(
+  Future<void> _openEditDialog(AppState state, MemoryEntry entry) async {
+    final result = await _showMemoryDialog(
+      title: 'Edit this memory',
+      saveLabel: 'Save changes',
+      initialCategory: entry.category,
+      initialContent: entry.content,
+    );
+    if (result == null || !mounted) return;
+    await state.updateMemory(
+      memoryId: entry.memoryId,
+      category: result.category,
+      content: result.content,
+      confidence: entry.confidence,
+      notes: entry.notes,
+    );
+  }
+
+  Future<_MemoryDialogResult?> _showMemoryDialog({
+    required String title,
+    required String saveLabel,
+    String? initialCategory,
+    String? initialContent,
+  }) async {
+    final contentController = TextEditingController(text: initialContent ?? '');
+    // Falls back to the first valid category rather than an invalid
+    // default - every value this picker can ever produce is one the
+    // backend actually accepts (see _kMemoryCategories's own doc).
+    var category = _kMemoryCategories.containsKey(initialCategory)
+        ? initialCategory!
+        : _kMemoryCategories.keys.first;
+
+    return showDialog<_MemoryDialogResult>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Remember something'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: categoryController,
-              decoration: const InputDecoration(labelText: 'Category', hintText: 'e.g. preference'),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<String>(
+                initialValue: category,
+                decoration: const InputDecoration(labelText: 'Category'),
+                items: [
+                  for (final entry in _kMemoryCategories.entries)
+                    DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+                ],
+                onChanged: (value) {
+                  if (value != null) setDialogState(() => category = value);
+                },
+              ),
+              const SizedBox(height: UriSpace.sm),
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(labelText: 'What should URI remember?'),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
             ),
-            const SizedBox(height: UriSpace.sm),
-            TextField(
-              controller: contentController,
-              decoration: const InputDecoration(labelText: 'What should URI remember?'),
-              maxLines: 3,
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(
+                _MemoryDialogResult(category, contentController.text.trim()),
+              ),
+              child: Text(saveLabel),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Save'),
-          ),
-        ],
       ),
-    );
-
-    if (saved != true || !mounted) return;
-    await state.addMemory(
-      category: categoryController.text.trim().isEmpty ? 'general' : categoryController.text.trim(),
-      content: contentController.text.trim(),
     );
   }
 
@@ -137,6 +192,7 @@ class _MemorySettingsScreenState extends State<MemorySettingsScreen> {
                   pending: true,
                   onConfirm: () => state.confirmMemory(entry.memoryId),
                   onReject: () => state.rejectMemory(entry.memoryId),
+                  onEdit: null,
                   onDelete: () => state.deleteMemory(entry.memoryId),
                 ),
               // Established memories.
@@ -147,6 +203,7 @@ class _MemorySettingsScreenState extends State<MemorySettingsScreen> {
                   pending: false,
                   onConfirm: () {},
                   onReject: () {},
+                  onEdit: () => _openEditDialog(state, entry),
                   onDelete: () => state.deleteMemory(entry.memoryId),
                 ),
             ],
@@ -163,6 +220,7 @@ class _MemoryTile extends StatelessWidget {
     required this.pending,
     required this.onConfirm,
     required this.onReject,
+    required this.onEdit,
     required this.onDelete,
   });
 
@@ -170,6 +228,7 @@ class _MemoryTile extends StatelessWidget {
   final bool pending;
   final VoidCallback onConfirm;
   final VoidCallback onReject;
+  final VoidCallback? onEdit;
   final VoidCallback onDelete;
 
   @override
@@ -193,7 +252,10 @@ class _MemoryTile extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text(entry.category, style: theme.textTheme.labelSmall),
+                            Text(
+                              _kMemoryCategories[entry.category] ?? entry.category,
+                              style: theme.textTheme.labelSmall,
+                            ),
                             if (pending) ...[
                               const SizedBox(width: UriSpace.sm),
                               Container(
@@ -219,6 +281,12 @@ class _MemoryTile extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (!pending && onEdit != null)
+                    IconButton(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      tooltip: 'Edit this',
+                    ),
                   if (!pending)
                     IconButton(
                       onPressed: onDelete,
@@ -243,4 +311,11 @@ class _MemoryTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MemoryDialogResult {
+  const _MemoryDialogResult(this.category, this.content);
+
+  final String category;
+  final String content;
 }

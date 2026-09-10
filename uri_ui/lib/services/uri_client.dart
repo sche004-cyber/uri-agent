@@ -227,6 +227,132 @@ abstract class UriClient {
   /// the same file the Brain may separately choose to read via
   /// read_attached_file, never a re-interpretation of it.
   Future<List<int>> downloadAttachmentContent(String fileId);
+
+  // ---------------------------------------------------------------
+  // M22.2/M22.3 UI parity: role, experience tier, and device/session
+  // management. The backend has carried this surface since M22.2
+  // (GET /auth/me, POST /auth/experience-tier, GET/DELETE
+  // /auth/devices); these client methods are what actually reach it —
+  // see http_uri_client.dart.
+  // ---------------------------------------------------------------
+
+  /// The logged-in account's own role (USER|ADMIN — a privilege, never
+  /// self-assigned) and experience_tier (BASIC|ADVANCED — a
+  /// zero-authority display preference), from GET /auth/me. Null on any
+  /// failure or when not authenticated — the UI shows role/tier as
+  /// unavailable rather than guessing or defaulting to a privileged
+  /// value.
+  Future<AccountInfo?> getAccountInfo();
+
+  /// The user changing their OWN experience_tier (POST
+  /// /auth/experience-tier). This is a display/guidance preference
+  /// only — it can never grant or change any authorization, and the
+  /// backend rejects it entirely when not authenticated. Returns
+  /// whether the backend accepted it.
+  Future<bool> setExperienceTier(String tier);
+
+  /// The logged-in user's own currently-active devices (GET
+  /// /auth/devices) — each a distinct client-reported device_id with at
+  /// least one still-valid login session. Empty (never fabricated) on
+  /// any failure.
+  Future<List<DeviceSession>> listDevices();
+
+  /// Logs out every session the logged-in user has on ONE of their own
+  /// devices (DELETE /auth/devices/{device_id}) — e.g. "log out my
+  /// phone from my desktop". Returns how many sessions were actually
+  /// revoked; 0 for an unknown device_id or any failure, never an
+  /// assumed success.
+  Future<int> revokeDevice(String deviceId);
+
+  /// Whole-entry edit of an existing memory (PUT /memory/{id}) —
+  /// distinct from [addMemory] (creates a new entry) and [deleteMemory]
+  /// (removes one). consent is preserved server-side and is never
+  /// editable through this call. Throws [MemoryWriteException] with the
+  /// backend's real reason on rejection (e.g. an invalid category).
+  Future<MemoryEntry> updateMemory({
+    required String memoryId,
+    required String category,
+    required String content,
+    double? confidence,
+    String? notes,
+  });
+
+  /// URI's currently configured model/provider (the "model" section of
+  /// GET /capabilities — see capability_registry.py /
+  /// ModelProviderStatus) — read-only self-knowledge, never a control.
+  /// Null on any failure; the UI shows this as unavailable rather than
+  /// guessing.
+  Future<ModelStatus?> getModelStatus();
+}
+
+/// The logged-in account's own role/tier/device identity, from GET
+/// /auth/me. See UriClient.getAccountInfo.
+class AccountInfo {
+  const AccountInfo({
+    required this.userId,
+    required this.username,
+    required this.role,
+    required this.experienceTier,
+    required this.deviceId,
+    required this.runtimeDeviceId,
+  });
+
+  final String userId;
+  final String? username;
+
+  /// USER | ADMIN — a privilege, never self-assigned. Authorization
+  /// decisions live entirely on the backend; this field is display-only
+  /// and must never itself be treated as granting anything client-side.
+  final String? role;
+
+  /// BASIC | ADVANCED — a zero-authority display/guidance preference.
+  /// Must never be read anywhere in this app as an authorization input,
+  /// exactly as the backend never reads it for that either.
+  final String? experienceTier;
+
+  /// This login's own client-reported device_id (see device_identity.dart) -
+  /// "which of my devices am I on" - null when this login never
+  /// supplied one.
+  final String? deviceId;
+
+  /// The install this backend/Ollama runtime is actually running on -
+  /// "which PC is serving me right now", unrelated to [deviceId].
+  final String? runtimeDeviceId;
+
+  bool get isAdmin => role == 'ADMIN';
+}
+
+/// One of the logged-in user's own devices with at least one
+/// still-valid login session, from GET /auth/devices. See
+/// UriClient.listDevices.
+class DeviceSession {
+  const DeviceSession({
+    required this.deviceId,
+    required this.sessionCount,
+    required this.mostRecentExpiresAt,
+  });
+
+  final String deviceId;
+  final int sessionCount;
+  final String? mostRecentExpiresAt;
+}
+
+/// URI's currently configured model/provider, from GET /capabilities'
+/// "model" section. See UriClient.getModelStatus.
+class ModelStatus {
+  const ModelStatus({
+    required this.providerName,
+    required this.modelName,
+    required this.location,
+    required this.available,
+    this.detail,
+  });
+
+  final String providerName;
+  final String modelName;
+  final String location;
+  final bool available;
+  final String? detail;
 }
 
 /// M16: one capability from URI's real registry, with the honest

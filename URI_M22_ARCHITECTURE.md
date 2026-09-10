@@ -1,8 +1,14 @@
 # URI M22 — ARCHITECTURE SPECIFICATION (FINAL SYNTHESIS)
 
-**Status:** Architecture only. No production implementation authorised by this document.
-**Baseline:** commit `5957eb2` (M21 complete). Repository re-verified unchanged at synthesis time.
-**Role of this document:** a specification an implementation agent can execute **one milestone at a time**.
+**Status:** Architecture plan; M22.1 and M22.2 are implemented. M22.3 is next.
+**As-built baseline:** M22.2 is complete at commit `34839ce`, with 1,141/1,141
+tests passing at delivery. This documentation update does not repeat the M22,
+M22.1, or M22.2 architecture/security audits.
+**Role of this document:** the governing specification for the remaining M22
+milestones, executed **one milestone at a time**.
+
+**Current worktree note:** uncommitted `uri_ui` Windows/platform work is active
+and unverified. It is not an M22 milestone and does not change this plan.
 
 This synthesis supersedes the earlier draft of this file. It is grounded in a fresh, targeted re-inspection of the repository specifically to verify the claims in Parts 1–4 of the brief (which import edges are real vs. cosmetic, which test files carry real coverage, what the Flutter mobile scaffolding actually contains) rather than repeating the general survey. Every non-obvious factual claim below was checked against the actual source, not assumed.
 

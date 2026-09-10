@@ -17,7 +17,7 @@ import unittest
 
 from fastapi.testclient import TestClient
 
-from uri_core.app import server
+from uri_core.app import edge, server
 from uri_core.core.auth_session import AuthSessionStore
 from uri_core.core.user_accounts import ROLE_ADMIN, ROLE_USER, UserAccountStore
 
@@ -49,6 +49,15 @@ class RolesSessionsTests(unittest.TestCase):
         server._user_contexts = {}
         server._USER_STATE_ROOT = os.path.join(self.temp_dir.name, "users")
 
+        # M22.3: several accounts are signed up per test method here,
+        # all from TestClient's single fixed fake client host - without
+        # a reset, the module-level rate limiter (shared process state,
+        # keyed by client IP - see edge.py) would otherwise carry a
+        # count across every test in this file (and every other test
+        # module run in the same process), tripping on a later,
+        # legitimate call.
+        edge.reset_rate_limiters()
+
         self.client = TestClient(server.app)
 
     def tearDown(self):
@@ -56,6 +65,7 @@ class RolesSessionsTests(unittest.TestCase):
         server._auth_session_store = self._original_auth_session_store
         server._user_contexts = self._original_user_contexts
         server._USER_STATE_ROOT = self._original_user_state_root
+        edge.reset_rate_limiters()
 
     def _signup(self, username, password="correct-horse-1", device_id=None):
         payload = {"username": username, "password": password}
@@ -90,9 +100,19 @@ class RolesSessionsTests(unittest.TestCase):
     def test_exactly_one_account_ever_holds_admin_across_several_signups(
         self,
     ):
-        tokens = [
-            self._signup(f"bootstrap-many-{i}")["token"] for i in range(5)
-        ]
+        # This test's own point is 5 real signups in a row, past the
+        # M22.3 signup rate limit (3/300s/IP - see edge.py) that every
+        # other test in this class stays comfortably under. Resetting
+        # before EACH signup (not just once before the loop) is what's
+        # actually needed - the limit is 3 per window, so 5 signups in
+        # a row would still trip it after a single upfront reset.
+        # Resetting per call (rather than raising the limit or
+        # exempting this test's IP) keeps the limiter's real threshold
+        # intact and unweakened everywhere else, including production.
+        tokens = []
+        for i in range(5):
+            edge.reset_rate_limiters()
+            tokens.append(self._signup(f"bootstrap-many-{i}")["token"])
 
         roles = [
             self.client.get("/auth/me", headers=self._auth(t)).json()[

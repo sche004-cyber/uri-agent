@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../../app_info.dart';
 import '../../services/app_state_scope.dart';
 import '../../theme/uri_theme.dart';
+import '../../widgets/uri_wordmark.dart';
 
 /// Static, real build information — no invented statistics, no fake
-/// version-check UI. The version string matches pubspec.yaml's own
-/// `version:` field; there is no separate source of truth for it to
-/// drift from short of editing both by hand.
+/// version-check UI. The version string is the one canonical
+/// [kUriAppVersion] constant (see app_info.dart), matching
+/// pubspec.yaml's own `version:` field; there is no separate source of
+/// truth for it to drift from short of editing both by hand.
 class AboutSettingsScreen extends StatelessWidget {
   const AboutSettingsScreen({super.key});
-
-  static const _version = '1.0.0';
 
   @override
   Widget build(BuildContext context) {
@@ -30,17 +31,11 @@ class AboutSettingsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(color: colors.ink, borderRadius: BorderRadius.circular(9)),
-                alignment: Alignment.center,
-                child: Text('U', style: TextStyle(color: colors.canvas, fontWeight: FontWeight.w700)),
-              ),
+              const UriWordmark(markSize: 34, showWordmark: false),
               const SizedBox(width: UriSpace.sm),
               Text('URI', style: theme.textTheme.titleMedium),
               const SizedBox(width: UriSpace.sm),
-              Text('v$_version', style: theme.textTheme.bodyMedium),
+              Text('v$kUriAppVersion', style: theme.textTheme.bodyMedium),
             ],
           ),
           const SizedBox(height: UriSpace.md),

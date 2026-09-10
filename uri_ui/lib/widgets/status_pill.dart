@@ -56,6 +56,17 @@ class StatusPill extends StatelessWidget {
     }
   }
 
+  /// M22.2/M22.3: the logged-in account's role - USER|ADMIN, a
+  /// privilege the backend alone decides (see AccountInfo.role). This
+  /// is display only; it never itself grants anything.
+  factory StatusPill.forRole(BuildContext context, String? role) {
+    final colors = UriColors.of(context);
+    if (role == 'ADMIN') {
+      return StatusPill(label: 'ADMIN', foreground: colors.accentInk, background: colors.accentSoft);
+    }
+    return StatusPill(label: role ?? 'USER', foreground: colors.inkFaint, background: colors.surfaceSunken);
+  }
+
   factory StatusPill.forImpact(BuildContext context, ActionImpact impact) {
     final colors = UriColors.of(context);
     switch (impact) {

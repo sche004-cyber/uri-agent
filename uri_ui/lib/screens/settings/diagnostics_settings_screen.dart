@@ -26,6 +26,7 @@ class _DiagnosticsSettingsScreenState extends State<DiagnosticsSettingsScreen> {
       if (!mounted) return;
       final state = AppStateScope.of(context);
       if (!state.hasLoadedIdentity) state.loadIdentity();
+      if (!state.hasLoadedAccountInfo) state.loadAccountInfo();
     });
   }
 
@@ -86,10 +87,23 @@ class _DiagnosticsSettingsScreenState extends State<DiagnosticsSettingsScreen> {
                   Text('Backend address', style: Theme.of(context).textTheme.labelSmall),
                   Text(state.baseUrl, style: Theme.of(context).textTheme.bodyMedium),
                   const SizedBox(height: UriSpace.sm),
-                  Text('Device ID', style: Theme.of(context).textTheme.labelSmall),
+                  // Two deliberately distinct identifiers (see
+                  // AccountInfo's own doc comment): the SERVER's own
+                  // runtime install vs THIS client's own login device -
+                  // two clients of the same account on the same backend
+                  // always share the former but never the latter.
+                  Text('Server device ID', style: Theme.of(context).textTheme.labelSmall),
                   Text(
                     state.hasLoadedIdentity
                         ? (state.identity?.deviceId ?? 'Unavailable')
+                        : 'Checking…',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: UriSpace.sm),
+                  Text('This device\'s ID', style: Theme.of(context).textTheme.labelSmall),
+                  Text(
+                    state.hasLoadedAccountInfo
+                        ? (state.accountInfo?.deviceId ?? 'Not available for this login')
                         : 'Checking…',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),

@@ -8,15 +8,17 @@ network client can reach the existing orchestrator entry point.
 Run with (localhost-only, e.g. Flutter desktop/web on the same machine):
     uvicorn uri_core.app.server:app --reload --port 8000
 
-Run with (Prototype 2 — reachable from another device on the same LAN,
-e.g. a phone): bind to 0.0.0.0 instead of the default 127.0.0.1-only
-loopback, then point the phone's client at this PC's LAN IP (see
-`ipconfig`, typically 192.168.x.x) and the same port - "localhost" on
-the phone means the phone itself, never this PC:
-    uvicorn uri_core.app.server:app --host 0.0.0.0 --port 8000
+M22.3: the server itself has no opinion on how uvicorn was launched, so
+a raw `uvicorn ... --host 0.0.0.0` invocation is not guarded by this
+file — see docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md section 5.3.
+The SANCTIONED launcher for anything beyond localhost is
+`scripts/run_uri_server.py`, which defaults to loopback-only and
+refuses a non-loopback bind unless TLS is configured or
+--allow-insecure-bind is explicitly passed (loud, logged):
+    python scripts/run_uri_server.py --host 0.0.0.0 --allow-insecure-bind
 This is a local development/LAN convenience, not production remote
-access - no TLS, no reverse proxy, no authentication beyond this file's
-own login endpoints. Do not expose 0.0.0.0 on a network you don't trust.
+access, when the insecure override is used - no TLS, no reverse proxy,
+no authentication beyond this file's own login endpoints.
 """
 
 import os
@@ -35,13 +37,19 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from uri_core.app.edge import (
+    enforce_ask_content_length,
+    enforce_login_rate_limit,
+    enforce_signup_rate_limit,
+)
 from uri_core.core.approval_gate import ApprovalGate
 from uri_core.core.approval_store import ApprovalStore
 from uri_core.core.audit_comparison import build_shadow_comparison_report
 from uri_core.core.audit_trail import AuditTrail
 from uri_core.core.auth_session import AuthSessionStore
+from uri_core.core.authorization import AuthorizationError, require_admin
 from uri_core.core.capability_registry import CapabilityRegistry
 from uri_core.core import connection_status as connection_status_module
 from uri_core.core.connection_status import list_connection_status
@@ -444,6 +452,26 @@ def _resolve_principal(
     )
 
 
+def _resolve_admin_principal(
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> PrincipalContext:
+    """M22.3: FastAPI dependency wiring only - the actual ADMIN decision
+    is authorization.require_admin(), a pure function with no FastAPI
+    dependency (see its own docstring). This function's only job is to
+    translate that pure decision's AuthorizationError into the exact
+    HTTPException status code it already chose: 401 when there is no
+    logged-in principal at all, 403 when a real principal's role is
+    insufficient. Attached to the five endpoints M22.3 closes (S1):
+    /skills/{id}/enable, /skills/{id}/disable, DELETE /skills/{id},
+    POST /connections/{id}/authorize, DELETE /connections/{id} - none of
+    which ever had a legacy-ambient anonymous fallback to preserve."""
+
+    try:
+        return require_admin(principal)
+    except AuthorizationError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail)
+
+
 def _record_growth_event_safely(
     growth_ledger_store: GrowthLedgerStore,
     event_type: str,
@@ -535,20 +563,62 @@ async def _lifespan(_app: FastAPI):
 
 app = FastAPI(title="URI API", lifespan=_lifespan)
 
-# Flutter web (flutter run -d chrome/edge) serves from a dev-server
-# origin that isn't known ahead of time, so browser requests need CORS
-# enabled. This is a local development server, not a deployed service.
+# M22.3 (Decision 7, docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md
+# section 6.6): CORS is never left at allow_origins=["*"]. Production
+# deployments set URI_CORS_ALLOWED_ORIGINS to an explicit,
+# comma-separated list of exact origins. With no env var set (the local
+# dev default), only loopback origins are allowed, matched by an
+# anchored regex covering any port - Flutter web's dev-server origin is
+# not known ahead of time, but is always http(s)://localhost:<port> or
+# http(s)://127.0.0.1:<port>. This governs browser-origin (Flutter web)
+# callers only: native Android/iOS/desktop HTTP clients (the LAN-phone
+# scenario documented above) neither send nor enforce CORS at all, so
+# they are unaffected by this lockdown either way.
+LOOPBACK_CORS_ORIGIN_REGEX = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+
+
+def _resolve_cors_kwargs(allowed_origins_env: str) -> dict:
+    """Pure - given the raw URI_CORS_ALLOWED_ORIGINS value (possibly
+    empty), returns the exact CORSMiddleware kwargs to use. Kept
+    separate from app construction so the decision itself
+    (explicit-allowlist vs loopback-only-regex) can be unit-tested
+    without touching the live app's already-configured middleware - see
+    test_m22_3_cors.py.
+
+    A literal "*" is never honoured, even if someone sets
+    URI_CORS_ALLOWED_ORIGINS=* by mistake - Decision 7 is "never *",
+    not "never * unless configured otherwise". A misconfigured wildcard
+    is dropped from the list rather than passed through; if that leaves
+    no real origins, this falls back to the same loopback-only regex as
+    an unset env var, rather than silently granting every origin."""
+
+    origins = [
+        origin.strip()
+        for origin in allowed_origins_env.strip().split(",")
+        if origin.strip() and origin.strip() != "*"
+    ]
+
+    if origins:
+        return {"allow_origins": origins}
+
+    return {"allow_origin_regex": LOOPBACK_CORS_ORIGIN_REGEX}
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+    **_resolve_cors_kwargs(os.environ.get("URI_CORS_ALLOWED_ORIGINS", "")),
 )
 
 
 class AskRequest(BaseModel):
     session_id: str
-    text: str
+    # M22.3 (Decision 6): 64 KB maximum conversational text - the
+    # field-level bound. edge.enforce_ask_content_length is the
+    # lower-level Content-Length precheck that rejects an oversized body
+    # before this field is ever parsed - see that module's docstring.
+    text: str = Field(..., max_length=65536)
 
 
 class ProfileUpdateRequest(BaseModel):
@@ -621,7 +691,10 @@ def health() -> dict:
 
 
 @app.post("/auth/signup")
-def signup(payload: SignupRequest) -> dict:
+def signup(
+    payload: SignupRequest,
+    _rate_limit: None = Depends(enforce_signup_rate_limit),
+) -> dict:
     """
     Prototype 1 (multi-user identity): creates a new login account and
     a fresh, isolated user_id for it (see user_accounts.py) - never the
@@ -653,7 +726,10 @@ def signup(payload: SignupRequest) -> dict:
 
 
 @app.post("/auth/login")
-def login(payload: LoginRequest) -> dict:
+def login(
+    payload: LoginRequest,
+    _rate_limit: None = Depends(enforce_login_rate_limit),
+) -> dict:
     """
     Verifies username + password against user_accounts.py's stored
     PBKDF2 hash and, only on an exact match, issues a fresh bearer
@@ -882,6 +958,7 @@ def revoke_my_device(
 def ask(
     payload: AskRequest,
     user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+    _size_check: None = Depends(enforce_ask_content_length),
 ) -> dict:
     # Bounded personalization (Milestone 8A): only the confirmed
     # profile and consent-eligible memory (never pending_confirmation,
@@ -1292,11 +1369,18 @@ def list_skills() -> dict:
 
 
 @app.post("/skills/{skill_id}/enable")
-def enable_skill(skill_id: str) -> dict:
+def enable_skill(
+    skill_id: str,
+    principal: PrincipalContext = Depends(_resolve_admin_principal),
+) -> dict:
     """M18: an operator vouching for an installed skill. Metadata only -
     flips its status to 'enabled'; it still never becomes executable
     through this call (promotion into the dispatcher is a separate,
-    deliberate step). 404 for a skill that is not installed."""
+    deliberate step). 404 for a skill that is not installed.
+
+    M22.3 (S1): ADMIN-only - see
+    docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md section 6.1. This
+    endpoint had no authentication of any kind before this milestone."""
     result = SkillInstaller().enable(skill_id)
     if not result.ok:
         raise HTTPException(status_code=404, detail=result.detail or "Skill not installed.")
@@ -1304,8 +1388,13 @@ def enable_skill(skill_id: str) -> dict:
 
 
 @app.post("/skills/{skill_id}/disable")
-def disable_skill(skill_id: str) -> dict:
-    """M18: mark an installed skill disabled (metadata only)."""
+def disable_skill(
+    skill_id: str,
+    principal: PrincipalContext = Depends(_resolve_admin_principal),
+) -> dict:
+    """M18: mark an installed skill disabled (metadata only).
+
+    M22.3 (S1): ADMIN-only."""
     result = SkillInstaller().disable(skill_id)
     if not result.ok:
         raise HTTPException(status_code=404, detail=result.detail or "Skill not installed.")
@@ -1313,8 +1402,13 @@ def disable_skill(skill_id: str) -> dict:
 
 
 @app.delete("/skills/{skill_id}")
-def remove_skill(skill_id: str) -> dict:
-    """M18: remove an installed skill from the ledger entirely."""
+def remove_skill(
+    skill_id: str,
+    principal: PrincipalContext = Depends(_resolve_admin_principal),
+) -> dict:
+    """M18: remove an installed skill from the ledger entirely.
+
+    M22.3 (S1): ADMIN-only."""
     result = SkillInstaller().remove(skill_id)
     if not result.ok:
         raise HTTPException(status_code=404, detail=result.detail or "Skill not installed.")
@@ -1731,7 +1825,10 @@ def delete_history(
 
 
 @app.post("/connections/{connection_id}/authorize")
-def authorize_connection(connection_id: str) -> dict:
+def authorize_connection(
+    connection_id: str,
+    principal: PrincipalContext = Depends(_resolve_admin_principal),
+) -> dict:
     """M16 Priority 4: start Google sign-in for a service.
 
     Honest about what is actually possible: Google's installed-app
@@ -1744,6 +1841,11 @@ def authorize_connection(connection_id: str) -> dict:
     It deliberately does NOT invoke the interactive flow: a blocking
     browser prompt must never be triggerable by an HTTP request (the
     same rule connection_status.py already enforces for status reads).
+
+    M22.3 (S1): ADMIN-only - this is an install-host-scoped action, not
+    a per-user one (see docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md
+    section 6.1). Had no authentication of any kind before this
+    milestone.
     """
 
     if connection_id not in {"gmail", "drive"}:
@@ -1772,7 +1874,10 @@ def authorize_connection(connection_id: str) -> dict:
 
 
 @app.delete("/connections/{connection_id}")
-def disconnect_connection(connection_id: str) -> dict:
+def disconnect_connection(
+    connection_id: str,
+    principal: PrincipalContext = Depends(_resolve_admin_principal),
+) -> dict:
     """M16 Priority 2: a REAL disconnect. Previously the client faked
     this against mock state, so "Disconnected" was displayed while
     nothing had changed.
@@ -1783,6 +1888,11 @@ def disconnect_connection(connection_id: str) -> dict:
     Both Gmail and Drive share one token file (they are one Google
     authorization with two scopes), so this is reported honestly as
     affecting both rather than pretending they are independent.
+
+    M22.3 (S1): ADMIN-only - revokes a shared, install-wide token, not
+    per-user state (see
+    docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md section 6.1). Had no
+    authentication of any kind before this milestone.
     """
 
     if connection_id not in {"gmail", "drive"}:

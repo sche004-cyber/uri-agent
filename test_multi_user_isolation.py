@@ -24,7 +24,7 @@ import unittest
 
 from fastapi.testclient import TestClient
 
-from uri_core.app import server
+from uri_core.app import edge, server
 from uri_core.core.auth_session import AuthSessionStore
 from uri_core.core.model_providers.base import ModelResponse
 from uri_core.core.skill_memory import SkillMemory
@@ -102,6 +102,18 @@ class MultiUserIsolationTests(unittest.TestCase):
             self.temp_dir.name, "users"
         )
 
+        # M22.3: several accounts are signed up/logged in per test
+        # method here, all from TestClient's single fixed fake client
+        # host - without a reset, the module-level rate limiter (shared
+        # process state, keyed by client IP - see edge.py) would
+        # otherwise carry a count across every test in this file (and
+        # every other test module run in the same process), tripping on
+        # a later, legitimate call. Reset here, not disabled, so the
+        # limiter's real behaviour is still exercised by
+        # test_m22_3_rate_limiting.py without this file's own isolation
+        # tests being collateral damage.
+        edge.reset_rate_limiters()
+
         self.client = TestClient(server.app)
 
     def tearDown(self):
@@ -109,6 +121,7 @@ class MultiUserIsolationTests(unittest.TestCase):
         server._auth_session_store = self._original_auth_session_store
         server._user_contexts = self._original_user_contexts
         server._USER_STATE_ROOT = self._original_user_state_root
+        edge.reset_rate_limiters()
         self.temp_dir.cleanup()
 
     # ------------------------------------------------------------

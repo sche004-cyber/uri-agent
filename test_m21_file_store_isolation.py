@@ -22,7 +22,7 @@ import unittest
 
 from fastapi.testclient import TestClient
 
-from uri_core.app import server
+from uri_core.app import edge, server
 from uri_core.core.auth_session import AuthSessionStore
 from uri_core.core.user_accounts import UserAccountStore
 
@@ -57,6 +57,15 @@ class FileStoreIsolationTests(unittest.TestCase):
             storage_dir=os.path.join(self.temp_dir.name, "legacy-uploads")
         )
 
+        # M22.3: several accounts are signed up per test method here,
+        # all from TestClient's single fixed fake client host - without
+        # a reset, the module-level rate limiter (shared process state,
+        # keyed by client IP - see edge.py) would otherwise carry a
+        # count across every test in this file (and every other test
+        # module run in the same process), tripping on a later,
+        # legitimate call.
+        edge.reset_rate_limiters()
+
         self.client = TestClient(server.app)
 
     def tearDown(self):
@@ -65,6 +74,7 @@ class FileStoreIsolationTests(unittest.TestCase):
         server._user_contexts = self._original_user_contexts
         server._USER_STATE_ROOT = self._original_user_state_root
         server._file_store = self._original_file_store
+        edge.reset_rate_limiters()
         self.temp_dir.cleanup()
 
     def _signup(self, username: str, password: str = "correct-horse-1"):

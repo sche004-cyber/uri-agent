@@ -25,7 +25,7 @@ import unittest
 
 from fastapi.testclient import TestClient
 
-from uri_core.app import server
+from uri_core.app import edge, server
 from uri_core.core.auth_session import AuthSessionStore
 from uri_core.core.identity import DeviceIdentityStore
 from uri_core.core.user_accounts import UserAccountStore
@@ -63,6 +63,18 @@ class MultiClientRuntimeTests(unittest.TestCase):
             )
         )
 
+        # M22.3: this test signs up/logs in several accounts per test
+        # method, all from TestClient's single fixed fake client host -
+        # without a reset, the module-level rate limiter (shared process
+        # state, keyed by client IP - see edge.py) would otherwise carry
+        # a count across every test in this file (and every other test
+        # module run in the same process), tripping on a later,
+        # legitimate call. Reset here, not disabled, so the limiter's
+        # real behaviour is still exercised by test_m22_3_rate_limiting.py
+        # without this file's own isolation tests being collateral
+        # damage.
+        edge.reset_rate_limiters()
+
         self.client = TestClient(server.app)
 
     def tearDown(self):
@@ -71,6 +83,7 @@ class MultiClientRuntimeTests(unittest.TestCase):
         server._user_contexts = self._original_user_contexts
         server._USER_STATE_ROOT = self._original_user_state_root
         server._device_identity_store = self._original_device_identity_store
+        edge.reset_rate_limiters()
         self.temp_dir.cleanup()
 
     def _auth(self, token: str) -> dict:

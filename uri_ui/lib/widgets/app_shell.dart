@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/uri_theme.dart';
+import 'uri_wordmark.dart';
 
 class UriSection {
   const UriSection({required this.label, required this.icon, required this.builder});
@@ -141,33 +142,15 @@ class _Sidebar extends StatelessWidget {
   }
 }
 
+/// Thin wrapper kept only so the many `_Wordmark()` call sites in this
+/// file don't all need renaming - the actual mark is the single
+/// canonical [UriWordmark] (see widgets/uri_wordmark.dart), previously
+/// duplicated here as its own copy.
 class _Wordmark extends StatelessWidget {
   const _Wordmark();
 
   @override
-  Widget build(BuildContext context) {
-    final colors = UriColors.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: colors.ink,
-            borderRadius: BorderRadius.circular(9),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            'U',
-            style: TextStyle(color: colors.canvas, fontWeight: FontWeight.w700, fontSize: 16),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text('URI', style: Theme.of(context).textTheme.headlineSmall),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => const UriWordmark(markSize: 30);
 }
 
 class _SidebarItem extends StatelessWidget {
