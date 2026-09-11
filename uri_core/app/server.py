@@ -2040,3 +2040,195 @@ def update_user_grants(
         "status": "updated",
     }
 
+
+# ---------------------------------------------------------------------------
+# M22.5 — Provider registry and key management endpoints
+# All three are USER-classified (route_classification.py).
+# user_id always comes from the auth token, never from the request body.
+# ---------------------------------------------------------------------------
+
+
+class _ProviderKeyPayload(BaseModel):
+    provider_id: str
+    api_key: str
+
+
+class _ProviderConfigPayload(BaseModel):
+    provider_id: str
+    base_url: Optional[str] = None
+    model: Optional[str] = None
+
+
+@app.post("/providers/keys")
+def submit_provider_key(
+    payload: _ProviderKeyPayload,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Submit an API key for a provider.
+
+    The key is encrypted immediately on receipt and stored per-user.
+    The raw key is NEVER stored in plaintext, logged, or returned.
+    Only the last-four characters are included in the response as a
+    confirmation signal.
+
+    user_id comes exclusively from the auth token; a caller can never
+    set another user's key by manipulating the request body.
+    """
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+
+    from uri_core.core.provider_keys import ProviderKeyStore
+    from uri_core.core.provider_registry import CATALOGUE_BY_ID
+
+    if payload.provider_id not in CATALOGUE_BY_ID:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown provider_id: {payload.provider_id!r}. "
+                   f"Known providers: {sorted(CATALOGUE_BY_ID)}",
+        )
+
+    try:
+        key_store = ProviderKeyStore(user_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    last_four = payload.api_key[-4:] if len(payload.api_key) >= 4 else "****"
+    key_store.set_key(payload.provider_id, payload.api_key)
+
+    _audit_trail.record(
+        event_type="provider_key_submitted",
+        status="success",
+        metadata={
+            "user_id": user_id,
+            "provider_id": payload.provider_id,
+            # last_four only - never the key or any bigger fragment
+            "last_four": last_four,
+        },
+    )
+
+    return {
+        "provider_id": payload.provider_id,
+        "configured": True,
+        "last_four": last_four,
+    }
+
+
+@app.get("/providers")
+def list_providers(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Return the static provider catalogue merged with this user's
+    configuration status.
+
+    Each provider entry includes:
+      - provider_id, display_name, adapter, base_url (catalogue default
+        or user override)
+      - configured: bool  (has_key)
+      - last_four: str | null  (four-char confirmation only; never the key)
+      - available: bool  (cheap reachability probe via describe())
+
+    The raw key is never returned under any provider or model combination.
+    """
+    from uri_core.core.provider_registry import (
+        PROVIDER_CATALOGUE,
+        ProviderConfigStore,
+    )
+    from uri_core.core.provider_keys import ProviderKeyStore
+    from uri_core.config.model_roles import UnknownModelProviderError
+    from uri_core.core.model_providers import OpenAICompatibleProvider
+    from uri_core.core.model_providers.base import ModelProviderConfig
+
+    key_store: Optional[ProviderKeyStore] = None
+    config_store: Optional[ProviderConfigStore] = None
+    if user_id is not None:
+        try:
+            key_store = ProviderKeyStore(user_id)
+            config_store = ProviderConfigStore(user_id)
+        except ValueError:
+            key_store = None
+            config_store = None
+
+    result = []
+    for descriptor in PROVIDER_CATALOGUE:
+        pid = descriptor.provider_id
+
+        configured = False
+        last_four = None
+        if key_store is not None:
+            configured = key_store.has_key(pid)
+            if configured:
+                info = key_store.describe_key(pid)
+                last_four = info["last_four"] if info else None
+
+        # Cheap reachability probe - never uses the key for this GET
+        available = False
+        if descriptor.adapter == "openai_compatible":
+            try:
+                user_cfg = config_store.get_provider_config(pid) if config_store else {}
+                cfg = ModelProviderConfig(
+                    base_url=user_cfg.get("base_url", descriptor.base_url),
+                    model=user_cfg.get("model", (descriptor.models[0].model_id if descriptor.models else "")),
+                )
+                # No api_key for the health-check probe - just connectivity
+                probe = OpenAICompatibleProvider(config=cfg)
+                available = probe.describe().available
+            except Exception:  # noqa: BLE001
+                available = False
+        elif descriptor.adapter == "ollama":
+            from uri_core.core.model_providers import OllamaProvider
+            try:
+                probe_ollama = OllamaProvider()
+                available = probe_ollama.describe().available
+            except Exception:  # noqa: BLE001
+                available = False
+
+        result.append({
+            "provider_id": pid,
+            "display_name": descriptor.display_name,
+            "adapter": descriptor.adapter,
+            "base_url": descriptor.base_url,
+            "configured": configured,
+            "last_four": last_four,
+            "available": available,
+        })
+
+    return {"providers": result}
+
+
+@app.put("/providers/config")
+def update_provider_config(
+    payload: _ProviderConfigPayload,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Set per-user base_url and/or model override for a provider.
+
+    Does not touch key material. Does not require a key to already be
+    configured (a user may configure the endpoint before submitting a key).
+
+    user_id comes exclusively from the auth token.
+    """
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+
+    from uri_core.core.provider_registry import CATALOGUE_BY_ID, ProviderConfigStore
+
+    if payload.provider_id not in CATALOGUE_BY_ID:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown provider_id: {payload.provider_id!r}.",
+        )
+
+    updates: dict = {}
+    if payload.base_url is not None:
+        updates["base_url"] = payload.base_url
+    if payload.model is not None:
+        updates["model"] = payload.model
+
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields to update.")
+
+    config_store = ProviderConfigStore(user_id)
+    config_store.set_provider_config(payload.provider_id, updates)
+
+    return {"provider_id": payload.provider_id, "status": "updated", **updates}
+

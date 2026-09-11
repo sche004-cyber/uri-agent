@@ -296,6 +296,19 @@ abstract class UriClient {
 
   /// Replaces a user's capability grant set (PUT /admin/users/{user_id}/grants).
   Future<bool> updateUserGrants(String userId, List<String> grants);
+
+  // ---------------------------------------------------------------
+  // M22.5: Provider registry and key management
+  // ---------------------------------------------------------------
+
+  /// Lists all registered LLM providers and their user-scoped status (GET /providers).
+  Future<List<ProviderEntry>> listProviders();
+
+  /// Submits an encrypted-at-rest API key for a provider (POST /providers/keys).
+  Future<ProviderKeyResult?> submitProviderKey(String providerId, String apiKey);
+
+  /// Sets base_url or model configuration overrides for a provider (PUT /providers/config).
+  Future<bool> updateProviderConfig(String providerId, {String? baseUrl, String? model});
 }
 
 /// The logged-in account's own role/tier/device identity, from GET
@@ -522,5 +535,57 @@ class UserGrantsInfo {
   final String userId;
   final List<String> grants;
   final List<String> registryCeiling;
+}
+
+class ProviderEntry {
+  const ProviderEntry({
+    required this.providerId,
+    required this.displayName,
+    required this.adapter,
+    required this.baseUrl,
+    required this.configured,
+    this.lastFour,
+    required this.available,
+  });
+
+  final String providerId;
+  final String displayName;
+  final String adapter;
+  final String baseUrl;
+  final bool configured;
+  final String? lastFour;
+  final bool available;
+
+  factory ProviderEntry.fromJson(Map<String, dynamic> json) {
+    return ProviderEntry(
+      providerId: json['provider_id'] as String? ?? '',
+      displayName: json['display_name'] as String? ?? '',
+      adapter: json['adapter'] as String? ?? '',
+      baseUrl: json['base_url'] as String? ?? '',
+      configured: json['configured'] as bool? ?? false,
+      lastFour: json['last_four'] as String?,
+      available: json['available'] as bool? ?? false,
+    );
+  }
+}
+
+class ProviderKeyResult {
+  const ProviderKeyResult({
+    required this.providerId,
+    required this.configured,
+    required this.lastFour,
+  });
+
+  final String providerId;
+  final bool configured;
+  final String lastFour;
+
+  factory ProviderKeyResult.fromJson(Map<String, dynamic> json) {
+    return ProviderKeyResult(
+      providerId: json['provider_id'] as String? ?? '',
+      configured: json['configured'] as bool? ?? false,
+      lastFour: json['last_four'] as String? ?? '',
+    );
+  }
 }
 

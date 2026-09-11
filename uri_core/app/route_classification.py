@@ -105,6 +105,13 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("GET", "/history"): USER,
     ("GET", "/history/{session_id}"): USER,
     ("DELETE", "/history/{session_id}"): USER,
+    # M22.5: per-user provider configuration and key submission.
+    # All three are USER (self-service) - not ADMIN.  The key is the
+    # user's own; user_id comes only from the auth token, never from the
+    # request body, so one user can never set or read another's key.
+    ("POST", "/providers/keys"): USER,
+    ("GET", "/providers"): USER,
+    ("PUT", "/providers/config"): USER,
 }
 
 for _route in DEFERRED_PUBLIC_ROUTES:
@@ -118,6 +125,6 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 42 application routes (39 baseline + 3 M22.4 admin routes) + 4 FastAPI
-# auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 47
+# 45 application routes (39 baseline + 3 M22.4 admin routes + 3 M22.5
+# provider routes) + 4 FastAPI auto-generated doc/schema routes.
+EXPECTED_ROUTE_COUNT = 50

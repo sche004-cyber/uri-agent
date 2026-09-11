@@ -2,15 +2,15 @@
 
 ## Resume point
 
-- **Completed baseline:** M22.4, commit *this commit* (11 Sep 2026),
+- **Completed baseline:** M22.5, commit `69c8df3` (11 Sep 2026),
   independently verified by Claude Code as third-layer reviewer, with
-  **1,241/1,241 backend tests passing** and **106/106 Flutter tests
+  **1,318/1,318 backend tests passing** and **111/111 Flutter tests
   passing** at delivery. See
-  [URI_MILESTONE_TRACKER.md](URI_MILESTONE_TRACKER.md)'s M22.4 row for the
+  [URI_MILESTONE_TRACKER.md](URI_MILESTONE_TRACKER.md)'s M22.5 row for the
   full verification record.
-- **Next milestone:** M22.5 — Provider registry and encrypted key storage.
+- **Next milestone:** M22.6 — Model router and runtime provider selection.
   Follow [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md); do not
-  restart M22/M22.1/M22.2/M22.3/M22.4 audits.
+  restart M22/M22.1/M22.2/M22.3/M22.4/M22.5 audits.
 
 ## Guardrails
 

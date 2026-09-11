@@ -1553,5 +1553,95 @@ class HttpUriClient implements UriClient {
 
     return response.statusCode == 200;
   }
+
+  // ---------------------------------------------------------------
+  // M22.5: Provider registry and key management
+  // ---------------------------------------------------------------
+
+  @override
+  Future<List<ProviderEntry>> listProviders() async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(
+            Uri.parse('$baseUrl/providers'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return const [];
+    }
+
+    if (response.statusCode != 200) return const [];
+
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = body['providers'];
+      if (raw is! List) return const [];
+      return raw
+          .whereType<Map<String, dynamic>>()
+          .map((p) => ProviderEntry.fromJson(p))
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
+  Future<ProviderKeyResult?> submitProviderKey(
+    String providerId,
+    String apiKey,
+  ) async {
+    http.Response response;
+    try {
+      response = await _http
+          .post(
+            Uri.parse('$baseUrl/providers/keys'),
+            headers: _jsonHeaders,
+            body: jsonEncode({
+              'provider_id': providerId,
+              'api_key': apiKey,
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return null;
+    }
+
+    if (response.statusCode != 200) return null;
+
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return ProviderKeyResult.fromJson(body);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> updateProviderConfig(
+    String providerId, {
+    String? baseUrl,
+    String? model,
+  }) async {
+    final payload = <String, dynamic>{'provider_id': providerId};
+    if (baseUrl != null) payload['base_url'] = baseUrl;
+    if (model != null) payload['model'] = model;
+
+    http.Response response;
+    try {
+      response = await _http
+          .put(
+            Uri.parse('${this.baseUrl}/providers/config'),
+            headers: _jsonHeaders,
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return false;
+    }
+
+    return response.statusCode == 200;
+  }
 }
 

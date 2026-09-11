@@ -11,6 +11,7 @@ import 'diagnostics_settings_screen.dart';
 import 'memory_settings_screen.dart';
 import 'preferences_settings_screen.dart';
 import 'profile_settings_screen.dart';
+import 'providers_screen.dart';
 import 'uri_server_settings_screen.dart';
 
 class _SettingsCategory {
@@ -63,6 +64,12 @@ final _categories = <_SettingsCategory>[
     subtitle: 'What URI can actually do right now, reported by the server.',
     icon: Icons.checklist_rounded,
     builder: (_) => const CapabilitiesSettingsScreen(),
+  ),
+  _SettingsCategory(
+    label: 'Model Providers',
+    subtitle: 'Configure LLM provider endpoints and API keys.',
+    icon: Icons.hub_outlined,
+    builder: (_) => const ProvidersScreen(),
   ),
   _SettingsCategory(
     label: 'Diagnostics',

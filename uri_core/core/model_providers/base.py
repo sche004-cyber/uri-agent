@@ -37,6 +37,15 @@ class ProviderResponseError(ProviderError):
     """The backend responded, but not in a shape this provider understands."""
 
 
+class ProviderAuthenticationError(ProviderResponseError):
+    """The backend rejected the supplied API key / bearer token (HTTP 401/403).
+
+    Kept distinct from ProviderUnavailableError so callers (and M22.6's
+    ModelRouter) can implement 'auth failure stops, never silently falls back
+    to a different provider or key' without matching on status-code strings.
+    Raised only on explicit credential rejection, not network errors."""
+
+
 @dataclass(frozen=True)
 class ModelResponse:
     """A completed model response. Deliberately minimal - no raw backend

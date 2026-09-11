@@ -48,7 +48,7 @@ import json
 import os
 from typing import Any, Dict, Optional
 
-from uri_core.core.model_providers import ModelProvider, OllamaProvider
+from uri_core.core.model_providers import ModelProvider, OllamaProvider, OpenAICompatibleProvider
 from uri_core.core.model_providers.base import ModelProviderConfig
 
 # One role per real model-call site in this codebase today.
@@ -56,12 +56,18 @@ ROLE_SEMANTIC_INTERPRETATION = "semantic_interpretation"
 ROLE_REASONING = "reasoning"
 ROLE_DRAFTING = "drafting"
 ROLE_DOCUMENT_COMPOSITION = "document_composition"
+# M22.5: two additional roles, both defaulting to "ollama" (light tier).
+# "implementation" is explicitly NOT added here (no consumer in this milestone).
+ROLE_DIAGNOSTICS = "diagnostics"
+ROLE_BACKGROUND = "background"
 
 ROLES = (
     ROLE_SEMANTIC_INTERPRETATION,
     ROLE_REASONING,
     ROLE_DRAFTING,
     ROLE_DOCUMENT_COMPOSITION,
+    ROLE_DIAGNOSTICS,
+    ROLE_BACKGROUND,
 )
 
 # Every role defaults to "ollama" with no per-role override - i.e.
@@ -128,43 +134,103 @@ def load_model_roles(path: str = MODEL_ROLES_PATH) -> Dict[str, Dict[str, Any]]:
 
 def build_provider(
     role: str,
+    principal: Optional[Any] = None,
     roles_path: str = MODEL_ROLES_PATH,
 ) -> ModelProvider:
-    """The one factory every real model-call site uses instead of
-    constructing OllamaProvider() directly. `role` should be one of the
-    ROLE_* constants above, but an unrecognized role is treated exactly
-    like one with no override (full Ollama-from-env defaults) rather
-    than raising - a role name is a configuration-organizing label,
-    never itself a source of authority, and this module choosing to be
-    resilient to an unlisted role never bypasses the real, closed set
-    of provider IMPLEMENTATIONS enforced below.
+    """The one factory every real model-call site uses.
 
-    Local remains the default and requires zero configuration: with no
-    uri_workspace/model_roles.json present, every role resolves to
-    OllamaProvider built from the same OLLAMA_* environment variables
-    ModelProviderConfig.from_env() has always read."""
-
+    Parameters
+    ----------
+    role:
+        One of the ROLE_* constants.  An unrecognised role degrades to
+        Ollama-from-env defaults (not an error - a label, not authority).
+    principal:
+        Optional PrincipalContext.  When None or when the resolved
+        provider is "ollama", behaviour is byte-for-byte unchanged from
+        M21 (zero-behaviour-change for all existing callers and tests).
+        When the role resolves to "openai_compatible" for a given
+        principal, per-user config and the ProviderKeyStore are
+        consulted.  Only this function may call
+        ProviderKeyStore.get_key_for_use(); the returned key MUST NOT
+        be stored or logged after provider construction.
+    roles_path:
+        Override for deployment/test use.
+    """
     role_config = load_model_roles(roles_path).get(role, {})
     provider_name = role_config.get("provider", "ollama")
 
-    env_config = ModelProviderConfig.from_env()
-    config = ModelProviderConfig(
-        base_url=role_config.get("base_url", env_config.base_url),
-        model=role_config.get("model", env_config.model),
-        timeout_seconds=role_config.get(
-            "timeout_seconds", env_config.timeout_seconds
-        ),
-        context_tokens=role_config.get(
-            "context_tokens", env_config.context_tokens
-        ),
-    )
-
+    # -------------------------------------------------------------------
+    # "ollama" - unchanged M21 behaviour
+    # -------------------------------------------------------------------
     if provider_name == "ollama":
+        env_config = ModelProviderConfig.from_env()
+        config = ModelProviderConfig(
+            base_url=role_config.get("base_url", env_config.base_url),
+            model=role_config.get("model", env_config.model),
+            timeout_seconds=role_config.get(
+                "timeout_seconds", env_config.timeout_seconds
+            ),
+            context_tokens=role_config.get(
+                "context_tokens", env_config.context_tokens
+            ),
+        )
         return OllamaProvider(config=config)
+
+    # -------------------------------------------------------------------
+    # "openai_compatible" - requires an authenticated principal so we
+    # can look up that user's configuration and key.
+    # -------------------------------------------------------------------
+    if provider_name == "openai_compatible":
+        if principal is None:
+            raise UnknownModelProviderError(
+                f"Role '{role}' is configured for 'openai_compatible' but no "
+                "principal was supplied - cannot look up per-user provider "
+                "config or key.  Pass a PrincipalContext to build_provider()."
+            )
+
+        from uri_core.core.provider_registry import ProviderConfigStore, CATALOGUE_BY_ID
+        from uri_core.core.provider_keys import ProviderKeyStore
+
+        user_id = principal.user_id
+        provider_id = role_config.get("provider_id", "openai")
+
+        # Per-user config: base_url and model overrides.
+        pcs = ProviderConfigStore(user_id)
+        user_cfg = pcs.get_provider_config(provider_id)
+
+        # Fall back to catalogue defaults for any missing field.
+        catalogue_entry = CATALOGUE_BY_ID.get(provider_id)
+        default_base_url = (
+            catalogue_entry.base_url if catalogue_entry else ""
+        )
+        default_model = role_config.get("model", "gpt-4o")
+
+        config = ModelProviderConfig(
+            base_url=user_cfg.get("base_url", default_base_url),
+            model=user_cfg.get("model", default_model),
+            timeout_seconds=role_config.get(
+                "timeout_seconds", ModelProviderConfig().timeout_seconds
+            ),
+            context_tokens=role_config.get(
+                "context_tokens", ModelProviderConfig().context_tokens
+            ),
+        )
+
+        # The ONE permitted call site for get_key_for_use().
+        # The key is consumed immediately to construct the provider;
+        # it is not stored, logged, or returned.
+        key_store = ProviderKeyStore(user_id)
+        api_key = key_store.get_key_for_use(provider_id)
+        # Erase the ProviderKeyStore reference now - the key bytes are
+        # inside the OpenAICompatibleProvider instance only.
+        del key_store
+
+        return OpenAICompatibleProvider(config=config, api_key=api_key)
 
     raise UnknownModelProviderError(
         f"Role '{role}' is configured for provider '{provider_name}', but "
-        "this codebase only implements 'ollama'. Add a new ModelProvider "
-        "subclass (see model_providers/base.py) and wire it into "
-        "build_provider() before configuring a role to use it."
+        "this codebase only implements 'ollama' and 'openai_compatible'. "
+        "Add a new ModelProvider subclass (see model_providers/base.py) "
+        "and wire it into build_provider() before configuring a role to "
+        "use it."
     )

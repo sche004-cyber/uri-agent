@@ -23,6 +23,8 @@ import 'uri_client.dart'
         HomeSummary,
         MemoryWriteException,
         ModelStatus,
+        ProviderEntry,
+        ProviderKeyResult,
         UriClient,
         UriIdentity,
         UserGrantsInfo;
@@ -460,6 +462,26 @@ class AppState extends ChangeNotifier {
 
   Future<bool> updateUserGrants(String userId, List<String> grants) =>
       _client.updateUserGrants(userId, grants);
+
+  // ---------------------------------------------------------------
+  // M22.5: Provider registry and key management
+  // ---------------------------------------------------------------
+
+  Future<List<ProviderEntry>> listProviders() => _client.listProviders();
+
+  Future<ProviderKeyResult?> submitProviderKey(
+    String providerId,
+    String apiKey,
+  ) =>
+      _client.submitProviderKey(providerId, apiKey);
+
+  Future<bool> updateProviderConfig(
+    String providerId, {
+    String? baseUrl,
+    String? model,
+  }) =>
+      _client.updateProviderConfig(providerId, baseUrl: baseUrl, model: model);
+
 
   Future<bool> setExperienceTier(String tier) async {
     final accepted = await _client.setExperienceTier(tier);

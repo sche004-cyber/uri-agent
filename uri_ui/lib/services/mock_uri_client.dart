@@ -862,6 +862,89 @@ class MockUriClient implements UriClient {
     _mockUserGrants[userId] = List<String>.from(grants);
     return true;
   }
+
+  // ---------------------------------------------------------------
+  // M22.5: Provider registry and key management mock
+  // ---------------------------------------------------------------
+
+  final Map<String, String> _mockProviderKeysLastFour = <String, String>{};
+  final Map<String, Map<String, String>> _mockProviderOverrides =
+      <String, Map<String, String>>{};
+
+  @override
+  Future<List<ProviderEntry>> listProviders() async {
+    return [
+      ProviderEntry(
+        providerId: 'ollama',
+        displayName: 'Ollama (Local)',
+        adapter: 'ollama',
+        baseUrl: _mockProviderOverrides['ollama']?['base_url'] ??
+            'http://localhost:11434',
+        configured: true,
+        lastFour: null,
+        available: true,
+      ),
+      ProviderEntry(
+        providerId: 'openai',
+        displayName: 'OpenAI',
+        adapter: 'openai_compatible',
+        baseUrl: _mockProviderOverrides['openai']?['base_url'] ??
+            'https://api.openai.com/v1',
+        configured: _mockProviderKeysLastFour.containsKey('openai'),
+        lastFour: _mockProviderKeysLastFour['openai'],
+        available: true,
+      ),
+      ProviderEntry(
+        providerId: 'groq',
+        displayName: 'Groq',
+        adapter: 'openai_compatible',
+        baseUrl: _mockProviderOverrides['groq']?['base_url'] ??
+            'https://api.groq.com/openai/v1',
+        configured: _mockProviderKeysLastFour.containsKey('groq'),
+        lastFour: _mockProviderKeysLastFour['groq'],
+        available: true,
+      ),
+      ProviderEntry(
+        providerId: 'anthropic',
+        displayName: 'Anthropic',
+        adapter: 'openai_compatible',
+        baseUrl: _mockProviderOverrides['anthropic']?['base_url'] ??
+            'https://api.anthropic.com/v1',
+        configured: _mockProviderKeysLastFour.containsKey('anthropic'),
+        lastFour: _mockProviderKeysLastFour['anthropic'],
+        available: false,
+      ),
+    ];
+  }
+
+  @override
+  Future<ProviderKeyResult?> submitProviderKey(
+    String providerId,
+    String apiKey,
+  ) async {
+    final lastFour =
+        apiKey.length >= 4 ? apiKey.substring(apiKey.length - 4) : '****';
+    _mockProviderKeysLastFour[providerId] = lastFour;
+    return ProviderKeyResult(
+      providerId: providerId,
+      configured: true,
+      lastFour: lastFour,
+    );
+  }
+
+  @override
+  Future<bool> updateProviderConfig(
+    String providerId, {
+    String? baseUrl,
+    String? model,
+  }) async {
+    final current =
+        _mockProviderOverrides[providerId] ?? <String, String>{};
+    if (baseUrl != null) current['base_url'] = baseUrl;
+    if (model != null) current['model'] = model;
+    _mockProviderOverrides[providerId] = current;
+    return true;
+  }
 }
 
 class _Analysis {
