@@ -13,6 +13,7 @@ import 'theme_store.dart';
 import 'uri_client.dart'
     show
         AccountInfo,
+        AdminUserEntry,
         Attachment,
         AttachmentException,
         AuthOutcome,
@@ -23,7 +24,8 @@ import 'uri_client.dart'
         MemoryWriteException,
         ModelStatus,
         UriClient,
-        UriIdentity;
+        UriIdentity,
+        UserGrantsInfo;
 
 /// Prototype 2 (multi-client + runtime awareness): the result of the
 /// last [AppState.checkConnection] call. Deliberately a separate type
@@ -447,6 +449,17 @@ class AppState extends ChangeNotifier {
   /// [loadAccountInfo] resolves, so an ADMIN-only control never
   /// flashes visible-then-hidden, only hidden-then-visible.
   bool get isAdmin => accountInfo?.isAdmin ?? false;
+
+  /// Direct client reference for admin screens.
+  UriClient get client => _client;
+
+  Future<List<AdminUserEntry>> listAdminUsers() => _client.listAdminUsers();
+
+  Future<UserGrantsInfo> getUserGrants(String userId) =>
+      _client.getUserGrants(userId);
+
+  Future<bool> updateUserGrants(String userId, List<String> grants) =>
+      _client.updateUserGrants(userId, grants);
 
   Future<bool> setExperienceTier(String tier) async {
     final accepted = await _client.setExperienceTier(tier);

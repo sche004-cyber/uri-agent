@@ -51,6 +51,10 @@ from uri_core.core.audit_trail import AuditTrail
 from uri_core.core.auth_session import AuthSessionStore
 from uri_core.core.authorization import AuthorizationError, require_admin
 from uri_core.core.capability_registry import CapabilityRegistry
+from uri_core.core.capability_resolver import (
+    CapabilityGrantsStore,
+    CapabilityResolver,
+)
 from uri_core.core import connection_status as connection_status_module
 from uri_core.core.connection_status import list_connection_status
 from uri_core.core.file_store import FileStore, FileValidationError
@@ -175,6 +179,8 @@ _growth_ledger_store = GrowthLedgerStore()
 # influences authorization, approval, or execution - GET /capabilities
 # is the only thing that combines them, purely for display.
 _capability_registry = CapabilityRegistry()
+_capability_grants_store = CapabilityGrantsStore()
+_audit_trail = AuditTrail()
 
 # A distinct provider instance from whatever _orchestrator's semantic
 # interpreter/reasoning adapter use internally - deliberately not the
@@ -280,11 +286,17 @@ def _build_user_context(user_id: str) -> _UserContext:
             user_id, "approvals.json", root=_USER_STATE_ROOT
         )
     )
+    account = _user_account_store.get_by_user_id(user_id)
+    role = account.role if account is not None else None
+    principal = PrincipalContext(user_id=user_id, role=role, device_id=None)
+
     approval_gate = ApprovalGate(
         dispatcher=ToolDispatcher(),
         capability_registry=_capability_registry,
         approval_store=approval_store,
         audit_trail=AuditTrail(),
+        capability_grants_store=_capability_grants_store,
+        principal=principal,
     )
 
     session_manager = SessionManager(
@@ -343,6 +355,7 @@ def _build_user_context(user_id: str) -> _UserContext:
         file_store=file_store,
         skill_memory=skill_memory,
         conversation_history=conversation_history,
+        principal=principal,
     )
 
     return _UserContext(
@@ -666,6 +679,10 @@ class LoginRequest(BaseModel):
     device_id: Optional[str] = None
 
 
+class UpdateGrantsRequest(BaseModel):
+    grants: List[str]
+
+
 def _memory_entry_to_dict(entry: MemoryEntry) -> dict:
     # Flattened, minimal view - not a raw dump of MemoryEntry/Fact's
     # full internal shape (source, source_date, retrieved_date,
@@ -982,10 +999,17 @@ def ask(
         context.memory_store.list_all(),
     )
 
+    principal = None
+    if user_id is not None:
+        account = _user_account_store.get_by_user_id(user_id)
+        role = account.role if account is not None else None
+        principal = PrincipalContext(user_id=user_id, role=role, device_id=None)
+
     result = context.orchestrator.process_user_input(
         session_id=payload.session_id,
         user_text=payload.text,
         personalization_context=personalization_context,
+        principal=principal,
     )
 
     # UriOrchestrator's raw dict also carries shadow-evaluation internals
@@ -1522,23 +1546,25 @@ def growth(
 
 
 @app.get("/capabilities")
-def capabilities() -> dict:
+def capabilities(
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> dict:
     """
     URI's self-knowledge: what it can currently do, what is merely
     planned, and what model/provider is powering it right now - all
-    read-only, purely for display. See capability_registry.py and
-    model_providers/base.py's ModelProviderStatus for the invariant
-    this endpoint depends on: neither section here is ever consulted
-    by _orchestrator, capability_planner.py's selection logic, or
-    dispatcher.py to decide what is authorized, approved, or executed.
-
-    "model" reflects _model_provider.describe() - a cheap,
-    timeout-bounded reachability check, never a real completion, so
-    this endpoint stays fast even when the model backend is down
-    (available: false with a detail message, not an error).
+    read-only, purely for display. M22.4: principal-aware, returning
+    the resolved capability catalogue for the calling principal.
     """
 
     model_status = _model_provider.describe()
+    if principal is not None and principal.user_id:
+        resolved_descriptors = CapabilityResolver.resolve(
+            principal=principal,
+            capability_registry=_capability_registry,
+            grants_store=_capability_grants_store,
+        )
+    else:
+        resolved_descriptors = _capability_registry.list_capabilities()
 
     return {
         "model": {
@@ -1571,7 +1597,7 @@ def capabilities() -> dict:
                 # than implying more detail would unblock it.
                 "gap_reason": descriptor.gap_reason,
             }
-            for descriptor in _capability_registry.list_capabilities()
+            for descriptor in resolved_descriptors
         ],
     }
 
@@ -1927,3 +1953,90 @@ def disconnect_connection(
         ),
         "connections": list_connection_status(),
     }
+
+
+# ------------------------------------------------------------------
+# M22.4 - Capability Grants Administration (ADMIN only)
+# ------------------------------------------------------------------
+
+@app.get("/admin/users")
+def list_admin_users(
+    principal: PrincipalContext = Depends(_resolve_admin_principal),
+) -> dict:
+    """M22.4: List accounts for the admin grants UI picker.
+    ADMIN only (401 anonymous, 403 non-admin).
+    """
+    accounts = _user_account_store._load()
+    users = [
+        {
+            "user_id": acc.user_id,
+            "username": acc.username,
+            "role": acc.role,
+            "created_at": acc.created_at,
+        }
+        for acc in accounts.values()
+    ]
+    return {"users": users}
+
+
+@app.get("/admin/users/{user_id}/grants")
+def get_user_grants(
+    user_id: str,
+    principal: PrincipalContext = Depends(_resolve_admin_principal),
+) -> dict:
+    """M22.4: Current capability grants for a specific user.
+    ADMIN only (401 anonymous, 403 non-admin).
+    """
+    all_descriptors = _capability_registry.list_capabilities()
+    registry_ids = {d.id for d in all_descriptors}
+    grants = _capability_grants_store.get_grants(
+        user_id, registry_ceiling_ids=registry_ids
+    )
+    return {
+        "user_id": user_id,
+        "grants": sorted(list(grants)),
+        "registry_ceiling": sorted(list(registry_ids)),
+    }
+
+
+@app.put("/admin/users/{user_id}/grants")
+def update_user_grants(
+    user_id: str,
+    payload: UpdateGrantsRequest,
+    principal: PrincipalContext = Depends(_resolve_admin_principal),
+) -> dict:
+    """M22.4: Replace a user's grant set.
+    ADMIN only (401 anonymous, 403 non-admin).
+    Validates every submitted capability_id against the live registry and
+    rejects the whole request with 400 if any id is unknown.
+    On success, writes an audit record via AuditTrail.record with acting admin
+    user_id, target user_id, and resulting grant set.
+    """
+    all_descriptors = _capability_registry.list_capabilities()
+    registry_ids = {d.id for d in all_descriptors}
+
+    try:
+        updated = _capability_grants_store.set_grants(
+            user_id=user_id,
+            granted_ids=payload.grants,
+            valid_registry_ids=registry_ids,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    _audit_trail.record(
+        event_type="admin_grant_mutation",
+        status="success",
+        metadata={
+            "acting_user_id": principal.user_id or "unknown",
+            "target_user_id": user_id,
+            "resulting_grants": ",".join(sorted(list(updated))),
+        },
+    )
+
+    return {
+        "user_id": user_id,
+        "grants": sorted(list(updated)),
+        "status": "updated",
+    }
+

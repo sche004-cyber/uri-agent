@@ -1457,4 +1457,101 @@ class HttpUriClient implements UriClient {
       totalServiceCount: connections.length,
     );
   }
+
+  @override
+  Future<List<AdminUserEntry>> listAdminUsers() async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(
+            Uri.parse('$baseUrl/admin/users'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return const [];
+    }
+
+    if (response.statusCode != 200) return const [];
+
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = body['users'];
+      if (raw is! List) return const [];
+      return raw
+          .whereType<Map<String, dynamic>>()
+          .map((u) => AdminUserEntry(
+                userId: u['user_id'] as String? ?? '',
+                username: u['username'] as String? ?? '',
+                role: u['role'] as String? ?? 'USER',
+              ))
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
+  Future<UserGrantsInfo> getUserGrants(String userId) async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(
+            Uri.parse('$baseUrl/admin/users/$userId/grants'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return UserGrantsInfo(
+        userId: userId,
+        grants: const [],
+        registryCeiling: const [],
+      );
+    }
+
+    if (response.statusCode != 200) {
+      return UserGrantsInfo(
+        userId: userId,
+        grants: const [],
+        registryCeiling: const [],
+      );
+    }
+
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final rawGrants = body['grants'];
+      final rawCeiling = body['registry_ceiling'];
+      return UserGrantsInfo(
+        userId: userId,
+        grants: (rawGrants is List) ? rawGrants.cast<String>() : const [],
+        registryCeiling:
+            (rawCeiling is List) ? rawCeiling.cast<String>() : const [],
+      );
+    } catch (_) {
+      return UserGrantsInfo(
+        userId: userId,
+        grants: const [],
+        registryCeiling: const [],
+      );
+    }
+  }
+
+  @override
+  Future<bool> updateUserGrants(String userId, List<String> grants) async {
+    http.Response response;
+    try {
+      response = await _http
+          .put(
+            Uri.parse('$baseUrl/admin/users/$userId/grants'),
+            headers: _jsonHeaders,
+            body: jsonEncode({'grants': grants}),
+          )
+          .timeout(const Duration(seconds: 30));
+    } catch (_) {
+      return false;
+    }
+
+    return response.statusCode == 200;
+  }
 }
+

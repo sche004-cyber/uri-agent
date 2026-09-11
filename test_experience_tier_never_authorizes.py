@@ -36,6 +36,7 @@ AUTHORIZATION_AND_EXECUTION_MODULES = (
     os.path.join("uri_core", "core", "capability_registry.py"),
     os.path.join("uri_core", "core", "capability_planner.py"),
     os.path.join("uri_core", "core", "orchestrator.py"),
+    os.path.join("uri_core", "core", "capability_resolver.py"),
 )
 
 FORBIDDEN_STRING = "experience_tier"

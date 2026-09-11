@@ -69,6 +69,9 @@ ADMIN_GATED_ROUTES: Tuple[Tuple[str, str], ...] = (
     ("DELETE", "/skills/{skill_id}"),
     ("POST", "/connections/{connection_id}/authorize"),
     ("DELETE", "/connections/{connection_id}"),
+    ("GET", "/admin/users"),
+    ("GET", "/admin/users/{user_id}/grants"),
+    ("PUT", "/admin/users/{user_id}/grants"),
 )
 
 ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
@@ -115,6 +118,6 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 39 application routes (the M22.3 plan's baseline) + 4 FastAPI
+# 42 application routes (39 baseline + 3 M22.4 admin routes) + 4 FastAPI
 # auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 44
+EXPECTED_ROUTE_COUNT = 47

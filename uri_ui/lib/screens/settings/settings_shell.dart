@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../services/app_state_scope.dart';
 import '../../theme/uri_theme.dart';
 import '../../widgets/screen_header.dart';
 import 'about_settings_screen.dart';
+import 'admin_grants_screen.dart';
 import 'capabilities_settings_screen.dart';
 import 'connections_settings_screen.dart';
 import 'diagnostics_settings_screen.dart';
@@ -76,6 +78,20 @@ final _categories = <_SettingsCategory>[
   ),
 ];
 
+List<_SettingsCategory> _getCategories(BuildContext context) {
+  final isAdmin = AppStateScope.of(context).isAdmin;
+  return [
+    ..._categories,
+    if (isAdmin)
+      _SettingsCategory(
+        label: 'Capability Grants',
+        subtitle: 'Per-user capability authorization and grants administration.',
+        icon: Icons.admin_panel_settings_outlined,
+        builder: (_) => const AdminGrantsScreen(),
+      ),
+  ];
+}
+
 /// Settings, organized into named categories rather than one long
 /// scroll: a phone gets a list that swaps in-place to the selected
 /// category (with a back affordance), a tablet/desktop gets a
@@ -104,35 +120,64 @@ class _SettingsShellState extends State<SettingsShell> {
   int? _selected;
 
   @override
-  Widget build(BuildContext context) {
-    if (UriBreakpoints.isWide(context)) {
-      return _WideSettings(
-        selected: _selected ?? 0,
-        onSelect: (i) => setState(() => _selected = i),
-      );
-    }
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final state = AppStateScope.of(context);
+      if (!state.hasLoadedAccountInfo) state.loadAccountInfo();
+    });
+  }
 
-    final selected = _selected;
-    if (selected == null) {
-      return _CompactSettingsList(onSelect: (i) => setState(() => _selected = i));
-    }
-    return _CompactSettingsDetail(
-      category: _categories[selected],
-      onBack: () => setState(() => _selected = null),
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: AppStateScope.of(context),
+      builder: (context, _) {
+        final categories = _getCategories(context);
+
+        if (UriBreakpoints.isWide(context)) {
+          final selected = (_selected != null && _selected! < categories.length)
+              ? _selected!
+              : 0;
+          return _WideSettings(
+            categories: categories,
+            selected: selected,
+            onSelect: (i) => setState(() => _selected = i),
+          );
+        }
+
+        final selected = _selected;
+        if (selected == null || selected >= categories.length) {
+          return _CompactSettingsList(
+            categories: categories,
+            onSelect: (i) => setState(() => _selected = i),
+          );
+        }
+        return _CompactSettingsDetail(
+          category: categories[selected],
+          onBack: () => setState(() => _selected = null),
+        );
+      },
     );
   }
 }
 
 class _WideSettings extends StatelessWidget {
-  const _WideSettings({required this.selected, required this.onSelect});
+  const _WideSettings({
+    required this.categories,
+    required this.selected,
+    required this.onSelect,
+  });
 
+  final List<_SettingsCategory> categories;
   final int selected;
   final ValueChanged<int> onSelect;
 
   @override
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
-    final category = _categories[selected];
+    final category = categories[selected];
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -144,9 +189,9 @@ class _WideSettings extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: UriSpace.md),
               children: [
-                for (var i = 0; i < _categories.length; i++)
+                for (var i = 0; i < categories.length; i++)
                   _CategoryListTile(
-                    category: _categories[i],
+                    category: categories[i],
                     selected: i == selected,
                     onTap: () => onSelect(i),
                   ),
@@ -203,8 +248,12 @@ class _CategoryListTile extends StatelessWidget {
 }
 
 class _CompactSettingsList extends StatelessWidget {
-  const _CompactSettingsList({required this.onSelect});
+  const _CompactSettingsList({
+    required this.categories,
+    required this.onSelect,
+  });
 
+  final List<_SettingsCategory> categories;
   final ValueChanged<int> onSelect;
 
   @override
@@ -221,10 +270,10 @@ class _CompactSettingsList extends StatelessWidget {
           Card(
             child: Column(
               children: [
-                for (var i = 0; i < _categories.length; i++) ...[
+                for (var i = 0; i < categories.length; i++) ...[
                   if (i > 0) const Divider(height: 1),
                   _CategoryListTile(
-                    category: _categories[i],
+                    category: categories[i],
                     selected: false,
                     onTap: () => onSelect(i),
                   ),

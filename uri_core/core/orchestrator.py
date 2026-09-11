@@ -8,6 +8,7 @@ from uri_core.core.prompt_builder import PromptBuilder
 from uri_core.core.dispatcher import ToolDispatcher, real_tool_status
 from uri_core.core.approval_gate import ApprovalGate
 from uri_core.core.capability_registry import CapabilityRegistry
+from uri_core.core.capability_resolver import CapabilityResolver
 from uri_core.core.capability_feasibility import CapabilityFeasibility
 from uri_core.core.provider_semantic_interpreter import (
     ProviderSemanticInterpreter
@@ -113,7 +114,8 @@ class UriOrchestrator:
         skill_memory=None,
         conversation_history=None,
         capability_registry=None,
-        capability_feasibility=None
+        capability_feasibility=None,
+        principal=None
     ):
 
         # Milestone 11 Part 2 (Brain re-evaluation loop): a safety cap
@@ -128,17 +130,12 @@ class UriOrchestrator:
 
         self.dispatcher = ToolDispatcher()
 
-        if semantic_interpreter is not None:
-
-            self.semantic_interpreter = (
-                semantic_interpreter
-            )
-
-        else:
-
-            self.semantic_interpreter = (
-                ProviderSemanticInterpreter()
-            )
+        self.semantic_interpreter = (
+            semantic_interpreter
+            if semantic_interpreter is not None
+            else ProviderSemanticInterpreter()
+        )
+        self.principal = principal
 
         # M18: skill_memory is injectable so the server can give each
         # logged-in user_id their OWN skill store (see _build_user_context)
@@ -847,19 +844,13 @@ class UriOrchestrator:
             feasibility_snapshot = {}
 
         ids = set()
-
         for descriptor in descriptors:
-
             if not descriptor.is_executable:
                 continue
-
             entry = feasibility_snapshot.get(descriptor.id)
-
             if isinstance(entry, dict) and entry.get("usable") is False:
                 continue
-
             ids.add(descriptor.id)
-
         return ids
 
     def _recover_capability_mentions(
@@ -2125,14 +2116,17 @@ class UriOrchestrator:
             )
         }
 
-        for capability_id in capability_ids:
+        session = self.session_manager.get_session(session_id) if (self.session_manager and session_id) else None
+        principal = getattr(session, "principal", None) or getattr(self, "principal", None)
 
+        for capability_id in capability_ids:
             executor.register_handler(
                 capability_id,
                 self._model_workflow_step_handler(
                     capability_id=capability_id,
                     session_id=session_id,
                     goal=goal,
+                    principal=principal,
                 ),
             )
 
@@ -2142,14 +2136,15 @@ class UriOrchestrator:
         self,
         capability_id,
         session_id,
-        goal
+        goal,
+        principal=None
     ):
         """One closure per capability - the ONLY thing a Brain-
         composed workflow step's handler ever does is call
         ApprovalGate.execute_tool(), unmodified, with exactly the
         arguments the direct single-capability path already uses
-        (session_id, request_text). This is what guarantees approval
-        requirements are enforced identically regardless of whether a
+        (session_id, request_text, principal). This is what guarantees
+        approval requirements are enforced identically regardless of whether a
         capability was chosen directly (Phase 1) or as one step of a
         Brain-composed workflow (Phase 2).
 
@@ -2166,12 +2161,10 @@ class UriOrchestrator:
         overrides an outer "success")."""
 
         def _handler(step, workflow):
-
-            result = self.approval_gate.execute_tool(
-                capability_id,
-                session_id=session_id,
-                request_text=goal,
-            )
+            call_k = {"session_id": session_id, "request_text": goal}
+            if principal is not None:
+                call_k["principal"] = principal
+            result = self.approval_gate.execute_tool(capability_id, **call_k)
 
             status = real_tool_status(result)
 
@@ -2405,13 +2398,13 @@ class UriOrchestrator:
         so the caller can update the turn's response in place. Never
         calls self.dispatcher directly."""
 
-        if next_capability is not None:
+        principal = getattr(session, "principal", None) or getattr(self, "principal", None)
 
-            dispatch_result = self.approval_gate.execute_tool(
-                next_capability,
-                session_id=session_id,
-                request_text=user_text,
-            )
+        if next_capability is not None:
+            call_k = {"session_id": session_id, "request_text": user_text}
+            if principal is not None:
+                call_k["principal"] = principal
+            dispatch_result = self.approval_gate.execute_tool(next_capability, **call_k)
 
             # M19: execution["status"] is what response_drafting.py
             # treats as authoritative when phrasing the narrative the
@@ -2925,7 +2918,14 @@ class UriOrchestrator:
                 verified_facts = {}
 
         try:
-            capabilities = self.capability_registry.list_capabilities()
+            principal = (
+                (getattr(session, "principal", None) if session is not None else None)
+                or getattr(self, "principal", None)
+            )
+            capabilities = CapabilityResolver.resolve(
+                principal=principal,
+                capability_registry=self.capability_registry,
+            )
         except Exception:
             capabilities = []
 
@@ -4060,7 +4060,8 @@ class UriOrchestrator:
         self,
         session_id: str,
         user_text: str,
-        personalization_context: dict = None
+        personalization_context: dict = None,
+        principal=None
     ) -> dict:
         """Public entry point. Runs the unchanged core turn logic, then
         records the exchange to the durable conversation transcript (M18).
@@ -4072,6 +4073,7 @@ class UriOrchestrator:
             session_id=session_id,
             user_text=user_text,
             personalization_context=personalization_context,
+            principal=principal,
         )
 
         self._record_conversation_turn_safely(
@@ -4140,16 +4142,19 @@ class UriOrchestrator:
         self,
         session_id: str,
         user_text: str,
-        personalization_context: dict = None
+        personalization_context: dict = None,
+        principal=None
     ) -> dict:
 
         try:
-
-            session = (
-                self.session_manager.get_session(
-                    session_id
-                )
+            session = self.session_manager.get_session(session_id)
+            principal = (
+                principal
+                or getattr(session, "principal", None)
+                or getattr(self, "principal", None)
             )
+            if session is not None and getattr(session, "principal", None) is None and principal is not None:
+                session.principal = principal
 
             # --------------------------------------------------
             # Recover any persisted active workflow before normal
@@ -4619,14 +4624,8 @@ class UriOrchestrator:
                         "still executed and authorized like a fresh "
                         "selection.",
 
-                    "source":
-                        "skill_memory",
-
-                    "success_count":
-                        learned_skill.get(
-                            "success_count",
-                            0
-                        )
+                    "source": "skill_memory",
+                    "success_count": learned_skill.get("success_count", 0),
                 }
 
             else:
@@ -4639,26 +4638,12 @@ class UriOrchestrator:
             # Direct registered capability.
             # --------------------------------------------------
 
-            if (
-                plan.get(
-                    "status"
-                )
-                == "capability_selected"
-            ):
-
-                tool_name = (
-                    plan.get(
-                        "tool_name"
-                    )
-                )
-
-                dispatch_result = (
-                    self.approval_gate.execute_tool(
-                        tool_name,
-                        session_id=session_id,
-                        request_text=user_text
-                    )
-                )
+            if plan.get("status") == "capability_selected":
+                tool_name = plan.get("tool_name")
+                call_k = {"session_id": session_id, "request_text": user_text}
+                if principal is not None:
+                    call_k["principal"] = principal
+                dispatch_result = self.approval_gate.execute_tool(tool_name, **call_k)
 
                 # M19: the tool's REAL outcome, not just "the dispatcher
                 # call didn't raise" - see dispatcher.real_tool_status.

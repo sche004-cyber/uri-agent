@@ -832,9 +832,35 @@ class MockUriClient implements UriClient {
     return '${trimmed.substring(0, maxLength).trimRight()}…';
   }
 
-  String _lowerFirst(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toLowerCase() + text.substring(1);
+  // ---------------------------------------------------------------
+  // M22.4: Admin capability grant management mock
+  // ---------------------------------------------------------------
+
+  final Map<String, List<String>> _mockUserGrants = <String, List<String>>{};
+
+  @override
+  Future<List<AdminUserEntry>> listAdminUsers() async {
+    return const [
+      AdminUserEntry(userId: 'mock-user', username: 'demo-user', role: 'ADMIN'),
+      AdminUserEntry(userId: 'user-secondary', username: 'student-user', role: 'USER'),
+    ];
+  }
+
+  @override
+  Future<UserGrantsInfo> getUserGrants(String userId) async {
+    const allCaps = ['draft_institutional_note', 'pc_system_optimization'];
+    final grants = _mockUserGrants[userId] ?? List<String>.from(allCaps);
+    return UserGrantsInfo(
+      userId: userId,
+      grants: grants,
+      registryCeiling: allCaps,
+    );
+  }
+
+  @override
+  Future<bool> updateUserGrants(String userId, List<String> grants) async {
+    _mockUserGrants[userId] = List<String>.from(grants);
+    return true;
   }
 }
 
@@ -854,4 +880,9 @@ class _Analysis {
   final String? requiredConnectionName;
 
   bool get isBlockedByConnection => requiredConnectionId != null;
+}
+
+String _lowerFirst(String text) {
+  if (text.isEmpty) return text;
+  return text[0].toLowerCase() + text.substring(1);
 }

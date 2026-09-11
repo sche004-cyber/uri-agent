@@ -38,6 +38,7 @@ from typing import Any, Dict, Optional
 from uri_core.core.approval_store import ApprovalError, ApprovalStore
 from uri_core.core.audit_trail import AuditTrail
 from uri_core.core.capability_registry import CapabilityRegistry
+from uri_core.core.capability_resolver import CapabilityResolver
 
 APPROVAL_REQUIRED_VALUE = "user_approval_required"
 
@@ -54,6 +55,8 @@ class ApprovalGate:
         capability_registry: Optional[CapabilityRegistry] = None,
         approval_store: Optional[ApprovalStore] = None,
         audit_trail: Optional[AuditTrail] = None,
+        capability_grants_store: Optional[Any] = None,
+        principal: Optional[Any] = None,
     ):
         self.dispatcher = dispatcher
         self.capability_registry = (
@@ -61,6 +64,8 @@ class ApprovalGate:
         )
         self.approval_store = approval_store or ApprovalStore()
         self.audit_trail = audit_trail or AuditTrail()
+        self.capability_grants_store = capability_grants_store
+        self.principal = principal
 
     def _record_audit_safely(self, **kwargs: Any) -> None:
         """Never raises - an audit-recording failure must never break
@@ -88,6 +93,36 @@ class ApprovalGate:
         descriptor = self.capability_registry.describe_status(
             tool_name
         )
+
+        # M22.4 Authoritative Check: verify capability is granted for this principal
+        # for registered capabilities. Unregistered tools pass through to dispatcher per M7.
+        # In multi-user context (grants_store or principal configured), enforce strictly.
+        # In legacy single-user ambient test fixtures (both None), maintain backward compatibility.
+        if descriptor is not None:
+            principal = (
+                kwargs.get("principal")
+                or kwargs.get("principal_context")
+                or self.principal
+            )
+            grants_store = kwargs.get("grants_store") or self.capability_grants_store
+            if grants_store is not None or principal is not None:
+                if not CapabilityResolver.is_allowed(
+                    tool_name,
+                    principal=principal,
+                    capability_registry=self.capability_registry,
+                    grants_store=grants_store,
+                ):
+                    self._record_audit_safely(
+                        event_type="capability_execution",
+                        status="rejected_unauthorized",
+                        session_id=session_id,
+                        capability=tool_name,
+                        metadata={"reason": "Capability not granted for principal"},
+                    )
+                    return {
+                        "status": "rejected",
+                        "message": f"Capability {tool_name!r} is not granted for this user.",
+                    }
 
         approval_requirement = (
             descriptor.approval_requirement

@@ -283,6 +283,19 @@ abstract class UriClient {
   /// Null on any failure; the UI shows this as unavailable rather than
   /// guessing.
   Future<ModelStatus?> getModelStatus();
+
+  // ---------------------------------------------------------------
+  // M22.4: Admin capability grant management
+  // ---------------------------------------------------------------
+
+  /// Lists all registered accounts for the admin grants screen picker (GET /admin/users).
+  Future<List<AdminUserEntry>> listAdminUsers();
+
+  /// Fetches a user's current capability grants and registry ceiling (GET /admin/users/{user_id}/grants).
+  Future<UserGrantsInfo> getUserGrants(String userId);
+
+  /// Replaces a user's capability grant set (PUT /admin/users/{user_id}/grants).
+  Future<bool> updateUserGrants(String userId, List<String> grants);
 }
 
 /// The logged-in account's own role/tier/device identity, from GET
@@ -486,3 +499,28 @@ class HomeSummary {
   final int connectedServiceCount;
   final int totalServiceCount;
 }
+
+class AdminUserEntry {
+  const AdminUserEntry({
+    required this.userId,
+    required this.username,
+    required this.role,
+  });
+
+  final String userId;
+  final String username;
+  final String role;
+}
+
+class UserGrantsInfo {
+  const UserGrantsInfo({
+    required this.userId,
+    required this.grants,
+    required this.registryCeiling,
+  });
+
+  final String userId;
+  final List<String> grants;
+  final List<String> registryCeiling;
+}
+

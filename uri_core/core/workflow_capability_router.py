@@ -1,4 +1,4 @@
-﻿from uri_core.core.workflow_executor import (
+from uri_core.core.workflow_executor import (
     WorkflowExecutor
 )
 from uri_core.core.dispatcher import real_tool_status
@@ -494,19 +494,20 @@ class WorkflowCapabilityRouter:
             )
         )
 
-        result = (
-            self.dispatcher.execute_tool(
-                tool_name,
-                session_id=(
-                    getattr(self.session, "session_id", None)
-                ),
-                request_text=workflow.get(
-                    "goal",
-                    ""
-                ),
-                decision_context=decision_context
-            )
+        principal = (
+            getattr(self.session, "principal", None)
+            or getattr(self.dispatcher, "principal", None)
         )
+
+        call_k = {
+            "session_id": getattr(self.session, "session_id", None),
+            "request_text": workflow.get("goal", ""),
+            "decision_context": decision_context,
+        }
+        if principal is not None:
+            call_k["principal"] = principal
+
+        result = self.dispatcher.execute_tool(tool_name, **call_k)
 
         # M19: real_tool_status looks past the dispatcher's own
         # unconditional outer "success" to the drafting tool's actual

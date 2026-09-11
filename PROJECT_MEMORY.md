@@ -2,20 +2,15 @@
 
 ## Resume point
 
-- **Completed baseline:** M22.3, commit *this commit* (10 Sep 2026),
+- **Completed baseline:** M22.4, commit *this commit* (11 Sep 2026),
   independently verified by Claude Code as third-layer reviewer, with
-  **1,218/1,218 backend tests passing** and **103/103 Flutter tests
+  **1,241/1,241 backend tests passing** and **106/106 Flutter tests
   passing** at delivery. See
-  [URI_MILESTONE_TRACKER.md](URI_MILESTONE_TRACKER.md)'s M22.3 row for the
-  full verification record, including the flagged UI-scope note and the
-  `uri_server_ctl.ps1` operational consequence.
-- **Next milestone:** M22.4 — CapabilityResolver / per-user capability
-  grants. Follow [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md); do not
-  restart M22/M22.1/M22.2/M22.3 audits.
-- This commit also carries the previously-pending Flutter Windows/platform
-  scaffolding and M22.2 UI-parity work (role/tier display, device/session
-  management, model status, memory category picker), now verified via
-  `uri_ui/test/m22_ui_parity_test.dart` rather than sitting uncommitted.
+  [URI_MILESTONE_TRACKER.md](URI_MILESTONE_TRACKER.md)'s M22.4 row for the
+  full verification record.
+- **Next milestone:** M22.5 — Provider registry and encrypted key storage.
+  Follow [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md); do not
+  restart M22/M22.1/M22.2/M22.3/M22.4 audits.
 
 ## Guardrails
 

@@ -513,3 +513,21 @@ Antigravity's persistent report, produced before Claude's final review
 ```
 Antigravity must not mark a milestone `VERIFIED` in this report — that
 decision belongs solely to Claude (§4.3).
+
+### 10.4 Persistent State File (handoff artifact, not a coordinator)
+
+Each milestone plan (`docs/plans/<ID>_..._PLAN.md`) has a sibling
+`docs/plans/<ID>_STATE.md` file, created by Claude at `ACCEPTED` (§1.1
+step 2) and updated in place by whichever worker owns the current
+stage. It carries: the current state (§3's vocabulary), an append-only
+History Log of transitions, and the §10.2/§10.3 report templates for
+Gemma and Antigravity to fill in directly. Its purpose is narrow: the
+cycle must be resumable from **disk**, not from any one agent's
+conversation history, so a session restart, quota exhaustion, or
+model unavailability never loses evidence or forces the cycle to
+restart from `DRAFT`. This file is a state record only — it has no
+authority of its own, drives no execution, and is not a substitute for,
+or a competitor to, `scripts/qwen_coordinator.py`'s proposal-schema
+mechanism (which remains Qwen-reserve-only, §1.3) or any future
+implementer-driver tooling. It is development-only tracking and is
+never read by, or shipped inside, the URI runtime itself.
