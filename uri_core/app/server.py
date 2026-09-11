@@ -85,6 +85,7 @@ from uri_core.core.user_accounts import (
     UserAccountError,
     UserAccountStore,
 )
+from uri_core.config.modes import DEFAULT_MODE, VALID_MODES
 from uri_core.core.user_memory import (
     MemoryEntry,
     MemoryStore,
@@ -449,10 +450,11 @@ def _resolve_principal(
     milestone; see principal_context.py's module docstring."""
 
     if user_id is None:
-        return PrincipalContext(user_id=None, role=None, device_id=None)
+        return PrincipalContext(user_id=None, role=None, device_id=None, mode=None)
 
     account = _user_account_store.get_by_user_id(user_id)
     role = account.role if account is not None else None
+    mode = account.mode if account is not None else DEFAULT_MODE
 
     device_id = None
     if authorization is not None and authorization.startswith("Bearer "):
@@ -461,7 +463,7 @@ def _resolve_principal(
         )
 
     return PrincipalContext(
-        user_id=user_id, role=role, device_id=device_id
+        user_id=user_id, role=role, device_id=device_id, mode=mode
     )
 
 
@@ -868,6 +870,38 @@ def auth_me(
 
 class ExperienceTierUpdateRequest(BaseModel):
     experience_tier: str
+
+
+class ModeUpdateRequest(BaseModel):
+    mode: str
+
+
+@app.get("/modes")
+def get_mode(
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> dict:
+    """Return only the authenticated caller's current capability mode."""
+    if principal.user_id is None:
+        raise HTTPException(status_code=401, detail="Login is required to view this.")
+    return {"mode": principal.mode or DEFAULT_MODE, "valid_modes": sorted(VALID_MODES)}
+
+
+@app.put("/modes")
+def update_mode(
+    payload: ModeUpdateRequest,
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> dict:
+    """Change only the authenticated caller's mode; body/query IDs are ignored."""
+    if principal.user_id is None:
+        raise HTTPException(status_code=401, detail="Login is required to change this.")
+    if payload.mode not in VALID_MODES:
+        raise HTTPException(
+            status_code=422, detail=f"mode must be one of {sorted(VALID_MODES)}."
+        )
+    updated = _user_account_store.set_mode(principal.user_id, payload.mode)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Account not found.")
+    return {"mode": updated.mode, "valid_modes": sorted(VALID_MODES)}
 
 
 @app.post("/auth/experience-tier")

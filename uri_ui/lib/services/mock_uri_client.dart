@@ -587,6 +587,7 @@ class MockUriClient implements UriClient {
   // Devices section and role/tier controls have something real to
   // render offline/in widget tests. HttpUriClient never delegates here.
   String _experienceTier = 'BASIC';
+  String _mode = 'office';
   final List<DeviceSession> _devices = <DeviceSession>[
     const DeviceSession(
       deviceId: 'mock-device',
@@ -615,6 +616,21 @@ class MockUriClient implements UriClient {
     _experienceTier = tier;
     return true;
   }
+
+  @override
+  Future<ModeInfo?> getModeInfo() async =>
+      ModeInfo(mode: _mode, validModes: const ['admin', 'diagnostic', 'office']);
+
+  @override
+  Future<bool> setMode(String mode) async {
+    if (!const {'office', 'diagnostic', 'admin'}.contains(mode)) return false;
+    _mode = mode;
+    return true;
+  }
+
+  @override
+  Future<UsageLimitStatus?> getUsageLimitStatus() async =>
+      const UsageLimitStatus(warning: false, ceilingReached: false);
 
   @override
   Future<List<DeviceSession>> listDevices() async {

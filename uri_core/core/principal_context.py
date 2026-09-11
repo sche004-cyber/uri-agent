@@ -43,3 +43,4 @@ class PrincipalContext:
     user_id: Optional[str]
     role: Optional[str]
     device_id: Optional[str]
+    mode: Optional[str] = None

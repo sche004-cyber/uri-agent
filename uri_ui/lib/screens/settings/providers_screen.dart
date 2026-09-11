@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/app_state.dart';
 import '../../services/app_state_scope.dart';
-import '../../services/uri_client.dart' show ProviderEntry;
+import '../../services/uri_client.dart' show ProviderEntry, UsageLimitStatus;
 import '../../theme/uri_theme.dart';
 import '../../widgets/screen_header.dart';
 import '../../widgets/status_pill.dart';
@@ -23,6 +23,7 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
   bool _loading = true;
   String? _errorMessage;
   String? _successMessage;
+  UsageLimitStatus? _usageLimits;
   AppState? _state;
 
   @override
@@ -36,7 +37,14 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _loadProviders();
+      if (mounted) _loadUsageLimits();
     });
+  }
+
+  Future<void> _loadUsageLimits() async {
+    final state = _state ?? AppStateScope.of(context);
+    final limits = await state.getUsageLimitStatus();
+    if (mounted) setState(() => _usageLimits = limits);
   }
 
   Future<void> _loadProviders() async {
@@ -101,18 +109,35 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
+    final basic = (_state?.accountInfo?.experienceTier ?? 'BASIC') == 'BASIC';
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: ScreenHeader(
               title: 'Model Providers',
-              subtitle:
-                  'Configure supported LLM providers, encrypted API keys, and endpoint overrides. '
-                  'Submitted keys are encrypted at rest with Fernet and never redisplayed.',
+              subtitle: basic
+                  ? 'Connect a provider and safely save its access key.'
+                  : 'Configure supported LLM providers, encrypted API keys, and endpoint overrides. Submitted keys are encrypted at rest with Fernet and never redisplayed.',
             ),
           ),
+          if (_usageLimits?.ceilingReached == true || _usageLimits?.warning == true)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: UriSpace.lg, vertical: UriSpace.sm),
+                child: Material(
+                  color: _usageLimits!.ceilingReached ? colors.dangerSoft : colors.warningSoft,
+                  borderRadius: BorderRadius.circular(UriRadius.md),
+                  child: Padding(
+                    padding: const EdgeInsets.all(UriSpace.md),
+                    child: Text(_usageLimits!.ceilingReached
+                        ? 'Your monthly usage limit has been reached. Add or change a limit in Usage settings to continue.'
+                        : 'You are close to your monthly usage limit.'),
+                  ),
+                ),
+              ),
+            ),
           if (_errorMessage != null)
             SliverToBoxAdapter(
               child: Padding(
@@ -279,15 +304,21 @@ class _ProviderCard extends StatelessWidget {
                   ?.copyWith(color: colors.inkFaint),
             ),
             const SizedBox(height: UriSpace.md),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            // Wrap, not Row: at narrower card widths (e.g. the BASIC-tier
+            // layout, or a constrained settings content width) two
+            // full-width icon buttons side by side can overflow a plain
+            // Row - wrapping to a second line keeps both fully visible
+            // instead of silently clipping content off-screen.
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: UriSpace.sm,
+              runSpacing: UriSpace.xs,
               children: [
                 OutlinedButton.icon(
                   icon: const Icon(Icons.settings_outlined, size: 18),
                   label: const Text('Endpoint Config'),
                   onPressed: onEditConfig,
                 ),
-                const SizedBox(width: UriSpace.sm),
                 FilledButton.icon(
                   icon: const Icon(Icons.key_outlined, size: 18),
                   label: Text(

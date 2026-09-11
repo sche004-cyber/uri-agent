@@ -76,6 +76,8 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
+from uri_core.config.modes import DEFAULT_MODE, VALID_MODES
+
 SCHEMA_VERSION = "2.0"
 
 _USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_.-]{3,32}$")
@@ -167,6 +169,7 @@ class UserAccount:
     created_at: str
     role: str = ROLE_USER
     experience_tier: str = EXPERIENCE_TIER_BASIC
+    mode: str = DEFAULT_MODE
     status: str = STATUS_ACTIVE
     schema_version: str = SCHEMA_VERSION
 
@@ -294,6 +297,25 @@ class UserAccountStore:
 
         return None
 
+    def set_mode(self, user_id: str, mode: str) -> Optional[UserAccount]:
+        """Update the authenticated caller's own stored capability mode."""
+        if mode not in VALID_MODES:
+            raise UserAccountError(f"mode must be one of {sorted(VALID_MODES)}, got {mode!r}.")
+        accounts = self._load()
+        existing = accounts.get(user_id)
+        if existing is None:
+            return None
+        updated = UserAccount(
+            user_id=existing.user_id, username=existing.username,
+            password_salt=existing.password_salt, password_hash=existing.password_hash,
+            created_at=existing.created_at, role=existing.role,
+            experience_tier=existing.experience_tier, mode=mode,
+            status=existing.status, schema_version=existing.schema_version,
+        )
+        accounts[user_id] = updated
+        self._save(accounts)
+        return updated
+
     def get_by_user_id(self, user_id: str) -> Optional[UserAccount]:
         return self._load().get(user_id)
 
@@ -342,6 +364,7 @@ class UserAccountStore:
                     experience_tier=raw.get(
                         "experience_tier", EXPERIENCE_TIER_BASIC
                     ),
+                    mode=raw.get("mode") if raw.get("mode") in VALID_MODES else DEFAULT_MODE,
                     status=raw.get("status", STATUS_ACTIVE),
                     schema_version=raw.get(
                         "schema_version", SCHEMA_VERSION
@@ -369,6 +392,7 @@ class UserAccountStore:
                     created_at=earliest.created_at,
                     role=ROLE_ADMIN,
                     experience_tier=earliest.experience_tier,
+                    mode=earliest.mode,
                     status=earliest.status,
                     schema_version=earliest.schema_version,
                 )

@@ -23,10 +23,12 @@ import 'uri_client.dart'
         HomeSummary,
         MemoryWriteException,
         ModelStatus,
+        ModeInfo,
         ProviderEntry,
         ProviderKeyResult,
         UriClient,
         UriIdentity,
+        UsageLimitStatus,
         UserGrantsInfo;
 
 /// Prototype 2 (multi-client + runtime awareness): the result of the
@@ -490,6 +492,23 @@ class AppState extends ChangeNotifier {
     }
     return accepted;
   }
+
+  ModeInfo? modeInfo;
+  bool hasLoadedModeInfo = false;
+
+  Future<void> loadModeInfo() async {
+    modeInfo = await _client.getModeInfo();
+    hasLoadedModeInfo = true;
+    notifyListeners();
+  }
+
+  Future<bool> setMode(String mode) async {
+    final accepted = await _client.setMode(mode);
+    if (accepted) await loadModeInfo();
+    return accepted;
+  }
+
+  Future<UsageLimitStatus?> getUsageLimitStatus() => _client.getUsageLimitStatus();
 
   List<DeviceSession> devices = <DeviceSession>[];
   bool hasLoadedDevices = false;

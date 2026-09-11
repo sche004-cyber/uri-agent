@@ -1143,6 +1143,52 @@ class HttpUriClient implements UriClient {
   }
 
   @override
+  Future<ModeInfo?> getModeInfo() async {
+    try {
+      final response = await _http.get(Uri.parse('$baseUrl/modes'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final mode = body['mode'] as String?;
+      final modes = body['valid_modes'];
+      if (mode == null || modes is! List) return null;
+      return ModeInfo(mode: mode, validModes: modes.whereType<String>().toList());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> setMode(String mode) async {
+    try {
+      final response = await _http.put(Uri.parse('$baseUrl/modes'), headers: _jsonHeaders,
+          body: jsonEncode({'mode': mode})).timeout(const Duration(seconds: 30));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<UsageLimitStatus?> getUsageLimitStatus() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/usage'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final limits = body['limits'];
+      if (limits is! Map<String, dynamic>) return null;
+      return UsageLimitStatus(
+        warning: limits['warning'] == true,
+        ceilingReached: limits['ceiling_reached'] == true,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
   Future<List<DeviceSession>> listDevices() async {
     try {
       final response = await _http
@@ -1644,4 +1690,3 @@ class HttpUriClient implements UriClient {
     return response.statusCode == 200;
   }
 }
-

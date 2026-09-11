@@ -27,6 +27,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from uri_core.core.capability_registry import CapabilityDescriptor, CapabilityRegistry
 from uri_core.core.principal_context import PrincipalContext
+from uri_core.config.modes import DEFAULT_MODE, load_modes
 
 
 DEFAULT_GRANTS_PATH = "uri_workspace/capability_grants.json"
@@ -200,7 +201,10 @@ class CapabilityResolver:
         user_grants = store.get_grants(user_id, registry_ceiling_ids=registry_ids)
 
         # Intersection: registry_capabilities ∩ user_grants
-        allowed_ids = registry_ids & user_grants
+        modes = load_modes()
+        mode = principal.mode if principal and principal.mode else DEFAULT_MODE
+        mode_allowed_ids = set(modes.get(mode, modes[DEFAULT_MODE]))
+        allowed_ids = registry_ids & user_grants & mode_allowed_ids
 
         # Return descriptors in registry order
         return [d for d in all_descriptors if d.id in allowed_ids]
@@ -233,4 +237,8 @@ class CapabilityResolver:
 
         registry_ids = {d.id for d in reg.list_capabilities()}
         user_grants = store.get_grants(user_id, registry_ceiling_ids=registry_ids)
-        return capability_id in user_grants
+        modes = load_modes()
+        mode = principal.mode if principal and principal.mode else DEFAULT_MODE
+        mode_allowed_ids = set(modes.get(mode, modes[DEFAULT_MODE]))
+        allowed_ids = registry_ids & user_grants & mode_allowed_ids
+        return capability_id in allowed_ids

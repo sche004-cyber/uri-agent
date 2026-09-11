@@ -83,7 +83,14 @@ void main() {
       expect(accepted, isTrue);
       expect(appState.accountInfo?.experienceTier, 'ADVANCED');
 
-      final segmented = tester.widget<SegmentedButton<String>>(find.byType(SegmentedButton<String>));
+      // M22.8 added a second SegmentedButton<String> to this same screen
+      // (the work-mode picker) - disambiguate by segment values rather
+      // than by type alone, since find.byType now matches both.
+      final segmented = tester.widget<SegmentedButton<String>>(
+        find.byWidgetPredicate((widget) =>
+            widget is SegmentedButton<String> &&
+            widget.segments.any((segment) => segment.value == 'ADVANCED')),
+      );
       expect(segmented.selected, {'ADVANCED'});
     });
   });

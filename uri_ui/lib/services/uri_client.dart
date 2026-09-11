@@ -251,6 +251,22 @@ abstract class UriClient {
   /// whether the backend accepted it.
   Future<bool> setExperienceTier(String tier);
 
+  /// The caller's own capability mode (office/diagnostic/admin, M22.8)
+  /// and the server-supported choices, from GET /modes. A distinct axis
+  /// from experience_tier above: mode narrows what CapabilityResolver
+  /// actually returns; experience_tier only changes how much this
+  /// client explains. Never conflate the two.
+  Future<ModeInfo?> getModeInfo();
+
+  /// Changes only the logged-in account's own capability mode
+  /// (PUT /modes). Returns whether the backend accepted it.
+  Future<bool> setMode(String mode);
+
+  /// Current usage warning/ceiling state, from GET /usage's `limits`
+  /// object (M22.7) — used only for a presentation warning in the
+  /// client; never a client-side authorization decision.
+  Future<UsageLimitStatus?> getUsageLimitStatus();
+
   /// The logged-in user's own currently-active devices (GET
   /// /auth/devices) — each a distinct client-reported device_id with at
   /// least one still-valid login session. Empty (never fabricated) on
@@ -346,6 +362,18 @@ class AccountInfo {
   final String? runtimeDeviceId;
 
   bool get isAdmin => role == 'ADMIN';
+}
+
+class ModeInfo {
+  const ModeInfo({required this.mode, required this.validModes});
+  final String mode;
+  final List<String> validModes;
+}
+
+class UsageLimitStatus {
+  const UsageLimitStatus({required this.warning, required this.ceilingReached});
+  final bool warning;
+  final bool ceilingReached;
 }
 
 /// One of the logged-in user's own devices with at least one
@@ -588,4 +616,3 @@ class ProviderKeyResult {
     );
   }
 }
-

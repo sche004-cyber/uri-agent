@@ -22,15 +22,22 @@ and released it, along with M22.6 (`5b97e12`) verified and released
 immediately before it in the same session. Full regression suite:
 1,433/1,433 Python tests passing, 29 subtests passing, 0 failures.
 
-**M22.8: APPROVED / ENTERING IMPLEMENTATION LOOP (11 Sep 2026).** User
-approved [docs/plans/M22.8_MODES_TIERED_UX_PLAN.md](docs/plans/M22.8_MODES_TIERED_UX_PLAN.md)
-as written, under the new default auto-approval policy (`ORCHESTRATION.md`
-§1.5) — this is also the first milestone entering the normal
-Claude → Codex → Antigravity loop under that policy and under the
-companion permanent quota-exhaustion / durable-waiting invariant
-(`ORCHESTRATION.md` §3.1). See
-[docs/plans/M22.8_STATE.md](docs/plans/M22.8_STATE.md) for the live handoff
-record.
+**Current documented baseline (11 Sep 2026): M22.8 — DONE, VERIFIED.** Codex
+began implementing the accepted
+[modes/tiered-UX plan](docs/plans/M22.8_MODES_TIERED_UX_PLAN.md) and
+exhausted its daily quota mid-implementation. Under explicit, direct User
+authorization for this specific instance ("since codex has run out of
+quota... i want you to implement"), Claude completed the implementation
+(finding and fixing real defects the interruption left behind — see
+[M22.8_STATE.md](docs/plans/M22.8_STATE.md) for the full list) and
+independently audited its own completed work. All 8 acceptance criteria
+traced against source; full regression: 1,460/1,460 Python tests passing, 0
+failures; Flutter: 0 analyze errors, 112/112 tests passing. This is a
+recorded exception to standing role separation, not a new default — see
+`ORCHESTRATION.md` §3.1 (the permanent quota-exhaustion invariant) for the
+default (`WAITING_FOR_MODEL`) this instance deliberately did not use, by the
+User's own choice. M22.6, M22.7, and M22.8 all verified and released this
+session.
 
 ## Relationship to the older Phase 0–4 checklist
 

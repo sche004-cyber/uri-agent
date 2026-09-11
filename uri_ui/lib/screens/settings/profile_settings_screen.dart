@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/app_state.dart';
 import '../../services/app_state_scope.dart';
-import '../../services/uri_client.dart' show AccountInfo, DeviceSession;
+import '../../services/uri_client.dart' show AccountInfo, DeviceSession, ModeInfo;
 import '../../theme/uri_theme.dart';
 import '../../widgets/status_pill.dart';
 
@@ -20,6 +20,7 @@ class ProfileSettingsScreen extends StatefulWidget {
 
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   bool _isChangingTier = false;
+  bool _isChangingMode = false;
 
   @override
   void initState() {
@@ -30,7 +31,15 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       if (!state.hasLoadedIdentity) state.loadIdentity();
       if (!state.hasLoadedAccountInfo) state.loadAccountInfo();
       if (!state.hasLoadedDevices) state.loadDevices();
+      if (!state.hasLoadedModeInfo) state.loadModeInfo();
     });
+  }
+
+  Future<void> _changeMode(AppState state, String mode) async {
+    if (state.modeInfo?.mode == mode) return;
+    setState(() => _isChangingMode = true);
+    await state.setMode(mode);
+    if (mounted) setState(() => _isChangingMode = false);
   }
 
   Future<void> _changeTier(AppState state, String tier) async {
@@ -121,6 +130,13 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               onSelect: (tier) => _changeTier(state, tier),
             ),
             const SizedBox(height: UriSpace.lg),
+            _ModeSection(
+              modeInfo: state.modeInfo,
+              loaded: state.hasLoadedModeInfo,
+              busy: _isChangingMode,
+              onSelect: (mode) => _changeMode(state, mode),
+            ),
+            const SizedBox(height: UriSpace.lg),
             _DevicesSection(
               devices: state.devices,
               loaded: state.hasLoadedDevices,
@@ -132,6 +148,43 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       },
     );
   }
+}
+
+/// The `mode` capability-filtering axis (M22.8) - office/diagnostic/admin.
+/// Deliberately never shown alongside jargon like "token" or "context
+/// window": it is a distinct axis from experience_tier (see
+/// _ExperienceTierSection below) and must never be confused with it -
+/// experience_tier changes how much this client explains, mode changes
+/// which capabilities CapabilityResolver actually returns.
+class _ModeSection extends StatelessWidget {
+  const _ModeSection({required this.modeInfo, required this.loaded, required this.busy, required this.onSelect});
+  final ModeInfo? modeInfo;
+  final bool loaded;
+  final bool busy;
+  final ValueChanged<String> onSelect;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(UriSpace.lg),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Work mode', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 2),
+        const Text('Choose the kind of work you are doing. Diagnostic mode is for viewing information only.'),
+        const SizedBox(height: UriSpace.sm),
+        if (!loaded) const SizedBox(height: 32, child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
+        else SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(value: 'office', label: Text('Office')),
+            ButtonSegment(value: 'diagnostic', label: Text('Diagnostic')),
+            ButtonSegment(value: 'admin', label: Text('Admin')),
+          ],
+          selected: {modeInfo?.mode ?? 'office'},
+          onSelectionChanged: busy ? null : (selection) => onSelect(selection.first),
+        ),
+      ]),
+    ),
+  );
 }
 
 /// BASIC/ADVANCED — a zero-authority display/guidance preference (see

@@ -81,6 +81,8 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("POST", "/auth/logout"): USER,
     ("GET", "/auth/me"): USER,
     ("POST", "/auth/experience-tier"): USER,
+    ("GET", "/modes"): USER,
+    ("PUT", "/modes"): USER,
     ("GET", "/auth/devices"): USER,
     ("DELETE", "/auth/devices/{device_id}"): USER,
     ("POST", "/ask"): USER,
@@ -128,5 +130,5 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 49 application routes + 4 FastAPI auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 53
+# 51 application routes + 4 FastAPI auto-generated doc/schema routes.
+EXPECTED_ROUTE_COUNT = 55

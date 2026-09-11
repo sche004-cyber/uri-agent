@@ -2,26 +2,25 @@
 
 ## Resume point
 
-- **Completed baseline:** M22.7 usage metering, budgets, and pre-flight
-  ceiling enforcement, implemented by Codex against the accepted
-  [plan](docs/plans/M22.7_USAGE_METERING_PLAN.md), independently verified by
-  Claude Code (11 Sep 2026) — see the
-  [state and verification report](docs/plans/M22.7_STATE.md). All 11
-  acceptance criteria independently traced against source; full regression
-  suite **1,433/1,433 Python tests passing, 29 subtests passing, 0 failures**
-  (reproduced from scratch after Claude's bounded fix to a pre-existing M22.6
-  test-fixture isolation gap unrelated to M22.7's own changes — see the
-  report for the root-cause trace). M22.6 (`5b97e12`) and M22.7 both verified
-  and released this session.
-- **Next milestone:** M22.8 — Modes and tiered UX (office/diagnostic/admin
-  capability filters, BASIC/ADVANCED provider UI, ceiling-reached flow).
-  Depends on M22.4 and M22.7, both complete. Plan **APPROVED** by the User
-  (11 Sep 2026) under the new default auto-approval policy (see below) and
-  entering the normal implementation loop; see
-  [docs/plans/M22.8_MODES_TIERED_UX_PLAN.md](docs/plans/M22.8_MODES_TIERED_UX_PLAN.md)
-  and [docs/plans/M22.8_STATE.md](docs/plans/M22.8_STATE.md). Follow
-  [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md); do not
-  restart M22/M22.1–M22.7 audits.
+- **Completed baseline:** M22.8 modes and tiered UX (office/diagnostic/admin
+  capability filtering, BASIC-tier plain-language provider view,
+  ceiling-reached flow), independently verified by Claude Code (11 Sep 2026)
+  — see the [state and verification report](docs/plans/M22.8_STATE.md).
+  Codex began the implementation and exhausted its daily quota
+  mid-implementation; under explicit, direct User authorization for this one
+  instance, Claude completed it (finding and fixing several real defects
+  left by the interruption — duplicated/conflicting Flutter code across 5
+  files, a missing import, a broken test fixture, a genuine layout overflow,
+  and a pre-existing test's now-ambiguous widget finder — see the report's
+  full defect list) and independently audited its own completed work exactly
+  as it would audit anyone else's. All 8 acceptance criteria independently
+  traced against source; full regression: **1,460/1,460 Python tests
+  passing, 0 failures**; Flutter: **0 analyze errors, 112/112 tests
+  passing**. M22.6, M22.7, and M22.8 all verified and released this session.
+- **Next milestone:** M22.9 — see
+  [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md) for scope. Standing role
+  separation resumes: Claude plans/audits/releases, Codex/Gemma implement.
+  Do not restart M22/M22.1–M22.8 audits.
 - **Standing governance change (11 Sep 2026, permanent):** all future
   milestone plans are auto-approved by default — Claude no longer waits for
   explicit User ACCEPT/MODIFY on routine engineering work; the User is
