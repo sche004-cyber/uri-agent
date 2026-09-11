@@ -2,25 +2,30 @@
 
 ## Resume point
 
-- **Completed baseline:** M22.8 modes and tiered UX (office/diagnostic/admin
-  capability filtering, BASIC-tier plain-language provider view,
-  ceiling-reached flow), independently verified by Claude Code (11 Sep 2026)
-  — see the [state and verification report](docs/plans/M22.8_STATE.md).
-  Codex began the implementation and exhausted its daily quota
-  mid-implementation; under explicit, direct User authorization for this one
-  instance, Claude completed it (finding and fixing several real defects
-  left by the interruption — duplicated/conflicting Flutter code across 5
-  files, a missing import, a broken test fixture, a genuine layout overflow,
-  and a pre-existing test's now-ambiguous widget finder — see the report's
-  full defect list) and independently audited its own completed work exactly
-  as it would audit anyone else's. All 8 acceptance criteria independently
-  traced against source; full regression: **1,460/1,460 Python tests
-  passing, 0 failures**; Flutter: **0 analyze errors, 112/112 tests
-  passing**. M22.6, M22.7, and M22.8 all verified and released this session.
-- **Next milestone:** M22.9 — see
-  [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md) for scope. Standing role
+- **Completed baseline:** M22.9 — PWA/mobile client branding and durable
+  session handling (commit `9c848fe`), implemented directly by Claude under
+  explicit User authorization (Codex quota-exhausted, no Antigravity/Codex/
+  Gemma session reachable from the Claude Code session) and self-audited —
+  see [the state and verification report](docs/plans/M22.9_STATE.md),
+  including a mid-implementation mistake `flutter analyze` caught and Claude
+  corrected before commit. `flutter analyze` 0 errors; `flutter test`
+  118/118 passing; APK built; static secret-scan of the built APK PASS.
+  **Acceptance criterion 4 (hands-on device-install confirmation) is
+  outstanding** — needs the User directly. This closes the full M22.1–M22.9
+  sequence (`URI_M22_ARCHITECTURE.md` §22's dependency graph) — all nine now
+  `DONE`/`DONE-pending-device-check`.
+- **Next milestone:** **M23 — URI-native Graph Intelligence foundation**
+  (structured entities, typed relationships, bounded query/path/explain/
+  impact primitives, provenance — see
+  [the plan](docs/plans/M23_GRAPH_INTELLIGENCE_PLAN.md)). `STATE: ACCEPTED`
+  (auto-approved per the standing rule below; plan only, not yet
+  implemented — see [M23_STATE.md](docs/plans/M23_STATE.md)). Explicitly
+  numbered **M23**, not "M22.10" — that number stays reserved for the
+  separate, still-unbuilt
+  [relevance-scoped memory/context retrieval proposal](docs/plans/M22_MEMORY_CONTEXT_RETRIEVAL_ARCHITECTURE.md)
+  (see the M23 plan's own §0 for the full reasoning). Standing role
   separation resumes: Claude plans/audits/releases, Codex/Gemma implement.
-  Do not restart M22/M22.1–M22.8 audits.
+  Do not restart M22/M22.1–M22.9 audits.
 - **Standing governance change (11 Sep 2026, permanent):** all future
   milestone plans are auto-approved by default — Claude no longer waits for
   explicit User ACCEPT/MODIFY on routine engineering work; the User is
