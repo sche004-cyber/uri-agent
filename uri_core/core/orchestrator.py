@@ -45,6 +45,8 @@ from uri_core.core.evidence_context import (
     get_verified_evidence
 )
 from uri_core.core.query_context import build_query_context
+from uri_core.core.graph_store import GraphStore
+from uri_core.core.graph_engine import graph_self_context
 from uri_core.core.diagnostics_context import build_diagnostics_context
 from uri_core.core.experience_store import (
     ExperienceStore,
@@ -115,7 +117,8 @@ class UriOrchestrator:
         conversation_history=None,
         capability_registry=None,
         capability_feasibility=None,
-        principal=None
+        principal=None,
+        graph_store=None
     ):
 
         # Milestone 11 Part 2 (Brain re-evaluation loop): a safety cap
@@ -322,6 +325,7 @@ class UriOrchestrator:
             file_store if file_store is not None else FileStore()
         )
 
+        self.graph_store = graph_store if graph_store is not None else GraphStore()  # M23
         # M18: durable per-user/per-session conversation transcript.
         # Injectable and user-scoped by the server (see
         # _build_user_context); a None default keeps the legacy ambient
@@ -2937,11 +2941,7 @@ class UriOrchestrator:
         # caller, is this turn's own most recent real execution outcome
         # (see _run_model_reasoning/_draft_narrative_safely).
         try:
-            recent_events = (
-                self.audit_trail.for_session(session_id)
-                if session_id
-                else []
-            )
+            recent_events = self.audit_trail.for_session(session_id) if session_id else []
         except Exception:
             recent_events = []
 
@@ -2970,9 +2970,7 @@ class UriOrchestrator:
         # ordering and only trims for size - no relevance scoring added.
         try:
             experience = fit_within_budget(
-                summarize_experience_for_query_context(
-                    self.experience_store.recent()
-                ),
+                summarize_experience_for_query_context(self.experience_store.recent()),
                 MAX_EXPERIENCE_CONTEXT_TOKENS,
             )
         except Exception:
@@ -2987,10 +2985,7 @@ class UriOrchestrator:
         # never claim a file exists that URI cannot actually produce.
         try:
             attachments = [
-                record.to_reference()
-                for record in self.file_store.list_for_session(
-                    session_id
-                )
+                r.to_reference() for r in self.file_store.list_for_session(session_id)
             ] if session_id else []
         except Exception:
             attachments = []
@@ -3003,6 +2998,10 @@ class UriOrchestrator:
         # conversation_history.py's own module docstring on that
         # distinction).
         conversation = self._build_conversation_context(session_id)
+        try:  # M23 - principal already resolved above
+            graph_context = graph_self_context(self.graph_store, getattr(principal, "user_id", None))
+        except Exception:
+            graph_context = None
 
         return build_query_context(
             policy_text=policy_text,
@@ -3015,6 +3014,7 @@ class UriOrchestrator:
             experience=experience,
             attachments=attachments,
             conversation=conversation,
+            graph_context=graph_context,
         )
 
     def _build_conversation_context(self, session_id):

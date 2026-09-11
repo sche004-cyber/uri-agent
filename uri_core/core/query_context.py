@@ -92,6 +92,7 @@ def build_query_context(
     experience: Optional[List[Dict[str, Any]]] = None,
     attachments: Optional[List[Dict[str, Any]]] = None,
     conversation: Optional[List[Dict[str, Any]]] = None,
+    graph_context: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Assembles one bounded, labeled dict for a single Brain query -
     never prose, never free-form instruction text, so a query prompt
@@ -168,6 +169,14 @@ def build_query_context(
       this module or its caller, and carries no more authority than any
       other section here. Degrades to an empty list when no
       conversation_history is available or session_id is unknown.
+    - graph_context (M23): the bounded structured graph envelope from
+      graph_context.build_graph_context() - entities/relationships/
+      paths/provenance/confidence_status the caller already resolved
+      via graph_engine.py's bounded read primitives. Context/evidence
+      only, exactly like verified_facts/experience/conversation above -
+      never an authorization input (see graph_engine.py/graph_store.py
+      module docstrings and test_graph_authority_boundary.py). Degrades
+      to the all-empty shape when omitted.
 
     Any argument may be omitted (None) - the corresponding section
     degrades to an empty value rather than being guessed at, matching
@@ -194,4 +203,11 @@ def build_query_context(
         "experience": experience or [],
         "attachments": attachments or [],
         "conversation": conversation or [],
+        "graph_context": graph_context or {
+            "entities": [],
+            "relationships": [],
+            "paths": [],
+            "provenance": [],
+            "confidence_status": [],
+        },
     }

@@ -34,6 +34,11 @@ uri_workspace/skill_memory.json
 uri_workspace/uri_memory.json
 uri_workspace/friction_log.json
 uri_workspace/experience.json
+# M23: legacy-ambient graph store and its type-extension ledger -
+# install-local runtime state, not source (per-user copies live under
+# users/, already covered by uri_workspace/users/ above).
+uri_workspace/graph.sqlite3
+uri_workspace/graph_type_extensions.json
 # M18: durable conversation transcripts and the installed-skill ledger
 # are runtime state, not source (per-user copies live under users/).
 uri_workspace/conversation_history/

@@ -96,6 +96,16 @@ from uri_core.core.user_profile import (
     UserProfileStore,
     UserProfileValidationError,
 )
+from uri_core.core.graph_store import GraphStore
+from uri_core.core.graph_engine import (
+    graph_explain,
+    graph_get_entity,
+    graph_impact,
+    graph_neighbors,
+    graph_path,
+    graph_query,
+)
+from uri_core.core.graph_ingest import ingest_memory_entry
 
 # One orchestrator instance for the process lifetime, matching how the
 # existing PyQt prototype uses it — session state lives inside
@@ -164,6 +174,16 @@ _user_identity_store = UserIdentityStore()
 _device_identity_store = DeviceIdentityStore()
 _user_profile_store = UserProfileStore()
 _memory_store = MemoryStore()
+
+# M23: graph context/evidence only - never authority (see
+# graph_store.py/graph_engine.py module docstrings). Legacy-ambient
+# single-install store, same convention as every store above.
+# _orchestrator (constructed above, before this store existed) is
+# repointed at this same instance so its Brain-facing graph_context
+# section reads the identical store the /graph/* routes below expose
+# for an anonymous/legacy caller - never two silently-divergent files.
+_graph_store = GraphStore()
+_orchestrator.graph_store = _graph_store
 
 # Growth ledger: see growth_ledger.py. Every event is recorded only as
 # a side effect of a real, already-succeeded user-driven write below
@@ -249,6 +269,7 @@ class _UserContext:
     growth_ledger_store: GrowthLedgerStore
     orchestrator: UriOrchestrator
     file_store: FileStore
+    graph_store: GraphStore
 
 
 _user_contexts: dict = {}
@@ -345,6 +366,21 @@ def _build_user_context(user_id: str) -> _UserContext:
         )
     )
 
+    # M23: graph_store follows the exact same per-user-directory
+    # discipline as file_store/experience_store/skill_memory above -
+    # one user's structured graph never leaks into another's (see
+    # graph_store.py's own module docstring and
+    # test_graph_isolation.py). Passed into UriOrchestrator(graph_store=
+    # ...) so the Brain's own bounded graph_context section
+    # (orchestrator._build_graph_context) reads only this user's own
+    # data, and into _UserContext so the /graph/* endpoints below read
+    # the same instance.
+    graph_store = GraphStore(
+        storage_path=user_scoped_path(
+            user_id, "graph.sqlite3", root=_USER_STATE_ROOT
+        )
+    )
+
     orchestrator = UriOrchestrator(
         model_reasoning_gateway=ModelReasoningGateway(
             model_callable=OllamaReasoningAdapter(principal=principal)
@@ -357,6 +393,7 @@ def _build_user_context(user_id: str) -> _UserContext:
         skill_memory=skill_memory,
         conversation_history=conversation_history,
         principal=principal,
+        graph_store=graph_store,
     )
 
     return _UserContext(
@@ -365,6 +402,7 @@ def _build_user_context(user_id: str) -> _UserContext:
         growth_ledger_store=growth_ledger_store,
         orchestrator=orchestrator,
         file_store=file_store,
+        graph_store=graph_store,
     )
 
 
@@ -391,6 +429,7 @@ def _resolve_context(user_id: Optional[str]) -> _UserContext:
             growth_ledger_store=_growth_ledger_store,
             orchestrator=_orchestrator,
             file_store=_file_store,
+            graph_store=_graph_store,
         )
 
     return _get_user_context(user_id)
@@ -1410,7 +1449,141 @@ def confirm_memory(
     if confirmed is None:
         raise HTTPException(status_code=404, detail="Memory not found.")
 
+    # M23: the real, live ingestion trigger point (plan section 9) -
+    # a memory becoming eligible for personalization right here is
+    # exactly the moment graph_ingest.ingest_memory_entry's own
+    # eligibility re-check expects. user_id may be None for the
+    # legacy-ambient path; ingest_memory_entry treats an empty
+    # external user_id the same way upsert_node already does (no
+    # special-casing needed here). Never blocks the confirm response
+    # on a graph-store failure - this is additive context, not
+    # authority, so any exception here must never surface as this
+    # endpoint's own failure.
+    try:
+        ingest_memory_entry(context.graph_store, confirmed, user_id or "")
+    except Exception:
+        pass
+
     return _memory_entry_to_dict(confirmed)
+
+
+# ---------------------------------------------------------------
+# M23: Graph Intelligence - read-only, self-scoped query/traversal.
+#
+# Every route below reads exactly one thing: the authenticated
+# caller's OWN GraphStore (see _resolve_context) - never another
+# user's. All six are pure reads over graph_engine.py's bounded
+# primitives; none writes. The graph is context/evidence for the
+# Brain, never an independent authorization source (see
+# graph_store.py/graph_engine.py module docstrings and
+# test_graph_authority_boundary.py) - nothing here grants, checks, or
+# implies any capability/approval authority.
+# ---------------------------------------------------------------
+
+
+@app.get("/graph/entities/{entity_id}")
+def graph_get_entity_route(
+    entity_id: str,
+    limit: int = 50,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """One node (plus its bounded, ACTIVE-only incident edges) from the
+    caller's own graph. 404 for an unknown id, or one that belongs to
+    a different user's isolated GraphStore - this route can never
+    distinguish those two cases from the caller's own store, which is
+    the isolation guarantee itself (see test_graph_isolation.py)."""
+    context = _resolve_context(user_id)
+    result = graph_get_entity(context.graph_store, entity_id, limit=limit)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Entity not found.")
+    return result
+
+
+@app.get("/graph/query")
+def graph_query_route(
+    entity_type: Optional[str] = None,
+    name_contains: Optional[str] = None,
+    limit: int = 50,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Filtered node listing over the caller's own graph. limit is
+    always server-capped by graph_engine.graph_query regardless of the
+    query-parameter value supplied."""
+    context = _resolve_context(user_id)
+    return {"entities": graph_query(context.graph_store, entity_type=entity_type, name_contains=name_contains, limit=limit)}
+
+
+@app.get("/graph/neighbors/{entity_id}")
+def graph_neighbors_route(
+    entity_id: str,
+    relationship_types: Optional[str] = None,
+    direction: str = "both",
+    limit: int = 50,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """One-hop neighbors of entity_id in the caller's own graph, each
+    with its connecting edge's own provenance/confidence/status.
+    relationship_types is a comma-separated list, e.g.
+    'DEPENDS_ON,AFFECTS'; omitted means all types."""
+    context = _resolve_context(user_id)
+    types = [t.strip() for t in relationship_types.split(",")] if relationship_types else None
+    return {
+        "neighbors": graph_neighbors(
+            context.graph_store, entity_id, relationship_types=types, direction=direction, limit=limit
+        )
+    }
+
+
+@app.get("/graph/path")
+def graph_path_route(
+    source_id: str,
+    target_id: str,
+    max_hops: int = 4,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Bounded shortest path between two entities in the caller's own
+    graph. max_hops is always clamped server-side (graph_engine.
+    MAX_HOPS_CEILING) regardless of the query-parameter value
+    supplied. {"path": null} when no path exists within the bound -
+    never an error."""
+    context = _resolve_context(user_id)
+    return {"path": graph_path(context.graph_store, source_id, target_id, max_hops=max_hops)}
+
+
+@app.get("/graph/explain")
+def graph_explain_route(
+    source_id: str,
+    target_id: str,
+    max_hops: int = 4,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Why are these two entities connected: the bounded path plus
+    each edge's own provenance/confidence/status - real citations, not
+    a generated narrative (that remains the Brain's own job)."""
+    context = _resolve_context(user_id)
+    return graph_explain(context.graph_store, source_id, target_id, max_hops=max_hops)
+
+
+@app.get("/graph/impact/{entity_id}")
+def graph_impact_route(
+    entity_id: str,
+    relationship_types: Optional[str] = None,
+    direction: str = "incoming",
+    max_hops: int = 3,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Bounded impact analysis: what would be affected if entity_id
+    changed, along the named relationship types (default DEPENDS_ON/
+    AFFECTS). Read-only and reporting-only - never a trigger for any
+    execution decision (see graph_engine.graph_impact's own
+    docstring)."""
+    context = _resolve_context(user_id)
+    types = [t.strip() for t in relationship_types.split(",")] if relationship_types else ("DEPENDS_ON", "AFFECTS")
+    return {
+        "impact": graph_impact(
+            context.graph_store, entity_id, relationship_types=types, direction=direction, max_hops=max_hops
+        )
+    }
 
 
 @app.get("/skills")

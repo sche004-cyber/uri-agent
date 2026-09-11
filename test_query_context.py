@@ -63,6 +63,7 @@ class BuildQueryContextTests(unittest.TestCase):
                 "experience",
                 "attachments",
                 "conversation",
+                "graph_context",
             },
         )
         self.assertEqual(context["identity"], "")

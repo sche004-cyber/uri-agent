@@ -117,6 +117,18 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("GET", "/usage"): USER,
     ("GET", "/usage/limits"): USER,
     ("PUT", "/usage/limits"): USER,
+    # M23: Graph Intelligence - read-only, self-scoped, same
+    # USER/self-service pattern as /memory above. The graph is
+    # context/evidence only, never authority (see
+    # graph_store.py/graph_engine.py module docstrings) - USER
+    # classification here is about who may READ it, not a grant of
+    # any execution/approval authority.
+    ("GET", "/graph/entities/{entity_id}"): USER,
+    ("GET", "/graph/query"): USER,
+    ("GET", "/graph/neighbors/{entity_id}"): USER,
+    ("GET", "/graph/path"): USER,
+    ("GET", "/graph/explain"): USER,
+    ("GET", "/graph/impact/{entity_id}"): USER,
 }
 
 for _route in DEFERRED_PUBLIC_ROUTES:
@@ -130,5 +142,6 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 51 application routes + 4 FastAPI auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 55
+# 57 application routes (51 + 6 new M23 /graph/* routes) + 4 FastAPI
+# auto-generated doc/schema routes.
+EXPECTED_ROUTE_COUNT = 61
