@@ -9,6 +9,7 @@ import '../models/user_preferences.dart';
 import '../models/uri_turn.dart';
 import 'preferences_store.dart';
 import 'server_address_store.dart';
+import 'session_store.dart';
 import 'theme_store.dart';
 import 'uri_client.dart'
     show
@@ -49,17 +50,20 @@ class AppState extends ChangeNotifier {
     PreferencesStore? preferencesStore,
     ServerAddressStore? serverAddressStore,
     ThemeStore? themeStore,
+    SessionStore? sessionStore,
     UserPreferences? initialPreferences,
   }) : _client = client,
        _preferencesStore = preferencesStore ?? PreferencesStore(),
        _serverAddressStore = serverAddressStore ?? ServerAddressStore(),
        _themeStore = themeStore ?? ThemeStore(),
+       _sessionStore = sessionStore ?? SessionStore(),
        preferences = initialPreferences ?? const UserPreferences.initial();
 
   final UriClient _client;
   final PreferencesStore _preferencesStore;
   final ServerAddressStore _serverAddressStore;
   final ThemeStore _themeStore;
+  final SessionStore _sessionStore;
 
   UserPreferences preferences;
 
@@ -100,14 +104,58 @@ class AppState extends ChangeNotifier {
 
   Future<AuthOutcome> login(String username, String password) async {
     final outcome = await _client.login(username, password);
+    if (outcome.success) await _persistSession(username);
     notifyListeners();
     return outcome;
   }
 
   Future<AuthOutcome> signup(String username, String password) async {
     final outcome = await _client.signup(username, password);
+    if (outcome.success) await _persistSession(username);
     notifyListeners();
     return outcome;
+  }
+
+  /// M22.9 (§0.3): saves the token this login/signup just produced, so
+  /// it survives the app being closed and reopened. A client (e.g.
+  /// [MockUriClient] before any login) that has no real token to give
+  /// is simply not persisted — nothing is invented.
+  Future<void> _persistSession(String username) async {
+    final token = _client.authToken;
+    if (token != null) await _sessionStore.save(token: token, username: username);
+  }
+
+  /// M22.9 (§0.3): restores a token persisted by a previous launch
+  /// (see [_persistSession]) and proactively confirms with the backend
+  /// that it is still valid, rather than waiting for the user's first
+  /// action to fail — an expired/invalid token degrades honestly to
+  /// the logged-out state instead of a confusing later error. Call
+  /// once, alongside the app's other loadPersisted* calls, before the
+  /// first frame.
+  Future<void> loadPersistedSession() async {
+    final saved = await _sessionStore.load();
+    if (saved == null) return;
+    _client.restoreSession(token: saved.token, username: saved.username);
+    // Shown as logged-in immediately (optimistic) so a returning user
+    // never sees a login-screen flash while validation is still
+    // in-flight; revalidateSession() below corrects this if the
+    // backend actually rejects the token.
+    notifyListeners();
+    await revalidateSession();
+  }
+
+  /// M22.9 (§0.3): proactively re-checks the current session with the
+  /// backend (see [UriClient.validateSession]) — call this whenever the
+  /// app resumes from the background, not only at launch, so a session
+  /// that expired while backgrounded degrades honestly instead of the
+  /// user hitting a confusing failure on their next action. A no-op
+  /// when not currently authenticated.
+  Future<void> revalidateSession() async {
+    if (!isAuthenticated) return;
+    final stillValid = await _client.validateSession();
+    if (!stillValid) {
+      await _clearSessionState();
+    }
   }
 
   /// Logs out and clears every piece of state this client fetched
@@ -116,6 +164,11 @@ class AppState extends ChangeNotifier {
   /// left over in this in-memory UI state.
   Future<void> logout() async {
     await _client.logout();
+    await _clearSessionState();
+  }
+
+  Future<void> _clearSessionState() async {
+    await _sessionStore.clear();
     conversation.clear();
     tasks.clear();
     homeSummary = null;

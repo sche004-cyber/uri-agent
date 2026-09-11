@@ -15,8 +15,11 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.uri_ui"
+        // M22.9: placeholder applicationId, resolved directly by the
+        // User at plan ACCEPT (see docs/plans/M22.9_STATE.md) — NOT
+        // publish-ready. Rename before any real Play Store publish or
+        // long-term device side-load.
+        applicationId = "com.uriagent.dev"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

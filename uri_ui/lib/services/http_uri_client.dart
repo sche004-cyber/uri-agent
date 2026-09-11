@@ -216,6 +216,53 @@ class HttpUriClient implements UriClient {
   }
 
   @override
+  String? get authToken => _token;
+
+  @override
+  void restoreSession({required String token, required String username}) {
+    _token = token;
+    _username = username;
+  }
+
+  @override
+  Future<bool> validateSession() async {
+    if (_token == null) return false;
+
+    http.Response response;
+    try {
+      response = await _http
+          .get(Uri.parse('$baseUrl/auth/me'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 15));
+    } catch (_) {
+      // Unreachable right now is not the same as rejected - a phone
+      // that's briefly offline must not be silently logged out.
+      return true;
+    }
+
+    if (response.statusCode != 200) {
+      // An unexpected non-200 (e.g. a transient 5xx) is a server
+      // problem, not proof the token itself was rejected - GET
+      // /auth/me itself never returns anything but 200, reporting
+      // rejection via {"authenticated": false} in the body instead
+      // (see server.py's auth_me), which is checked below.
+      return true;
+    }
+
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      if (body['authenticated'] != true) {
+        _token = null;
+        _username = null;
+        return false;
+      }
+    } catch (_) {
+      return true;
+    }
+
+    return true;
+  }
+
+  @override
   Future<UriTurn> ask(String text, {String? turnId}) async {
     final id = turnId ?? 'turn-${DateTime.now().microsecondsSinceEpoch}';
     final timestamp = DateTime.now();

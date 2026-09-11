@@ -70,6 +70,34 @@ class MockUriClient implements UriClient {
     _username = null;
   }
 
+  /// M22.9 (§0.3): a fixed, non-secret stand-in token — good enough for
+  /// [SessionStore] persistence to exercise the same code path
+  /// [HttpUriClient] does, with no real backend involved.
+  @override
+  String? get authToken => _username == null ? null : 'mock-token-$_username';
+
+  @override
+  void restoreSession({required String token, required String username}) {
+    _username = username;
+  }
+
+  /// Test hook: set to false to make the next [validateSession] call
+  /// behave like a backend that has rejected the token (expired/
+  /// invalid), which also logs this mock out - matching
+  /// [HttpUriClient]'s real behaviour so AppState tests can exercise
+  /// both outcomes without a real backend.
+  bool nextValidateSessionResult = true;
+
+  @override
+  Future<bool> validateSession() async {
+    if (_username == null) return false;
+    if (!nextValidateSessionResult) {
+      _username = null;
+      return false;
+    }
+    return true;
+  }
+
   // ---------------------------------------------------------------
   // Connection config — no real backend, so these are trivial: this
   // mock is always "reachable" and baseUrl is a fixed placeholder

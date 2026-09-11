@@ -37,6 +37,11 @@ void main() async {
   await appState.loadPersistedPreferences();
   await appState.loadPersistedServerAddress();
   await appState.loadPersistedThemeMode();
+  // M22.9 (§0.3): restores and proactively revalidates a still-valid
+  // login from a previous launch, so closing/reopening the app does
+  // not force a fresh sign-in every time. Depends on the server
+  // address above already being applied to _client.
+  await appState.loadPersistedSession();
 
   // M16: the real platform picker (and, likewise, the real platform
   // attachment opener) is injected here, at the entry point, and

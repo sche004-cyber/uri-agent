@@ -1,11 +1,11 @@
 {
-    "name": "uri_ui",
-    "short_name": "uri_ui",
+    "name": "URI — AI COMPANION",
+    "short_name": "URI",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FAF9F6",
+    "theme_color": "#4A3AFF",
+    "description": "URI, your AI companion.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/uri_client.dart';
 import '../../theme/uri_theme.dart';
+import '../../widgets/uri_wordmark.dart';
 
 /// Prototype 1 (multi-user identity): the minimum login/signup flow
 /// needed to prove one URI server can serve multiple isolated users -
@@ -77,6 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const UriWordmark(markSize: 40, showTagline: true),
+                  const SizedBox(height: UriSpace.lg),
                   Text(
                     _isSignupMode ? 'Create your URI account' : 'Sign in to URI',
                     style: theme.textTheme.headlineMedium,

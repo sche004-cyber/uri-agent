@@ -10,7 +10,12 @@ import '../theme/uri_theme.dart';
 /// logo/asset-based rebrand is out of scope here; see
 /// URI_M22_ARCHITECTURE.md section 14, M22.9).
 class UriWordmark extends StatelessWidget {
-  const UriWordmark({super.key, this.markSize = 30, this.showWordmark = true});
+  const UriWordmark({
+    super.key,
+    this.markSize = 30,
+    this.showWordmark = true,
+    this.showTagline = false,
+  });
 
   /// Side length of the square mark. The wordmark text scales with the
   /// current theme's headlineSmall regardless of this.
@@ -20,26 +25,62 @@ class UriWordmark extends StatelessWidget {
   /// space than app_shell.dart's sidebar header needs.
   final bool showWordmark;
 
+  /// M22.9 (§0.1): also shows the resolved text-only sub-brand,
+  /// "— AI COMPANION", beneath "URI" — the full wordmark the User
+  /// approved for this milestone. Default false so every pre-existing
+  /// call site (the sidebar header, the About screen) keeps its exact
+  /// prior look; only the entry points that actually want the full
+  /// branded treatment (login, onboarding) opt in.
+  final bool showTagline;
+
   @override
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
+    final mark = Container(
+      width: markSize,
+      height: markSize,
+      decoration: BoxDecoration(color: colors.ink, borderRadius: BorderRadius.circular(markSize * 0.3)),
+      alignment: Alignment.center,
+      child: Text(
+        'U',
+        style: TextStyle(color: colors.canvas, fontWeight: FontWeight.w700, fontSize: markSize * 0.53),
+      ),
+    );
+
+    if (!showWordmark) {
+      return mark;
+    }
+
+    final wordmarkText = Text('URI', style: Theme.of(context).textTheme.headlineSmall);
+
+    if (!showTagline) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [mark, const SizedBox(width: 10), wordmarkText],
+      );
+    }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: markSize,
-          height: markSize,
-          decoration: BoxDecoration(color: colors.ink, borderRadius: BorderRadius.circular(markSize * 0.3)),
-          alignment: Alignment.center,
-          child: Text(
-            'U',
-            style: TextStyle(color: colors.canvas, fontWeight: FontWeight.w700, fontSize: markSize * 0.53),
-          ),
+        mark,
+        const SizedBox(width: 10),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            wordmarkText,
+            Text(
+              '— AI COMPANION',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: colors.inkFaint,
+                fontSize: 12,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ],
         ),
-        if (showWordmark) ...[
-          const SizedBox(width: 10),
-          Text('URI', style: Theme.of(context).textTheme.headlineSmall),
-        ],
       ],
     );
   }

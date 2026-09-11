@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/user_preferences.dart';
 import '../../theme/uri_theme.dart';
+import '../../widgets/uri_wordmark.dart';
 
 /// A short first-run flow. Every question here is meant to change how
 /// URI actually behaves (what it looks for, how it phrases things, how
@@ -63,6 +64,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  const UriWordmark(markSize: 40, showTagline: true),
+                  const SizedBox(height: UriSpace.lg),
                   Row(
                     children: [
                       for (var i = 0; i < _totalSteps; i++) ...[

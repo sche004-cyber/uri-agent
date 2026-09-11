@@ -29,7 +29,7 @@ import 'widgets/app_shell.dart';
 /// Root widget. Decides between the first-run onboarding flow and the
 /// main application shell based on [AppState.preferences]. Everything
 /// below this point shares one [AppState] via [AppStateScope].
-class UriApp extends StatelessWidget {
+class UriApp extends StatefulWidget {
   const UriApp({
     super.key,
     required this.appState,
@@ -50,7 +50,36 @@ class UriApp extends StatelessWidget {
   final AttachmentOpenerFn? attachmentOpener;
 
   @override
+  State<UriApp> createState() => _UriAppState();
+}
+
+class _UriAppState extends State<UriApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// M22.9 (§0.3): re-checks the current session with the backend the
+  /// moment the app comes back to the foreground — a mobile app spends
+  /// most of its life backgrounded, so this is the actual moment a
+  /// session might have quietly expired since it was last used.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      widget.appState.revalidateSession();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final appState = widget.appState;
     return AppStateScope(
       state: appState,
       child: ListenableBuilder(
@@ -69,8 +98,8 @@ class UriApp extends StatelessWidget {
             themeMode: appState.themeMode,
             home: _RootGate(
               appState: appState,
-              filePicker: filePicker,
-              attachmentOpener: attachmentOpener,
+              filePicker: widget.filePicker,
+              attachmentOpener: widget.attachmentOpener,
             ),
           );
         },

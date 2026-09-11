@@ -53,6 +53,34 @@ abstract class UriClient {
   /// until [login]/[signup] succeeds again.
   Future<void> logout();
 
+  /// M22.9 (§0.3): the bearer token currently held by this client, or
+  /// null when [isAuthenticated] is false. Exposed only so
+  /// [SessionStore] can persist it on-device (see
+  /// AppState.login/signup/logout) — never sent anywhere by the client
+  /// itself beyond the Authorization header it already attaches to
+  /// every request.
+  String? get authToken;
+
+  /// M22.9 (§0.3): restores a previously persisted [token]/[username]
+  /// into this client without a network call — used at app launch so a
+  /// still-valid session survives the app being closed and reopened,
+  /// instead of forcing a fresh login every time (see [SessionStore]).
+  /// Does not by itself prove the token is still valid server-side;
+  /// call [validateSession] afterwards for that.
+  void restoreSession({required String token, required String username});
+
+  /// M22.9 (§0.3/§5.3): proactively confirms the currently held token
+  /// is still accepted by the backend, rather than waiting for some
+  /// unrelated request to fail first. Returns false — and clears the
+  /// locally held token/username, so [isAuthenticated] becomes false —
+  /// only when the backend has actually and explicitly rejected the
+  /// token (expired/invalid); an unreachable backend leaves the
+  /// session untouched and returns true, since "can't confirm right
+  /// now" must never be treated the same as "confirmed invalid". Never
+  /// extends or invents trust beyond what the server itself has
+  /// actually confirmed.
+  Future<bool> validateSession();
+
   /// Prototype 2 (multi-client + runtime awareness): the backend
   /// address this client is currently configured to talk to. Never
   /// "localhost" by assumption on every device — a phone reaching a
