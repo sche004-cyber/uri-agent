@@ -61,7 +61,9 @@ The development operating model follows the authoritative cycle established by t
    - Do not force complex implementation through Gemma when Codex is the more appropriate implementation worker.
    - No Git authority; no final release audit.
 5. **Specialist / Design Agents:** Advisory only — may propose architecture improvements, UI/UX, interface layouts, and URI response/reply presentation/interaction-workflow improvements. Do not implement. Where a proposal materially affects architecture or milestone behavior, Claude reviews it before it becomes implementation guidance.
-6. **User:** Final Authority. Accepts/modifies every milestone plan; non-delegable authority over architecture and security policy. Release itself is performed solely by Claude (item 1), not by the User directly.
+6. **User:** Final Authority. Non-delegable authority over architecture and security policy. Release itself is performed solely by Claude (item 1), not by the User directly.
+   - **Default auto-approval (2026-09-11, permanent):** all future milestone plans are auto-approved by default — Claude proceeds `DRAFT → ACCEPTED` itself for routine engineering work without waiting for explicit ACCEPT/MODIFY. The User is interrupted only when a decision would materially change URI's core project structure, fundamental product identity, security/authority model, or another constitutional boundary. See [ORCHESTRATION.md](ORCHESTRATION.md) §1.5.
+   - **Permanent quota-exhaustion invariant (2026-09-11):** Antigravity must place the workflow into a durable `WAITING_FOR_MODEL` state (never `BLOCKED`, never a failed task, never silent model substitution) when Claude or Codex is temporarily unavailable, and resume idempotently from the persisted checkpoint when it returns. See [ORCHESTRATION.md](ORCHESTRATION.md) §3.1.
 
 ### Standing Development Cycle
 ```

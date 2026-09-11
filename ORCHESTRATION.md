@@ -109,14 +109,22 @@ The authoritative development operating process establishes:
 - **Claude Directly Fixes Bounded Defects:** A `NOT VERIFIED` audit result does not automatically return work to Gemma or Codex. Claude directly fixes bounded defects within accepted scope, then independently re-audits (`audit → fix → re-audit`).
 - **Substantial Remediation Routes Through Antigravity:** When a defect exceeds a bounded fix, Claude defines the required remediation and hands it to Antigravity, which initiates Codex (preferred for complex/security-sensitive work) or Gemma (bounded work) — Claude's bounded-fix authority never becomes unrestricted implementation authority.
 - **Role Discipline:** Antigravity initiates tasks, maintains state, routes work to Codex/Gemma, and implements UI/UX/response surfaces only where specifically assigned; it does not audit and does not substitute its judgment for Claude's final audit. Codex and Gemma implement core code per accepted plan or Claude-defined remediation; neither has Git or architectural authority.
-- **Waiting is a Valid State:** If an agent or worker is unavailable, state is preserved until available rather than inventing unauthorized bypasses.
+- **Waiting is a Valid State:** If an agent or worker is unavailable, state is preserved until available rather than inventing unauthorized bypasses. Temporary Claude/Codex unavailability is `WAITING_FOR_MODEL`, never `BLOCKED` and never a failed task — see §3's Permanent Quota-Exhaustion Invariant.
 - **Standing Release Gate:** Claude alone performs `git commit` and `git push` upon independent `VERIFIED` status, then immediately plans the next milestone. The workflow does not stop merely because a milestone was pushed.
 
 - **If Claude is unavailable or quota is exhausted:** an already-`ACCEPTED`
   plan may continue through `IMPLEMENTING` (Codex or Gemma) — that work is not blocked. But no fresh strategic plan is
   invented by any other agent, and no milestone reaches `VERIFIED` without
-  Claude. State holds at `VERIFYING` until Claude returns. On return, Claude resumes from the preserved state
+  Claude. State holds at `VERIFYING` (or `WAITING_FOR_MODEL` with `required_model: Claude`) until Claude returns. On return, Claude resumes from the preserved state
   (`READY_TO_RESUME`), not from scratch.
+
+### 1.5 Default Auto-Approval Policy (2026-09-11 User Authorization)
+
+**All future milestone plans are auto-approved by default.** This is a permanent standing rule, not a one-off grant for a single milestone. Claude does not stop to ask the User for ACCEPT/MODIFY on routine milestones, implementation choices, reversible architectural refinements, tests, refactoring, UI work, provider work, recovery logic, or similar engineering decisions — it proceeds directly from `DRAFT` to `ACCEPTED` (recorded as `Claude, standing User authorization` in the plan's history log, citing this section) and hands off to Antigravity for implementation, exactly as if the User had explicitly accepted it.
+
+**The escape hatch is narrow and mandatory:** Claude must still stop and ask the User before proceeding when a decision would **materially change URI's core project structure, fundamental product identity, security/authority model, or another established constitutional boundary** — the same category of decision §6.6's User Escalation list already names (changes to governing documents, security-policy/approval-gate relaxation, breaking changes to persistence/wire APIs/user data isolation, irreversible destructive actions). When genuinely uncertain whether a plan crosses this line, Claude asks rather than assumes auto-approval — the default is proceed, the exception is stop, and the exception is deliberately narrow so it stays meaningful.
+
+This does not touch any other gate: Claude's plan is still pre-audited against verified repository state before auto-approval (§1.1 step 1 is unchanged — auto-approval skips the User's own review of an already-rigorous plan, it does not skip the plan or its rigor), Antigravity still routes implementation per §6, and only Claude still declares `VERIFIED`/releases (§1.1 steps 6-7, unchanged). Auto-approval is a change to who reviews the plan before implementation begins, not a change to who verifies or releases it.
 
 ### 1.4 UI Impact Declaration
 
@@ -242,7 +250,7 @@ DRAFT ──► ACCEPTED ──► IMPLEMENTING ──► AUDITING ──► FIX
 
   Off-path / waiting states, entered from wherever the interruption occurs:
   BLOCKED, WORKER_FAILED, WAITING_FOR_QUOTA, WAITING_FOR_CLAUDE,
-  WAITING_FOR_ANTIGRAVITY, READY_TO_RESUME
+  WAITING_FOR_ANTIGRAVITY, WAITING_FOR_MODEL, READY_TO_RESUME
 ```
 
 | State | Description | Entered when | Exit |
@@ -260,7 +268,25 @@ DRAFT ──► ACCEPTED ──► IMPLEMENTING ──► AUDITING ──► FIX
 | `WAITING_FOR_QUOTA` | A required agent has hit a quota/rate limit. | Any stage. | Resumes automatically once quota is available, or User intervenes. |
 | `WAITING_FOR_CLAUDE` | Claude is unavailable or quota-exhausted; an already-`ACCEPTED` plan continues through `IMPLEMENTING`, but nothing reaches `AUDITING`/`VERIFIED` and no fresh plan is drafted. | Claude unavailable while a plan is already `ACCEPTED`. | Claude returns and resumes verification from preserved state. |
 | `WAITING_FOR_ANTIGRAVITY` | Antigravity is unavailable; task initiation/routing/handoff cannot proceed. | Plan accepted but no worker has been initiated, or implementation complete but no handoff packaged. | Antigravity returns and resumes. |
+| `WAITING_FOR_MODEL` | Claude or Codex is temporarily unavailable (quota exhaustion, rate limiting, a temporary provider outage, or another recoverable failure — see §3.1). | Antigravity detects a recoverable model-unavailability signal for Claude or Codex, at any stage. | The required model becomes available again; Antigravity restores the recovery packet and transitions to `READY_TO_RESUME`. |
 | `READY_TO_RESUME` | A returning agent (most often Claude after `WAITING_FOR_CLAUDE`) has the preserved state and evidence in hand and can resume exactly where the cycle left off. | Whenever a waiting state's blocking condition clears. | Resumes the specific in-flight stage — never restarts the cycle from `DRAFT` unless the stage was `DRAFT` itself. |
+
+### 3.1 The Permanent Quota-Exhaustion Invariant (2026-09-11 User Authorization)
+
+Antigravity must **never** terminate, abandon, fail, or bypass the development loop merely because Claude or Codex has exhausted its quota or is temporarily unavailable. This is a permanent standing invariant, not optional per-milestone behavior — implemented in `scripts/dev_workflow/state_machine.py` (`WorkflowState.WAITING_FOR_MODEL`, `classify_unavailability()`, `TemporaryUnavailabilityReason`, `PermanentFailureReason`) and `state_manager.py` (`RecoveryState`), and tested in `tests/dev_workflow/test_workflow.py`.
+
+**Temporary vs. permanent, classified explicitly, never guessed.** `classify_unavailability(reason)` is the single authoritative classifier:
+- **Temporary** (→ `WAITING_FOR_MODEL`, never `BLOCKED`, never a failed task): quota exhaustion, token/session limit exhaustion, rate limiting, a temporary provider outage, temporary capacity unavailability, a recoverable network failure.
+- **Permanent** (→ `BLOCKED` with a `BLOCK_REASON`, the only case model-unavailability may block a milestone): an invalid/removed model ID, a provider that was never configured, revoked credentials, denied account access — genuine configuration failures, not availability blips.
+- An unrecognized reason raises rather than defaulting either way — Antigravity must classify explicitly or escalate.
+
+**While `WAITING_FOR_MODEL`, Antigravity must NOT:** terminate the milestone; mark the task failed; skip the missing model; silently substitute Codex for Claude or Claude for Codex in either direction; ask the User to manually restart the milestone; restart the milestone from the beginning; discard partial work; or create a duplicate task. It also must not ask the User what to do — Antigravity owns the pause/resume process and may report status (e.g. "M22.8 paused, waiting for Codex quota/provider availability, last completed checkpoint: ..., resume stage: ...") without requiring approval.
+
+**Recovery state, persisted before waiting.** Before entering `WAITING_FOR_MODEL` or `BLOCKED`, Antigravity persists a `RecoveryState` block (`### RECOVERY STATE` in the milestone's `STATE.md`, per §10.4) carrying: `required_model`, `current_owner`, `resume_stage`, `pause_reason`, `task`, `completed_steps`, `remaining_steps`, `changed_files`, `git_state`, `test_state`, `audit_state`, `last_successful_checkpoint`, `retry_metadata`. This must survive an application/terminal/session/machine restart — it lives on disk in the STATE.md file, not in any agent's conversation memory.
+
+**Resume is idempotent, never a blind restart.** `WAITING_FOR_MODEL → READY_TO_RESUME` (the "MODEL_RESUMED" event is this transition, not a separate stored state) restores the checkpoint and continues from `resume_stage`. Before resuming Codex implementation, verify existing partial work against the actual repository state and diff rather than blindly rerunning the whole implementation. Before resuming Claude planning/auditing, provide a compact recovery packet (the persisted `RecoveryState`) containing completed findings and remaining work, not a full restart briefing.
+
+**Role ownership is unchanged by this invariant:** Claude remains Planner/Architect/Final Auditor, Codex remains Implementer/Tester/Repair Engineer, Antigravity remains Workflow Controller/Mediator/Independent Reviewer. If Claude exhausts quota, Antigravity waits for Claude. If Codex exhausts quota, Antigravity waits for Codex. Antigravity must never take over either role simply to keep the loop moving — that would itself be the silent-substitution failure mode this invariant exists to prevent.
 
 ---
 
@@ -543,8 +569,10 @@ Each milestone plan (`docs/plans/<ID>_..._PLAN.md`) has a sibling
 `docs/plans/<ID>_STATE.md` file, created by Claude at `ACCEPTED` (§1.1
 step 2) and updated in place by whichever worker owns the current
 stage. It carries: the current state (§3's vocabulary), an append-only
-History Log of transitions, and the §10.2/§10.3 report templates for
-the routed implementer and Antigravity to fill in directly. Its purpose is
+History Log of transitions, the §10.2/§10.3 report templates for
+the routed implementer and Antigravity to fill in directly, and a
+`### RECOVERY STATE` block (§3.1) that stays an empty template until a
+`WAITING_FOR_MODEL`/`BLOCKED` pause actually happens. Its purpose is
 narrow: the cycle must be resumable from **disk**, not from any one agent's
 conversation history, so a session restart, quota exhaustion, or
 model unavailability never loses evidence or forces the cycle to

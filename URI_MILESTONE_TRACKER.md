@@ -22,6 +22,16 @@ and released it, along with M22.6 (`5b97e12`) verified and released
 immediately before it in the same session. Full regression suite:
 1,433/1,433 Python tests passing, 29 subtests passing, 0 failures.
 
+**M22.8: APPROVED / ENTERING IMPLEMENTATION LOOP (11 Sep 2026).** User
+approved [docs/plans/M22.8_MODES_TIERED_UX_PLAN.md](docs/plans/M22.8_MODES_TIERED_UX_PLAN.md)
+as written, under the new default auto-approval policy (`ORCHESTRATION.md`
+§1.5) — this is also the first milestone entering the normal
+Claude → Codex → Antigravity loop under that policy and under the
+companion permanent quota-exhaustion / durable-waiting invariant
+(`ORCHESTRATION.md` §3.1). See
+[docs/plans/M22.8_STATE.md](docs/plans/M22.8_STATE.md) for the live handoff
+record.
+
 ## Relationship to the older Phase 0–4 checklist
 
 This tracker does **not** replace, relabel, or rewrite the earlier

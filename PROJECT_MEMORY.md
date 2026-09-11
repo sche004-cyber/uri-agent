@@ -15,9 +15,25 @@
   and released this session.
 - **Next milestone:** M22.8 — Modes and tiered UX (office/diagnostic/admin
   capability filters, BASIC/ADVANCED provider UI, ceiling-reached flow).
-  Depends on M22.4 and M22.7, both complete. Follow
+  Depends on M22.4 and M22.7, both complete. Plan **APPROVED** by the User
+  (11 Sep 2026) under the new default auto-approval policy (see below) and
+  entering the normal implementation loop; see
+  [docs/plans/M22.8_MODES_TIERED_UX_PLAN.md](docs/plans/M22.8_MODES_TIERED_UX_PLAN.md)
+  and [docs/plans/M22.8_STATE.md](docs/plans/M22.8_STATE.md). Follow
   [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md); do not
-  restart M22/M22.1/M22.2/M22.3/M22.4/M22.5 audits.
+  restart M22/M22.1–M22.7 audits.
+- **Standing governance change (11 Sep 2026, permanent):** all future
+  milestone plans are auto-approved by default — Claude no longer waits for
+  explicit User ACCEPT/MODIFY on routine engineering work; the User is
+  interrupted only for decisions that would materially change URI's core
+  structure, product identity, security/authority model, or another
+  constitutional boundary. A companion permanent quota-exhaustion invariant
+  requires Antigravity to place the loop into a durable, resumable
+  `WAITING_FOR_MODEL` state (never `BLOCKED`, never a failed task) on
+  temporary Claude/Codex unavailability. Both are implemented and tested in
+  `scripts/dev_workflow/state_machine.py`/`state_manager.py`
+  (`tests/dev_workflow/test_workflow.py`) and specified in full in
+  [ORCHESTRATION.md](ORCHESTRATION.md) §1.5 and §3.1.
 
 ## Guardrails
 
