@@ -39,6 +39,11 @@ uri_workspace/experience.json
 uri_workspace/conversation_history/
 uri_workspace/installed_skills.json
 
+# AO-4 dev tooling: visible-worker run locks/logs/status markers
+# (scripts/dev_workflow/visible_worker.py) - development-only runtime
+# output, never source, never part of the URI runtime.
+uri_workspace/dev_workflow/
+
 # Large institutional data directories, excluded by explicit decision
 # (uri_workspace/linked_documents/ contains real student PDF/xlsx records
 # with roll numbers; institutional_library/ and knowledge/ are large
