@@ -38,6 +38,18 @@ class InstitutionalNoteDraftCmp:
         decision_context = kwargs.get("decision_context") or {}
         requested_output = kwargs.get("requested_output", "") or ""
 
+        # M22.6 remediation: the runtime-supplied principal (set by
+        # orchestrator.py/workflow_capability_router.py alongside
+        # session_id/request_text - never model-supplied) arrives as its
+        # own top-level kwarg, not inside decision_context. Fold it in
+        # here so draft_institutional_document's existing
+        # decision_context.get("principal") reads a real value instead
+        # of always None.
+        principal = kwargs.get("principal")
+        if principal is not None:
+            decision_context = dict(decision_context)
+            decision_context["principal"] = principal
+
         return draft_institutional_document(
             request_text=request_text,
             document_type="noting",

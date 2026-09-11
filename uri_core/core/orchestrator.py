@@ -133,7 +133,7 @@ class UriOrchestrator:
         self.semantic_interpreter = (
             semantic_interpreter
             if semantic_interpreter is not None
-            else ProviderSemanticInterpreter()
+            else ProviderSemanticInterpreter(principal=principal)
         )
         self.principal = principal
 
@@ -3226,8 +3226,7 @@ class UriOrchestrator:
 
                 try:
                     draft = draft_response(
-                        draft_request,
-                        provider=self.response_drafting_provider,
+                        draft_request, provider=self.response_drafting_provider, principal=self.principal,
                     )
                     validated = validate_drafted_response(draft, outcome)
 

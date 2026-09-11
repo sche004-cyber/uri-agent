@@ -36,6 +36,16 @@ class InstitutionalOrderDraftCmp:
         decision_context = kwargs.get("decision_context") or {}
         requested_output = kwargs.get("requested_output", "") or ""
 
+        # M22.6 remediation: see draft_institutional_note.py's identical
+        # comment - the runtime-supplied principal arrives as its own
+        # top-level kwarg; fold it into decision_context so
+        # draft_institutional_document's decision_context.get("principal")
+        # reads a real value instead of always None.
+        principal = kwargs.get("principal")
+        if principal is not None:
+            decision_context = dict(decision_context)
+            decision_context["principal"] = principal
+
         return draft_institutional_document(
             request_text=request_text,
             document_type="office_order",

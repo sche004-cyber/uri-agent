@@ -23,7 +23,12 @@ from typing import Any, Dict, Optional
 
 from uri_core.core.document_validation import validate_drafted_document
 from uri_core.core.model_providers import ModelProvider, ProviderError
-from uri_core.config.model_roles import ROLE_DOCUMENT_COMPOSITION, build_provider
+from uri_core.config.model_roles import (
+    ROLE_DOCUMENT_COMPOSITION,
+    UnknownModelProviderError,
+    build_provider,
+)
+from uri_core.core.model_router import get_router
 
 
 # Strips a leading drafting instruction so the remainder is the subject
@@ -52,17 +57,23 @@ def _fallback_subject(request_text: str) -> str:
 
 class DocumentComposer:
     """Brain-backed document authoring. Provider is injectable so tests
-    can drive it with a fake; the default constructs the same Ollama
-    provider the rest of URI uses, lazily, so importing this module
-    never requires a running model."""
+    can drive it with a fake; the default resolves via the process-wide
+    ModelRouter on every call (M22.6 per-call resolution — §0.1)."""
 
-    def __init__(self, provider: Optional[ModelProvider] = None):
+    def __init__(
+        self,
+        provider: Optional[ModelProvider] = None,
+        principal: Optional[object] = None,
+    ) -> None:
         self._provider = provider
+        self._principal = principal
 
     def _get_provider(self) -> ModelProvider:
-        if self._provider is None:
-            self._provider = build_provider(ROLE_DOCUMENT_COMPOSITION)
-        return self._provider
+        """Backward-compatible inspection method for existing tests.
+        Returns explicit provider or builds default via role factory."""
+        if self._provider is not None:
+            return self._provider
+        return build_provider(ROLE_DOCUMENT_COMPOSITION)
 
     def compose(
         self,
@@ -72,6 +83,7 @@ class DocumentComposer:
         evidence: Optional[Dict[str, Any]] = None,
         preferences: Optional[Dict[str, Any]] = None,
         soul_text: str = "",
+        principal: Optional[object] = None,
     ) -> Dict[str, Any]:
         """Returns {"status", "body", "composed_by", "detail"}.
         composed_by is "brain" when the model authored an accepted draft,
@@ -87,12 +99,24 @@ class DocumentComposer:
             preferences=preferences or brief.get("user_preferences") or {},
         )
 
+        effective_principal = principal if principal is not None else self._principal
+
         try:
-            response = self._get_provider().complete(
+            complete_kwargs = dict(
                 system=system_prompt,
                 user=user_prompt,
                 temperature=0.2,
             )
+            if self._provider is not None:
+                # Explicit provider injected (test path) — bypass router.
+                response = self._provider.complete(**complete_kwargs)
+            else:
+                # M22.6: per-call router resolution.
+                response = get_router().attempt(
+                    ROLE_DOCUMENT_COMPOSITION,
+                    effective_principal,
+                    **complete_kwargs,
+                )
             body = (response.content or "").strip()
             verdict = validate_drafted_document(body, brief)
 
@@ -115,7 +139,7 @@ class DocumentComposer:
                 ),
             }
 
-        except ProviderError as error:
+        except (ProviderError, UnknownModelProviderError) as error:
             return {
                 "status": "success",
                 "body": self._fallback_document(brief, request_text),

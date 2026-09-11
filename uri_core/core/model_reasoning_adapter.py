@@ -25,6 +25,7 @@ from typing import Optional
 
 from .model_providers import ModelProvider
 from uri_core.config.model_roles import ROLE_REASONING, build_provider
+from uri_core.core.model_router import get_router
 
 REASONING_SYSTEM_PROMPT = """
 This is a reasoning-assistant role in service of URI's deterministic
@@ -203,10 +204,28 @@ class OllamaReasoningAdapter:
             model_callable=OllamaReasoningAdapter()
         )
         orchestrator = UriOrchestrator(model_reasoning_gateway=gateway)
+
+    M22.6: per-call ModelRouter resolution replaces construction-time
+    build_provider() caching. When an explicit provider is injected
+    (test path), the router is bypassed entirely.
     """
 
-    def __init__(self, provider: Optional[ModelProvider] = None):
-        self.provider = provider or build_provider(ROLE_REASONING)
+    def __init__(
+        self,
+        provider: Optional[ModelProvider] = None,
+        principal: Optional[object] = None,
+    ) -> None:
+        # Explicit provider bypasses the router entirely (existing test path).
+        self._explicit_provider = provider
+        self._principal = principal
+
+    @property
+    def provider(self) -> ModelProvider:
+        """Backward-compatible accessor. Returns injected provider or a
+        freshly-constructed default. The __call__() path uses the router."""
+        if self._explicit_provider is not None:
+            return self._explicit_provider
+        return build_provider(ROLE_REASONING)
 
     def __call__(self, request_json: str) -> str:
 
@@ -259,10 +278,22 @@ class OllamaReasoningAdapter:
             if request.get("attempt_history"):
                 system += _RESEARCH_RECOVERY_ADDENDUM
 
-        response = self.provider.complete(
+        complete_kwargs = dict(
             system=system,
             user=user_json,
             temperature=0,
             max_tokens=800,
         )
+
+        if self._explicit_provider is not None:
+            # Legacy / test path: use injected provider directly.
+            response = self._explicit_provider.complete(**complete_kwargs)
+        else:
+            # M22.6: per-call router resolution.
+            response = get_router().attempt(
+                ROLE_REASONING,
+                self._principal,
+                **complete_kwargs,
+            )
+
         return response.content

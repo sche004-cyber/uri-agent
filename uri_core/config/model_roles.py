@@ -136,6 +136,8 @@ def build_provider(
     role: str,
     principal: Optional[Any] = None,
     roles_path: str = MODEL_ROLES_PATH,
+    *,
+    provider_id_override: Optional[str] = None,
 ) -> ModelProvider:
     """The one factory every real model-call site uses.
 
@@ -155,9 +157,15 @@ def build_provider(
         be stored or logged after provider construction.
     roles_path:
         Override for deployment/test use.
+    provider_id_override:
+        When not None, use this provider id instead of the role's
+        configured provider.  This is an internal extension point for
+        ModelRouter.attempt() to force a specific candidate from the
+        fallback chain.  All existing call sites pass no override and
+        see zero-behaviour-change.
     """
     role_config = load_model_roles(roles_path).get(role, {})
-    provider_name = role_config.get("provider", "ollama")
+    provider_name = provider_id_override or role_config.get("provider", "ollama")
 
     # -------------------------------------------------------------------
     # "ollama" - unchanged M21 behaviour

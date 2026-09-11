@@ -129,13 +129,15 @@ class GenerateDocumentTool:
         # order drafting, which is unaffected.
         brief["output_format"] = output_format
 
-        composer = self._composer or DocumentComposer()
+        principal = kwargs.get("principal") or decision_context.get("principal")
+        composer = self._composer or DocumentComposer(principal=principal)
         result = composer.compose(
             brief=brief,
             request_text=request_text,
             evidence=evidence,
             preferences=preferences,
             soul_text=soul_text,
+            principal=principal,
         )
         body = result["body"]
 

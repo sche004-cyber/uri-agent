@@ -101,13 +101,15 @@ class GmailCreateDraftTool:
             policy_rules=policy_rules,
         )
 
-        composer = self._composer or DocumentComposer()
+        principal = kwargs.get("principal")
+        composer = self._composer or DocumentComposer(principal=principal)
         result = composer.compose(
             brief=brief,
             request_text=request_text,
             evidence=evidence,
             preferences=preferences,
             soul_text=soul_text,
+            principal=principal,
         )
         body_text = result["body"]
         subject = _derive_subject(body_text)

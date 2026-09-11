@@ -37,6 +37,7 @@ from typing import Any, Dict, Optional
 
 from uri_core.core.model_providers import ModelProvider
 from uri_core.config.model_roles import ROLE_DRAFTING, build_provider
+from uri_core.core.model_router import get_router
 
 _DRAFTING_INSTRUCTIONS = """
 ---
@@ -240,9 +241,8 @@ def build_drafting_system_prompt(
 def draft_response(
     request: DraftRequest,
     provider: Optional[ModelProvider] = None,
+    principal: Optional[object] = None,
 ) -> str:
-
-    provider = provider or build_provider(ROLE_DRAFTING)
 
     system = build_drafting_system_prompt(
         request.policy_text, request.soul_text
@@ -255,13 +255,24 @@ def draft_response(
         "query_context": request.query_context or {},
     }
 
+    complete_kwargs = dict(
+        system=system,
+        user=json.dumps(payload, ensure_ascii=False, default=str),
+        temperature=0.3,
+        max_tokens=300,
+    )
+
     try:
-        response = provider.complete(
-            system=system,
-            user=json.dumps(payload, ensure_ascii=False, default=str),
-            temperature=0.3,
-            max_tokens=300,
-        )
+        if provider is not None:
+            # Explicit provider injected (test path) — bypass router.
+            response = provider.complete(**complete_kwargs)
+        else:
+            # M22.6: per-call router resolution.
+            response = get_router().attempt(
+                ROLE_DRAFTING,
+                principal,
+                **complete_kwargs,
+            )
 
     except Exception as exc:
         raise ResponseDraftingError(str(exc)) from exc

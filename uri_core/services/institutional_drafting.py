@@ -176,13 +176,21 @@ def draft_institutional_document(
         policy_rules=policy_rules,
     )
 
-    composer = composer or DocumentComposer()
+    # M22.6 remediation: the caller's authenticated principal, when
+    # present, travels inside decision_context (see
+    # draft_institutional_note.py/draft_institutional_order.py, the
+    # only two callers) so DocumentComposer's per-call ModelRouter
+    # resolution can honor this user's own provider configuration
+    # instead of always resolving anonymously.
+    principal = decision_context.get("principal")
+    composer = composer or DocumentComposer(principal=principal)
     result = composer.compose(
         brief=brief,
         request_text=request_text,
         evidence=evidence,
         preferences=preferences,
         soul_text=soul_text,
+        principal=principal,
     )
 
     return {

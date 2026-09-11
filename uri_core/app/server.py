@@ -346,7 +346,7 @@ def _build_user_context(user_id: str) -> _UserContext:
 
     orchestrator = UriOrchestrator(
         model_reasoning_gateway=ModelReasoningGateway(
-            model_callable=OllamaReasoningAdapter()
+            model_callable=OllamaReasoningAdapter(principal=principal)
         ),
         enable_response_narrative=True,
         approval_gate=approval_gate,
