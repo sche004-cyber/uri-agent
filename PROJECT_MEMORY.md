@@ -32,15 +32,16 @@
 - `URI_Model_Centric_Architecture_Docs/` for governing architecture, policy,
   and model/runtime contract.
 
-## Development Operating Model (AO-4: Claude-Planned / Gemma-Implemented / Antigravity-Audited Cycle)
+## Development Operating Model (AO-4: Claude-Planned / Codex-or-Gemma-Implemented / Claude-Verified-and-Released Cycle)
 
-- **Final Authority:** User — accepts/modifies every plan; sole release authority after Claude's `VERIFIED`.
-- **Planner & Final Verifier:** Claude Code (CLI) — plans each milestone from verified state; issues `VERIFIED`/`NOT VERIFIED`.
-- **Implementer:** Gemma 4 12B — implements exactly the accepted plan, backend and UI together when required. No Git or architectural authority.
-- **Auditor, Fixer & Release Control:** Antigravity (Gemini 3.8 Flash) — audits the actual implementation, fixes bounded problems, reruns tests, commits/pushes only after Claude's `VERIFIED`.
-- **Reserve/fallback only (not the normal cycle):** Qwen 3 14B (Local Ollama) — explicit second opinion on User request. Codex (CLI) — explicit large mechanical refactors on User request.
+- **Final Authority:** User — accepts/modifies every plan; non-delegable authority over architecture and security policy.
+- **Architect, Final Auditor, Bounded Fixer & Release Authority:** Claude Code (CLI) — plans each milestone from verified state; independently audits the actual implementation; directly fixes bounded in-scope defects (`audit → fix → re-audit`); for substantial remediation, defines the requirement and hands it to Antigravity for Codex/Gemma routing; sole authority for `VERIFIED`/`NOT VERIFIED` and for `git commit`/`git push`.
+- **Loop Manager / Orchestrator:** Antigravity (Gemini 3.8 Flash) — initiates tasks, routes implementation to Codex or Gemma per complexity, packages evidence for Claude's audit, implements UI/response work only where specifically assigned. Not an auditor; never declares `VERIFIED`; no commit/push authority.
+- **Preferred Specialist Implementer:** Codex (CLI) — standing routed worker (not reserve/fallback) for complex, multi-file, security-sensitive, and production-call-path implementation, per Claude's accepted plan.
+- **Local Bounded Implementation Worker:** Gemma 4 12B — small bounded tasks, focused edits, boilerplate, and focused test creation. No Git or architectural authority.
+- **Reserve/fallback only (not the normal cycle):** Qwen 3 14B (Local Ollama) — explicit second opinion on User request only.
 - **Excluded:** Gemma 3 (superseded by the qualified Gemma 4 12B above; not part of the active development team).
-- **Operating Specification:** [ORCHESTRATION.md](ORCHESTRATION.md) §1 (7-step cycle, state model, continuity rules).
+- **Operating Specification:** [ORCHESTRATION.md](ORCHESTRATION.md) §1 (authoritative cycle, state model, continuity rules).
 
 ### Coordinator Qualification Record (10 Sep 2026)
 - **Model:** `qwen3:14b` (14.8B parameters, Q4_K_M, local Ollama)

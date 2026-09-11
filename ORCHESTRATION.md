@@ -1,10 +1,11 @@
 # URI Multi-Agent Development Operating Architecture (AO-4)
 
-**Status:** Canonical Operating Architecture — Claude-Planned / Gemma-Implemented / Antigravity-Audited Cycle Activated
+**Status:** Canonical Operating Architecture — Claude-Planned / Codex-or-Gemma-Implemented / Claude-Verified-and-Released Cycle Activated
 **Authority:** Governing Development Policy
 **Baseline:** M22.2 (`34839ce`)
-**Supersedes:** AO-2 (Qwen Coordination Loop). Qwen 3 14B is retained only as an
-explicitly invoked reserve/fallback; it is no longer the day-to-day
+**Supersedes:** AO-2 (Qwen Coordination Loop) and the earlier Gemma-implemented /
+Antigravity-audited-and-released AO-4 revision. Qwen 3 14B is retained only as
+an explicitly invoked reserve/fallback; it is no longer the day-to-day
 coordinator. This is a role change within the same canonical document, not a
 competing workflow.
 
@@ -13,131 +14,108 @@ competing workflow.
 ## 1. Canonical Team Model
 
 The development operating model is a fixed, non-discretionary cycle: **Claude
-Code** plans each milestone and performs final verification, the **User**
-accepts or modifies each plan before any implementation begins, **Gemma 4
-12B** implements exactly the accepted plan (backend and UI, when the plan
-requires UI work), and **Antigravity** independently audits the actual
-implementation, fixes bounded problems, and enforces the commit/push gate.
-The **User** retains final authority throughout.
+Code** plans each milestone, performs the independent final audit (tracing
+actual production paths rather than trusting a worker's report), directly
+fixes bounded in-scope defects it finds, and is the sole authority for
+`VERIFIED` and for `git commit`/`git push`; the **User** accepts or modifies
+each plan before any implementation begins and is the non-delegable final
+authority over architecture and policy; **Antigravity** manages the loop —
+initiating tasks and routing implementation to **Codex** (preferred for
+complex, multi-file, security-sensitive, or production-call-path work) or
+**Gemma 4 12B** (bounded, small, or repetitive work) — and implements
+UI/response-surface work only where specifically assigned. Neither Codex,
+Gemma, nor Antigravity may declare a milestone `VERIFIED` or perform
+`git commit`/`git push`.
 
 > [!IMPORTANT]
 > **Team Roster Invariant:** Qwen 3 14B is **NOT** part of the normal cycle.
 > It is an explicitly invoked reserve/fallback only — used solely when the
 > User separately invokes it for a second opinion, never as a default
-> coordination step. Codex (CLI) likewise sits outside the normal cycle: it
-> remains available only via explicit user invocation for large mechanical
-> refactors, under the same reserve/fallback status as Qwen. Gemma 3 (the
-> prior, unqualified model) remains excluded; **Gemma 4 12B** is the
-> qualified implementer referenced throughout this document.
+> coordination step. Codex (CLI), by contrast, **is** part of the normal
+> cycle as of this revision — the preferred implementation worker for
+> complex/security-sensitive work (§6.1), routed to by Antigravity exactly
+> like Gemma, not a reserve/fallback. Gemma 3 (the prior, unqualified model)
+> remains excluded; **Gemma 4 12B** is the qualified local worker referenced
+> throughout this document, used for bounded/small work (§6.2).
 
 ```
         ┌──────────────────────────────────────────────────────────────┐
         │                    USER (Final Authority)                    │
         │   • ACCEPT / MODIFY each plan before implementation begins   │
-        │   • Sole authority to release after Claude says VERIFIED     │
+        │   • Non-delegable authority over architecture and policy     │
         └───────────▲───────────────────────────────────────┬──────────┘
                     │ Accept / Modify                        │ Accepted plan
                     │                                         ▼
         ┌───────────┴──────────────┐            ┌─────────────────────────┐
-        │       CLAUDE CODE        │            │      GEMMA 4 12B        │
+        │       CLAUDE CODE        │            │   CODEX  /  GEMMA 4 12B │
         │  1. Plan (fresh, from    │            │  3. Implement exactly   │
         │     verified repo state) │            │     the accepted scope  │
-        │  5. Final verification   │            │  • Backend + UI when    │
-        │     (VERIFIED/NOT)       │            │    required             │
-        │  No architectural        │            │  • No Git authority     │
-        │  authority for Gemma or  │            │  • No architectural     │
-        │  Antigravity to bypass   │            │    authority             │
+        │  6. Final audit; fixes   │            │  • Codex: complex/multi-│
+        │     bounded defects      │            │    file/security work   │
+        │     directly, re-audits  │            │  • Gemma: bounded/small │
+        │  7. Sole VERIFIED /      │            │    work                 │
+        │     NOT VERIFIED         │            │  • No Git authority     │
+        │     authority            │            │  • No architectural     │
+        │  8. Sole commit/push     │            │    authority; no VERIFIED│
+        │     authority            │            │    authority            │
         └───────────▲──────────────┘            └────────────┬────────────┘
-                    │ Report + evidence                       │ Files changed +
-                    │ for independent review                  │ tests performed
+                    │ Evidence packages                       │ Files changed +
+                    │ for independent audit                   │ tests performed
                     │                                          ▼
         ┌───────────┴──────────────────────────────────────────┐
         │                     ANTIGRAVITY                       │
-        │  4. Audit the actual implementation (not just Gemma's │
-        │     report): correctness, test sufficiency, security  │
-        │     boundaries, UI/backend parity, portability;       │
-        │     fix bounded problems; rerun affected tests.        │
-        │  6. Commit + push ONLY after Claude says VERIFIED.     │
-        │  Never declares a milestone VERIFIED itself.           │
+        │  4. Initiate implementation tasks; route to Codex or  │
+        │     Gemma per §6's complexity rule; manage handoffs   │
+        │     and milestone state; implement UI/response work   │
+        │     only where specifically assigned.                  │
+        │  5. Package evidence and send to Claude for audit.    │
+        │  Not an auditor. Never declares VERIFIED. No commit/  │
+        │  push authority — release belongs solely to Claude.   │
         └─────────────────────────────────────────────────────┘
 
         Reserve / fallback only (never part of the normal cycle):
         QWEN 3 14B — explicit second-opinion invocation only.
-        CODEX (CLI) — explicit large-mechanical-refactor invocation only.
 ```
 
-### 1.1 The Normal Cycle (authoritative sequence)
+### 1.1 The Authoritative Cycle (Standing Workflow)
 
-1. **CLAUDE** inspects the verified current repository state, creates a
-   fresh milestone plan/recommendation, defines implementation scope,
-   acceptance criteria, tests, security considerations, and UI impact
-   (`UI IMPACT: NONE` or `UI IMPACT: REQUIRED`, §1.4), persists the plan, and
-   waits for USER ACCEPT / MODIFY. State: `DRAFT`.
-2. **USER** accepts the plan as written, or modifies it. No implementation
-   begins before acceptance. State on accept: `ACCEPTED`.
-3. **GEMMA 4 12B** implements the accepted milestone — backend and UI when
-   the plan requires UI work — following the exact accepted scope, using the
-   qualified Gemma configuration. Gemma has no Git authority and no
-   architectural authority: it implements what was accepted, it does not
-   redesign it. Gemma reports files changed and tests performed. State:
-   `IMPLEMENTING`.
-4. **ANTIGRAVITY** inspects the actual implementation, not only Gemma's
-   report: audits code correctness, audits whether tests are actually
-   correct and sufficient, runs the relevant tests, audits security
-   boundaries, audits UI/backend parity, audits portability implications
-   where applicable, fixes bounded problems when required, reruns affected
-   tests, and performs additional self-tests only when evidence requires
-   them. Antigravity produces a persistent implementation/audit/result
-   report. Antigravity must **not** declare the milestone `VERIFIED` if
-   required evidence is missing. States: `AUDITING`, then `FIXING` if fixes
-   are applied, then back to `AUDITING`/`VERIFYING`.
-5. **CLAUDE** independently reviews Antigravity's report and evidence,
-   verifies the accepted plan was actually satisfied, verifies the tests and
-   fixes are credible, reviews remaining findings and UI status, and decides
-   `VERIFIED` / `NOT VERIFIED`. State: `VERIFYING` → `VERIFIED` (or back to
-   `FIXING`/`BLOCKED` if not verified).
-6. **RELEASE** — only after Claude says `VERIFIED`: Antigravity commits,
-   pushes, and stops. State: `COMPLETE`.
-7. **NEXT CYCLE** — Claude reviews the newly committed milestone and its
-   findings and creates a **fresh** plan for the next milestone; it does not
-   simply repeat the previous plan. Returns to step 1, state `DRAFT`.
+1. **CLAUDE (Architect / Pre-Auditor):** Inspects verified current repo state, plans and pre-audits the next milestone before implementation, defines scope, acceptance criteria, tests, and UI impact, persists plan in `docs/plans/*_PLAN.md` and `docs/plans/*_STATE.md` (`STATE: DRAFT`), and waits for USER ACCEPT / MODIFY.
+2. **USER (Final Authority):** Accepts or modifies the plan. No implementation begins before user acceptance (`STATE: ACCEPTED`).
+3. **ANTIGRAVITY (Loop Manager / Orchestrator):** Initiates implementation tasks with precise task-initiation packages, and routes each task to the appropriate worker per §6's complexity rule — **Codex** preferred for complex/multi-file/security-sensitive/production-call-path work, **Gemma 4 12B** for bounded/small/repetitive/boilerplate work — coordinates agents, and maintains milestone state (`STATE: IMPLEMENTING`). Antigravity implements assigned UI, UX-facing behavior, and URI response/reply interface work only where specifically assigned.
+4. **CODEX or GEMMA 4 12B (Implementer, per Antigravity's routing):** Implements the assigned backend/core code and test requirements per the accepted plan. Neither has Git authority, architectural authority, or the ability to approve its own work or declare `VERIFIED`.
+5. **ANTIGRAVITY (Handoff Delivery):** Collects implementation evidence, packages relevant verification materials, and sends them to Claude for final audit (`STATE: VERIFYING`). Antigravity is not an auditor and does not substitute its judgment for Claude's audit.
+6. **CLAUDE (Final Auditor / Bounded Fixer / Release Authority):** Independently audits the actual git diff, source code, tests, security boundaries, and architectural invariants, tracing actual production paths rather than trusting an implementer's or Antigravity's report.
+   - If Claude finds a **bounded** defect within the accepted milestone's scope, Claude fixes it directly, re-runs tests, and re-audits (`audit → fix → re-audit`). A `NOT VERIFIED` result does NOT automatically return work to Gemma or Codex.
+   - If a defect requires **substantial** remediation (not a bounded fix), Claude defines the required remediation and hands it to Antigravity, which routes the implementation task to Codex (preferred) or Gemma per §6 — Claude does not perform substantial implementation itself merely because it holds bounded-fix authority, and does not silently expand the accepted milestone's scope while fixing anything.
+   - If any defect remains unresolvable within scope, Claude records `STATE: NOT VERIFIED` with clear findings.
+   - Once satisfied with concrete evidence, Claude marks `STATE: VERIFIED`.
+7. **RELEASE (Claude Sole Authority):** Solely Claude performs `git commit` and `git push` to `origin/master`.
+8. **NEXT CYCLE:** Immediately after pushing, Claude inspects released state, pre-audits and plans the next milestone, and creates the plan and STATE artifact (`STATE: DRAFT`), waiting for User acceptance. The workflow does not stop merely because a milestone was pushed.
 
 ### 1.2 Role Definitions
 
 | Role | Entity | Primary Responsibilities | Strict Constraints |
 |---|---|---|---|
-| **Final Authority** | **User** | ACCEPT/MODIFY every plan before implementation; consequential architecture decisions; security policies; irreversible actions; resolving agent conflicts; sole authority to release after Claude's `VERIFIED`. | Non-delegable. No AI can override. |
-| **Planner & Final Verifier** | **Claude Code** (CLI) | Fresh milestone planning from verified repo state (scope, acceptance criteria, tests, security considerations, UI impact); independent final review of Antigravity's audit/fixes; `VERIFIED`/`NOT VERIFIED` decision. | Plans only from verified state, never from an unverified prior claim. Does not implement the milestone it plans. Cannot be bypassed for either the plan-acceptance gate or the verification gate. |
-| **Implementer** | **Gemma 4 12B** | Implements exactly the accepted plan's scope — backend and UI when the plan requires UI work — using the qualified Gemma configuration; reports files changed and tests performed. | No Git authority. No architectural authority — implements the accepted plan, does not redesign it. Must not expand scope beyond what was accepted. |
-| **Control Surface, Auditor & Fixer** | **Antigravity** (Gemini 3.8 Flash) | Independently audits the actual implementation (correctness, test sufficiency, security boundaries, UI/backend parity, portability); fixes bounded problems; reruns affected tests; produces the persistent audit/result report; commits and pushes only after Claude's `VERIFIED`. | Must inspect real code and real test runs, not just Gemma's report. Must never declare `VERIFIED` itself. Must never commit/push before Claude's `VERIFIED`. |
-| **Reserve / Fallback (not in normal cycle)** | **Qwen 3 14B** (Local Ollama) | Explicit second-opinion review, only when the User separately invokes it. | Zero authority in the normal cycle. Never silently substituted in for Claude or Antigravity. |
-| **Reserve / Fallback (not in normal cycle)** | **Codex** (CLI) | Explicit large-mechanical-refactor invocation, only when the User separately invokes it. | Zero authority in the normal cycle. Never silently substituted in for Gemma. |
+| **Final Authority** | **User** | Architectural acceptance gate; accepts/modifies every milestone plan before implementation; non-delegable authority over architecture and security policy. | Non-delegable. No AI can override. |
+| **Architect, Final Auditor, Bounded Fixer & Release Authority** | **Claude Code** (CLI) | Milestone planning & pre-audits; independent final audit of git diff, source, and tests, tracing actual production paths rather than trusting reports; directly fixes **bounded** in-scope defects (`audit → fix → re-audit`); for **substantial** remediation, defines the requirement and hands it to Antigravity for Codex/Gemma routing rather than implementing it itself; sole authority for `VERIFIED`, `git commit`, and `git push`; immediately plans and pre-audits the subsequent milestone after release. | Does not delegate final verification. Fixes only bounded in-scope defects directly; does not silently expand an accepted milestone's scope. Does not perform primary/substantial implementation. |
+| **Loop Manager / Orchestrator** | **Antigravity** (Gemini 3.8 Flash) | Manages the execution loop; prepares task-initiation packages; routes each implementation task to Codex or Gemma per §6's complexity rule; coordinates handoffs between workers and Claude; maintains milestone state; implements UI, UX-facing behavior, and URI response/reply interface work only where specifically assigned. | Not an auditor; never declares `VERIFIED`; **no commit/push authority**. |
+| **Preferred Specialist Implementer** | **Codex** (CLI) | Implements complex, multi-file, architectural, security-sensitive, integration, or production-call-path work from Claude's accepted plan. | No Git authority; does not approve its own work, declare `VERIFIED`, or redefine accepted architecture. |
+| **Local Bounded Implementation Worker** | **Gemma 4 12B** | Implements small bounded tasks, focused edits, repetitive work, boilerplate, and focused test creation per accepted plan/task package. | No Git authority; no architectural authority; not forced onto complex work Codex is better suited to. |
+| **Specialist / Design Agents** | Auxiliary Agents | Propose architecture improvements, UI/UX, interface layouts, and reply/interaction designs. | Advisory/recommendation only; no code implementation. Claude reviews any proposal that materially affects architecture or milestone behavior before it becomes implementation guidance. |
 
-### 1.3 Continuity Rules
+### 1.3 Standing Rules & Continuity
 
-The cycle must not be broken by temporary model failure, agent
-unavailability, network problems, or quota exhaustion. **Waiting is a valid
-state.** Specifically:
+The authoritative development operating process establishes:
+- **Claude Directly Fixes Bounded Defects:** A `NOT VERIFIED` audit result does not automatically return work to Gemma or Codex. Claude directly fixes bounded defects within accepted scope, then independently re-audits (`audit → fix → re-audit`).
+- **Substantial Remediation Routes Through Antigravity:** When a defect exceeds a bounded fix, Claude defines the required remediation and hands it to Antigravity, which initiates Codex (preferred for complex/security-sensitive work) or Gemma (bounded work) — Claude's bounded-fix authority never becomes unrestricted implementation authority.
+- **Role Discipline:** Antigravity initiates tasks, maintains state, routes work to Codex/Gemma, and implements UI/UX/response surfaces only where specifically assigned; it does not audit and does not substitute its judgment for Claude's final audit. Codex and Gemma implement core code per accepted plan or Claude-defined remediation; neither has Git or architectural authority.
+- **Waiting is a Valid State:** If an agent or worker is unavailable, state is preserved until available rather than inventing unauthorized bypasses.
+- **Standing Release Gate:** Claude alone performs `git commit` and `git push` upon independent `VERIFIED` status, then immediately plans the next milestone. The workflow does not stop merely because a milestone was pushed.
 
-- **Never silently substitute an agent or transfer authority.** No worker may
-  assume another worker's role (e.g. Antigravity may not plan a fresh
-  milestone; Gemma may not audit its own work; Qwen may not silently replace
-  Claude's verification) even temporarily.
-- **If Gemma is unavailable:** preserve state at `ACCEPTED` or wherever
-  implementation stopped, and either wait (`WORKER_FAILED` or
-  `WAITING_FOR_QUOTA`, as applicable) or use explicitly recorded fallback
-  handling if the User has pre-authorized one for this milestone. Do not
-  reassign the implementation to Antigravity or Codex without the User
-  explicitly saying so for that instance.
-- **If Antigravity is unavailable:** do not bypass its audit gate. An
-  implementation that has not been through Antigravity's audit cannot reach
-  `VERIFYING`. State: `WAITING_FOR_ANTIGRAVITY`.
 - **If Claude is unavailable or quota is exhausted:** an already-`ACCEPTED`
-  plan may continue through `IMPLEMENTING` (Gemma) and `AUDITING`/`FIXING`
-  (Antigravity) — that work is not blocked. But no fresh strategic plan is
+  plan may continue through `IMPLEMENTING` (Codex or Gemma) — that work is not blocked. But no fresh strategic plan is
   invented by any other agent, and no milestone reaches `VERIFIED` without
-  Claude. State: `WAITING_FOR_CLAUDE`, holding at `AUDITING`/`VERIFYING`
-  until Claude returns. On return, Claude resumes from the preserved state
+  Claude. State holds at `VERIFYING` until Claude returns. On return, Claude resumes from the preserved state
   (`READY_TO_RESUME`), not from scratch.
 
 ### 1.4 UI Impact Declaration
@@ -154,21 +132,24 @@ UI IMPACT: REQUIRED
 ```
 
 When `UI IMPACT: REQUIRED`, UI implementation is part of the same milestone
-(Gemma implements backend and UI together, under the same accepted plan), and
-Antigravity's audit (step 4) must explicitly include UI/backend parity
-verification before the milestone can reach `VERIFYING`. A milestone plan
-that touches backend contracts a UI consumes (auth fields, roles, new
-endpoints, response shapes) must not declare `UI IMPACT: NONE` merely because
-implementing the UI side was deferred — deferral is a plan decision Claude
-must state explicitly, not an implicit consequence of the declaration.
+(the routed implementer — Codex or Gemma — builds backend and UI together
+under the same accepted plan, unless the plan specifically assigns the UI
+portion to Antigravity), and the implementation must be independently
+audited by Claude for UI/backend parity before the milestone can reach
+`VERIFYING`. A milestone plan that touches backend contracts a UI consumes
+(auth fields, roles, new endpoints, response shapes) must not declare
+`UI IMPACT: NONE` merely because implementing the UI side was deferred —
+deferral is a plan decision Claude must state explicitly, not an implicit
+consequence of the declaration.
 
 ---
 
 ## 2. Active Coordination Loop
 
 Development follows the fixed cycle in §1.1: Claude plans, the User gates
-acceptance, Gemma implements, Antigravity audits/fixes, Claude gives final
-verification, and only then does release happen.
+acceptance, Antigravity routes implementation to Codex or Gemma, Claude
+independently audits (fixing bounded defects directly, or defining
+substantial remediation for Antigravity to route), and only Claude releases.
 
 ```
                           USER MILESTONE REQUEST
@@ -179,24 +160,29 @@ verification, and only then does release happen.
                                ↓
                  USER — ACCEPT / MODIFY  →  state: ACCEPTED
                                ↓
-                 GEMMA 4 12B — IMPLEMENT ACCEPTED SCOPE
-                 (backend + UI when required; no Git; no
-                  architectural authority)  →  state: IMPLEMENTING
+                 ANTIGRAVITY — ROUTE TO CODEX OR GEMMA
+                 (Codex: complex/multi-file/security-sensitive;
+                  Gemma: bounded/small; no Git; no architectural
+                  authority)  →  state: IMPLEMENTING
                                ↓
-                 ANTIGRAVITY — AUDIT ACTUAL IMPLEMENTATION
-                 (correctness, test sufficiency, security boundaries,
-                  UI/backend parity, portability; fix bounded issues;
-                  rerun tests)  →  state: AUDITING / FIXING
+                 ANTIGRAVITY — PACKAGE EVIDENCE FOR CLAUDE
+                 (files changed, tests performed — not an audit)
                                ↓
-                 CLAUDE — INDEPENDENT FINAL REVIEW
-                 (plan satisfied? tests/fixes credible? gaps
-                  accurately classified?)  →  state: VERIFYING
+                 CLAUDE — INDEPENDENT FINAL AUDIT
+                 (traces actual production paths; plan satisfied?
+                  tests credible? security boundaries held?)
+                  →  state: VERIFYING
                                ↓
-                        VERIFIED?  ── NO ──► back to FIXING / BLOCKED
-                               │
+                        VERIFIED?  ── NO, bounded ──► CLAUDE FIXES
+                               │                       DIRECTLY, RE-AUDITS
+                               │◄──────────────────────────┘
+                        ── NO, substantial ──► CLAUDE DEFINES REMEDIATION
+                               │                → ANTIGRAVITY ROUTES TO
+                               │                  CODEX/GEMMA → CLAUDE
+                               │◄─────────────────RE-AUDITS
                               YES
                                ↓
-                 ANTIGRAVITY — COMMIT + PUSH  →  state: COMPLETE
+                 CLAUDE — COMMIT + PUSH  →  state: COMPLETE
                                ↓
                  CLAUDE — REVIEW COMMITTED STATE, DRAFT FRESH
                  NEXT-MILESTONE PLAN (not a repeat)  →  state: DRAFT
@@ -207,24 +193,28 @@ verification, and only then does release happen.
    impact per §1.4), and persists it.
 2. **User gates:** accepts the plan as written or modifies it; nothing is
    implemented before this gate.
-3. **Gemma implements:** builds exactly the accepted scope, backend and UI
-   together when the plan requires UI work, and reports files changed and
-   tests performed.
-4. **Antigravity audits:** independently inspects the real implementation
-   (not only Gemma's report), fixes bounded problems, reruns affected tests,
-   and produces a persistent audit/result report. Antigravity never declares
-   `VERIFIED`.
-5. **Claude verifies:** independently reviews Antigravity's report and
-   evidence, checks plan satisfaction, test/fix credibility, and gap
-   classification, and issues `VERIFIED` / `NOT VERIFIED`.
-6. **Release:** only after `VERIFIED`, Antigravity commits and pushes, then
-   stops.
-7. **Next cycle:** Claude reviews the newly committed milestone and its
-   findings and drafts a fresh plan for the next milestone — never a repeat
-   of the previous one.
+3. **Antigravity routes and the implementer builds:** Antigravity initiates
+   the task, routing it to Codex (complex/multi-file/security-sensitive) or
+   Gemma (bounded/small) per §6; the routed implementer builds exactly the
+   accepted scope and reports files changed and tests performed.
+4. **Antigravity packages the handoff:** collects the implementation
+   evidence and sends it to Claude — this is a handoff, not an audit;
+   Antigravity never declares `VERIFIED`.
+5. **Claude audits:** independently inspects the actual diff, source, and
+   tests (never taking a report at face value), checks plan satisfaction,
+   test/fix credibility, and security boundaries, and issues `VERIFIED` /
+   `NOT VERIFIED`. Bounded defects are fixed by Claude directly and
+   re-audited; substantial defects are defined by Claude and routed back
+   through Antigravity to Codex/Gemma.
+6. **Release:** only after `VERIFIED`, Claude alone commits and pushes.
+7. **Next cycle:** immediately after pushing, Claude reviews the newly
+   committed milestone and its findings and drafts a fresh plan for the next
+   milestone — never a repeat of the previous one.
 
-Qwen and Codex do not appear in this loop; they are invoked only per §1.1's
-reserve/fallback note, on explicit User instruction.
+Qwen does not appear in this loop; it is invoked only per §1.1's
+reserve/fallback note, on explicit User instruction. Codex **does** appear
+in this loop as of this revision — it is a standing routed implementer
+(§6.1), not a reserve/fallback.
 
 ---
 
@@ -234,7 +224,7 @@ The development process operates under a persistent, resumable state
 machine. States are durable — a milestone's current state must be
 recoverable after an interruption, not re-derived from scratch. Claude and
 Antigravity each own the transitions in their stage (§1.1); the User owns
-the accept/modify and release gates.
+the accept/modify gate, and Claude alone owns the release gate.
 
 ```
 DRAFT ──► ACCEPTED ──► IMPLEMENTING ──► AUDITING ──► FIXING ──► AUDITING
@@ -258,18 +248,18 @@ DRAFT ──► ACCEPTED ──► IMPLEMENTING ──► AUDITING ──► FIX
 | State | Description | Entered when | Exit |
 |---|---|---|---|
 | `DRAFT` | Claude has drafted a fresh milestone plan and persisted it. | Start of a cycle, or after `COMPLETE`. | User reviews and accepts/modifies. |
-| `ACCEPTED` | User has accepted the plan (as written, or as modified). | User gate passed. | Gemma begins implementation. |
-| `IMPLEMENTING` | Gemma is implementing the accepted scope. | After `ACCEPTED`. | Gemma reports files changed and tests performed. |
-| `AUDITING` | Antigravity is inspecting the actual implementation. | After `IMPLEMENTING`, or after a `FIXING` pass. | Antigravity's audit report is produced. |
-| `FIXING` | Antigravity is applying bounded fixes found during audit. | Audit finds a fixable problem. | Returns to `AUDITING` to re-verify the fix, then reruns affected tests. |
-| `VERIFYING` | Claude is independently reviewing Antigravity's report and evidence. | After `AUDITING` completes with no outstanding fixes. | Claude issues `VERIFIED` or sends back to `FIXING`/`BLOCKED`. |
-| `VERIFIED` | Claude has confirmed the plan was satisfied with credible evidence. | Claude's explicit decision. | Antigravity releases. |
+| `ACCEPTED` | User has accepted the plan (as written, or as modified). | User gate passed. | Antigravity routes implementation to Codex or Gemma. |
+| `IMPLEMENTING` | Codex or Gemma (per Antigravity's routing) is implementing the accepted scope. | After `ACCEPTED`. | The routed implementer reports files changed and tests performed. |
+| `AUDITING` | Claude is independently inspecting the actual implementation (with Antigravity having packaged the handoff evidence). | After `IMPLEMENTING`, or after a `FIXING` pass. | Claude's audit reaches a verdict or finds a fixable problem. |
+| `FIXING` | Claude is applying a bounded fix found during audit directly, or has handed a substantial remediation to Antigravity for Codex/Gemma routing. | Audit finds a fixable problem. | Returns to `AUDITING` to re-verify the fix, then reruns affected tests. |
+| `VERIFYING` | Claude is finalizing its independent review of the implementation and evidence. | After `AUDITING` completes with no outstanding fixes. | Claude issues `VERIFIED` or sends back to `FIXING`/`BLOCKED`. |
+| `VERIFIED` | Claude has confirmed the plan was satisfied with credible evidence. | Claude's explicit decision. | Claude releases. |
 | `COMPLETE` | Commit and push are done; milestone closed. | After release. | Claude starts the next cycle at `DRAFT`. |
 | `BLOCKED` | A genuine blocker exists that no agent in the cycle can resolve alone (e.g. an unresolved plan ambiguity, a real regression with no bounded fix). | Any stage, when progress cannot continue safely. | User intervention. |
-| `WORKER_FAILED` | Gemma or Antigravity failed to complete its stage (crash, tool failure, non-recoverable error). | During `IMPLEMENTING`, `AUDITING`, or `FIXING`. | Retry, or User-authorized explicit fallback for that instance only. |
+| `WORKER_FAILED` | Codex, Gemma, or Antigravity failed to complete its stage (crash, tool failure, non-recoverable error). | During `IMPLEMENTING`, `AUDITING`, or `FIXING`. | Retry, re-route to the other implementer, or User-authorized explicit fallback for that instance only. |
 | `WAITING_FOR_QUOTA` | A required agent has hit a quota/rate limit. | Any stage. | Resumes automatically once quota is available, or User intervenes. |
-| `WAITING_FOR_CLAUDE` | Claude is unavailable or quota-exhausted; an already-`ACCEPTED` plan continues through `IMPLEMENTING`/`AUDITING`/`FIXING`, but nothing reaches `VERIFIED` and no fresh plan is drafted. | Claude unavailable while a plan is already `ACCEPTED`. | Claude returns and resumes verification from preserved state. |
-| `WAITING_FOR_ANTIGRAVITY` | Antigravity is unavailable; its audit gate is never bypassed. | Implementation complete but no audit possible. | Antigravity returns and audits. |
+| `WAITING_FOR_CLAUDE` | Claude is unavailable or quota-exhausted; an already-`ACCEPTED` plan continues through `IMPLEMENTING`, but nothing reaches `AUDITING`/`VERIFIED` and no fresh plan is drafted. | Claude unavailable while a plan is already `ACCEPTED`. | Claude returns and resumes verification from preserved state. |
+| `WAITING_FOR_ANTIGRAVITY` | Antigravity is unavailable; task initiation/routing/handoff cannot proceed. | Plan accepted but no worker has been initiated, or implementation complete but no handoff packaged. | Antigravity returns and resumes. |
 | `READY_TO_RESUME` | A returning agent (most often Claude after `WAITING_FOR_CLAUDE`) has the preserved state and evidence in hand and can resume exactly where the cycle left off. | Whenever a waiting state's blocking condition clears. | Resumes the specific in-flight stage — never restarts the cycle from `DRAFT` unless the stage was `DRAFT` itself. |
 
 ---
@@ -310,83 +300,115 @@ Every plan Claude persists (§1.1 step 1) must include:
 
 ### 4.3 Final Verification Contract
 
-At §1.1 step 5, Claude reviews Antigravity's audit report and the actual
-implementation evidence (test logs, diffs — not summaries alone) and issues
-one of:
+At §1.1 step 6, Claude independently audits the actual implementation and
+evidence (test logs, diffs — not summaries alone) and issues one of:
 - `VERIFIED` — the accepted plan's acceptance criteria are satisfied with
   credible evidence, gaps are accurately classified as deferred/accepted,
   and no protected boundary was crossed.
 - `NOT VERIFIED` — with the specific unmet criterion, missing evidence, or
-  regression named, returning the cycle to `FIXING` (bounded issues) or
-  `BLOCKED` (issues requiring User input).
+  regression named, returning the cycle to `FIXING` (Claude fixes bounded
+  issues directly, or defines substantial remediation for Antigravity to
+  route to Codex/Gemma) or `BLOCKED` (issues requiring User input).
 
-*Rule:* Neither Gemma nor Antigravity may declare a milestone `VERIFIED`;
-only Claude does, and only from real evidence it has independently examined.
+*Rule:* Neither Codex, Gemma, nor Antigravity may declare a milestone
+`VERIFIED`; only Claude does, and only from real evidence it has
+independently examined.
 
 ---
 
-## 5. Antigravity Audit, Fix & Release Responsibilities
+## 5. Antigravity Loop Management, Task Routing & Handoff Responsibilities
 
-Antigravity is the independent auditor, bounded fixer, and release control
-surface. Antigravity retains **exclusive authority** over:
+Antigravity manages the execution loop and routes implementation work. It is
+**not** the auditor, the bounded fixer, or the release authority — those
+belong solely to Claude (§4.3, §1.1 steps 6-7). Antigravity's responsibilities:
 
-1. **Implementation Audit:** Inspecting the actual code Gemma produced —
-   correctness, test sufficiency (not just test presence), security
-   boundaries, UI/backend parity, and portability implications — never
-   accepting Gemma's report as a substitute for inspection.
-2. **Shell & Tool Execution:** Running terminal commands, Python
-   interpreters, Flutter tools, and test suites to independently verify
-   Gemma's claimed results.
-3. **Bounded Fixes:** Applying fixes for problems found during audit that
-   are within the accepted plan's scope, then rerunning affected tests. A
-   fix that would require expanding scope beyond the accepted plan is
-   escalated to `BLOCKED` for Claude/User, not applied unilaterally.
-4. **Audit Reporting:** Producing the persistent implementation/audit/result
-   report Claude reviews at step 5. Antigravity must not declare
-   `VERIFIED` if required evidence is missing — it hands the gap to Claude
-   instead of papering over it.
-5. **Version Control Authority:** Staging, committing, tagging, and pushing
-   git changes — but **only after Claude has said `VERIFIED`**. Committing
-   or pushing before that gate is a process violation regardless of how
-   confident Antigravity's own audit was.
-6. **Circuit Breakers:** Aborting Gemma's execution immediately if it
+1. **Task Initiation:** Preparing precise task-initiation packages from
+   Claude's accepted plan (or Claude-defined remediation requirements) and
+   initiating the appropriate worker.
+2. **Worker Routing:** Routing each implementation task to Codex (preferred
+   for complex/multi-file/security-sensitive/production-call-path work) or
+   Gemma (bounded/small/repetitive/boilerplate work) per §6's complexity
+   rule — never forcing complex work through Gemma merely because it is
+   available.
+3. **Handoff Packaging:** Collecting the routed implementer's reported files
+   changed and tests performed, and sending that evidence to Claude for
+   independent audit. This is a packaging/delivery function, not an audit —
+   Antigravity does not itself assess correctness, test sufficiency, or
+   security boundaries as a substitute for Claude's inspection.
+4. **State Maintenance:** Keeping the milestone's `STATE.md` history log
+   current as the cycle moves through its stages, and ensuring the next
+   valid workflow stage is actually initiated rather than silently stalling.
+5. **Assigned UI/Response Implementation:** Implementing UI, UX-facing
+   behavior, or URI response/reply interface work only when a plan
+   specifically assigns that work to Antigravity rather than to the routed
+   Codex/Gemma implementer.
+6. **Circuit Breakers:** Aborting a worker's execution immediately if it
    attempts unauthorized architectural changes, scope expansion, or
-   destructive operations.
+   destructive operations, and escalating to Claude/User rather than
+   resolving the conflict itself.
+
+**Antigravity must NOT:** declare a milestone `VERIFIED`; perform
+`git commit`/`git push` for a milestone release under any circumstance;
+substitute its own judgment for Claude's independent final audit; or apply
+its own "bounded fixes" as a stand-in for Claude's audit-driven fix
+authority — a defect Antigravity notices during task management is reported
+to Claude, not silently patched.
 
 ---
 
-## 6. Worker Delegation & Escalation Rules
+## 6. Worker Selection & Delegation Rules
 
-### 6.1 Gemma 4 12B Implementation (the normal-cycle implementer)
-- Implements exactly the scope accepted at §1.1 step 2 — backend and, when
-  `UI IMPACT: REQUIRED`, the corresponding `uri_ui/` work in the same
-  milestone.
-- Writes or updates the tests the accepted plan calls for.
-- Has no Git authority and no architectural authority: it does not decide
-  scope, does not redesign the accepted plan, and does not commit.
-- Reports files changed and tests performed back to Antigravity for audit.
+Antigravity chooses the implementation worker according to task complexity:
+- **Routine / small / bounded / boilerplate / focused tests:** → **Gemma 4 12B**
+- **Complex / important / multi-file / security-sensitive / architectural / production-call-path:** → **Codex**
+- **UI / URI response / presentation, only when specifically assigned:** → **Antigravity**
+- **Architectural planning / final audit / bounded fixes / release:** → **Claude** (never delegated)
 
-### 6.2 Antigravity Direct Fixes (bounded, audit-driven only)
-- Antigravity may make small, bounded corrections discovered during its
-  audit (§5.3) — it is not a second implementer for new scope.
-- Documentation, tracking, and project memory maintenance after a verified
-  release.
+### 6.1 Codex (Preferred Specialist Coder / Implementer)
+- The preferred implementation worker for complex coding, architectural
+  implementation, difficult integrations, refactoring, multi-file changes,
+  security-sensitive implementation, and production-call-path fixes — a
+  standing routed worker as of this revision, not a reserve/fallback.
+- Implements from Claude's accepted plan (or Claude-defined remediation
+  requirement): exact task objective, relevant paths, constraints, protected
+  files, required tests, and acceptance criteria.
+- Does not approve its own work, declare `VERIFIED`, commit, push, or
+  redefine accepted architecture.
 
-### 6.3 Reserve / Fallback Delegation (explicit invocation only, never default)
-- **Codex (CLI):** substantial multi-file mechanical refactors, only when
-  the User explicitly invokes it for that instance; it does not
-  automatically absorb Gemma's role if Gemma is unavailable (§1.3).
-- **Qwen 3 14B (Local Ollama):** an explicit second-opinion review, only
-  when the User separately requests it; it does not replace Claude's
-  planning or verification role under any circumstance.
+### 6.2 Gemma 4 12B (Local Bounded Worker via Ollama/MCP)
+- Available through local Ollama/MCP infrastructure for small bounded
+  implementation tasks, repetitive work, boilerplate, focused test creation,
+  and low-risk edits.
+- Do not force complex implementation through Gemma when Codex is the more
+  appropriate implementation worker. If Gemma struggles with context,
+  incomplete implementation, repeated production-path misses, or poor
+  output quality, route the task to Codex rather than repeatedly retrying
+  Gemma.
+- Has no Git authority and no architectural authority.
 
-### 6.4 Claude Code — Not a Delegation Target, a Fixed Stage
-Claude's planning (step 1) and final verification (step 5) are not
+### 6.3 Specialist / Design Agents (Advisory Only)
+- May propose architecture improvements, UI/UX, interface layouts,
+  interaction/workflow improvements, and URI response/reply presentation.
+- Do not implement. Where a proposal materially affects architecture or
+  milestone behavior, Claude reviews it (`ACCEPT`, `MODIFY`, `REJECT`,
+  `ARCHITECTURAL_ESCALATION`) before it becomes implementation guidance.
+
+### 6.4 Qwen 3 14B (Reserve / Fallback Only, Explicit Invocation)
+- An explicit, User-invoked second-opinion review only — never a default
+  coordination step, never a substitute for Claude's planning or
+  verification role, and never automatically substituted in if Codex or
+  Gemma is unavailable.
+
+### 6.5 Claude Code — Not a Delegation Target, a Fixed Stage
+Claude's planning (§1.1 step 1) and final audit (§1.1 step 6) are not
 discretionary escalations chosen by another worker; they are mandatory
-stages of every milestone (§1.1). Nothing in this document authorizes
-skipping either stage, regardless of how routine a milestone appears.
+stages of every milestone. Nothing in this document authorizes skipping
+either stage, regardless of how routine a milestone appears. Claude's
+bounded-fix authority is not a license for primary implementation: for
+substantial remediation, Claude defines the requirement and hands it to
+Antigravity for Codex/Gemma routing (§1.1 step 6).
 
-### 6.5 User Escalation (Final Authority)
+### 6.6 User Escalation (Final Authority)
 Any worker **MUST escalate to the User** for:
 - Changes to governing documents (`ADR-018`, `URI_AI_OPERATING_POLICY.md`,
   `URI_MODEL_RUNTIME_CONTRACT.md`).
@@ -394,7 +416,7 @@ Any worker **MUST escalate to the User** for:
 - Breaking changes to persistence, wire APIs, or user data isolation.
 - Irreversible destructive actions.
 - Unresolved disagreements between the plan and the implementation, or
-  between Antigravity's audit and Claude's verification.
+  between a worker's report and Claude's audit.
 - Milestone start, pause, `BLOCKED` resolution, or plan modification.
 
 ---
@@ -402,7 +424,7 @@ Any worker **MUST escalate to the User** for:
 ## 7. Qwen 3 14B Qualification Record (Reserve / Fallback Role Only)
 
 This record is retained as historical qualification evidence for Qwen's
-**reserve/fallback** role (§1.1, §6.3) — an explicit, User-invoked second
+**reserve/fallback** role (§1.1, §6.4) — an explicit, User-invoked second
 opinion, never the day-to-day coordinator role AO-2 originally assigned it.
 The local Qwen 3 14B installation was formally evaluated on 10 Sep 2026
 across 8 practical URI coordination benchmarks (Tests A through H).
@@ -437,11 +459,11 @@ across 8 practical URI coordination benchmarks (Tests A through H).
 - Natural change-aware auditing discipline without prompting.
 
 ### 7.5 Known Limitations & Mitigations
-- **Negative Exclusion Blindspot:** Can fail to recall negative constraints (e.g. out-of-scope messaging channels) when not in immediate context.  
+- **Negative Exclusion Blindspot:** Can fail to recall negative constraints (e.g. out-of-scope messaging channels) when not in immediate context.
   *Mitigation:* Antigravity explicitly injects negative constraints into every prompt packet.
-- **Context Capacity Bounds:** Cannot ingest 60KB+ documents in one turn.  
+- **Context Capacity Bounds:** Cannot ingest 60KB+ documents in one turn.
   *Mitigation:* Antigravity slices specific milestone sections before prompting Qwen.
-- **Turn Latency:** 16–38s reasoning time.  
+- **Turn Latency:** 16–38s reasoning time.
   *Mitigation:* Use Qwen for milestone/task-level coordination turns, not character-by-character typing.
 
 ---
@@ -475,19 +497,21 @@ When resolving ambiguities or conflicting requirements, agents must strictly fol
 
 ## 10. Standard Milestone Handoff Protocols
 
-### 10.1 Plan Handoff (Claude → User → Gemma)
+### 10.1 Plan Handoff (Claude → User → Antigravity → Codex/Gemma)
 Claude's persisted Milestone Plan (§4.2) is the Task Brief for the normal
 cycle — there is no separate coordinator-drafted brief. Once the User
 accepts (or modifies) it, the accepted plan's Scope, Out-of-Scope/Protected
-Files, Acceptance Criteria, Test Plan, and UI Impact sections are handed to
-Gemma unchanged.
+Files, Acceptance Criteria, Test Plan, and UI Impact sections are handed
+unchanged to whichever implementer (Codex or Gemma) Antigravity routes the
+task to per §6.
 
-### 10.2 Implementer Return Report (Gemma → Antigravity)
-Gemma reports back in this format:
+### 10.2 Implementer Return Report (Codex or Gemma → Antigravity)
+The routed implementer reports back in this format:
 
 ```markdown
-### GEMMA RETURN REPORT
+### IMPLEMENTER RETURN REPORT
 - **Milestone ID:** [Matching the accepted plan]
+- **Implementer:** [Codex | Gemma 4 12B]
 - **Summary of Actions:** [What was performed]
 - **Files Modified/Created:** [List with line-count delta]
 - **Tests Performed:** [Exact test commands and pass/fail counts, as run]
@@ -495,24 +519,23 @@ Gemma reports back in this format:
 - **Known Issues / Gaps:** [Remaining items or unverified edges]
 ```
 
-### 10.3 Audit/Result Report (Antigravity → Claude)
-Antigravity's persistent report, produced before Claude's final review
-(§1.1 step 5), must include:
+### 10.3 Handoff Evidence Package (Antigravity → Claude)
+Antigravity's persistent handoff, produced before Claude's final audit
+(§1.1 step 6), must include:
 
 ```markdown
-### ANTIGRAVITY AUDIT REPORT
+### ANTIGRAVITY HANDOFF PACKAGE
 - **Milestone ID:** [Matching the accepted plan]
-- **Code Correctness Findings:** [What was inspected, what was found]
-- **Test Sufficiency Assessment:** [Do the tests actually cover the claimed behavior, not just pass]
-- **Security Boundary Check:** [Result against the plan's security considerations]
-- **UI/Backend Parity Check:** [Required whenever UI IMPACT: REQUIRED]
-- **Portability Implications:** [When applicable]
-- **Fixes Applied:** [Bounded fixes made, and the rerun test results for each]
-- **Evidence:** [Actual test run output/counts — not a restated claim]
-- **Outstanding Gaps:** [Named explicitly; never omitted to make the report look clean]
+- **Implementer Used:** [Codex | Gemma 4 12B, and why — per §6's routing rule]
+- **Implementer Return Report:** [§10.2, attached or linked]
+- **Files Changed:** [Actual diff summary]
+- **Tests the Implementer Reported:** [Exact commands and counts, as reported — not independently re-run by Antigravity as a substitute for Claude's audit]
+- **Anything Antigravity Noticed:** [Named explicitly for Claude's attention; Antigravity does not resolve or paper over it — that is Claude's audit function]
 ```
-Antigravity must not mark a milestone `VERIFIED` in this report — that
-decision belongs solely to Claude (§4.3).
+Antigravity must not mark a milestone `VERIFIED` in this package — that
+decision belongs solely to Claude (§4.3), who independently re-runs and
+verifies the relevant tests itself rather than trusting this package's
+reported counts.
 
 ### 10.4 Persistent State File (handoff artifact, not a coordinator)
 
@@ -521,13 +544,13 @@ Each milestone plan (`docs/plans/<ID>_..._PLAN.md`) has a sibling
 step 2) and updated in place by whichever worker owns the current
 stage. It carries: the current state (§3's vocabulary), an append-only
 History Log of transitions, and the §10.2/§10.3 report templates for
-Gemma and Antigravity to fill in directly. Its purpose is narrow: the
-cycle must be resumable from **disk**, not from any one agent's
+the routed implementer and Antigravity to fill in directly. Its purpose is
+narrow: the cycle must be resumable from **disk**, not from any one agent's
 conversation history, so a session restart, quota exhaustion, or
 model unavailability never loses evidence or forces the cycle to
 restart from `DRAFT`. This file is a state record only — it has no
 authority of its own, drives no execution, and is not a substitute for,
 or a competitor to, `scripts/qwen_coordinator.py`'s proposal-schema
-mechanism (which remains Qwen-reserve-only, §1.3) or any future
+mechanism (which remains Qwen-reserve-only, §6.4) or any future
 implementer-driver tooling. It is development-only tracking and is
 never read by, or shipped inside, the URI runtime itself.

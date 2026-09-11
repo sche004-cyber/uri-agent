@@ -34,35 +34,40 @@ milestone status:
 
 Do not duplicate or weaken these documents in implementation notes.
 
-## Canonical Development Team (AO-4)
+## Canonical Development Team (AO-4) — Authoritative Process
 
-The development operating model is a fixed cycle, not a discretionary
-coordination loop: Claude plans, the User gates acceptance, Gemma
-implements, Antigravity audits/fixes and controls release, Claude gives
-final verification. See [ORCHESTRATION.md](ORCHESTRATION.md) §1 for the full
-7-step cycle, state model, and continuity rules.
+The development operating model follows the authoritative cycle established by the User (see [ORCHESTRATION.md](ORCHESTRATION.md) for the full detail this summary condenses):
 
-- **User:** Final authority. Accepts or modifies every milestone plan before
-  implementation begins; sole authority to release after Claude's
-  `VERIFIED`; final authority for architecture decisions, security policies,
-  and gate relaxation.
-- **Claude Code (CLI):** Plans every milestone from verified repo state
-  (scope, acceptance criteria, tests, security considerations, UI impact)
-  and performs the independent final verification (`VERIFIED`/`NOT
-  VERIFIED`) after Antigravity's audit. Does not implement.
-- **Gemma 4 12B:** The normal-cycle implementer. Builds exactly the accepted
-  plan's scope — backend and UI together when the plan requires UI work. No
-  Git authority, no architectural authority.
-- **Antigravity (Gemini 3.8 Flash):** Independently audits Gemma's actual
-  implementation (not just its report), fixes bounded problems, reruns
-  tests, and controls commit/push — but only after Claude's `VERIFIED`.
-  Never declares a milestone verified itself.
-- **Qwen 3 14B (Local Ollama):** Reserve/fallback only — an explicit,
-  User-invoked second opinion. Not part of the normal cycle.
-- **Codex (CLI):** Reserve/fallback only — explicit, User-invoked large
-  mechanical refactors. Not part of the normal cycle.
-- **Gemma 3:** Excluded from the active development team (superseded by the
-  qualified Gemma 4 12B above).
+1. **Claude (CLI):** Architect / Pre-Auditor / Final Auditor / Bounded Fixer / Release Authority.
+   - Plans and pre-audits each next milestone before implementation.
+   - Performs the independent final audit of the implementation, tracing actual production paths rather than trusting a worker's report.
+   - If Claude finds a **bounded** defect within accepted scope, Claude fixes it directly, then independently re-audits (`audit → fix → re-audit`). Does not hand NOT VERIFIED findings back to Gemma/Codex by default.
+   - If a defect requires **substantial** remediation, Claude defines the requirement and hands it to Antigravity for Codex/Gemma routing — Claude does not perform substantial implementation itself merely because it holds bounded-fix authority, and never silently expands an accepted milestone's scope while fixing something.
+   - Once independently VERIFIED, Claude alone performs `git commit` and `git push` to `origin/master`.
+   - Immediately plans and pre-audits the next milestone; the workflow does not stop merely because a milestone was pushed.
+2. **Antigravity (Gemini 3.8 Flash):** Development Loop Manager / Orchestrator.
+   - Manages execution of the accepted milestone: initiates tasks, prepares precise task-initiation packages, and invokes the appropriate worker (Claude, Codex, Gemma, or a specialist agent) as the workflow requires.
+   - Routes implementation to Codex (preferred for complex/multi-file/security-sensitive/production-call-path work) or Gemma (bounded/small/repetitive/boilerplate work).
+   - Sends task-initiation prompts to Gemma/Codex and packages evidence for Claude's audit.
+   - Implements UI, UX-facing behavior, and URI response/reply interface work only where specifically assigned.
+   - Coordinates agents, maintains milestone state, and ensures the next valid workflow stage is actually initiated.
+   - **Is NOT the formal auditor/verifier.** Must not declare VERIFIED, must not replace Claude's independent verification, and must not commit or push a milestone release.
+3. **Codex (CLI):** Preferred Specialist Coder / Implementer.
+   - The preferred implementation worker for complex implementation, multi-file work, architectural implementation, security-sensitive work, persistence/integration work, difficult debugging, precision-critical changes, repository-wide reasoning, and production call-path changes.
+   - Implements against the accepted Claude plan (or a Claude-defined remediation requirement).
+   - Does not approve its own implementation, declare VERIFIED, redefine accepted architecture, commit, or push.
+4. **Gemma 4 12B (local, via Ollama/MCP):** Local Bounded Implementation Worker.
+   - Used primarily for small bounded implementation tasks, focused edits, repetitive work, boilerplate, focused test creation, and low-risk tasks that comfortably fit its context/capabilities.
+   - Do not force complex implementation through Gemma when Codex is the more appropriate implementation worker.
+   - No Git authority; no final release audit.
+5. **Specialist / Design Agents:** Advisory only — may propose architecture improvements, UI/UX, interface layouts, and URI response/reply presentation/interaction-workflow improvements. Do not implement. Where a proposal materially affects architecture or milestone behavior, Claude reviews it before it becomes implementation guidance.
+6. **User:** Final Authority. Accepts/modifies every milestone plan; non-delegable authority over architecture and security policy. Release itself is performed solely by Claude (item 1), not by the User directly.
+
+### Standing Development Cycle
+```
+CLAUDE PLANS → CLAUDE PRE-AUDITS → USER ACCEPTS → ANTIGRAVITY INITIATES TASKS (ROUTES TO CODEX OR GEMMA PER COMPLEXITY) → CODEX/GEMMA IMPLEMENTS → ANTIGRAVITY MANAGES UI/RESPONSE WORK WHERE ASSIGNED → ANTIGRAVITY SENDS RELEVANT EVIDENCE TO CLAUDE → CLAUDE AUDITS → [BOUNDED DEFECT: CLAUDE FIXES DIRECTLY → CLAUDE RE-AUDITS] OR [SUBSTANTIAL DEFECT: CLAUDE DEFINES REMEDIATION → ANTIGRAVITY ROUTES TO CODEX/GEMMA → CLAUDE RE-AUDITS] → VERIFIED → CLAUDE COMMITS/PUSHES → CLAUDE PLANS NEXT MILESTONE → USER ACCEPTS → REPEAT
+```
+
 
 ## Non-negotiable boundaries
 
