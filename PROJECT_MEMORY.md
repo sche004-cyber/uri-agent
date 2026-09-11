@@ -2,30 +2,31 @@
 
 ## Resume point
 
-- **Completed baseline:** M22.9 — PWA/mobile client branding and durable
-  session handling (commit `9c848fe`), implemented directly by Claude under
-  explicit User authorization (Codex quota-exhausted, no Antigravity/Codex/
-  Gemma session reachable from the Claude Code session) and self-audited —
-  see [the state and verification report](docs/plans/M22.9_STATE.md),
-  including a mid-implementation mistake `flutter analyze` caught and Claude
-  corrected before commit. `flutter analyze` 0 errors; `flutter test`
-  118/118 passing; APK built; static secret-scan of the built APK PASS.
-  **Acceptance criterion 4 (hands-on device-install confirmation) is
-  outstanding** — needs the User directly. This closes the full M22.1–M22.9
-  sequence (`URI_M22_ARCHITECTURE.md` §22's dependency graph) — all nine now
-  `DONE`/`DONE-pending-device-check`.
-- **Next milestone:** **M23 — URI-native Graph Intelligence foundation**
-  (structured entities, typed relationships, bounded query/path/explain/
-  impact primitives, provenance — see
-  [the plan](docs/plans/M23_GRAPH_INTELLIGENCE_PLAN.md)). `STATE: ACCEPTED`
-  (auto-approved per the standing rule below; plan only, not yet
-  implemented — see [M23_STATE.md](docs/plans/M23_STATE.md)). Explicitly
-  numbered **M23**, not "M22.10" — that number stays reserved for the
-  separate, still-unbuilt
-  [relevance-scoped memory/context retrieval proposal](docs/plans/M22_MEMORY_CONTEXT_RETRIEVAL_ARCHITECTURE.md)
-  (see the M23 plan's own §0 for the full reasoning). Standing role
-  separation resumes: Claude plans/audits/releases, Codex/Gemma implement.
-  Do not restart M22/M22.1–M22.9 audits.
+- **Completed baseline:** M23 — URI-native Graph Intelligence foundation
+  (commit `dfee5a8`), implemented directly by Claude under explicit User
+  authorization (no Antigravity/Codex/Gemma session reachable) and
+  self-audited — see
+  [the state and verification report](docs/plans/M23_STATE.md), including
+  two design mistakes and one standing "orchestrator.py must never grow"
+  rule violation this same session found and corrected before commit. Full
+  regression 1,401/1,401 tests run with the same single pre-existing,
+  unrelated failure as the pre-M23 baseline (confirmed via `git stash`
+  bisection, not assumed); `wc -l orchestrator.py` exactly flat at 5,460;
+  `uri_ui/` untouched. Adds a per-user SQLite-backed structured
+  entity/relationship graph (`GraphStore`), six bounded read-only
+  traversal primitives, and one new optional `graph_context` section in
+  `query_context.py` — context/evidence for the Brain, proven (not merely
+  documented) to be non-authoritative. M22.9 (commit `9c848fe`) remains
+  the prior baseline — PWA/mobile client branding and durable session
+  handling; **its acceptance criterion 4 (hands-on device-install
+  confirmation) is still outstanding**, needs the User directly. This
+  closes the full M22.1–M22.9 sequence
+  (`URI_M22_ARCHITECTURE.md` §22's dependency graph).
+- **Next milestone:** none yet — the User will provide the next milestone
+  directly. Standing role separation resumes: Claude plans/audits/
+  releases, Codex/Gemma implement, unless the User grants an explicit
+  one-instance exception again (as for M22.8/M22.9/M23). Do not restart
+  M22/M22.1–M22.9 or M23 audits.
 - **Standing governance change (11 Sep 2026, permanent):** all future
   milestone plans are auto-approved by default — Claude no longer waits for
   explicit User ACCEPT/MODIFY on routine engineering work; the User is
