@@ -37,7 +37,7 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictInt
 
 from uri_core.app.edge import (
     enforce_ask_content_length,
@@ -2046,6 +2046,40 @@ def update_user_grants(
 # All three are USER-classified (route_classification.py).
 # user_id always comes from the auth token, never from the request body.
 # ---------------------------------------------------------------------------
+
+
+class _UsageLimitsPayload(BaseModel):
+    monthly_token_ceiling: Optional[StrictInt] = Field(..., ge=0)
+
+
+@app.get("/usage")
+def get_usage(user_id: Optional[str] = Depends(_resolve_authenticated_user_id)) -> dict:
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    from uri_core.core.usage_aggregator import aggregate_month
+    return aggregate_month(user_id)
+
+
+@app.get("/usage/limits")
+def get_usage_limits(user_id: Optional[str] = Depends(_resolve_authenticated_user_id)) -> dict:
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    from uri_core.core.usage_ceiling_store import UsageCeilingStore
+    store = UsageCeilingStore(user_id)
+    return {"monthly_token_ceiling": store.get_ceiling(),
+            "warn_threshold_ratio": store.get_warn_threshold_ratio()}
+
+
+@app.put("/usage/limits")
+def update_usage_limits(
+    payload: _UsageLimitsPayload,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    from uri_core.core.usage_ceiling_store import UsageCeilingStore
+    UsageCeilingStore(user_id).set_ceiling(payload.monthly_token_ceiling)
+    return {**get_usage_limits(user_id), "status": "updated"}
 
 
 class _ProviderKeyPayload(BaseModel):

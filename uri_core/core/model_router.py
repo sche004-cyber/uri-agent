@@ -7,6 +7,7 @@ Import boundary (M22.6 §6, invariant #2):
 This module MUST NOT import approval_gate, approval_store, dispatcher, or capability_registry.
 """
 import time
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -19,6 +20,9 @@ from uri_core.core.model_providers.base import (
     ModelNotFoundError,
 )
 from uri_core.config.model_roles import UnknownModelProviderError, build_provider, load_model_roles
+from uri_core.core.context_budget import estimate_tokens
+from uri_core.core.usage_ceiling_store import UsageCeilingStore
+from uri_core.core.usage_meter import UsageMeter, UsageRecord
 
 try:
     from uri_core.core.principal_context import PrincipalContext
@@ -60,7 +64,7 @@ class ModelRouter:
     Pipeline (M22.6 §7.1):
     1. User configured primary for role
     2. Health check (skip unhealthy candidates)
-    3. Budget pre-flight seam (_budget_ok — always True in M22.6; M22.7 slots real logic)
+    3. Account-wide monthly budget pre-flight check
     4. User declared fallback order (reserved slot — no per-user fallback config yet)
     5. Install default: 'ollama' always permitted
     6. Any other healthy local provider (same adapter type)
@@ -71,10 +75,43 @@ class ModelRouter:
         self._health = health_tracker or ProviderHealthTracker()
 
     def _budget_ok(
-        self, provider_id: str, role: str, principal: Any
+        self, provider_id: str, role: str, principal: Optional[object],
+        system_text: str = "", user_text: str = "",
     ) -> bool:
-        """Budget pre-flight seam. Always True in M22.6. M22.7 wires real ceiling check."""
-        return True
+        """Block when measured historical usage plus the pending estimate reaches ceiling."""
+        user_id = getattr(principal, "user_id", None)
+        if user_id is None:
+            return True
+        ceiling = UsageCeilingStore(user_id).get_ceiling()
+        if ceiling is None:
+            return True
+        return (UsageMeter().estimate_current_month_tokens(user_id)
+                + estimate_tokens(system_text + user_text)) < ceiling
+
+    @staticmethod
+    def _record_usage(
+        role: str, principal: Optional[object], session_id: Optional[str],
+        provider_id: Optional[str], model: Optional[str], tried: List[str],
+        response: Optional[ModelResponse] = None,
+    ) -> None:
+        # Legacy/anonymous calls have no user identity to attribute storage to.
+        user_id = getattr(principal, "user_id", None)
+        if user_id is None:
+            return
+
+        def measured(name):
+            value = getattr(response, name, None)
+            return {"value": value, "confidence": "UNAVAILABLE" if value is None else "KNOWN"}
+
+        UsageMeter().record(UsageRecord(
+            ts=datetime.now(timezone.utc).isoformat(), user_id=user_id,
+            session_id=session_id, role=role, provider_id=provider_id, model=model,
+            prompt_tokens=measured("prompt_tokens"), eval_tokens=measured("eval_tokens"),
+            duration_seconds=measured("duration_seconds"),
+            outcome="success" if response is not None else "unreachable",
+            fallback_from=list(tried),
+            estimated_cost={"value": None, "confidence": "UNAVAILABLE"},
+        ))
 
     def _ordered_candidates(self, role: str) -> List[str]:
         """Build ordered candidate list from role config."""
@@ -122,6 +159,7 @@ class ModelRouter:
         self,
         role: str,
         principal: Optional[Any] = None,
+        session_id: Optional[str] = None,
         **complete_kwargs: Any,
     ) -> ModelResponse:
         """Walk the fallback chain and return the first successful completion.
@@ -132,17 +170,22 @@ class ModelRouter:
         candidates = self._ordered_candidates(role)
         tried: List[str] = []
         last_error: Optional[Exception] = None
+        # Retain the original three-argument seam for empty-prompt callers.
+        budget_text = {key + "_text": complete_kwargs[key] for key in ("system", "user")
+                       if complete_kwargs.get(key)}
         for pid in candidates:
             model = self._model_for_role(role)
             if not self._health.is_healthy(pid, model):
                 tried.append(f"{pid}(unhealthy)")
                 continue
-            if not self._budget_ok(pid, role, principal):
+            if not self._budget_ok(pid, role, principal, **budget_text):
                 tried.append(f"{pid}(over_budget)")
                 continue
             try:
                 provider = build_provider(role, principal, provider_id_override=pid)
                 response = provider.complete(**complete_kwargs)
+                self._record_usage(role, principal, session_id, pid,
+                                   getattr(response, "model", model), tried, response)
                 tried.append(pid)
                 return response
             except ProviderAuthenticationError:
@@ -154,6 +197,7 @@ class ModelRouter:
                 tried.append(f"{pid}(failed:{type(exc).__name__})")
                 last_error = exc
                 continue
+        self._record_usage(role, principal, session_id, None, None, tried)
         raise AllProvidersUnreachableError(
             f"All providers exhausted for role {role!r}. "
             f"Chain attempted: {tried}. Last error: {last_error!r}"

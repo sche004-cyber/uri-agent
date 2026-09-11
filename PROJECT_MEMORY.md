@@ -2,14 +2,21 @@
 
 ## Resume point
 
-- **Completed baseline:** M22.5, commit `69c8df3` (11 Sep 2026),
-  independently verified by Claude Code as third-layer reviewer, with
-  **1,318/1,318 backend tests passing** and **111/111 Flutter tests
-  passing** at delivery. See
-  [URI_MILESTONE_TRACKER.md](URI_MILESTONE_TRACKER.md)'s M22.5 row for the
-  full verification record.
-- **Next milestone:** M22.6 — Model router and runtime provider selection.
-  Follow [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md); do not
+- **Completed baseline:** M22.7 usage metering, budgets, and pre-flight
+  ceiling enforcement, implemented by Codex against the accepted
+  [plan](docs/plans/M22.7_USAGE_METERING_PLAN.md), independently verified by
+  Claude Code (11 Sep 2026) — see the
+  [state and verification report](docs/plans/M22.7_STATE.md). All 11
+  acceptance criteria independently traced against source; full regression
+  suite **1,433/1,433 Python tests passing, 29 subtests passing, 0 failures**
+  (reproduced from scratch after Claude's bounded fix to a pre-existing M22.6
+  test-fixture isolation gap unrelated to M22.7's own changes — see the
+  report for the root-cause trace). M22.6 (`5b97e12`) and M22.7 both verified
+  and released this session.
+- **Next milestone:** M22.8 — Modes and tiered UX (office/diagnostic/admin
+  capability filters, BASIC/ADVANCED provider UI, ceiling-reached flow).
+  Depends on M22.4 and M22.7, both complete. Follow
+  [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md); do not
   restart M22/M22.1/M22.2/M22.3/M22.4/M22.5 audits.
 
 ## Guardrails
@@ -51,5 +58,3 @@
   - *Negative Exclusion Blindspot:* Can fail to recall negative constraints when not in immediate context. *Mitigation:* Antigravity must deliberately assemble and inject negative constraints (prohibited work, deferred features, protected files) as first-class context in every coordinator prompt.
   - *Context Capacity Bounds:* Cannot ingest 60KB+ documents in one turn. *Mitigation:* Antigravity slices specific milestone sections before prompting Qwen.
   - *Turn Latency:* Observed ~16–38s per turn due to internal reasoning tokens. *Mitigation:* Use Qwen for batched milestone/task coordination turns rather than conversational back-and-forth.
-
-

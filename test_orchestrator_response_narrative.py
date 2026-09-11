@@ -39,6 +39,14 @@ def tearDownModule():
         os.environ.pop("OLLAMA_BASE_URL", None)
     else:
         os.environ["OLLAMA_BASE_URL"] = _SAVED_OLLAMA_URL
+    # This module deliberately breaks Ollama connectivity for its own
+    # duration (setUpModule). Restoring the env var here does not undo a
+    # health cooldown ModelRouter's process-wide singleton (M22.6) may
+    # already have recorded during that window - which would otherwise
+    # leak into any test module that happens to run afterward in the
+    # same pytest process (observed: test_workflow_restart_recovery.py).
+    from uri_core.core.model_router import get_router
+    get_router()._health._unhealthy.clear()
 
 
 class _FixedSemanticInterpreter:

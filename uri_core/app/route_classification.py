@@ -112,6 +112,9 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("POST", "/providers/keys"): USER,
     ("GET", "/providers"): USER,
     ("PUT", "/providers/config"): USER,
+    ("GET", "/usage"): USER,
+    ("GET", "/usage/limits"): USER,
+    ("PUT", "/usage/limits"): USER,
 }
 
 for _route in DEFERRED_PUBLIC_ROUTES:
@@ -125,6 +128,5 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 45 application routes (39 baseline + 3 M22.4 admin routes + 3 M22.5
-# provider routes) + 4 FastAPI auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 50
+# 49 application routes + 4 FastAPI auto-generated doc/schema routes.
+EXPECTED_ROUTE_COUNT = 53
