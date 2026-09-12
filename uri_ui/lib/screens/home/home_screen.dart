@@ -139,14 +139,20 @@ class _Dashboard extends StatelessWidget {
           value: state.hasLoadedCapabilities
               ? '${state.capabilities.where((c) => c.isUsable).length} of ${state.capabilities.length}'
               : '…',
-          onTap: () => onGoTo(ShellIndex.settings),
+          onTap: () {
+            state.openSettingsCategory('Capabilities');
+            onGoTo(ShellIndex.settings);
+          },
         ),
         const SizedBox(height: UriSpace.sm),
         _StatTile(
           icon: Icons.psychology_outlined,
           label: 'Memory entries',
           value: state.hasLoadedMemory ? '${state.memories.length}' : '…',
-          onTap: () => onGoTo(ShellIndex.settings),
+          onTap: () {
+            state.openSettingsCategory('Memory');
+            onGoTo(ShellIndex.settings);
+          },
         ),
         const SizedBox(height: UriSpace.xl),
         Text('Recent activity', style: theme.textTheme.headlineSmall),

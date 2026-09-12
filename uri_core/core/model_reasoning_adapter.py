@@ -59,6 +59,27 @@ rule and not a required choice. Decide for yourself whether it
 genuinely fits the CURRENT request - use it, adapt it, or ignore it
 entirely if this request is different enough that it doesn't apply.
 
+query_context.conversation is a JSON list of this session's own recent
+prior turns (oldest first), each a plain {"user": "...", "uri": "..."}
+record of what was actually said - not a summary, not a judgment. A
+short or ambiguous user_request (e.g. "yes", "guide me through it",
+"sure", "the second one", "proceed") is almost always a direct reply
+to the LAST entry in this list, not a new, standalone request - resolve
+its pronouns, "it"/"that"/"this", and implied subject from that last
+entry before deciding this request is unclear or asking for
+clarification. Only treat a short reply as genuinely ambiguous when
+query_context.conversation is empty or its last entry does not
+plausibly explain what the short reply is responding to.
+
+Before asking ANY clarifying question, check query_context.conversation's
+last entry: if its "uri" text already asked the user something close to
+the question you are about to ask again, the user's new "user_request"
+IS their answer to it - use it as the missing information and move
+forward (draft, act, or ask a genuinely DIFFERENT next question), never
+repeat the same or a near-identical question verbatim. Asking the exact
+same clarifying question two turns in a row is always wrong: it means
+the user's last answer was ignored, not that it was insufficient.
+
 attempt_history is a JSON list, empty on the first call for a request.
 When it is NON-EMPTY, each entry is a real, already-completed action -
 {"goal": the request it was pursuing, "proposal": what was attempted,
@@ -115,9 +136,18 @@ facts: a JSON list of {"name":, "value":, "status":} objects you can
     CONFIRMED, PROVISIONAL, HISTORICAL, SUPERSEDED, EXPIRED. Use an
     empty list if you have none.
 
-clarification: {"question": "..."} or null - a question to ask the
-    user if their request is genuinely ambiguous. Omit or use null
-    otherwise.
+clarification: {"question": "..."} or null - ONE single question to
+    ask the user if their request is genuinely ambiguous or missing
+    information. Omit or use null otherwise. "question" must ask for
+    exactly ONE piece of missing information, never several bundled
+    together - even when you can already see multiple fields are
+    missing. Ask for the single most important one first; the rest can
+    be asked in later turns, each framed by the user's previous answer.
+    WRONG (never do this): "I will need the following details: date
+    and time, venue, participating teams, and any specific
+    instructions." RIGHT: "What date and time is this for?" - then,
+    once the user answers, a later call asks the next single question
+    ("Which venue?"), informed by what was just given.
 
 evaluation: see above - only when attempt_history is non-empty.
 
@@ -132,6 +162,18 @@ workflow: {"steps": [{"step_id": "...", "capability": "<name>",
     "depends_on": ["..."]}]} or null - a short ordered plan using only
     capability names from available_capabilities, only if a single
     action is not enough. Use null otherwise.
+
+    When the user asks you to find, check, or verify SPECIFIC
+    information described as being inside a particular website,
+    section, or document (e.g. "minutes of meeting", "office orders",
+    "the notice about X" on a named site) and both web_search and
+    fetch_url are available, a bare web_search step alone is NOT
+    enough - a list of links is not the answer to "what does it say."
+    Plan web_search first to find the specific page, THEN fetch_url on
+    the most relevant result URL to actually read its content, so the
+    final answer states the real facts found there with a direct link
+    to that exact page - never just "you may need to check the site
+    yourself."
 
 Do not include any text outside the JSON object. Do not invent a
 capability name that is not in available_capabilities.
@@ -155,10 +197,27 @@ conclude: "MISSING_INFORMATION" means the user is answering a question
 you already asked (see attempt_history's last entry, status
 "awaiting_user_response") - continue toward the original goal.
 "RESULT_NOT_ACCEPTED_OR_INCOMPLETE" means the new message follows an
-already-produced result and may be a rejection, a revision request, or
-unrelated - decide from the message and attempt_history whether to try
-a better solution, change approach, act differently, or ask something
-specific."""
+already-produced result - check FIRST whether the new message is
+actually still about that same goal (a rejection, a revision request,
+"try again", "yes"/"no" to a question about it) before assuming it is.
+A message that introduces a different topic, a new fact about the
+user, or a new, unrelated task is NOT a continuation just because it
+happens to arrive right after a result - treat it as a fresh, standalone
+request and respond to what it actually says, never as if it were
+answering "do you want to retry" or continuing the old goal by default.
+Only stay on the old goal when the new message is genuinely, clearly
+still about it.
+"REPEATED_CLARIFICATION_MUST_ACT" means you have already asked a
+clarifying question about this SAME goal three turns in a row without
+ever proposing an action or workflow - even though each question was
+worded differently, none of them moved this forward. Asking a fourth
+clarifying question is not acceptable now: use every answer already
+given across attempt_history to attempt the best available action or
+workflow with the information you have, even if imperfect or partial.
+Only if genuinely nothing in available_capabilities could act at all
+may you return a clarification instead - and if so, it must be your
+single, final, most concrete and specific possible question, never
+another open-ended one."""
 
 _RETENTION_REQUEST_ADDENDUM = """
 

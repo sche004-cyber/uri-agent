@@ -22,12 +22,6 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final state = AppStateScope.of(context);
       state.loadConnections();
-      // M22.3: authorize/disconnect are now ADMIN-only server-side (see
-      // docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md section 6.1) -
-      // this screen needs to know the caller's own role so it can
-      // reflect that in the UI (see _ConnectionCard) rather than
-      // letting a non-admin tap a button that the backend will 403.
-      if (!state.hasLoadedAccountInfo) state.loadAccountInfo();
     });
   }
 
@@ -47,13 +41,76 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
         title: const Text('Google sign-in'),
         content: Text(explanation),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('OK'),
-          ),
+          if (connectionId == 'gmail' || connectionId == 'drive')
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _configureCredentials(state);
+              },
+              child: const Text('Configure Credentials'),
+            ),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('OK')),
         ],
       ),
     );
+  }
+
+  Future<void> _configureCredentials(AppState state) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final rawJson = TextEditingController();
+    final clientId = TextEditingController();
+    final clientSecret = TextEditingController();
+    bool saving = false;
+    String? error;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Configure Credentials'),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              const Text('To connect Google services (Gmail & Drive), create an OAuth 2.0 Client ID (Desktop App) in Google Cloud Console and paste the credentials JSON below.'),
+              const SizedBox(height: UriSpace.md),
+              TextField(controller: rawJson, maxLines: 5, decoration: const InputDecoration(labelText: 'Credentials JSON', border: OutlineInputBorder())),
+              const SizedBox(height: UriSpace.sm),
+              const Text('Or enter the Client ID and Client Secret separately.'),
+              const SizedBox(height: UriSpace.sm),
+              TextField(controller: clientId, decoration: const InputDecoration(labelText: 'Client ID', border: OutlineInputBorder())),
+              const SizedBox(height: UriSpace.sm),
+              TextField(controller: clientSecret, obscureText: true, decoration: const InputDecoration(labelText: 'Client Secret', border: OutlineInputBorder())),
+              if (error != null) Padding(padding: const EdgeInsets.only(top: UriSpace.sm), child: Text(error!, style: const TextStyle(color: Colors.red))),
+            ]),
+          ),
+          actions: [
+            TextButton(onPressed: saving ? null : () => Navigator.of(dialogContext).pop(), child: const Text('Cancel')),
+            FilledButton(
+              onPressed: saving ? null : () async {
+                setDialogState(() { saving = true; error = null; });
+                final saveError = await state.saveGoogleCredentials(rawJson: rawJson.text.trim().isEmpty ? null : rawJson.text.trim(), clientId: clientId.text.trim().isEmpty ? null : clientId.text.trim(), clientSecret: clientSecret.text.trim().isEmpty ? null : clientSecret.text.trim());
+                if (!dialogContext.mounted) return;
+                if (saveError == null) {
+                  // Refresh (which rebuilds this dialog's ancestor via
+                  // notifyListeners()) BEFORE popping the dialog, never
+                  // after - popping first and rebuilding an ancestor
+                  // synchronously afterward is exactly the known
+                  // Flutter race that throws
+                  // "Failed assertion: '_dependents.isEmpty'" on this
+                  // route's own inherited-widget dependents.
+                  await state.loadConnections();
+                  if (!dialogContext.mounted) return;
+                  Navigator.of(dialogContext).pop();
+                  if (mounted) messenger.showSnackBar(const SnackBar(content: Text('Google credentials saved.')));
+                } else {
+                  setDialogState(() { saving = false; error = saveError; });
+                }
+              },
+              child: const Text('Save Credentials'),
+            ),
+          ],
+        ),
+      ),
+    );
+    rawJson.dispose(); clientId.dispose(); clientSecret.dispose();
   }
 
   @override
@@ -62,7 +119,6 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
       listenable: AppStateScope.of(context),
       builder: (context, _) {
         final state = AppStateScope.of(context);
-        final isAdmin = state.isAdmin;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(UriSpace.xl),
@@ -76,10 +132,6 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
                     'without your say — connecting only grants access; it doesn\'t '
                     'authorize any specific action.',
               ),
-              if (state.hasLoadedAccountInfo && !isAdmin) ...[
-                _AdminOnlyNotice(),
-                const SizedBox(height: UriSpace.md),
-              ],
               if (state.connections.isEmpty)
                 const LoadingState(message: 'Checking connection status…')
               else
@@ -100,7 +152,6 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
                         final connection = state.connections[index];
                         return _ConnectionCard(
                           connection: connection,
-                          isAdmin: isAdmin,
                           onAuthorize: () => _authorize(state, connection.id),
                           onDisconnect: () => state.disconnectConnection(connection.id),
                         );
@@ -116,56 +167,14 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
   }
 }
 
-/// M22.3: connect/reconnect/disconnect are ADMIN-only server-side
-/// (server.py's authorize_connection/disconnect_connection now require
-/// _resolve_admin_principal - see
-/// docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md section 6.1, since
-/// these revoke/grant a shared, install-wide OAuth token, not per-user
-/// state). Disabling the control here is a UX courtesy only - the
-/// backend's own role check is what actually protects the action;
-/// this never substitutes for it and a non-admin tapping this control
-/// while somehow enabled would still be correctly rejected server-side.
-class _AdminOnlyNotice extends StatelessWidget {
-  const _AdminOnlyNotice();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = UriColors.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(UriSpace.md),
-      decoration: BoxDecoration(
-        color: colors.warningSoft,
-        borderRadius: BorderRadius.circular(UriRadius.sm),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.admin_panel_settings_outlined, size: 16, color: colors.warning),
-          const SizedBox(width: UriSpace.sm),
-          Expanded(
-            child: Text(
-              'Connecting or disconnecting a service is an ADMIN-only action '
-              'on this install. You can see status here, but changing it '
-              'requires an ADMIN account.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.warning),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ConnectionCard extends StatelessWidget {
   const _ConnectionCard({
     required this.connection,
-    required this.isAdmin,
     required this.onAuthorize,
     required this.onDisconnect,
   });
 
   final ServiceConnection connection;
-  final bool isAdmin;
   final VoidCallback onAuthorize;
   final VoidCallback onDisconnect;
 
@@ -232,13 +241,6 @@ class _ConnectionCard extends StatelessWidget {
             Row(
               children: [
                 _actionFor(connection.status),
-                if (!isAdmin) ...[
-                  const SizedBox(width: UriSpace.sm),
-                  Tooltip(
-                    message: 'ADMIN only',
-                    child: Icon(Icons.lock_outline_rounded, size: 14, color: UriColors.of(context).inkFaint),
-                  ),
-                ],
               ],
             ),
           ],
@@ -256,20 +258,11 @@ class _ConnectionCard extends StatelessWidget {
   static const _actionButtonMinSize = Size(0, 36);
 
   Widget _actionFor(ConnectionStatus status) {
-    // Disabled (null onPressed) rather than hidden for a non-admin -
-    // the action's existence stays visible/explicable (see
-    // _AdminOnlyNotice above it), it just cannot be tapped. The
-    // backend's own ADMIN check (server.py's
-    // _resolve_admin_principal) is what actually protects the action
-    // either way.
-    final onAuthorizeIfAdmin = isAdmin ? onAuthorize : null;
-    final onDisconnectIfAdmin = isAdmin ? onDisconnect : null;
-
     return Align(
       alignment: Alignment.centerLeft,
       child: switch (status) {
         ConnectionStatus.connected => TextButton(
-          onPressed: onDisconnectIfAdmin,
+          onPressed: onDisconnect,
           style: TextButton.styleFrom(
             padding: _actionButtonPadding,
             minimumSize: _actionButtonMinSize,
@@ -278,7 +271,7 @@ class _ConnectionCard extends StatelessWidget {
           child: const Text('Disconnect'),
         ),
         ConnectionStatus.needsAuthorization => OutlinedButton(
-          onPressed: onAuthorizeIfAdmin,
+          onPressed: onAuthorize,
           style: OutlinedButton.styleFrom(
             padding: _actionButtonPadding,
             minimumSize: _actionButtonMinSize,
@@ -287,7 +280,7 @@ class _ConnectionCard extends StatelessWidget {
           child: const Text('Reconnect'),
         ),
         ConnectionStatus.notConnected => ElevatedButton(
-          onPressed: onAuthorizeIfAdmin,
+          onPressed: onAuthorize,
           style: ElevatedButton.styleFrom(
             padding: _actionButtonPadding,
             minimumSize: _actionButtonMinSize,

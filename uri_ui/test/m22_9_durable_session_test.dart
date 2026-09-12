@@ -15,70 +15,82 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  test('a successful login persists a session that survives a simulated relaunch', () async {
-    final client = MockUriClient()..logout();
-    final appState = AppState(client: client);
+  test(
+    'a successful login persists a session that survives a simulated relaunch',
+    () async {
+      final client = MockUriClient()..logout();
+      final appState = AppState(client);
 
-    final outcome = await appState.login('alex', 'password123');
-    expect(outcome.success, isTrue);
+      final outcome = await appState.login('alex', 'password123');
+      expect(outcome.success, isTrue);
 
-    // Simulate a relaunch: a brand-new client/AppState reading from the
-    // same underlying (mocked) shared_preferences backing store.
-    final secondClient = MockUriClient()..logout();
-    final secondAppState = AppState(client: secondClient);
-    expect(secondAppState.isAuthenticated, isFalse);
+      // Simulate a relaunch: a brand-new client/AppState reading from the
+      // same underlying (mocked) shared_preferences backing store.
+      final secondClient = MockUriClient()..logout();
+      final secondAppState = AppState(secondClient);
+      expect(secondAppState.isAuthenticated, isFalse);
 
-    await secondAppState.loadPersistedSession();
+      await secondAppState.loadPersistedSession();
 
-    expect(secondAppState.isAuthenticated, isTrue);
-    expect(secondAppState.currentUsername, 'alex');
-  });
+      expect(secondAppState.isAuthenticated, isTrue);
+      expect(secondAppState.currentUsername, 'alex');
+    },
+  );
 
-  test('logout clears the persisted session, so a later relaunch stays logged out', () async {
-    final client = MockUriClient()..logout();
-    final appState = AppState(client: client);
-    await appState.login('alex', 'password123');
-    await appState.logout();
+  test(
+    'logout clears the persisted session, so a later relaunch stays logged out',
+    () async {
+      final client = MockUriClient()..logout();
+      final appState = AppState(client);
+      await appState.login('alex', 'password123');
+      await appState.logout();
 
-    final secondClient = MockUriClient()..logout();
-    final secondAppState = AppState(client: secondClient);
-    await secondAppState.loadPersistedSession();
+      final secondClient = MockUriClient()..logout();
+      final secondAppState = AppState(secondClient);
+      await secondAppState.loadPersistedSession();
 
-    expect(secondAppState.isAuthenticated, isFalse);
-  });
+      expect(secondAppState.isAuthenticated, isFalse);
+    },
+  );
 
-  test('a backend-rejected token degrades honestly to logged-out on restore', () async {
-    final client = MockUriClient()..logout();
-    final appState = AppState(client: client);
-    await appState.login('alex', 'password123');
+  test(
+    'a backend-rejected token degrades honestly to logged-out on restore',
+    () async {
+      final client = MockUriClient()..logout();
+      final appState = AppState(client);
+      await appState.login('alex', 'password123');
 
-    final secondClient = MockUriClient()
-      ..logout()
-      ..nextValidateSessionResult = false;
-    final secondAppState = AppState(client: secondClient);
-    await secondAppState.loadPersistedSession();
+      final secondClient = MockUriClient()
+        ..logout()
+        ..nextValidateSessionResult = false;
+      final secondAppState = AppState(secondClient);
+      await secondAppState.loadPersistedSession();
 
-    expect(secondAppState.isAuthenticated, isFalse);
-  });
+      expect(secondAppState.isAuthenticated, isFalse);
+    },
+  );
 
-  test('revalidateSession on an unreachable backend never logs the user out', () async {
-    final client = MockUriClient()..logout();
-    final appState = AppState(client: client);
-    await appState.login('alex', 'password123');
-    expect(appState.isAuthenticated, isTrue);
+  test(
+    'revalidateSession on an unreachable backend never logs the user out',
+    () async {
+      final client = MockUriClient()..logout();
+      final appState = AppState(client);
+      await appState.login('alex', 'password123');
+      expect(appState.isAuthenticated, isTrue);
 
-    // MockUriClient's validateSession only ever returns false on an
-    // explicit rejection (nextValidateSessionResult = false) - true is
-    // both "confirmed valid" and "couldn't be confirmed", exactly like
-    // HttpUriClient's real network-exception path.
-    await appState.revalidateSession();
+      // MockUriClient's validateSession only ever returns false on an
+      // explicit rejection (nextValidateSessionResult = false) - true is
+      // both "confirmed valid" and "couldn't be confirmed", exactly like
+      // HttpUriClient's real network-exception path.
+      await appState.revalidateSession();
 
-    expect(appState.isAuthenticated, isTrue);
-  });
+      expect(appState.isAuthenticated, isTrue);
+    },
+  );
 
   test('revalidateSession on a rejected token clears in-memory conversation state too', () async {
     final client = MockUriClient()..logout();
-    final appState = AppState(client: client);
+    final appState = AppState(client);
     await appState.login('alex', 'password123');
     await appState.ask('hello');
     expect(appState.conversation, isNotEmpty);
@@ -92,7 +104,7 @@ void main() {
 
   test('with no persisted session, loadPersistedSession is a no-op', () async {
     final client = MockUriClient()..logout();
-    final appState = AppState(client: client);
+    final appState = AppState(client);
 
     await appState.loadPersistedSession();
 

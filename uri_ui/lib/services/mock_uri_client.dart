@@ -114,7 +114,9 @@ class MockUriClient implements UriClient {
   void setBaseUrl(String baseUrl) => _baseUrl = baseUrl;
 
   @override
-  Future<ConnectionCheckResult> checkConnection({String? addressOverride}) async {
+  Future<ConnectionCheckResult> checkConnection({
+    String? addressOverride,
+  }) async {
     await _latency(const Duration(milliseconds: 80));
     return const ConnectionCheckResult.reachable();
   }
@@ -124,7 +126,8 @@ class MockUriClient implements UriClient {
       ServiceConnection(
         id: 'gmail',
         name: 'Gmail',
-        description: 'Read relevant messages and prepare replies for your review.',
+        description:
+            'Read relevant messages and prepare replies for your review.',
         status: ConnectionStatus.connected,
         detail: 'Connected',
       ),
@@ -145,7 +148,8 @@ class MockUriClient implements UriClient {
       ServiceConnection(
         id: 'drafting',
         name: 'Institutional Drafting',
-        description: 'Prepare office notes and orders in the institute\'s format.',
+        description:
+            'Prepare office notes and orders in the institute\'s format.',
         status: ConnectionStatus.connected,
         detail: 'Connected',
       ),
@@ -183,8 +187,9 @@ class MockUriClient implements UriClient {
     ]);
   }
 
-  Future<void> _latency([Duration duration = const Duration(milliseconds: 420)]) =>
-      Future.delayed(duration);
+  Future<void> _latency([
+    Duration duration = const Duration(milliseconds: 420),
+  ]) => Future.delayed(duration);
 
   ServiceConnection? _findConnection(String id) {
     for (final connection in _connections) {
@@ -204,7 +209,9 @@ class MockUriClient implements UriClient {
   }
 
   @override
-  Future<ConnectionAuthorizeOutcome> authorizeConnection(String connectionId) async {
+  Future<ConnectionAuthorizeOutcome> authorizeConnection(
+    String connectionId,
+  ) async {
     await _latency();
     final index = _connections.indexWhere((c) => c.id == connectionId);
     if (index == -1) {
@@ -224,7 +231,10 @@ class MockUriClient implements UriClient {
         summary: '${updated.name} connected.',
       ),
     );
-    return ConnectionAuthorizeOutcome(connection: updated, explanation: 'Connected.');
+    return ConnectionAuthorizeOutcome(
+      connection: updated,
+      explanation: 'Connected.',
+    );
   }
 
   @override
@@ -285,7 +295,8 @@ class MockUriClient implements UriClient {
 
     final String activitySummary;
     if (analysis.isBlockedByConnection) {
-      activitySummary = 'Needs ${analysis.requiredConnectionName} to continue: "${_truncate(text)}"';
+      activitySummary =
+          'Needs ${analysis.requiredConnectionName} to continue: "${_truncate(text)}"';
     } else if (analysis.proposedAction != null) {
       activitySummary = 'Proposed: ${analysis.proposedAction!.title}';
     } else {
@@ -297,7 +308,9 @@ class MockUriClient implements UriClient {
       ActivityEvent(
         id: _nextId('act'),
         timestamp: DateTime.now(),
-        kind: analysis.isBlockedByConnection ? ActivityKind.system : ActivityKind.proposal,
+        kind: analysis.isBlockedByConnection
+            ? ActivityKind.system
+            : ActivityKind.proposal,
         summary: activitySummary,
       ),
     );
@@ -321,7 +334,10 @@ class MockUriClient implements UriClient {
       detail: _resultDetailFor(action),
     );
 
-    final completed = existing.copyWith(stage: TurnStage.completed, result: result);
+    final completed = existing.copyWith(
+      stage: TurnStage.completed,
+      result: result,
+    );
     _turns[turnId] = completed;
 
     _activity.insertAll(0, [
@@ -365,7 +381,8 @@ class MockUriClient implements UriClient {
         id: _nextId('act'),
         timestamp: DateTime.now(),
         kind: ActivityKind.cancellation,
-        summary: 'You cancelled: ${existing.proposedAction?.title ?? existing.userText}',
+        summary:
+            'You cancelled: ${existing.proposedAction?.title ?? existing.userText}',
       ),
     );
 
@@ -474,6 +491,11 @@ class MockUriClient implements UriClient {
   }
 
   @override
+  void startNewSession() {
+    _sessionId = 'mock-session-${DateTime.now().microsecondsSinceEpoch}';
+  }
+
+  @override
   Future<MemoryEntry?> confirmMemory(String memoryId, {String? content}) async {
     await _latency();
     final index = _memories.indexWhere((m) => m.memoryId == memoryId);
@@ -500,6 +522,34 @@ class MockUriClient implements UriClient {
     final before = _memories.length;
     _memories.removeWhere((m) => m.memoryId == memoryId);
     return _memories.length != before;
+  }
+
+  MemoryContextSettings _memoryContextSettings = const MemoryContextSettings(
+    persistentMemory: true,
+    userProfile: true,
+    memoryBudget: 1200,
+    profileBudget: 400,
+    memoryProvider: 'builtin',
+    contextEngine: 'compressor',
+    autoCompression: true,
+    compressionThreshold: 6000,
+    compressionTarget: 3000,
+    protectedRecentMessages: 6,
+  );
+
+  @override
+  Future<MemoryContextSettings?> getMemoryContextSettings() async =>
+      _memoryContextSettings;
+
+  @override
+  Future<MemoryContextSettings?> updateMemoryContextSettings(
+    Map<String, dynamic> settings,
+  ) async {
+    _memoryContextSettings = MemoryContextSettings.fromJson({
+      ..._memoryContextSettings.toJson(),
+      ...settings,
+    });
+    return _memoryContextSettings;
   }
 
   final Map<String, List<UriTurn>> _history = <String, List<UriTurn>>{};
@@ -646,8 +696,10 @@ class MockUriClient implements UriClient {
   }
 
   @override
-  Future<ModeInfo?> getModeInfo() async =>
-      ModeInfo(mode: _mode, validModes: const ['admin', 'diagnostic', 'office']);
+  Future<ModeInfo?> getModeInfo() async => ModeInfo(
+    mode: _mode,
+    validModes: const ['admin', 'diagnostic', 'office'],
+  );
 
   @override
   Future<bool> setMode(String mode) async {
@@ -781,8 +833,17 @@ class MockUriClient implements UriClient {
 
     bool has(List<String> words) => words.any(text.contains);
 
-    final isQuestion = has(['what', 'how many', 'when', 'who', 'is there', 'do i', 'can i']) &&
-        !has(['draft', 'send', 'schedule', 'submit', 'renew', 'approve', 'prepare']);
+    final isQuestion =
+        has(['what', 'how many', 'when', 'who', 'is there', 'do i', 'can i']) &&
+        !has([
+          'draft',
+          'send',
+          'schedule',
+          'submit',
+          'renew',
+          'approve',
+          'prepare',
+        ]);
 
     if (isQuestion) {
       return _Analysis(
@@ -815,11 +876,21 @@ class MockUriClient implements UriClient {
       targetService = 'Calendar';
       verb = 'Propose scheduling for';
       impact = ActionImpact.notable;
-    } else if (has(['document', 'note', 'order', 'draft', 'renew', 'submit', 'extend'])) {
+    } else if (has([
+      'document',
+      'note',
+      'order',
+      'draft',
+      'renew',
+      'submit',
+      'extend',
+    ])) {
       connectionId = 'drafting';
       targetService = 'Institutional Drafting';
       verb = 'Prepare a draft for';
-      impact = has(['submit', 'send', 'order']) ? ActionImpact.sensitive : ActionImpact.notable;
+      impact = has(['submit', 'send', 'order'])
+          ? ActionImpact.sensitive
+          : ActionImpact.notable;
     } else if (has(['roster', 'sheet', 'record', 'students', 'list'])) {
       connectionId = 'sheets';
       targetService = 'Google Sheets';
@@ -835,7 +906,8 @@ class MockUriClient implements UriClient {
     // proceed with a service that isn't authorized.
     if (connectionId != null) {
       final connection = _findConnection(connectionId);
-      if (connection != null && connection.status != ConnectionStatus.connected) {
+      if (connection != null &&
+          connection.status != ConnectionStatus.connected) {
         return _Analysis(
           understanding:
               'This would need ${connection.name}, which ${connection.status == ConnectionStatus.needsAuthorization ? 'needs to be reconnected' : "isn't connected"} '
@@ -886,7 +958,11 @@ class MockUriClient implements UriClient {
   Future<List<AdminUserEntry>> listAdminUsers() async {
     return const [
       AdminUserEntry(userId: 'mock-user', username: 'demo-user', role: 'ADMIN'),
-      AdminUserEntry(userId: 'user-secondary', username: 'student-user', role: 'USER'),
+      AdminUserEntry(
+        userId: 'user-secondary',
+        username: 'student-user',
+        role: 'USER',
+      ),
     ];
   }
 
@@ -914,6 +990,8 @@ class MockUriClient implements UriClient {
   final Map<String, String> _mockProviderKeysLastFour = <String, String>{};
   final Map<String, Map<String, String>> _mockProviderOverrides =
       <String, Map<String, String>>{};
+  String _activeBrainProviderId = 'ollama';
+  String _activeBrainModel = 'qwen3:14b';
 
   @override
   Future<List<ProviderEntry>> listProviders() async {
@@ -922,41 +1000,77 @@ class MockUriClient implements UriClient {
         providerId: 'ollama',
         displayName: 'Ollama (Local)',
         adapter: 'ollama',
-        baseUrl: _mockProviderOverrides['ollama']?['base_url'] ??
+        baseUrl:
+            _mockProviderOverrides['ollama']?['base_url'] ??
             'http://localhost:11434',
         configured: true,
         lastFour: null,
         available: true,
+        models: const [
+          ModelInfo(modelId: 'qwen3:14b', displayName: 'Qwen 3 14B'),
+        ],
+        activeBrain: _activeBrainProviderId == 'ollama',
+        activeModel: _activeBrainProviderId == 'ollama'
+            ? _activeBrainModel
+            : null,
       ),
       ProviderEntry(
         providerId: 'openai',
         displayName: 'OpenAI',
         adapter: 'openai_compatible',
-        baseUrl: _mockProviderOverrides['openai']?['base_url'] ??
+        baseUrl:
+            _mockProviderOverrides['openai']?['base_url'] ??
             'https://api.openai.com/v1',
         configured: _mockProviderKeysLastFour.containsKey('openai'),
         lastFour: _mockProviderKeysLastFour['openai'],
         available: true,
+        models: const [ModelInfo(modelId: 'gpt-4o', displayName: 'GPT-4o')],
+        activeBrain: _activeBrainProviderId == 'openai',
+        activeModel: _activeBrainProviderId == 'openai'
+            ? _activeBrainModel
+            : null,
       ),
       ProviderEntry(
         providerId: 'groq',
         displayName: 'Groq',
         adapter: 'openai_compatible',
-        baseUrl: _mockProviderOverrides['groq']?['base_url'] ??
+        baseUrl:
+            _mockProviderOverrides['groq']?['base_url'] ??
             'https://api.groq.com/openai/v1',
         configured: _mockProviderKeysLastFour.containsKey('groq'),
         lastFour: _mockProviderKeysLastFour['groq'],
         available: true,
+        models: const [
+          ModelInfo(
+            modelId: 'llama-3.3-70b-versatile',
+            displayName: 'Llama 3.3 70B',
+          ),
+        ],
+        activeBrain: _activeBrainProviderId == 'groq',
+        activeModel: _activeBrainProviderId == 'groq'
+            ? _activeBrainModel
+            : null,
       ),
       ProviderEntry(
         providerId: 'anthropic',
         displayName: 'Anthropic',
         adapter: 'openai_compatible',
-        baseUrl: _mockProviderOverrides['anthropic']?['base_url'] ??
+        baseUrl:
+            _mockProviderOverrides['anthropic']?['base_url'] ??
             'https://api.anthropic.com/v1',
         configured: _mockProviderKeysLastFour.containsKey('anthropic'),
         lastFour: _mockProviderKeysLastFour['anthropic'],
         available: false,
+        models: const [
+          ModelInfo(
+            modelId: 'claude-3-5-sonnet',
+            displayName: 'Claude 3.5 Sonnet',
+          ),
+        ],
+        activeBrain: _activeBrainProviderId == 'anthropic',
+        activeModel: _activeBrainProviderId == 'anthropic'
+            ? _activeBrainModel
+            : null,
       ),
     ];
   }
@@ -966,8 +1080,9 @@ class MockUriClient implements UriClient {
     String providerId,
     String apiKey,
   ) async {
-    final lastFour =
-        apiKey.length >= 4 ? apiKey.substring(apiKey.length - 4) : '****';
+    final lastFour = apiKey.length >= 4
+        ? apiKey.substring(apiKey.length - 4)
+        : '****';
     _mockProviderKeysLastFour[providerId] = lastFour;
     return ProviderKeyResult(
       providerId: providerId,
@@ -982,12 +1097,50 @@ class MockUriClient implements UriClient {
     String? baseUrl,
     String? model,
   }) async {
-    final current =
-        _mockProviderOverrides[providerId] ?? <String, String>{};
+    final current = _mockProviderOverrides[providerId] ?? <String, String>{};
     if (baseUrl != null) current['base_url'] = baseUrl;
     if (model != null) current['model'] = model;
     _mockProviderOverrides[providerId] = current;
     return true;
+  }
+
+  @override
+  Future<ActiveBrainInfo?> getActiveBrain() async {
+    await _latency();
+    final provider = (await listProviders()).firstWhere(
+      (item) => item.providerId == _activeBrainProviderId,
+    );
+    return ActiveBrainInfo(
+      providerId: _activeBrainProviderId,
+      model: _activeBrainModel,
+      displayName: provider.displayName,
+    );
+  }
+
+  @override
+  Future<bool> setActiveBrain(String providerId, {String? model}) async {
+    final provider = (await listProviders())
+        .where((item) => item.providerId == providerId)
+        .firstOrNull;
+    if (provider == null || !provider.available) return false;
+    _activeBrainProviderId = providerId;
+    _activeBrainModel = model ?? provider.models.firstOrNull?.modelId ?? '';
+    return true;
+  }
+
+  @override
+  Future<String?> saveGoogleCredentials({
+    String? rawJson,
+    String? clientId,
+    String? clientSecret,
+  }) async {
+    await _latency();
+    final ok = (rawJson?.trim().isNotEmpty ?? false) ||
+        ((clientId?.trim().isNotEmpty ?? false) &&
+            (clientSecret?.trim().isNotEmpty ?? false));
+    return ok
+        ? null
+        : 'Provide raw_json or both client_id and client_secret.';
   }
 }
 

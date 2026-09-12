@@ -94,7 +94,7 @@ DEFAULT_CONTEXT_TOKENS = 8192
 # defaults to 60s) - reporting-only callers (see capability_registry.py,
 # server.py's GET /capabilities) need an answer quickly even when Ollama
 # is unreachable, not a 60s hang.
-DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS = 3.0
+DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS = 2.0
 
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 

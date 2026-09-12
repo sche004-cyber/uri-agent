@@ -1,4 +1,5 @@
-﻿import json
+﻿import inspect
+import json
 import importlib
 import os
 from uri_core.core.friction_logger import FrictionLogger
@@ -62,6 +63,20 @@ class ToolDispatcher:
         self.friction_logger = FrictionLogger()
 
     def execute_tool(self, tool_name: str, **kwargs):
+        # 2026-09-12 (User directive): a caller-supplied file_store
+        # (see orchestrator.py, which passes its own user-scoped store)
+        # belongs to the tool's CONSTRUCTOR, never its method - popped
+        # out here so it never reaches method(**kwargs) below and is
+        # only ever passed on to a tool class whose __init__ actually
+        # declares a file_store parameter (checked via inspect, never
+        # assumed), so every tool that doesn't accept one is
+        # instantiated exactly as before (zero behaviour change).
+        # Without this, every tool using FileStore silently defaulted
+        # to the ambient uri_workspace/uploads store instead of the
+        # calling user's own uri_workspace/users/<id>/uploads - a file
+        # a user just generated could never be found again via their
+        # own per-user GET /files/{file_id}/content lookup.
+        file_store = kwargs.pop("file_store", None)
         try:
             # Load the registry safely
             with open(self.registry_path, "r", encoding="utf-8-sig") as f:
@@ -92,7 +107,12 @@ class ToolDispatcher:
                 tool_class = getattr(module, class_name)
 
                 # Instantiate the class and execute the method
-                instance = tool_class()
+                if file_store is not None and "file_store" in inspect.signature(
+                    tool_class.__init__
+                ).parameters:
+                    instance = tool_class(file_store=file_store)
+                else:
+                    instance = tool_class()
                 method = getattr(instance, method_name)
 
             except Exception as load_exc:

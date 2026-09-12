@@ -55,6 +55,16 @@ class OllamaProvider(ModelProvider):
                 {"role": "user", "content": user},
             ],
             "stream": False,
+            # 2026-09-12 (User directive): without this, Ollama evicts an
+            # idle model from memory on its own short default timeout,
+            # so the next turn pays a real 10-20s reload cost before any
+            # inference even starts. URI issues several sequential calls
+            # per turn (semantic analysis, reasoning, drafting) and turns
+            # are rarely more than a few minutes apart in a live
+            # conversation, so keeping the model resident for 60 minutes
+            # of idle time removes that reload cost from every turn but
+            # the very first of a session.
+            "keep_alive": "60m",
             # Thinking-capable models (e.g. qwen3) generate a chain-of-
             # thought trace *before* the visible content, and that trace
             # is counted against max_tokens/num_predict - so a token

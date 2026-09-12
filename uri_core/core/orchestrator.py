@@ -34,7 +34,8 @@ from uri_core.core.response_drafting import (
     DraftRequest,
     ResponseDraftingError,
     condense_known_gaps,
-    draft_response
+    draft_response,
+    mark_narrative_unavailable
 )
 from uri_core.core.response_validation import (
     ResponseValidationError,
@@ -269,18 +270,6 @@ class UriOrchestrator:
             )
         )
 
-        if approval_gate is not None:
-
-            self.approval_gate = approval_gate
-
-        else:
-
-            self.approval_gate = ApprovalGate(
-                dispatcher=self.dispatcher,
-                capability_registry=self.capability_registry,
-                audit_trail=self.audit_trail,
-            )
-
         # ------------------------------------------------------
         # Live conversational response drafting (Milestone 8A).
         #
@@ -324,6 +313,19 @@ class UriOrchestrator:
         self.file_store = (
             file_store if file_store is not None else FileStore()
         )
+
+        if approval_gate is not None:
+
+            self.approval_gate = approval_gate
+
+        else:
+
+            self.approval_gate = ApprovalGate(
+                dispatcher=self.dispatcher,
+                capability_registry=self.capability_registry,
+                audit_trail=self.audit_trail,
+                file_store=self.file_store,
+            )
 
         self.graph_store = graph_store if graph_store is not None else GraphStore()  # M23
         # M18: durable per-user/per-session conversation transcript.
@@ -1786,6 +1788,23 @@ class UriOrchestrator:
             "stage": stage,
         }
 
+        # A clarification is a complete user-facing outcome for this turn,
+        # not merely internal pause metadata. Keep the raw, runtime-approved
+        # question available even when response drafting is disabled or the
+        # Brain cannot be reached; the drafting helper may replace this with
+        # a natural phrasing when it succeeds.
+        response["response"] = {
+            "message": question,
+            "question": question,
+        }
+        response["narrative"] = question
+        self._draft_narrative_safely(
+            user_text=user_text,
+            response=response,
+            personalization_context={},
+            session_id=session_id,
+        )
+
         try:
 
             combined_history = list(attempt_history_so_far or [])
@@ -3241,6 +3260,8 @@ class UriOrchestrator:
 
         except (ResponseDraftingError, ResponseValidationError) as exc:
 
+            mark_narrative_unavailable(response, exc, self.principal)
+
             self._record_narrative_audit_safely(
                 session_id=session_id,
                 status="narrative_rejected",
@@ -3250,6 +3271,8 @@ class UriOrchestrator:
             return
 
         except Exception as exc:
+
+            mark_narrative_unavailable(response, exc, self.principal)
 
             self._record_narrative_audit_safely(
                 session_id=session_id,
@@ -4287,6 +4310,25 @@ class UriOrchestrator:
                         "RESULT_NOT_ACCEPTED_OR_INCOMPLETE"
                     )
 
+            # 2026-09-12 (User directive): count consecutive
+            # MISSING_INFORMATION turns for the same still-unresolved
+            # goal - live testing found the Brain can keep asking
+            # differently-worded clarifying questions indefinitely
+            # without ever committing to an action, even though each
+            # individual question is a real, non-repeated one (so the
+            # existing "don't ask the same question twice" prompt
+            # guidance never triggers). Reset to 0 the moment this
+            # isn't a clarification-continuation turn at all.
+            if interaction_signal == "MISSING_INFORMATION":
+                session.consecutive_clarification_count = (
+                    getattr(session, "consecutive_clarification_count", 0) + 1
+                )
+            else:
+                session.consecutive_clarification_count = 0
+
+            if session.consecutive_clarification_count >= 3:
+                interaction_signal = "REPEATED_CLARIFICATION_MUST_ACT"
+
             # --------------------------------------------------
             # Run model reasoning (Milestone 11 Phase 1).
             #
@@ -4664,6 +4706,39 @@ class UriOrchestrator:
                         dispatch_result
                     )
                 )
+
+                if real_status in (
+                    "failed", "error", "unavailable",
+                    "input_required", "not_implemented",
+                ):
+                    response["status"] = (
+                        "failed"
+                        if real_status in ("failed", "error")
+                        else "unavailable"
+                    )
+                    # 2026-09-12 (User directive): the client's failed-
+                    # turn rendering reads top-level response["error"]
+                    # only (see http_uri_client.dart's
+                    # _turnFromResponse) - previously never set here, so
+                    # a tool's own real, specific message (e.g.
+                    # convert_document's "URI could not read the
+                    # attached PDF: ...") was silently replaced by a
+                    # content-free generic string at the client
+                    # boundary even though it was sitting right there in
+                    # response["response"]["message"]. Read from
+                    # response["response"] (already unwrapped from
+                    # dispatch_result["data"] above), never from
+                    # dispatch_result itself - the dispatcher's own
+                    # OUTER wrapper is always {"status": "success",
+                    # "data": {...}} regardless of the tool's real inner
+                    # outcome, so dispatch_result.get("message") is
+                    # always None; the tool's own message lives inside
+                    # "data".
+                    inner = response["response"]
+                    if isinstance(inner, dict):
+                        response["error"] = (
+                            inner.get("message") or inner.get("error")
+                        )
 
                 if real_status == "success":
 
@@ -5112,6 +5187,12 @@ class UriOrchestrator:
 
                 self._persist_session(
                     session_id
+                )
+
+                response["status"] = "failed"
+                response["error"] = (
+                    execution_result.get("error")
+                    or "URI could not complete the planned workflow."
                 )
 
                 response["response"] = {

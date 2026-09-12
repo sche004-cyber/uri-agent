@@ -66,10 +66,17 @@ class ActionResult {
     this.detail,
     this.sources = const <ResultSource>[],
     this.generatedFile,
+    this.draftText,
   });
 
   final String summary;
   final String? detail;
+
+  /// The actual drafted document body (e.g. draft_institutional_note/
+  /// order's "note_sheet", generate_document's "content"/
+  /// "document_content") - the real text, not the narrative that only
+  /// talks about it. Null for any result that isn't a text draft.
+  final String? draftText;
 
   /// Real sources behind this result, when the capability that
   /// produced it returned any (today: web research). Empty for every

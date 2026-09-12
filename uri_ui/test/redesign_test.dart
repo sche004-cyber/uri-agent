@@ -34,7 +34,8 @@ class _GmailNeedsSetupClient extends MockUriClient {
       ServiceConnection(
         id: 'gmail',
         name: 'Gmail',
-        description: 'Read relevant messages and prepare replies for your review.',
+        description:
+            'Read relevant messages and prepare replies for your review.',
         status: ConnectionStatus.notConnected,
         detail: _explanation,
       ),
@@ -42,7 +43,9 @@ class _GmailNeedsSetupClient extends MockUriClient {
   }
 
   @override
-  Future<ConnectionAuthorizeOutcome> authorizeConnection(String connectionId) async {
+  Future<ConnectionAuthorizeOutcome> authorizeConnection(
+    String connectionId,
+  ) async {
     final connections = await listConnections();
     return ConnectionAuthorizeOutcome(
       connection: connections.first,
@@ -56,120 +59,143 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  Future<AppState> pumpPostOnboardingApp(WidgetTester tester, {UriClient? client}) async {
+  Future<AppState> pumpPostOnboardingApp(
+    WidgetTester tester, {
+    UriClient? client,
+  }) async {
     tester.view.physicalSize = const Size(1280, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final appState = AppState(client: client ?? MockUriClient());
-    await appState.updatePreferences(const UserPreferences.initial().copyWith(completedOnboarding: true));
+    final appState = AppState(client ?? MockUriClient());
+    await appState.updatePreferences(
+      const UserPreferences.initial().copyWith(completedOnboarding: true),
+    );
     await tester.pumpWidget(UriApp(appState: appState));
     await tester.pumpAndSettle();
     return appState;
   }
 
   group('navigation', () {
-    testWidgets('Home is the only conversation surface: dashboard and composer together, no Ask URI tab', (
-      tester,
-    ) async {
-      await pumpPostOnboardingApp(tester);
+    testWidgets(
+      'Home is the only conversation surface: dashboard and composer together, no Ask URI tab',
+      (tester) async {
+        await pumpPostOnboardingApp(tester);
 
-      // The shell has Home, Tasks, Connections, Activity, Settings -
-      // never a second, separate "Ask URI" destination.
-      expect(find.text('Home'), findsWidgets);
-      expect(find.text('Tasks'), findsWidgets);
-      expect(find.text('Connections'), findsWidgets);
-      expect(find.text('Activity'), findsWidgets);
-      expect(find.text('Settings'), findsWidgets);
-      expect(find.text('Ask URI'), findsNothing);
+        // The shell has Home, Tasks, Connections, Activity, Settings -
+        // never a second, separate "Ask URI" destination.
+        expect(find.text('Home'), findsWidgets);
+        expect(find.text('Tasks'), findsWidgets);
+        expect(find.text('Connections'), findsWidgets);
+        expect(find.text('Activity'), findsWidgets);
+        expect(find.text('Settings'), findsWidgets);
+        expect(find.text('Ask URI'), findsNothing);
 
-      // Home shows real dashboard stats...
-      expect(find.text('Pending approvals'), findsOneWidget);
-      expect(find.text('Connected services'), findsOneWidget);
+        // Home shows real dashboard stats...
+        expect(find.text('Pending approvals'), findsOneWidget);
+        expect(find.text('Connected services'), findsOneWidget);
 
-      // ...and the actual conversation composer, in the same screen.
-      expect(find.byType(TextField), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
-    });
+        // ...and the actual conversation composer, in the same screen.
+        expect(find.byType(TextField), findsOneWidget);
+        expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
+      },
+    );
   });
 
   group('settings', () {
-    testWidgets('Settings lists every real category and switches content on selection', (tester) async {
-      await pumpPostOnboardingApp(tester);
+    testWidgets(
+      'Settings lists every real category and switches content on selection',
+      (tester) async {
+        await pumpPostOnboardingApp(tester);
 
-      await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Settings'));
+        await tester.pumpAndSettle();
 
-      for (final label in [
-        'Profile',
-        'URI',
-        'Preferences',
-        'Connections',
-        'Memory',
-        'Capabilities',
-        'Diagnostics',
-        'About',
-      ]) {
-        expect(find.widgetWithText(ListTile, label), findsOneWidget, reason: '$label category missing');
-      }
+        for (final label in [
+          'Profile',
+          'URI',
+          'Preferences',
+          'Connections',
+          'Memory',
+          'Capabilities',
+          'Diagnostics',
+          'About',
+        ]) {
+          expect(
+            find.widgetWithText(ListTile, label),
+            findsOneWidget,
+            reason: '$label category missing',
+          );
+        }
 
-      // Defaults to Profile.
-      expect(find.text('Signed in as demo-user'), findsOneWidget);
+        // Defaults to Profile.
+        expect(find.text('Signed in as demo-user'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ListTile, 'Memory'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(ListTile, 'Memory'));
+        await tester.pumpAndSettle();
 
-      // Real empty state - MockUriClient starts with no memory entries.
-      expect(find.text('Nothing remembered yet'), findsOneWidget);
+        // Real empty state - MockUriClient starts with no memory entries.
+        expect(find.text('Nothing remembered yet'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ListTile, 'About'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('URI'), findsWidgets);
-    });
+        await tester.tap(find.widgetWithText(ListTile, 'About'));
+        await tester.pumpAndSettle();
+        expect(find.textContaining('URI'), findsWidgets);
+      },
+    );
   });
 
   group('Gmail connection state', () {
-    testWidgets('Connect never fakes success - shows the backend\'s real explanation', (tester) async {
-      await pumpPostOnboardingApp(tester, client: _GmailNeedsSetupClient());
+    testWidgets(
+      'Connect never fakes success - shows the backend\'s real explanation',
+      (tester) async {
+        await pumpPostOnboardingApp(tester, client: _GmailNeedsSetupClient());
 
-      await tester.tap(find.text('Connections'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Connections'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Not connected'), findsOneWidget);
+        expect(find.text('Not connected'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Connect'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(ElevatedButton, 'Connect'));
+        await tester.pumpAndSettle();
 
-      // The dialog shows the real, honest reason (also already visible
-      // on the card itself) - never a fabricated "Connected" - and the
-      // underlying state is genuinely unchanged.
-      expect(find.text(_GmailNeedsSetupClient._explanation), findsWidgets);
-      expect(find.text('Not connected'), findsOneWidget);
-      expect(find.text('Connected'), findsNothing);
-    });
+        // The dialog shows the real, honest reason (also already visible
+        // on the card itself) - never a fabricated "Connected" - and the
+        // underlying state is genuinely unchanged.
+        expect(find.text(_GmailNeedsSetupClient._explanation), findsWidgets);
+        expect(find.text('Not connected'), findsOneWidget);
+        expect(find.text('Connected'), findsNothing);
+      },
+    );
   });
 
   group('long prompts', () {
-    testWidgets('the composer accepts a long prompt with no truncation or length error', (tester) async {
-      await pumpPostOnboardingApp(tester);
+    testWidgets(
+      'the composer accepts a long prompt with no truncation or length error',
+      (tester) async {
+        await pumpPostOnboardingApp(tester);
 
-      final longPrompt = 'Please help me draft a detailed institutional note. ' * 40; // ~2100 chars
-      expect(longPrompt.length, greaterThan(2000));
+        final longPrompt =
+            'Please help me draft a detailed institutional note. ' *
+            40; // ~2100 chars
+        expect(longPrompt.length, greaterThan(2000));
 
-      await tester.enterText(find.byType(TextField), longPrompt);
-      await tester.pump();
+        await tester.enterText(find.byType(TextField), longPrompt);
+        await tester.pump();
 
-      final field = tester.widget<TextField>(find.byType(TextField));
-      // No maxLength anywhere in the composer - the full text is kept
-      // verbatim, never silently cut.
-      expect(field.maxLength, isNull);
-      expect(field.controller!.text, longPrompt);
-    });
+        final field = tester.widget<TextField>(find.byType(TextField));
+        // No maxLength anywhere in the composer - the full text is kept
+        // verbatim, never silently cut.
+        expect(field.maxLength, isNull);
+        expect(field.controller!.text, longPrompt);
+      },
+    );
   });
 
   group('appearance', () {
-    testWidgets('choosing Dark actually changes the active ThemeMode', (tester) async {
+    testWidgets('choosing Dark actually changes the active ThemeMode', (
+      tester,
+    ) async {
       await pumpPostOnboardingApp(tester);
 
       await tester.tap(find.text('Settings'));

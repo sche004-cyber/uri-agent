@@ -10,6 +10,8 @@ from uri_core.core.capability_registry import CapabilityRegistry
 
 MODES_PATH = os.path.join("uri_workspace", "modes.json")
 DEFAULT_MODE = "office"
+# "admin" is a stable internal capability-scope identifier. It is not an
+# account role and must never be used to grant authorization.
 VALID_MODES = {"office", "diagnostic", "admin"}
 
 
@@ -22,7 +24,17 @@ def _default_registry_ids() -> List[str]:
 _REGISTRY_IDS = _default_registry_ids()
 DEFAULT_MODES: Dict[str, List[str]] = {
     "office": list(_REGISTRY_IDS),
-    "diagnostic": [],
+    "diagnostic": [
+        capability_id
+        for capability_id in _REGISTRY_IDS
+        if capability_id in (
+            "web_search",
+            "fetch_url",
+            "extract_student_records",
+            "fetch_drive_spreadsheet",
+            "read_attached_file",
+        )
+    ],
     "admin": list(_REGISTRY_IDS),
 }
 

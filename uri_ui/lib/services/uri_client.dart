@@ -172,6 +172,10 @@ abstract class UriClient {
   /// M18: the user declining a URI-proposed memory. Returns whether it
   /// was removed.
   Future<bool> rejectMemory(String memoryId);
+  Future<MemoryContextSettings?> getMemoryContextSettings();
+  Future<MemoryContextSettings?> updateMemoryContextSettings(
+    Map<String, dynamic> settings,
+  );
 
   /// M18: the user's past conversations (GET /history), most recently
   /// active first — a bounded summary list.
@@ -189,6 +193,12 @@ abstract class UriClient {
   /// conversation (see AppState.resumeSession).
   String get sessionId;
   void setSessionId(String sessionId);
+
+  /// Generates and switches to a brand-new session id, so the next
+  /// message starts a fresh conversation (its own new entry in
+  /// History) instead of continuing whatever session this client
+  /// happened to start with (see AppState.startNewChat).
+  void startNewSession();
 
   /// This install's durable identity (see GET /identity): the
   /// logged-in user's own portable user_id, and this device's
@@ -349,10 +359,31 @@ abstract class UriClient {
   Future<List<ProviderEntry>> listProviders();
 
   /// Submits an encrypted-at-rest API key for a provider (POST /providers/keys).
-  Future<ProviderKeyResult?> submitProviderKey(String providerId, String apiKey);
+  Future<ProviderKeyResult?> submitProviderKey(
+    String providerId,
+    String apiKey,
+  );
 
   /// Sets base_url or model configuration overrides for a provider (PUT /providers/config).
-  Future<bool> updateProviderConfig(String providerId, {String? baseUrl, String? model});
+  Future<bool> updateProviderConfig(
+    String providerId, {
+    String? baseUrl,
+    String? model,
+  });
+
+  Future<ActiveBrainInfo?> getActiveBrain();
+  Future<bool> setActiveBrain(String providerId, {String? model});
+
+  /// Returns null on success, or the backend's own error detail string
+  /// on failure (the 400/401/422/500 response body's "detail" field,
+  /// or a plain network-failure message) - never collapsed to a bare
+  /// bool, so the caller can show the User the REAL reason a save
+  /// failed rather than one fixed, generic string.
+  Future<String?> saveGoogleCredentials({
+    String? rawJson,
+    String? clientId,
+    String? clientSecret,
+  });
 }
 
 /// The logged-in account's own role/tier/device identity, from GET
@@ -546,6 +577,56 @@ class AuthOutcome {
 /// message, or an HTTP status) rather than swallowing every failure
 /// into a bare bool - null on success, or when a failure genuinely has
 /// nothing more specific to say.
+class MemoryContextSettings {
+  const MemoryContextSettings({
+    required this.persistentMemory,
+    required this.userProfile,
+    required this.memoryBudget,
+    required this.profileBudget,
+    required this.memoryProvider,
+    required this.contextEngine,
+    required this.autoCompression,
+    required this.compressionThreshold,
+    required this.compressionTarget,
+    required this.protectedRecentMessages,
+  });
+  final bool persistentMemory;
+  final bool userProfile;
+  final int memoryBudget;
+  final int profileBudget;
+  final String memoryProvider;
+  final String contextEngine;
+  final bool autoCompression;
+  final int compressionThreshold;
+  final int compressionTarget;
+  final int protectedRecentMessages;
+  factory MemoryContextSettings.fromJson(Map<String, dynamic> json) =>
+      MemoryContextSettings(
+        persistentMemory: json['persistent_memory'] as bool? ?? true,
+        userProfile: json['user_profile'] as bool? ?? true,
+        memoryBudget: json['memory_budget'] as int? ?? 1200,
+        profileBudget: json['profile_budget'] as int? ?? 400,
+        memoryProvider: json['memory_provider'] as String? ?? 'builtin',
+        contextEngine: json['context_engine'] as String? ?? 'compressor',
+        autoCompression: json['auto_compression'] as bool? ?? true,
+        compressionThreshold: json['compression_threshold'] as int? ?? 6000,
+        compressionTarget: json['compression_target'] as int? ?? 3000,
+        protectedRecentMessages: json['protected_recent_messages'] as int? ?? 6,
+      );
+  Map<String, dynamic> toJson() => {
+    'persistent_memory': persistentMemory,
+    'user_profile': userProfile,
+    'memory_budget': memoryBudget,
+    'profile_budget': profileBudget,
+    'memory_provider': memoryProvider,
+    'context_engine': contextEngine,
+    'auto_compression': autoCompression,
+    'compression_threshold': compressionThreshold,
+    'compression_target': compressionTarget,
+    'protected_recent_messages': protectedRecentMessages,
+  };
+}
+
 class ConnectionCheckResult {
   const ConnectionCheckResult.reachable() : reachable = true, detail = null;
   const ConnectionCheckResult.unreachable([this.detail]) : reachable = false;
@@ -593,6 +674,42 @@ class UserGrantsInfo {
   final List<String> registryCeiling;
 }
 
+class ModelInfo {
+  const ModelInfo({
+    required this.modelId,
+    required this.displayName,
+    this.contextTokens,
+  });
+  final String modelId;
+  final String displayName;
+  final double? contextTokens;
+  factory ModelInfo.fromJson(Map<String, dynamic> json) => ModelInfo(
+    modelId: json['model_id'] as String? ?? '',
+    displayName: json['display_name'] as String? ?? '',
+    contextTokens: (json['context_tokens'] as num?)?.toDouble(),
+  );
+}
+
+class ActiveBrainInfo {
+  const ActiveBrainInfo({
+    required this.providerId,
+    required this.model,
+    this.displayName,
+    this.isConfigured = true,
+  });
+  final String providerId;
+  final String model;
+  final String? displayName;
+  final bool isConfigured;
+  factory ActiveBrainInfo.fromJson(Map<String, dynamic> json) =>
+      ActiveBrainInfo(
+        providerId: json['provider_id'] as String? ?? '',
+        model: json['model'] as String? ?? '',
+        displayName: json['display_name'] as String?,
+        isConfigured: json['is_configured'] as bool? ?? true,
+      );
+}
+
 class ProviderEntry {
   const ProviderEntry({
     required this.providerId,
@@ -602,6 +719,9 @@ class ProviderEntry {
     required this.configured,
     this.lastFour,
     required this.available,
+    this.models = const [],
+    this.activeBrain = false,
+    this.activeModel,
   });
 
   final String providerId;
@@ -611,6 +731,9 @@ class ProviderEntry {
   final bool configured;
   final String? lastFour;
   final bool available;
+  final List<ModelInfo> models;
+  final bool activeBrain;
+  final String? activeModel;
 
   factory ProviderEntry.fromJson(Map<String, dynamic> json) {
     return ProviderEntry(
@@ -621,6 +744,12 @@ class ProviderEntry {
       configured: json['configured'] as bool? ?? false,
       lastFour: json['last_four'] as String?,
       available: json['available'] as bool? ?? false,
+      models: (json['models'] as List? ?? const [])
+          .whereType<Map>()
+          .map((model) => ModelInfo.fromJson(Map<String, dynamic>.from(model)))
+          .toList(growable: false),
+      activeBrain: json['active_brain'] as bool? ?? false,
+      activeModel: json['active_model'] as String?,
     );
   }
 }

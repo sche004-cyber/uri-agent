@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter/services.dart';
+
 import '../../services/app_state.dart';
 import '../../services/app_state_scope.dart';
 import '../../services/attachment_opener_service.dart';
@@ -60,7 +62,9 @@ class _AskUriScreenState extends State<AskUriScreen> {
   }
 
   void _openConnections(String connectionId) {
-    context.findAncestorStateOfType<AppShellState>()?.goTo(ShellIndex.connections);
+    context.findAncestorStateOfType<AppShellState>()?.goTo(
+      ShellIndex.connections,
+    );
   }
 
   Future<void> _send(String text) async {
@@ -90,6 +94,23 @@ class _AskUriScreenState extends State<AskUriScreen> {
 
         return Column(
           children: [
+            if (state.conversation.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  UriSpace.xl,
+                  UriSpace.sm,
+                  UriSpace.xl,
+                  0,
+                ),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: state.isSendingAsk ? null : state.startNewChat,
+                    icon: const Icon(Icons.add_comment_outlined, size: 18),
+                    label: const Text('New Chat'),
+                  ),
+                ),
+              ),
             Expanded(
               child: state.conversation.isEmpty
                   ? Center(
@@ -110,9 +131,13 @@ class _AskUriScreenState extends State<AskUriScreen> {
                     )
                   : ListView.separated(
                       controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: UriSpace.xl, vertical: UriSpace.md),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: UriSpace.xl,
+                        vertical: UriSpace.md,
+                      ),
                       itemCount: state.conversation.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: UriSpace.md),
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: UriSpace.md),
                       itemBuilder: (context, index) {
                         final turn = state.conversation[index];
                         return TurnCard(
@@ -133,9 +158,7 @@ class _AskUriScreenState extends State<AskUriScreen> {
               attachments: state.attachments,
               uploading: state.isUploadingAttachment,
               attachmentError: state.attachmentError,
-              onAttach: widget.filePicker == null
-                  ? null
-                  : () => _attach(state),
+              onAttach: widget.filePicker == null ? null : () => _attach(state),
               onRemoveAttachment: state.removeAttachment,
               onDismissAttachmentError: state.clearAttachmentError,
             ),
@@ -175,7 +198,9 @@ class _AskUriScreenState extends State<AskUriScreen> {
     } catch (error) {
       if (!mounted) return;
       messenger?.showSnackBar(
-        SnackBar(content: Text('Could not open ${attachment.filename}: $error')),
+        SnackBar(
+          content: Text('Could not open ${attachment.filename}: $error'),
+        ),
       );
       return;
     }
@@ -202,7 +227,9 @@ class _AskUriScreenState extends State<AskUriScreen> {
       case AttachmentOpenOutcome.noViewerAvailable:
         messenger?.showSnackBar(
           SnackBar(
-            content: Text('No app on this device can open ${attachment.filename}.'),
+            content: Text(
+              'No app on this device can open ${attachment.filename}.',
+            ),
           ),
         );
       case AttachmentOpenOutcome.failed:
@@ -232,6 +259,7 @@ class _Composer extends StatelessWidget {
   final List<Attachment> attachments;
   final bool uploading;
   final String? attachmentError;
+
   /// Null when no picker is available — the attach control is then
   /// not rendered at all rather than shown inert.
   final VoidCallback? onAttach;
@@ -276,22 +304,33 @@ class _Composer extends StatelessWidget {
                       : const Icon(Icons.attach_file_rounded),
                 ),
               Expanded(
-                child: TextField(
-                  controller: controller,
-                  // Grows with what's typed rather than capping it at
-                  // a cramped few lines — URI accepts normal long
-                  // natural-language requests (no character limit
-                  // anywhere in the request path), so the composer
-                  // should not visually suggest otherwise. Long input
-                  // scrolls within these 10 lines rather than pushing
-                  // the send button off-screen.
-                  minLines: 1,
-                  maxLines: 10,
-                  keyboardType: TextInputType.multiline,
-                  textInputAction: TextInputAction.newline,
-                  enabled: !sending,
-                  decoration: const InputDecoration(
-                    hintText: 'Ask URI to help with something…',
+                child: Focus(
+                  onKeyEvent: (node, event) {
+                    if (event is KeyDownEvent &&
+                        event.logicalKey == LogicalKeyboardKey.enter &&
+                        !HardwareKeyboard.instance.isShiftPressed) {
+                      if (!sending) onSend(controller.text);
+                      return KeyEventResult.handled;
+                    }
+                    return KeyEventResult.ignored;
+                  },
+                  child: TextField(
+                    controller: controller,
+                    // Grows with what's typed rather than capping it at
+                    // a cramped few lines — URI accepts normal long
+                    // natural-language requests (no character limit
+                    // anywhere in the request path), so the composer
+                    // should not visually suggest otherwise. Long input
+                    // scrolls within these 10 lines rather than pushing
+                    // the send button off-screen.
+                    minLines: 1,
+                    maxLines: 10,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.newline,
+                    enabled: !sending,
+                    decoration: const InputDecoration(
+                      hintText: 'Ask URI to help with something…',
+                    ),
                   ),
                 ),
               ),

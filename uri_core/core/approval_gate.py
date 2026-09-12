@@ -57,6 +57,7 @@ class ApprovalGate:
         audit_trail: Optional[AuditTrail] = None,
         capability_grants_store: Optional[Any] = None,
         principal: Optional[Any] = None,
+        file_store: Optional[Any] = None,
     ):
         self.dispatcher = dispatcher
         self.capability_registry = (
@@ -66,6 +67,16 @@ class ApprovalGate:
         self.audit_trail = audit_trail or AuditTrail()
         self.capability_grants_store = capability_grants_store
         self.principal = principal
+        # 2026-09-12 (User directive): the caller's own (user-scoped)
+        # FileStore, passed to self.dispatcher.execute_tool() at BOTH
+        # real dispatch points below (the immediate no-approval path
+        # and decide()'s approved-execution path) - deliberately NOT
+        # folded into a tool's own **kwargs, since those are persisted
+        # verbatim as an approval-pending proposal's arguments
+        # (self.approval_store.propose(arguments=kwargs, ...) below), and
+        # a live FileStore instance is not something that belongs in a
+        # persisted proposal record.
+        self.file_store = file_store
 
     def _record_audit_safely(self, **kwargs: Any) -> None:
         """Never raises - an audit-recording failure must never break
@@ -152,7 +163,10 @@ class ApprovalGate:
             # unchanged; tools take **kwargs and ignore what they don't
             # use.
             dispatch_result = self.dispatcher.execute_tool(
-                tool_name, session_id=session_id, **kwargs
+                tool_name,
+                session_id=session_id,
+                file_store=self.file_store,
+                **kwargs,
             )
 
             self._record_audit_safely(
@@ -294,6 +308,7 @@ class ApprovalGate:
         dispatch_result = self.dispatcher.execute_tool(
             record.capability_id,
             session_id=record.session_id,
+            file_store=self.file_store,
             **record.arguments,
         )
 

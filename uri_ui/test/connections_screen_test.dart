@@ -24,13 +24,17 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final appState = AppState(client: MockUriClient());
-    await appState.updatePreferences(const UserPreferences.initial().copyWith(completedOnboarding: true));
+    final appState = AppState(MockUriClient());
+    await appState.updatePreferences(
+      const UserPreferences.initial().copyWith(completedOnboarding: true),
+    );
     await tester.pumpWidget(UriApp(appState: appState));
     await tester.pumpAndSettle();
   }
 
-  testWidgets('Connections shows the three distinct connection states', (tester) async {
+  testWidgets('Connections shows the three distinct connection states', (
+    tester,
+  ) async {
     await pumpPostOnboardingApp(tester);
 
     await tester.tap(find.text('Connections'));
@@ -45,7 +49,9 @@ void main() {
     expect(find.widgetWithText(ElevatedButton, 'Connect'), findsOneWidget);
   });
 
-  testWidgets('authorizing a not-connected service updates its state', (tester) async {
+  testWidgets('authorizing a not-connected service updates its state', (
+    tester,
+  ) async {
     await pumpPostOnboardingApp(tester);
 
     await tester.tap(find.text('Connections'));
@@ -60,7 +66,9 @@ void main() {
     expect(find.widgetWithText(TextButton, 'Disconnect'), findsWidgets);
   });
 
-  testWidgets('reconnecting a needs-authorization service updates its state', (tester) async {
+  testWidgets('reconnecting a needs-authorization service updates its state', (
+    tester,
+  ) async {
     await pumpPostOnboardingApp(tester);
 
     await tester.tap(find.text('Connections'));

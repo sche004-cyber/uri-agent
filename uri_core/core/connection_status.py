@@ -38,6 +38,14 @@ STATUS_NOT_CONNECTED = "not_connected"
 
 
 def _repo_root() -> str:
+    # 2026-09-12 (User directive): an explicit override for where
+    # credentials.json/token.json live, for an install where the
+    # repository root isn't where the Google Cloud Console download
+    # was placed. Checked first; falls back to the repo root exactly
+    # as before when unset, so every existing install is unaffected.
+    override = os.environ.get("URI_GOOGLE_CREDENTIALS_DIR")
+    if override:
+        return override
     return os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 

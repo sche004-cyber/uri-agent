@@ -32,8 +32,14 @@ void main() {
             'status': 'success',
             'session_id': 's1',
             'semantic_analysis': {'goal': 'draft a note'},
-            'execution': {'status': 'success', 'tool': 'draft_institutional_note'},
-            'response': {'status': 'success', 'note_sheet': 'RAW DOCUMENT TEXT'},
+            'execution': {
+              'status': 'success',
+              'tool': 'draft_institutional_note',
+            },
+            'response': {
+              'status': 'success',
+              'note_sheet': 'RAW DOCUMENT TEXT',
+            },
             'narrative': "I've drafted the note for your review.",
           });
         }),
@@ -54,8 +60,14 @@ void main() {
             'status': 'success',
             'session_id': 's1',
             'semantic_analysis': {'goal': 'draft a note'},
-            'execution': {'status': 'success', 'tool': 'draft_institutional_note'},
-            'response': {'status': 'success', 'note_sheet': 'RAW DOCUMENT TEXT'},
+            'execution': {
+              'status': 'success',
+              'tool': 'draft_institutional_note',
+            },
+            'response': {
+              'status': 'success',
+              'note_sheet': 'RAW DOCUMENT TEXT',
+            },
             'narrative': null,
           });
         }),
@@ -68,53 +80,24 @@ void main() {
       expect(turn.result!.summary, isNot(contains('RAW DOCUMENT TEXT')));
     });
 
-    test(
-      'M15 correction: a successful execution with no narrative but a real, '
-      'readable tool result relays that result rather than a content-free '
-      'confirmation',
-      () async {
-        const realNoteSheet =
-            'NOTING\n\nSubject: New library hours\n\n'
-            'The matter is submitted for kind consideration.';
+    test('M15 correction: a successful execution with no narrative but a real, '
+        'readable tool result relays that result rather than a content-free '
+        'confirmation', () async {
+      const realNoteSheet =
+          'NOTING\n\nSubject: New library hours\n\n'
+          'The matter is submitted for kind consideration.';
 
-        final client = HttpUriClient(
-          httpClient: MockClient((request) async {
-            return _json({
-              'status': 'success',
-              'session_id': 's1',
-              'semantic_analysis': {'goal': 'draft a note'},
-              'execution': {'status': 'success', 'tool': 'draft_institutional_note'},
-              'response': {'status': 'success', 'note_sheet': realNoteSheet},
-              'narrative': null,
-            });
-          }),
-        );
-
-        final turn = await client.ask('draft a note');
-
-        expect(turn.stage, TurnStage.completed);
-        // The real, already-produced result must reach the user - a
-        // transient drafting failure must never silently discard it.
-        expect(turn.result!.summary, realNoteSheet);
-      },
-    );
-
-    test('awaiting_approval uses a humanized title and the registry description', () async {
       final client = HttpUriClient(
         httpClient: MockClient((request) async {
           return _json({
             'status': 'success',
             'session_id': 's1',
             'semantic_analysis': {'goal': 'draft a note'},
-            'execution': {'status': 'awaiting_approval', 'tool': 'draft_institutional_note'},
-            'response': {
-              'status': 'awaiting_approval',
-              'action_id': '11111111-1111-1111-1111-111111111111',
-              'tool_name': 'draft_institutional_note',
-              'risk': 'controlled',
-              'description': 'Draft a concise administrative office noting.',
-              'message': 'This action requires your explicit approval before URI can proceed.',
+            'execution': {
+              'status': 'success',
+              'tool': 'draft_institutional_note',
             },
+            'response': {'status': 'success', 'note_sheet': realNoteSheet},
             'narrative': null,
           });
         }),
@@ -122,13 +105,51 @@ void main() {
 
       final turn = await client.ask('draft a note');
 
-      expect(turn.stage, TurnStage.awaitingApproval);
-      expect(turn.id, '11111111-1111-1111-1111-111111111111');
-      expect(turn.proposedAction!.title, 'Draft Institutional Note');
-      expect(turn.proposedAction!.description, 'Draft a concise administrative office noting.');
-      // "controlled" risk must never render as routine for a gated proposal.
-      expect(turn.proposedAction!.impact, isNot(ActionImpact.routine));
+      expect(turn.stage, TurnStage.completed);
+      // The real, already-produced result must reach the user - a
+      // transient drafting failure must never silently discard it.
+      expect(turn.result!.summary, realNoteSheet);
     });
+
+    test(
+      'awaiting_approval uses a humanized title and the registry description',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            return _json({
+              'status': 'success',
+              'session_id': 's1',
+              'semantic_analysis': {'goal': 'draft a note'},
+              'execution': {
+                'status': 'awaiting_approval',
+                'tool': 'draft_institutional_note',
+              },
+              'response': {
+                'status': 'awaiting_approval',
+                'action_id': '11111111-1111-1111-1111-111111111111',
+                'tool_name': 'draft_institutional_note',
+                'risk': 'controlled',
+                'description': 'Draft a concise administrative office noting.',
+                'message': 'This action requires your explicit approval before URI can proceed.',
+              },
+              'narrative': null,
+            });
+          }),
+        );
+
+        final turn = await client.ask('draft a note');
+
+        expect(turn.stage, TurnStage.awaitingApproval);
+        expect(turn.id, '11111111-1111-1111-1111-111111111111');
+        expect(turn.proposedAction!.title, 'Draft Institutional Note');
+        expect(
+          turn.proposedAction!.description,
+          'Draft a concise administrative office noting.',
+        );
+        // "controlled" risk must never render as routine for a gated proposal.
+        expect(turn.proposedAction!.impact, isNot(ActionImpact.routine));
+      },
+    );
 
     test('awaiting_approval without a registry description falls back to the generic message', () async {
       final client = HttpUriClient(
@@ -137,7 +158,10 @@ void main() {
             'status': 'success',
             'session_id': 's1',
             'semantic_analysis': {},
-            'execution': {'status': 'awaiting_approval', 'tool': 'draft_institutional_note'},
+            'execution': {
+              'status': 'awaiting_approval',
+              'tool': 'draft_institutional_note',
+            },
             'response': {
               'status': 'awaiting_approval',
               'action_id': 'a1',
@@ -165,8 +189,13 @@ void main() {
             'status': 'success',
             'session_id': 's1',
             'semantic_analysis': {},
-            'execution': {'status': 'failed', 'error': 'No drafted output was available for review.'},
-            'response': {'message': 'URI could not complete the planned workflow.'},
+            'execution': {
+              'status': 'failed',
+              'error': 'No drafted output was available for review.',
+            },
+            'response': {
+              'message': 'URI could not complete the planned workflow.',
+            },
           });
         }),
       );
@@ -177,31 +206,40 @@ void main() {
       expect(turn.failureReason, 'No drafted output was available for review.');
     });
 
-    test('a request-level failure (status != success) sets failureReason', () async {
-      final client = HttpUriClient(
-        httpClient: MockClient((request) async {
-          return _json({'status': 'failed', 'error': 'simulated backend error'});
-        }),
-      );
+    test(
+      'a request-level failure (status != success) sets failureReason',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            return _json({
+              'status': 'failed',
+              'error': 'simulated backend error',
+            });
+          }),
+        );
 
-      final turn = await client.ask('anything');
+        final turn = await client.ask('anything');
 
-      expect(turn.stage, TurnStage.failed);
-      expect(turn.failureReason, 'simulated backend error');
-    });
+        expect(turn.stage, TurnStage.failed);
+        expect(turn.failureReason, 'simulated backend error');
+      },
+    );
 
-    test('a network error sets a clear failureReason rather than throwing', () async {
-      final client = HttpUriClient(
-        httpClient: MockClient((request) async {
-          throw Exception('connection refused');
-        }),
-      );
+    test(
+      'a network error sets a clear failureReason rather than throwing',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            throw Exception('connection refused');
+          }),
+        );
 
-      final turn = await client.ask('anything');
+        final turn = await client.ask('anything');
 
-      expect(turn.stage, TurnStage.failed);
-      expect(turn.failureReason, contains('Could not reach the URI backend'));
-    });
+        expect(turn.stage, TurnStage.failed);
+        expect(turn.failureReason, contains('Could not reach the URI backend'));
+      },
+    );
   });
 
   group('approve()/cancel() via _decide', () {
@@ -213,7 +251,10 @@ void main() {
               'status': 'success',
               'session_id': 's1',
               'semantic_analysis': {},
-              'execution': {'status': 'awaiting_approval', 'tool': 'draft_institutional_note'},
+              'execution': {
+                'status': 'awaiting_approval',
+                'tool': 'draft_institutional_note',
+              },
               'response': {
                 'status': 'awaiting_approval',
                 'action_id': 'action-1',
@@ -247,7 +288,10 @@ void main() {
               'status': 'success',
               'session_id': 's1',
               'semantic_analysis': {},
-              'execution': {'status': 'awaiting_approval', 'tool': 'draft_institutional_note'},
+              'execution': {
+                'status': 'awaiting_approval',
+                'tool': 'draft_institutional_note',
+              },
               'response': {
                 'status': 'awaiting_approval',
                 'action_id': 'action-1',
@@ -272,47 +316,12 @@ void main() {
       expect(approved.result!.summary, isNot(contains('RAW DOCUMENT TEXT')));
     });
 
-    test(
-      'M15 correction: approve without a narrative but a real, readable '
-      'tool result relays that result rather than a content-free '
-      'confirmation',
-      () async {
-        const noteSheet =
-            'NOTING\n\nSubject: New library hours\n\n'
-            'The matter is submitted for kind consideration.';
-        final client = HttpUriClient(
-          httpClient: MockClient((request) async {
-            if (request.url.path == '/ask') {
-              return _json({
-                'status': 'success',
-                'session_id': 's1',
-                'semantic_analysis': {},
-                'execution': {'status': 'awaiting_approval', 'tool': 'draft_institutional_note'},
-                'response': {
-                  'status': 'awaiting_approval',
-                  'action_id': 'action-1',
-                  'tool_name': 'draft_institutional_note',
-                  'risk': 'controlled',
-                  'message': 'needs approval',
-                },
-              });
-            }
-            return _json({
-              'status': 'success',
-              'data': {'status': 'success', 'note_sheet': noteSheet},
-              'narrative': null,
-            });
-          }),
-        );
-
-        await client.ask('draft a note');
-        final approved = await client.approve('action-1');
-
-        expect(approved.result!.summary, contains('New library hours'));
-      },
-    );
-
-    test('cancel reports no action was taken', () async {
+    test('M15 correction: approve without a narrative but a real, readable '
+        'tool result relays that result rather than a content-free '
+        'confirmation', () async {
+      const noteSheet =
+          'NOTING\n\nSubject: New library hours\n\n'
+          'The matter is submitted for kind consideration.';
       final client = HttpUriClient(
         httpClient: MockClient((request) async {
           if (request.url.path == '/ask') {
@@ -320,7 +329,10 @@ void main() {
               'status': 'success',
               'session_id': 's1',
               'semantic_analysis': {},
-              'execution': {'status': 'awaiting_approval', 'tool': 'draft_institutional_note'},
+              'execution': {
+                'status': 'awaiting_approval',
+                'tool': 'draft_institutional_note',
+              },
               'response': {
                 'status': 'awaiting_approval',
                 'action_id': 'action-1',
@@ -330,7 +342,46 @@ void main() {
               },
             });
           }
-          return _json({'status': 'cancelled', 'action_id': 'action-1', 'narrative': null});
+          return _json({
+            'status': 'success',
+            'data': {'status': 'success', 'note_sheet': noteSheet},
+            'narrative': null,
+          });
+        }),
+      );
+
+      await client.ask('draft a note');
+      final approved = await client.approve('action-1');
+
+      expect(approved.result!.summary, contains('New library hours'));
+    });
+
+    test('cancel reports no action was taken', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          if (request.url.path == '/ask') {
+            return _json({
+              'status': 'success',
+              'session_id': 's1',
+              'semantic_analysis': {},
+              'execution': {
+                'status': 'awaiting_approval',
+                'tool': 'draft_institutional_note',
+              },
+              'response': {
+                'status': 'awaiting_approval',
+                'action_id': 'action-1',
+                'tool_name': 'draft_institutional_note',
+                'risk': 'controlled',
+                'message': 'needs approval',
+              },
+            });
+          }
+          return _json({
+            'status': 'cancelled',
+            'action_id': 'action-1',
+            'narrative': null,
+          });
         }),
       );
 
@@ -344,7 +395,10 @@ void main() {
     test('an error response sets failureReason, not a crash', () async {
       final client = HttpUriClient(
         httpClient: MockClient((request) async {
-          return _json({'status': 'error', 'message': 'Action not-found is not pending.'});
+          return _json({
+            'status': 'error',
+            'message': 'Action not-found is not pending.',
+          });
         }),
       );
 
@@ -381,46 +435,52 @@ void main() {
       expect(tasks.first.risk, 'high');
     });
 
-    test('a network error returns an empty list rather than throwing', () async {
-      final client = HttpUriClient(
-        httpClient: MockClient((request) async {
-          throw Exception('connection refused');
-        }),
-      );
+    test(
+      'a network error returns an empty list rather than throwing',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            throw Exception('connection refused');
+          }),
+        );
 
-      final tasks = await client.listTasks();
+        final tasks = await client.listTasks();
 
-      expect(tasks, isEmpty);
-    });
+        expect(tasks, isEmpty);
+      },
+    );
   });
 
   group('listConnections()', () {
-    test('real backend authorization state is used, not mock seed data', () async {
-      final client = HttpUriClient(
-        httpClient: MockClient((request) async {
-          expect(request.url.path, '/connections');
-          return _json({
-            'connections': [
-              {
-                'id': 'gmail',
-                'name': 'Gmail',
-                'description': 'Read relevant messages.',
-                'status': 'not_connected',
-                'detail': 'No Google client secret is configured.',
-              },
-            ],
-          });
-        }),
-      );
+    test(
+      'real backend authorization state is used, not mock seed data',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            expect(request.url.path, '/connections');
+            return _json({
+              'connections': [
+                {
+                  'id': 'gmail',
+                  'name': 'Gmail',
+                  'description': 'Read relevant messages.',
+                  'status': 'not_connected',
+                  'detail': 'No Google client secret is configured.',
+                },
+              ],
+            });
+          }),
+        );
 
-      final connections = await client.listConnections();
+        final connections = await client.listConnections();
 
-      expect(connections, hasLength(1));
-      expect(connections.first.id, 'gmail');
-      // The mock fallback would have claimed connected here.
-      expect(connections.first.status, ConnectionStatus.notConnected);
-      expect(connections.first.detail, contains('client secret'));
-    });
+        expect(connections, hasLength(1));
+        expect(connections.first.id, 'gmail');
+        // The mock fallback would have claimed connected here.
+        expect(connections.first.status, ConnectionStatus.notConnected);
+        expect(connections.first.detail, contains('client secret'));
+      },
+    );
 
     test('needs_authorization is mapped through faithfully', () async {
       final client = HttpUriClient(
@@ -466,17 +526,65 @@ void main() {
       expect(connections.first.status, ConnectionStatus.notConnected);
     });
 
-    test('a network error returns empty rather than falling back to mock data', () async {
+    test(
+      'a network error returns empty rather than falling back to mock data',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            throw Exception('connection refused');
+          }),
+        );
+
+        final connections = await client.listConnections();
+
+        // Crucially empty, NOT the mock's seeded "Gmail connected".
+        expect(connections, isEmpty);
+      },
+    );
+  });
+
+  group('saveGoogleCredentials()', () {
+    test('a 200 response returns null (success)', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          expect(request.url.path, '/connections/credentials');
+          return _json({'status': 'ok'});
+        }),
+      );
+
+      final error = await client.saveGoogleCredentials(rawJson: '{"installed":{"client_id":"x","client_secret":"y"}}');
+
+      expect(error, isNull);
+    });
+
+    test(
+      'a 400 response surfaces the backend\'s own detail message verbatim',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            return _json({
+              'detail': 'raw_json must be valid Google OAuth client credentials JSON.',
+            }, statusCode: 400);
+          }),
+        );
+
+        final error = await client.saveGoogleCredentials(rawJson: 'not json');
+
+        expect(error, 'raw_json must be valid Google OAuth client credentials JSON.');
+      },
+    );
+
+    test('a network failure returns a real error message, not null', () async {
       final client = HttpUriClient(
         httpClient: MockClient((request) async {
           throw Exception('connection refused');
         }),
       );
 
-      final connections = await client.listConnections();
+      final error = await client.saveGoogleCredentials(rawJson: '{}');
 
-      // Crucially empty, NOT the mock's seeded "Gmail connected".
-      expect(connections, isEmpty);
+      expect(error, isNotNull);
+      expect(error, contains('connection refused'));
     });
   });
 
@@ -519,60 +627,62 @@ void main() {
   });
 
   group('loadHomeSummary()', () {
-    test('counts come from real tasks and connections, not mock numbers', () async {
-      final client = HttpUriClient(
-        httpClient: MockClient((request) async {
-          if (request.url.path == '/tasks') {
+    test(
+      'counts come from real tasks and connections, not mock numbers',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            if (request.url.path == '/tasks') {
+              return _json({
+                'tasks': [
+                  {
+                    'action_id': 'a1',
+                    'capability_id': 'pc_system_optimization',
+                    'description': 'Optimize',
+                    'risk': 'high',
+                    'session_id': 's1',
+                    'created_at': '2026-09-07T10:00:00Z',
+                  },
+                ],
+              });
+            }
             return _json({
-              'tasks': [
+              'connections': [
                 {
-                  'action_id': 'a1',
-                  'capability_id': 'pc_system_optimization',
-                  'description': 'Optimize',
-                  'risk': 'high',
-                  'session_id': 's1',
-                  'created_at': '2026-09-07T10:00:00Z',
+                  'id': 'gmail',
+                  'name': 'Gmail',
+                  'description': '',
+                  'status': 'not_connected',
+                  'detail': null,
+                },
+                {
+                  'id': 'drive',
+                  'name': 'Drive',
+                  'description': '',
+                  'status': 'connected',
+                  'detail': 'Connected',
                 },
               ],
             });
-          }
-          return _json({
-            'connections': [
-              {
-                'id': 'gmail',
-                'name': 'Gmail',
-                'description': '',
-                'status': 'not_connected',
-                'detail': null,
-              },
-              {
-                'id': 'drive',
-                'name': 'Drive',
-                'description': '',
-                'status': 'connected',
-                'detail': 'Connected',
-              },
-            ],
-          });
-        }),
-      );
+          }),
+        );
 
-      final summary = await client.loadHomeSummary();
+        final summary = await client.loadHomeSummary();
 
-      expect(summary.pendingApprovalCount, 1);
-      expect(summary.connectedServiceCount, 1);
-      expect(summary.totalServiceCount, 2);
-    });
+        expect(summary.pendingApprovalCount, 1);
+        expect(summary.connectedServiceCount, 1);
+        expect(summary.totalServiceCount, 2);
+      },
+    );
   });
 
   group('attachments', () {
     test('a rejected upload surfaces the backend reason verbatim', () async {
       final client = HttpUriClient(
         httpClient: MockClient((request) async {
-          return _json(
-            {'detail': "Files of type '.exe' are not accepted."},
-            statusCode: 400,
-          );
+          return _json({
+            'detail': "Files of type '.exe' are not accepted.",
+          }, statusCode: 400);
         }),
       );
 
@@ -612,17 +722,20 @@ void main() {
       expect(attachment.sizeBytes, 2048);
     });
 
-    test('an unreachable backend reports it rather than silently succeeding', () async {
-      final client = HttpUriClient(
-        httpClient: MockClient((request) async {
-          throw Exception('connection refused');
-        }),
-      );
+    test(
+      'an unreachable backend reports it rather than silently succeeding',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            throw Exception('connection refused');
+          }),
+        );
 
-      expect(
-        () => client.uploadAttachment(filename: 'a.txt', bytes: [1]),
-        throwsA(isA<AttachmentException>()),
-      );
-    });
+        expect(
+          () => client.uploadAttachment(filename: 'a.txt', bytes: [1]),
+          throwsA(isA<AttachmentException>()),
+        );
+      },
+    );
   });
 }

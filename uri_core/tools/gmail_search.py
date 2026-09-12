@@ -34,6 +34,16 @@ class GmailSearchTool:
         self._service = service or GmailSearchService()
         self._max_results = max_results or _DEFAULT_MAX_RESULTS
 
+    # 2026-09-12 (User directive): "how many unread emails do I have"
+    # is a COUNT question, not a search-and-list one - routing it
+    # through search_emails (capped at max_results, returning
+    # subject/snippet rows) would under-report the real count whenever
+    # more than max_results messages are unread, and answer a question
+    # that was never asked. Detected narrowly (both "unread" and a
+    # count-shaped word) so an ordinary "find my unread email from
+    # Chetan" search-style request is unaffected.
+    _UNREAD_COUNT_TRIGGERS = ("how many", "count", "number of")
+
     def execute(self, **kwargs):
 
         query = (kwargs.get("request_text") or "").strip()
@@ -44,6 +54,12 @@ class GmailSearchTool:
                 "query": None,
                 "message": "No search query was found in the request.",
             }
+
+        lowered = query.lower()
+        if "unread" in lowered and any(
+            trigger in lowered for trigger in self._UNREAD_COUNT_TRIGGERS
+        ):
+            return self._unread_count()
 
         if not self._service.authenticate():
             return {
@@ -113,4 +129,26 @@ class GmailSearchTool:
             "query": query,
             "message": f"Found {len(results)} Gmail result(s) for this query.",
             "results": results,
+        }
+
+    def _unread_count(self) -> dict:
+        result = self._service.get_unread_count()
+
+        if not result.get("success"):
+            return {
+                "status": "unavailable",
+                "query": "is:unread",
+                "message": "URI could not check your unread Gmail count.",
+                "error": result.get("error"),
+            }
+
+        count = result["unread_count"]
+        return {
+            "status": "success",
+            "query": "is:unread",
+            "unread_count": count,
+            "message": (
+                f"You have {count} unread Gmail message"
+                f"{'s' if count != 1 else ''} right now."
+            ),
         }

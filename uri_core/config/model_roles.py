@@ -165,6 +165,33 @@ def build_provider(
         see zero-behaviour-change.
     """
     role_config = load_model_roles(roles_path).get(role, {})
+
+    # A user's active brain is a per-user override for the two Brain-authored
+    # roles: reasoning/planning and the final narrative draft.  This keeps the
+    # runtime's authority boundary unchanged; it only makes the configured
+    # text generator reachable by both existing call sites.
+    # It remains subject to the catalogue and existing provider/key rules.
+    if (
+        provider_id_override is None
+        and role in (ROLE_REASONING, ROLE_DRAFTING)
+        and principal is not None
+        and getattr(principal, "user_id", None)
+    ):
+        from uri_core.core.provider_registry import CATALOGUE_BY_ID, ProviderConfigStore
+
+        active_brain = ProviderConfigStore(principal.user_id).get_active_brain()
+        if active_brain is not None:
+            descriptor = CATALOGUE_BY_ID.get(active_brain["provider_id"])
+            if descriptor is not None:
+                role_config = dict(role_config)
+                role_config.update(
+                    {
+                        "provider": descriptor.adapter,
+                        "provider_id": descriptor.provider_id,
+                        "model": active_brain["model"],
+                    }
+                )
+
     provider_name = provider_id_override or role_config.get("provider", "ollama")
 
     # -------------------------------------------------------------------

@@ -17,6 +17,7 @@ import 'screens/connections/connections_screen.dart';
 import 'screens/history/history_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/onboarding/brain_onboarding_screen.dart';
 import 'screens/settings/settings_shell.dart';
 import 'screens/tasks/tasks_screen.dart';
 import 'services/app_state.dart';
@@ -108,7 +109,7 @@ class _UriAppState extends State<UriApp> with WidgetsBindingObserver {
   }
 }
 
-class _RootGate extends StatelessWidget {
+class _RootGate extends StatefulWidget {
   const _RootGate({
     required this.appState,
     required this.filePicker,
@@ -120,7 +121,13 @@ class _RootGate extends StatelessWidget {
   final AttachmentOpenerFn? attachmentOpener;
 
   @override
+  State<_RootGate> createState() => _RootGateState();
+}
+
+class _RootGateState extends State<_RootGate> {
+  @override
   Widget build(BuildContext context) {
+    final appState = widget.appState;
     // Bootstrap fix (multi-client connectivity): a device that has
     // never had a working backend address configured can never log in
     // against the compiled-in default (http://localhost:8000,
@@ -147,7 +154,17 @@ class _RootGate extends StatelessWidget {
         onComplete: (answers) => appState.updatePreferences(answers),
       );
     }
-    return UriHome(filePicker: filePicker, attachmentOpener: attachmentOpener);
+    if (!appState.brainSetupChecked) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => appState.refreshBrainSetupState(),
+      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (appState.needsBrainSetup) return const BrainOnboardingScreen();
+    return UriHome(
+      filePicker: widget.filePicker,
+      attachmentOpener: widget.attachmentOpener,
+    );
   }
 }
 
@@ -209,8 +226,7 @@ class UriHome extends StatelessWidget {
   static Widget _buildTasks(BuildContext context) => const TasksScreen();
   static Widget _buildConnections(BuildContext context) =>
       const ConnectionsScreen();
-  static Widget _buildActivity(BuildContext context) =>
-      const ActivityScreen();
+  static Widget _buildActivity(BuildContext context) => const ActivityScreen();
   static Widget _buildHistory(BuildContext context) => const HistoryScreen();
   static Widget _buildSettings(BuildContext context) => const SettingsShell();
 }

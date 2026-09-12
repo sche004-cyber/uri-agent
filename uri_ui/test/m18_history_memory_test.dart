@@ -53,23 +53,23 @@ class _M18Client extends MockUriClient {
 
   @override
   Future<List<ConversationSummary>> listHistory() async => const [
-        ConversationSummary(
-          sessionId: 'past-1',
-          turnCount: 2,
-          preview: 'draft a note about the seminar',
-        ),
-      ];
+    ConversationSummary(
+      sessionId: 'past-1',
+      turnCount: 2,
+      preview: 'draft a note about the seminar',
+    ),
+  ];
 
   @override
   Future<List<UriTurn>> getHistory(String sessionId) async => [
-        UriTurn(
-          id: 'h1',
-          userText: 'draft a note about the seminar',
-          timestamp: DateTime.now(),
-          stage: TurnStage.completed,
-          result: const ActionResult(summary: 'Here is the note.'),
-        ),
-      ];
+    UriTurn(
+      id: 'h1',
+      userText: 'draft a note about the seminar',
+      timestamp: DateTime.now(),
+      stage: TurnStage.completed,
+      result: const ActionResult(summary: 'Here is the note.'),
+    ),
+  ];
 }
 
 Future<AppState> _pump(WidgetTester tester, _M18Client client) async {
@@ -78,7 +78,7 @@ Future<AppState> _pump(WidgetTester tester, _M18Client client) async {
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  final appState = AppState(client: client);
+  final appState = AppState(client);
   await appState.updatePreferences(
     const UserPreferences.initial().copyWith(completedOnboarding: true),
   );
@@ -90,25 +90,30 @@ Future<AppState> _pump(WidgetTester tester, _M18Client client) async {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('a URI-proposed memory shows Confirm/Reject and confirming works', (tester) async {
-    final client = _M18Client();
-    await _pump(tester, client);
+  testWidgets(
+    'a URI-proposed memory shows Confirm/Reject and confirming works',
+    (tester) async {
+      final client = _M18Client();
+      await _pump(tester, client);
 
-    await tester.tap(find.text('Settings'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ListTile, 'Memory'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Memory'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('URI suggests remembering'), findsOneWidget);
-    expect(find.widgetWithText(ElevatedButton, 'Confirm'), findsOneWidget);
-    expect(find.widgetWithText(OutlinedButton, 'Reject'), findsOneWidget);
+      expect(find.text('URI suggests remembering'), findsOneWidget);
+      expect(find.widgetWithText(ElevatedButton, 'Confirm'), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, 'Reject'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Confirm'));
-    await tester.pumpAndSettle();
-    expect(client.confirmed, isTrue);
-  });
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Confirm'));
+      await tester.pumpAndSettle();
+      expect(client.confirmed, isTrue);
+    },
+  );
 
-  testWidgets('History lists past conversations and resume loads their turns', (tester) async {
+  testWidgets('History lists past conversations and resume loads their turns', (
+    tester,
+  ) async {
     final client = _M18Client();
     final appState = await _pump(tester, client);
 
@@ -125,7 +130,10 @@ void main() {
     // The past turn was loaded into the live conversation, and the
     // client was repointed at that session.
     expect(appState.conversation.length, 1);
-    expect(appState.conversation.first.userText, 'draft a note about the seminar');
+    expect(
+      appState.conversation.first.userText,
+      'draft a note about the seminar',
+    );
     expect(client.sessionId, 'past-1');
 
     // Resuming navigates to Home, whose initState fires several mock

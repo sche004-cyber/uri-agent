@@ -86,6 +86,16 @@ class SessionState:
 
     last_goal_attempt_history: Optional[List[dict]] = None
 
+    # 2026-09-12 (User directive): how many consecutive turns in a row
+    # have carried interaction_signal="MISSING_INFORMATION" for the
+    # same still-unresolved goal - i.e. the Brain keeps pausing for
+    # clarification without ever committing to an action. Incremented/
+    # reset in orchestrator.py alongside last_goal_attempt_history;
+    # once it crosses a threshold the Brain is told, explicitly, that
+    # it must stop asking and either act with what it has or give one
+    # final, concrete answer - never open-ended clarification forever.
+    consecutive_clarification_count: int = 0
+
 
 class SessionManager:
     """
@@ -307,6 +317,9 @@ class SessionManager:
 
             "last_goal_attempt_history":
                 getattr(session, "last_goal_attempt_history", None),
+
+            "consecutive_clarification_count":
+                getattr(session, "consecutive_clarification_count", 0),
         }
 
     def _serialize_fact_collection(
@@ -639,6 +652,12 @@ class SessionManager:
                 data.get(
                     "last_goal_attempt_history"
                 )
+            )
+
+            session.consecutive_clarification_count = (
+                data.get(
+                    "consecutive_clarification_count"
+                ) or 0
             )
 
             # --------------------------------------------------

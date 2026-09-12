@@ -80,6 +80,10 @@ class _ActivityRow extends StatelessWidget {
       case ActivityKind.approval:
         return (icon: Icons.check_rounded, color: colors.success);
       case ActivityKind.execution:
+        final detail = event.detail?.toLowerCase() ?? '';
+        if (detail.contains('fail') || detail.contains('error') || detail.contains('unavail')) {
+          return (icon: Icons.error_outline_rounded, color: colors.danger);
+        }
         return (icon: Icons.check_circle_rounded, color: colors.success);
       case ActivityKind.cancellation:
         return (icon: Icons.block_rounded, color: colors.inkFaint);

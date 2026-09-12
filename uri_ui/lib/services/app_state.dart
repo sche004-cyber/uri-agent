@@ -17,11 +17,13 @@ import 'uri_client.dart'
         AdminUserEntry,
         Attachment,
         AttachmentException,
+        ActiveBrainInfo,
         AuthOutcome,
         CapabilityInfo,
         ConversationSummary,
         DeviceSession,
         HomeSummary,
+        MemoryContextSettings,
         MemoryWriteException,
         ModelStatus,
         ModeInfo,
@@ -45,15 +47,14 @@ enum BackendConnectionStatus { unknown, reachable, unreachable }
 /// about their preferences (persisted locally on-device via
 /// [PreferencesStore] — not a backend, nothing sensitive).
 class AppState extends ChangeNotifier {
-  AppState({
-    required UriClient client,
+  AppState(
+    this._client, {
     PreferencesStore? preferencesStore,
     ServerAddressStore? serverAddressStore,
     ThemeStore? themeStore,
     SessionStore? sessionStore,
     UserPreferences? initialPreferences,
-  }) : _client = client,
-       _preferencesStore = preferencesStore ?? PreferencesStore(),
+  }) : _preferencesStore = preferencesStore ?? PreferencesStore(),
        _serverAddressStore = serverAddressStore ?? ServerAddressStore(),
        _themeStore = themeStore ?? ThemeStore(),
        _sessionStore = sessionStore ?? SessionStore(),
@@ -122,7 +123,9 @@ class AppState extends ChangeNotifier {
   /// is simply not persisted — nothing is invented.
   Future<void> _persistSession(String username) async {
     final token = _client.authToken;
-    if (token != null) await _sessionStore.save(token: token, username: username);
+    if (token != null) {
+      await _sessionStore.save(token: token, username: username);
+    }
   }
 
   /// M22.9 (§0.3): restores a token persisted by a previous launch
@@ -244,7 +247,9 @@ class AppState extends ChangeNotifier {
   /// been pressed. This never applies or persists that address itself;
   /// call [setBaseUrl] separately for that, exactly as before.
   Future<bool> checkConnection({String? addressOverride}) async {
-    final result = await _client.checkConnection(addressOverride: addressOverride);
+    final result = await _client.checkConnection(
+      addressOverride: addressOverride,
+    );
     connectionStatus = result.reachable
         ? BackendConnectionStatus.reachable
         : BackendConnectionStatus.unreachable;
@@ -380,6 +385,20 @@ class AppState extends ChangeNotifier {
   bool hasLoadedMemory = false;
   bool isSavingMemory = false;
   String? memoryError;
+  MemoryContextSettings? memoryContextSettings;
+
+  Future<void> loadMemoryContextSettings() async {
+    memoryContextSettings = await _client.getMemoryContextSettings();
+    notifyListeners();
+  }
+
+  Future<bool> saveMemoryContextSettings(Map<String, dynamic> values) async {
+    final updated = await _client.updateMemoryContextSettings(values);
+    if (updated == null) return false;
+    memoryContextSettings = updated;
+    notifyListeners();
+    return true;
+  }
 
   Future<void> loadMemory() async {
     memories = await _client.listMemory();
@@ -455,7 +474,9 @@ class AppState extends ChangeNotifier {
   Future<void> deleteMemory(String memoryId) async {
     final removed = await _client.deleteMemory(memoryId);
     if (removed) {
-      memories = memories.where((m) => m.memoryId != memoryId).toList(growable: false);
+      memories = memories
+          .where((m) => m.memoryId != memoryId)
+          .toList(growable: false);
       notifyListeners();
     }
   }
@@ -527,8 +548,7 @@ class AppState extends ChangeNotifier {
   Future<ProviderKeyResult?> submitProviderKey(
     String providerId,
     String apiKey,
-  ) =>
-      _client.submitProviderKey(providerId, apiKey);
+  ) => _client.submitProviderKey(providerId, apiKey);
 
   Future<bool> updateProviderConfig(
     String providerId, {
@@ -537,6 +557,74 @@ class AppState extends ChangeNotifier {
   }) =>
       _client.updateProviderConfig(providerId, baseUrl: baseUrl, model: model);
 
+  ActiveBrainInfo? activeBrain;
+  ProviderEntry? activeBrainProvider;
+  bool brainSetupChecked = false;
+  bool needsBrainSetup = false;
+
+  Future<void> refreshBrainSetupState() async {
+    if (!isAuthenticated) {
+      brainSetupChecked = false;
+      needsBrainSetup = false;
+      return;
+    }
+    final providers = await _client.listProviders();
+    final selected = await _client.getActiveBrain();
+    final hasConfiguredProvider = providers.any(
+      (provider) => provider.configured,
+    );
+    needsBrainSetup =
+        !hasConfiguredProvider && (selected == null || !selected.isConfigured);
+    brainSetupChecked = true;
+    notifyListeners();
+  }
+
+  Future<void> loadActiveBrain() async {
+    final results = await Future.wait<dynamic>([
+      _client.getActiveBrain(),
+      _client.listProviders(),
+    ]);
+    activeBrain = results[0] as ActiveBrainInfo?;
+    final providers = results[1] as List<ProviderEntry>;
+    activeBrainProvider = null;
+    for (final provider in providers) {
+      if (provider.providerId == activeBrain?.providerId) {
+        activeBrainProvider = provider;
+        break;
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<bool> setActiveBrain(String providerId, {String? model}) async {
+    final accepted = await _client.setActiveBrain(providerId, model: model);
+    if (accepted) {
+      await Future.wait([listProviders(), loadActiveBrain()]);
+      needsBrainSetup = false;
+      brainSetupChecked = true;
+      notifyListeners();
+    }
+    return accepted;
+  }
+
+  /// Returns null on success, or the real error message on failure -
+  /// see UriClient.saveGoogleCredentials.
+  Future<String?> saveGoogleCredentials({
+    String? rawJson,
+    String? clientId,
+    String? clientSecret,
+  }) => _client.saveGoogleCredentials(
+    rawJson: rawJson,
+    clientId: clientId,
+    clientSecret: clientSecret,
+  );
+
+  String? targetSettingsCategory;
+
+  void openSettingsCategory(String category) {
+    targetSettingsCategory = category;
+    notifyListeners();
+  }
 
   Future<bool> setExperienceTier(String tier) async {
     final accepted = await _client.setExperienceTier(tier);
@@ -561,7 +649,8 @@ class AppState extends ChangeNotifier {
     return accepted;
   }
 
-  Future<UsageLimitStatus?> getUsageLimitStatus() => _client.getUsageLimitStatus();
+  Future<UsageLimitStatus?> getUsageLimitStatus() =>
+      _client.getUsageLimitStatus();
 
   List<DeviceSession> devices = <DeviceSession>[];
   bool hasLoadedDevices = false;
@@ -621,10 +710,24 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Starts a genuinely new conversation: a fresh session id (so it
+  /// becomes its own new entry in History rather than continuing
+  /// whichever session this client happened to be on), with the live
+  /// conversation view cleared. Does not touch History itself - the
+  /// old session, if it has any turns, is still there to resume later.
+  void startNewChat() {
+    _client.startNewSession();
+    conversation.clear();
+    attachments = <Attachment>[];
+    notifyListeners();
+  }
+
   Future<void> deleteHistory(String sessionId) async {
     final deleted = await _client.deleteHistory(sessionId);
     if (deleted) {
-      history = history.where((h) => h.sessionId != sessionId).toList(growable: false);
+      history = history
+          .where((h) => h.sessionId != sessionId)
+          .toList(growable: false);
       notifyListeners();
     }
   }
@@ -647,7 +750,9 @@ class AppState extends ChangeNotifier {
   Future<void> rejectMemory(String memoryId) async {
     final rejected = await _client.rejectMemory(memoryId);
     if (rejected) {
-      memories = memories.where((m) => m.memoryId != memoryId).toList(growable: false);
+      memories = memories
+          .where((m) => m.memoryId != memoryId)
+          .toList(growable: false);
       notifyListeners();
     }
   }

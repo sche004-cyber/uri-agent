@@ -201,6 +201,20 @@ class ResponseDraftingError(Exception):
     template - never propagate it as a request failure."""
 
 
+def mark_narrative_unavailable(
+    response: dict, error: Exception, principal: Optional[object]
+) -> None:
+    """Attach fixed diagnostic metadata without synthesising a reply."""
+    message = str(error).lower()
+    if "api key" in message or "no principal" in message:
+        reason = "no_brain_configured"
+    elif principal is not None and getattr(principal, "user_id", None):
+        reason = "drafting_provider_unreachable"
+    else:
+        reason = "no_brain_configured"
+    response["narrative_unavailable_reason"] = reason
+
+
 @dataclass(frozen=True)
 class DraftRequest:
     user_text: str

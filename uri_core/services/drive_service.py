@@ -19,7 +19,17 @@ class DriveService:
 
     def __init__(self):
         self.project_root = Path(__file__).resolve().parents[2]
-        self.token_path = self.project_root / "token.json"
+
+        # 2026-09-12 (User directive): use the same resolved credentials
+        # root as connection_status.py/gmail_service.py (which already
+        # honors URI_GOOGLE_CREDENTIALS_DIR) - previously derived
+        # independently here, so a User-configured override, or a
+        # consistency check against gmail_service.py's own token, would
+        # silently diverge. evidence_dir is unrelated to credentials
+        # location and stays under the real project root.
+        from uri_core.core.connection_status import _repo_root
+
+        self.token_path = Path(_repo_root()) / "token.json"
         self.evidence_dir = self.project_root / "uri_workspace" / "evidence"
         self.service = None
 

@@ -29,19 +29,26 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('first launch shows onboarding, not the main shell', (tester) async {
+  testWidgets('first launch shows onboarding, not the main shell', (
+    tester,
+  ) async {
     useDesktopViewport(tester);
-    final appState = AppState(client: MockUriClient());
+    final appState = AppState(MockUriClient());
     await tester.pumpWidget(UriApp(appState: appState));
     await tester.pumpAndSettle();
 
-    expect(find.text('What kind of work do you want help with?'), findsOneWidget);
+    expect(
+      find.text('What kind of work do you want help with?'),
+      findsOneWidget,
+    );
     expect(find.text('Good to see you.'), findsNothing);
   });
 
-  testWidgets('completing onboarding arrives at Home with shell navigation', (tester) async {
+  testWidgets('completing onboarding arrives at Home with shell navigation', (
+    tester,
+  ) async {
     useDesktopViewport(tester);
-    final appState = AppState(client: MockUriClient());
+    final appState = AppState(MockUriClient());
     await tester.pumpWidget(UriApp(appState: appState));
     await tester.pumpAndSettle();
 

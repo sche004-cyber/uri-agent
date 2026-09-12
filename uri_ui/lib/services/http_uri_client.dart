@@ -27,13 +27,23 @@ String? _bestTextualField(Map<dynamic, dynamic> data) {
   const minimumContentLength = 20;
   String? best;
 
-  for (final value in data.values) {
+  void consider(dynamic value) {
     if (value is String && value.length >= minimumContentLength) {
-      if (best == null || value.length > best.length) {
+      if (best == null || value.length > best!.length) {
         best = value;
+      }
+    } else if (value is Map) {
+      for (final nested in value.values) {
+        consider(nested);
+      }
+    } else if (value is Iterable) {
+      for (final nested in value) {
+        consider(nested);
       }
     }
   }
+
+  consider(data);
 
   return best;
 }
@@ -57,11 +67,10 @@ String? _bestTextualField(Map<dynamic, dynamic> data) {
 class HttpUriClient implements UriClient {
   HttpUriClient({
     this.baseUrl = 'http://localhost:8000',
-    String? deviceId,
+    this._deviceId,
     String? sessionId,
     http.Client? httpClient,
-  }) : _deviceId = deviceId,
-       _sessionId = sessionId ?? _generateSessionId(),
+  }) : _sessionId = sessionId ?? _generateSessionId(),
        _http = httpClient ?? http.Client();
 
   /// Prototype 2 (multi-client + runtime awareness): mutable, not
@@ -122,20 +131,28 @@ class HttpUriClient implements UriClient {
   void setBaseUrl(String baseUrl) => this.baseUrl = baseUrl;
 
   @override
-  Future<ConnectionCheckResult> checkConnection({String? addressOverride}) async {
+  Future<ConnectionCheckResult> checkConnection({
+    String? addressOverride,
+  }) async {
     final target = addressOverride ?? baseUrl;
 
     final Uri uri;
     try {
       uri = Uri.parse('$target/health');
     } catch (error) {
-      return ConnectionCheckResult.unreachable('Invalid server address: $error');
+      return ConnectionCheckResult.unreachable(
+        'Invalid server address: $error',
+      );
     }
 
     try {
       final response = await _http.get(uri).timeout(const Duration(seconds: 8));
-      if (response.statusCode == 200) return const ConnectionCheckResult.reachable();
-      return ConnectionCheckResult.unreachable('URI backend returned HTTP ${response.statusCode}.');
+      if (response.statusCode == 200) {
+        return const ConnectionCheckResult.reachable();
+      }
+      return ConnectionCheckResult.unreachable(
+        'URI backend returned HTTP ${response.statusCode}.',
+      );
     } catch (error) {
       // Never swallowed to a bare false — a cleartext-traffic block, a
       // wrong/unreachable host, a timeout, and a refused connection all
@@ -177,7 +194,8 @@ class HttpUriClient implements UriClient {
     if (response.statusCode != 200 || body == null || body['token'] == null) {
       final detail = body?['detail']?.toString();
       return AuthOutcome.failure(
-        detail ?? 'The URI backend rejected this request (HTTP ${response.statusCode}).',
+        detail ??
+            'The URI backend rejected this request (HTTP ${response.statusCode}).',
       );
     }
 
@@ -187,12 +205,18 @@ class HttpUriClient implements UriClient {
   }
 
   @override
-  Future<AuthOutcome> signup(String username, String password) =>
-      _authenticate(path: '/auth/signup', username: username, password: password);
+  Future<AuthOutcome> signup(String username, String password) => _authenticate(
+    path: '/auth/signup',
+    username: username,
+    password: password,
+  );
 
   @override
-  Future<AuthOutcome> login(String username, String password) =>
-      _authenticate(path: '/auth/login', username: username, password: password);
+  Future<AuthOutcome> login(String username, String password) => _authenticate(
+    path: '/auth/login',
+    username: username,
+    password: password,
+  );
 
   @override
   Future<void> logout() async {
@@ -318,11 +342,17 @@ class HttpUriClient implements UriClient {
         userText: text,
         timestamp: timestamp,
         stage: TurnStage.failed,
-        failureReason: 'URI backend returned a response that could not be parsed.',
+        failureReason:
+            'URI backend returned a response that could not be parsed.',
       );
     }
 
-    final turn = _turnFromResponse(id: id, text: text, timestamp: timestamp, body: body);
+    final turn = _turnFromResponse(
+      id: id,
+      text: text,
+      timestamp: timestamp,
+      body: body,
+    );
     _turns[turn.id] = turn;
     return turn;
   }
@@ -354,13 +384,14 @@ class HttpUriClient implements UriClient {
     required DateTime timestamp,
     required Map<String, dynamic> body,
   }) {
-    if (body['status'] != 'success') {
+    if (body['status'] == 'failed' || body['status'] == 'unavailable') {
       return UriTurn(
         id: id,
         userText: text,
         timestamp: timestamp,
         stage: TurnStage.failed,
-        failureReason: body['error'] as String? ?? 'URI could not process this request.',
+        failureReason:
+            body['error']?.toString() ?? 'URI could not process this request.',
       );
     }
 
@@ -381,16 +412,27 @@ class HttpUriClient implements UriClient {
             : 'URI processed this request.');
 
     if (execution != null && execution['status'] == 'awaiting_approval') {
-      final actionId = responseData is Map ? responseData['action_id'] as String? : null;
-      final toolName = responseData is Map ? responseData['tool_name'] as String? : null;
-      final riskValue = responseData is Map ? responseData['risk'] as String? : null;
-      final message = responseData is Map ? responseData['message'] as String? : null;
+      final actionId = responseData is Map
+          ? responseData['action_id'] as String?
+          : null;
+      final toolName = responseData is Map
+          ? responseData['tool_name'] as String?
+          : null;
+      final riskValue = responseData is Map
+          ? responseData['risk'] as String?
+          : null;
+      final message = responseData is Map
+          ? responseData['message'] as String?
+          : null;
       // The registry's own human-readable description (Issue 4) -
       // preferred over the generic approval-needed message, which
       // stays the fallback when the registry has none.
-      final registryDescription =
-          responseData is Map ? responseData['description'] as String? : null;
-      final humanTitle = toolName != null ? humanizeIdentifier(toolName) : 'Proposed action';
+      final registryDescription = responseData is Map
+          ? responseData['description'] as String?
+          : null;
+      final humanTitle = toolName != null
+          ? humanizeIdentifier(toolName)
+          : 'Proposed action';
 
       return UriTurn(
         // Use the backend's real action_id as the turn id when present
@@ -403,46 +445,47 @@ class HttpUriClient implements UriClient {
         understanding: understanding,
         proposedAction: ProposedAction(
           title: humanTitle,
-          description: (registryDescription != null && registryDescription.isNotEmpty)
+          description:
+              (registryDescription != null && registryDescription.isNotEmpty)
               ? registryDescription
-              : (message ?? 'This action needs your approval before URI can proceed.'),
+              : (message ??
+                    'This action needs your approval before URI can proceed.'),
           targetService: humanTitle,
           impact: impactFromRisk(riskValue),
         ),
       );
     }
 
-    if (execution != null && execution['status'] == 'failed') {
-      final reason = execution['error'] ?? execution['reason'];
+    if (execution != null &&
+        const {
+          'failed',
+          'error',
+          'unavailable',
+          'input_required',
+          'not_implemented',
+        }.contains(execution['status'])) {
+      final reason =
+          execution['error'] ??
+          execution['reason'] ??
+          (responseData is Map ? responseData['message'] : null) ??
+          'Execution failed.';
       return UriTurn(
         id: id,
         userText: text,
         timestamp: timestamp,
         stage: TurnStage.failed,
         understanding: understanding,
-        failureReason: reason?.toString() ?? 'Execution failed.',
+        failureReason: reason.toString(),
       );
     }
 
-    if (execution != null && execution['status'] == 'error') {
-      final message = responseData is Map ? responseData['message'] : null;
-      return UriTurn(
-        id: id,
-        userText: text,
-        timestamp: timestamp,
-        stage: TurnStage.failed,
-        understanding: understanding,
-        failureReason: message?.toString() ?? 'URI could not complete this action.',
-      );
-    }
-
+    final unavailableReason = body['narrative_unavailable_reason']?.toString();
     final String summary;
     if (narrative != null) {
       summary = narrative;
     } else if (responseData is Map && responseData['message'] != null) {
       summary = responseData['message'].toString();
-    } else if (responseData is Map &&
-        _bestTextualField(responseData) != null) {
+    } else if (responseData is Map && _bestTextualField(responseData) != null) {
       // M15 correction: the Brain's narrative wasn't available this
       // time (e.g. a transient drafting failure), but the tool itself
       // already produced real, readable content under some other key
@@ -451,6 +494,8 @@ class HttpUriClient implements UriClient {
       // discards a real result. This is exactly the tool's own real
       // output, never anything this client invents.
       summary = _bestTextualField(responseData)!;
+    } else if (unavailableReason != null) {
+      summary = "URI's Brain isn't configured or is unreachable — set an Active Brain in Model Providers.";
     } else {
       // Deliberately never dumps the raw map as JSON - a generic,
       // honest confirmation is always better than an unreadable
@@ -477,8 +522,24 @@ class HttpUriClient implements UriClient {
             : null,
         sources: _sourcesFrom(responseData),
         generatedFile: _generatedFileFrom(responseData),
+        draftText: _draftTextFrom(responseData),
       ),
     );
+  }
+
+  /// The actual drafted document body, taken verbatim from the tool's
+  /// own result - draft_institutional_note/order's full "note_sheet",
+  /// or generate_document's own 500-character "preview" (the full file
+  /// itself is the real download; this is only ever a preview of it) -
+  /// never the narrative that only talks about the draft. Null unless
+  /// one of these keys carries real, non-empty text.
+  static String? _draftTextFrom(dynamic responseData) {
+    if (responseData is! Map) return null;
+    for (final key in const ['note_sheet', 'preview']) {
+      final value = responseData[key];
+      if (value is String && value.trim().isNotEmpty) return value;
+    }
+    return null;
   }
 
   /// M19: the real file a generation capability (generate_document,
@@ -540,7 +601,10 @@ class HttpUriClient implements UriClient {
     return sources;
   }
 
-  Future<UriTurn> _decide({required String actionId, required bool approved}) async {
+  Future<UriTurn> _decide({
+    required String actionId,
+    required bool approved,
+  }) async {
     final existing = _turns[actionId];
 
     http.Response response;
@@ -568,8 +632,12 @@ class HttpUriClient implements UriClient {
       body = null;
     }
 
-    if (response.statusCode != 200 || body == null || body['status'] == 'error') {
-      final reason = body?['message'] as String? ?? 'URI backend returned HTTP ${response.statusCode}.';
+    if (response.statusCode != 200 ||
+        body == null ||
+        body['status'] == 'error') {
+      final reason =
+          body?['message'] as String? ??
+          'URI backend returned HTTP ${response.statusCode}.';
       final failed = (existing ?? _placeholderTurn(actionId)).copyWith(
         stage: TurnStage.failed,
         failureReason: reason,
@@ -633,10 +701,12 @@ class HttpUriClient implements UriClient {
   );
 
   @override
-  Future<UriTurn> approve(String turnId) => _decide(actionId: turnId, approved: true);
+  Future<UriTurn> approve(String turnId) =>
+      _decide(actionId: turnId, approved: true);
 
   @override
-  Future<UriTurn> cancel(String turnId) => _decide(actionId: turnId, approved: false);
+  Future<UriTurn> cancel(String turnId) =>
+      _decide(actionId: turnId, approved: false);
 
   @override
   Future<List<TaskItem>> listTasks() async {
@@ -670,7 +740,9 @@ class HttpUriClient implements UriClient {
             description: raw['description'] as String? ?? '',
             risk: raw['risk'] as String? ?? 'unknown',
             sessionId: raw['session_id'] as String? ?? '',
-            createdAt: DateTime.tryParse(raw['created_at'] as String? ?? '') ?? DateTime.now(),
+            createdAt:
+                DateTime.tryParse(raw['created_at'] as String? ?? '') ??
+                DateTime.now(),
           ),
         )
         .toList();
@@ -734,7 +806,9 @@ class HttpUriClient implements UriClient {
   /// the user exactly what is required rather than a re-read of
   /// unchanged state with no explanation.
   @override
-  Future<ConnectionAuthorizeOutcome> authorizeConnection(String connectionId) async {
+  Future<ConnectionAuthorizeOutcome> authorizeConnection(
+    String connectionId,
+  ) async {
     final fallback = ServiceConnection(
       id: connectionId,
       name: connectionId,
@@ -771,7 +845,8 @@ class HttpUriClient implements UriClient {
     } catch (error) {
       return ConnectionAuthorizeOutcome(
         connection: fallback,
-        explanation: 'URI backend returned a response that could not be parsed.',
+        explanation:
+            'URI backend returned a response that could not be parsed.',
       );
     }
 
@@ -780,9 +855,15 @@ class HttpUriClient implements UriClient {
       (c) => c.id == connectionId,
       orElse: () => fallback,
     );
-    final explanation = body['detail'] as String? ?? connection.detail ?? 'No further detail was provided.';
+    final explanation =
+        body['detail'] as String? ??
+        connection.detail ??
+        'No further detail was provided.';
 
-    return ConnectionAuthorizeOutcome(connection: connection, explanation: explanation);
+    return ConnectionAuthorizeOutcome(
+      connection: connection,
+      explanation: explanation,
+    );
   }
 
   /// Shared with [listConnections] - both read the exact same
@@ -872,7 +953,7 @@ class HttpUriClient implements UriClient {
         id: item['id'] as String? ?? eventType,
         timestamp:
             DateTime.tryParse(item['timestamp'] as String? ?? '') ??
-                DateTime.now(),
+            DateTime.now(),
         kind: _activityKindFrom(eventType),
         summary: capability == null
             ? _humanizeEventType(eventType)
@@ -898,9 +979,7 @@ class HttpUriClient implements UriClient {
   static String _humanizeEventType(String raw) {
     final words = raw.split('_').where((w) => w.isNotEmpty).toList();
     if (words.isEmpty) return raw;
-    return words
-        .map((w) => w[0].toUpperCase() + w.substring(1))
-        .join(' ');
+    return words.map((w) => w[0].toUpperCase() + w.substring(1)).join(' ');
   }
 
   /// Every fact URI holds about the user, from GET /memory. An
@@ -959,8 +1038,8 @@ class HttpUriClient implements UriClient {
             body: jsonEncode({
               'category': category,
               'content': content,
-              if (confidence != null) 'confidence': confidence,
-              if (notes != null) 'notes': notes,
+              ...?(confidence == null ? null : {'confidence': confidence}),
+              ...?(notes == null ? null : {'notes': notes}),
             }),
           )
           .timeout(const Duration(seconds: 30));
@@ -1013,8 +1092,8 @@ class HttpUriClient implements UriClient {
             body: jsonEncode({
               'category': category,
               'content': content,
-              if (confidence != null) 'confidence': confidence,
-              if (notes != null) 'notes': notes,
+              ...?(confidence == null ? null : {'confidence': confidence}),
+              ...?(notes == null ? null : {'notes': notes}),
             }),
           )
           .timeout(const Duration(seconds: 30));
@@ -1045,13 +1124,20 @@ class HttpUriClient implements UriClient {
   }
 
   @override
+  void startNewSession() {
+    _sessionId = _generateSessionId();
+  }
+
+  @override
   Future<MemoryEntry?> confirmMemory(String memoryId, {String? content}) async {
     try {
       final response = await _http
           .post(
             Uri.parse('$baseUrl/memory/$memoryId/confirm'),
             headers: _jsonHeaders,
-            body: jsonEncode({if (content != null) 'content': content}),
+            body: jsonEncode({
+              ...?(content == null ? null : {'content': content}),
+            }),
           )
           .timeout(const Duration(seconds: 30));
       if (response.statusCode != 200) return null;
@@ -1065,7 +1151,10 @@ class HttpUriClient implements UriClient {
   Future<bool> rejectMemory(String memoryId) async {
     try {
       final response = await _http
-          .post(Uri.parse('$baseUrl/memory/$memoryId/reject'), headers: _jsonHeaders)
+          .post(
+            Uri.parse('$baseUrl/memory/$memoryId/reject'),
+            headers: _jsonHeaders,
+          )
           .timeout(const Duration(seconds: 30));
       if (response.statusCode != 200) return false;
       final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -1114,20 +1203,25 @@ class HttpUriClient implements UriClient {
         // A past turn is rendered read-only: a completed turn shows its
         // recorded response as the result; a failed turn shows it as the
         // failure detail. Never re-runs or re-proposes anything.
-        final failed = status != null &&
+        final failed =
+            status != null &&
             status != 'success' &&
             status != 'awaiting_approval';
         return UriTurn(
-          id: turn['turn_id'] as String? ??
+          id:
+              turn['turn_id'] as String? ??
               'history-${DateTime.now().microsecondsSinceEpoch}',
           userText: turn['user_text'] as String? ?? '',
-          timestamp: DateTime.tryParse(turn['timestamp'] as String? ?? '') ??
+          timestamp:
+              DateTime.tryParse(turn['timestamp'] as String? ?? '') ??
               DateTime.now(),
           stage: failed ? TurnStage.failed : TurnStage.completed,
           failureReason: failed ? responseText : null,
           result: failed
               ? null
-              : ActionResult(summary: responseText.isEmpty ? '—' : responseText),
+              : ActionResult(
+                  summary: responseText.isEmpty ? '—' : responseText,
+                ),
         );
       }).toList();
     } catch (_) {
@@ -1139,7 +1233,10 @@ class HttpUriClient implements UriClient {
   Future<bool> deleteHistory(String sessionId) async {
     try {
       final response = await _http
-          .delete(Uri.parse('$baseUrl/history/$sessionId'), headers: _jsonHeaders)
+          .delete(
+            Uri.parse('$baseUrl/history/$sessionId'),
+            headers: _jsonHeaders,
+          )
           .timeout(const Duration(seconds: 30));
       if (response.statusCode != 200) return false;
       final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -1192,14 +1289,18 @@ class HttpUriClient implements UriClient {
   @override
   Future<ModeInfo?> getModeInfo() async {
     try {
-      final response = await _http.get(Uri.parse('$baseUrl/modes'), headers: _jsonHeaders)
+      final response = await _http
+          .get(Uri.parse('$baseUrl/modes'), headers: _jsonHeaders)
           .timeout(const Duration(seconds: 30));
       if (response.statusCode != 200) return null;
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       final mode = body['mode'] as String?;
       final modes = body['valid_modes'];
       if (mode == null || modes is! List) return null;
-      return ModeInfo(mode: mode, validModes: modes.whereType<String>().toList());
+      return ModeInfo(
+        mode: mode,
+        validModes: modes.whereType<String>().toList(),
+      );
     } catch (_) {
       return null;
     }
@@ -1208,8 +1309,13 @@ class HttpUriClient implements UriClient {
   @override
   Future<bool> setMode(String mode) async {
     try {
-      final response = await _http.put(Uri.parse('$baseUrl/modes'), headers: _jsonHeaders,
-          body: jsonEncode({'mode': mode})).timeout(const Duration(seconds: 30));
+      final response = await _http
+          .put(
+            Uri.parse('$baseUrl/modes'),
+            headers: _jsonHeaders,
+            body: jsonEncode({'mode': mode}),
+          )
+          .timeout(const Duration(seconds: 30));
       return response.statusCode == 200;
     } catch (_) {
       return false;
@@ -1348,8 +1454,8 @@ class HttpUriClient implements UriClient {
               approvalRequirement:
                   item['approval_requirement'] as String? ?? 'none',
               risk: item['risk'] as String? ?? 'unknown',
-              limitations: (item['limitations'] as String?)?.trim().isEmpty ==
-                      false
+              limitations:
+                  (item['limitations'] as String?)?.trim().isEmpty == false
                   ? item['limitations'] as String
                   : null,
               gapReason: item['gap_reason'] as String?,
@@ -1402,10 +1508,7 @@ class HttpUriClient implements UriClient {
     required String filename,
     required List<int> bytes,
   }) async {
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/files'),
-    )
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/files'))
       ..fields['session_id'] = _sessionId
       ..files.add(
         http.MultipartFile.fromBytes('file', bytes, filename: filename),
@@ -1419,9 +1522,9 @@ class HttpUriClient implements UriClient {
     try {
       // _http.send (not request.send) so the configured/injected
       // client is used - request.send() would silently create its own.
-      final streamed = await _http.send(request).timeout(
-            const Duration(seconds: 60),
-          );
+      final streamed = await _http
+          .send(request)
+          .timeout(const Duration(seconds: 60));
       response = await http.Response.fromStream(streamed);
     } catch (_) {
       throw const AttachmentException(
@@ -1493,10 +1596,7 @@ class HttpUriClient implements UriClient {
   Future<bool> deleteAttachment(String fileId) async {
     try {
       final response = await _http
-          .delete(
-            Uri.parse('$baseUrl/files/$fileId'),
-            headers: _jsonHeaders,
-          )
+          .delete(Uri.parse('$baseUrl/files/$fileId'), headers: _jsonHeaders)
           .timeout(const Duration(seconds: 30));
       if (response.statusCode != 200) return false;
       final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -1556,10 +1656,7 @@ class HttpUriClient implements UriClient {
     http.Response response;
     try {
       response = await _http
-          .get(
-            Uri.parse('$baseUrl/admin/users'),
-            headers: _jsonHeaders,
-          )
+          .get(Uri.parse('$baseUrl/admin/users'), headers: _jsonHeaders)
           .timeout(const Duration(seconds: 30));
     } catch (_) {
       return const [];
@@ -1573,11 +1670,13 @@ class HttpUriClient implements UriClient {
       if (raw is! List) return const [];
       return raw
           .whereType<Map<String, dynamic>>()
-          .map((u) => AdminUserEntry(
-                userId: u['user_id'] as String? ?? '',
-                username: u['username'] as String? ?? '',
-                role: u['role'] as String? ?? 'USER',
-              ))
+          .map(
+            (u) => AdminUserEntry(
+              userId: u['user_id'] as String? ?? '',
+              username: u['username'] as String? ?? '',
+              role: u['role'] as String? ?? 'USER',
+            ),
+          )
           .toList();
     } catch (_) {
       return const [];
@@ -1617,8 +1716,9 @@ class HttpUriClient implements UriClient {
       return UserGrantsInfo(
         userId: userId,
         grants: (rawGrants is List) ? rawGrants.cast<String>() : const [],
-        registryCeiling:
-            (rawCeiling is List) ? rawCeiling.cast<String>() : const [],
+        registryCeiling: (rawCeiling is List)
+            ? rawCeiling.cast<String>()
+            : const [],
       );
     } catch (_) {
       return UserGrantsInfo(
@@ -1656,10 +1756,7 @@ class HttpUriClient implements UriClient {
     http.Response response;
     try {
       response = await _http
-          .get(
-            Uri.parse('$baseUrl/providers'),
-            headers: _jsonHeaders,
-          )
+          .get(Uri.parse('$baseUrl/providers'), headers: _jsonHeaders)
           .timeout(const Duration(seconds: 30));
     } catch (_) {
       return const [];
@@ -1691,10 +1788,7 @@ class HttpUriClient implements UriClient {
           .post(
             Uri.parse('$baseUrl/providers/keys'),
             headers: _jsonHeaders,
-            body: jsonEncode({
-              'provider_id': providerId,
-              'api_key': apiKey,
-            }),
+            body: jsonEncode({'provider_id': providerId, 'api_key': apiKey}),
           )
           .timeout(const Duration(seconds: 30));
     } catch (_) {
@@ -1735,5 +1829,111 @@ class HttpUriClient implements UriClient {
     }
 
     return response.statusCode == 200;
+  }
+
+  @override
+  Future<ActiveBrainInfo?> getActiveBrain() async {
+    try {
+      final response = await _http
+          .get(
+            Uri.parse('$baseUrl/providers/active-brain'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      return ActiveBrainInfo.fromJson(
+        jsonDecode(response.body) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> setActiveBrain(String providerId, {String? model}) async {
+    try {
+      final response = await _http
+          .put(
+            Uri.parse('$baseUrl/providers/active-brain'),
+            headers: _jsonHeaders,
+            body: jsonEncode({
+              'provider_id': providerId,
+              ...?(model == null ? null : {'model': model}),
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<String?> saveGoogleCredentials({
+    String? rawJson,
+    String? clientId,
+    String? clientSecret,
+  }) async {
+    try {
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/connections/credentials'),
+            headers: _jsonHeaders,
+            body: jsonEncode({
+              ...?(rawJson == null ? null : {'raw_json': rawJson}),
+              ...?(clientId == null ? null : {'client_id': clientId}),
+              ...?(clientSecret == null
+                  ? null
+                  : {'client_secret': clientSecret}),
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode == 200) return null;
+      try {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        return body['detail']?.toString() ??
+            'Save failed (HTTP ${response.statusCode}).';
+      } catch (_) {
+        return 'Save failed (HTTP ${response.statusCode}).';
+      }
+    } catch (e) {
+      return 'Could not reach the URI backend: $e';
+    }
+  }
+
+  @override
+  Future<MemoryContextSettings?> getMemoryContextSettings() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/memory/settings'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      return MemoryContextSettings.fromJson(
+        jsonDecode(response.body) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<MemoryContextSettings?> updateMemoryContextSettings(
+    Map<String, dynamic> settings,
+  ) async {
+    try {
+      final response = await _http
+          .put(
+            Uri.parse('$baseUrl/memory/settings'),
+            headers: _jsonHeaders,
+            body: jsonEncode(settings),
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      return MemoryContextSettings.fromJson(
+        jsonDecode(response.body) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 }

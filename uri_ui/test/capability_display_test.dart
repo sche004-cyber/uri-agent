@@ -25,11 +25,22 @@ void main() {
   });
 
   group('impactFromRisk', () {
-    test('never returns routine - approval-gated proposals never look routine', () {
-      for (final risk in ['controlled', 'low', 'variable', 'high', 'unknown', null, 'garbage']) {
-        expect(impactFromRisk(risk), isNot(ActionImpact.routine));
-      }
-    });
+    test(
+      'never returns routine - approval-gated proposals never look routine',
+      () {
+        for (final risk in [
+          'controlled',
+          'low',
+          'variable',
+          'high',
+          'unknown',
+          null,
+          'garbage',
+        ]) {
+          expect(impactFromRisk(risk), isNot(ActionImpact.routine));
+        }
+      },
+    );
 
     test('controlled and low map to notable', () {
       expect(impactFromRisk('controlled'), ActionImpact.notable);

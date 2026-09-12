@@ -42,16 +42,19 @@ void main() {
       expect(second, first);
     });
 
-    test('a second, independent store instance sees the same persisted id', () async {
-      // Simulates the app relaunching - a fresh DeviceIdentityStore
-      // object reading from the same underlying shared_preferences
-      // backing store must recover the same device_id, not generate a
-      // new one (device_id must be durable across launches).
-      final first = await DeviceIdentityStore().loadOrCreate();
-      final second = await DeviceIdentityStore().loadOrCreate();
+    test(
+      'a second, independent store instance sees the same persisted id',
+      () async {
+        // Simulates the app relaunching - a fresh DeviceIdentityStore
+        // object reading from the same underlying shared_preferences
+        // backing store must recover the same device_id, not generate a
+        // new one (device_id must be durable across launches).
+        final first = await DeviceIdentityStore().loadOrCreate();
+        final second = await DeviceIdentityStore().loadOrCreate();
 
-      expect(second, first);
-    });
+        expect(second, first);
+      },
+    );
   });
 
   group('HttpUriClient — configurable backend address', () {
@@ -75,19 +78,24 @@ void main() {
       expect(requestedUris.last.toString(), 'http://192.168.1.23:8000/health');
     });
 
-    test('checkConnection reports reachable with no detail for a healthy backend', () async {
-      final client = HttpUriClient(
-        httpClient: MockClient((request) async => _json({'status': 'ok'})),
-      );
+    test(
+      'checkConnection reports reachable with no detail for a healthy backend',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async => _json({'status': 'ok'})),
+        );
 
-      final result = await client.checkConnection();
-      expect(result.reachable, isTrue);
-      expect(result.detail, isNull);
-    });
+        final result = await client.checkConnection();
+        expect(result.reachable, isTrue);
+        expect(result.detail, isNull);
+      },
+    );
 
     test('checkConnection surfaces the underlying exception message rather than swallowing it', () async {
       final client = HttpUriClient(
-        httpClient: MockClient((request) async => throw Exception('Connection refused')),
+        httpClient: MockClient(
+          (request) async => throw Exception('Connection refused'),
+        ),
       );
 
       final result = await client.checkConnection();
@@ -95,15 +103,20 @@ void main() {
       expect(result.detail, contains('Connection refused'));
     });
 
-    test('checkConnection reports the HTTP status for a non-200 response', () async {
-      final client = HttpUriClient(
-        httpClient: MockClient((request) async => http.Response('error', 500)),
-      );
+    test(
+      'checkConnection reports the HTTP status for a non-200 response',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient(
+            (request) async => http.Response('error', 500),
+          ),
+        );
 
-      final result = await client.checkConnection();
-      expect(result.reachable, isFalse);
-      expect(result.detail, contains('500'));
-    });
+        final result = await client.checkConnection();
+        expect(result.reachable, isFalse);
+        expect(result.detail, contains('500'));
+      },
+    );
 
     test('a disconnect followed by a reconnect recovers cleanly on the same client', () async {
       var shouldFail = true;
@@ -134,10 +147,15 @@ void main() {
         }),
       );
 
-      final result = await client.checkConnection(addressOverride: 'http://192.168.1.44:8000');
+      final result = await client.checkConnection(
+        addressOverride: 'http://192.168.1.44:8000',
+      );
 
       expect(result.reachable, isTrue);
-      expect(requestedUris.single.toString(), 'http://192.168.1.44:8000/health');
+      expect(
+        requestedUris.single.toString(),
+        'http://192.168.1.44:8000/health',
+      );
       // The override is a one-off test - it must never silently repoint
       // the client the way setBaseUrl does.
       expect(client.baseUrl, 'http://localhost:8000');

@@ -60,15 +60,16 @@ DEFERRED_PUBLIC_ROUTES: Tuple[Tuple[str, str], ...] = (
     ("GET", "/connections"),
 )
 
-# The five previously-unauthenticated mutating endpoints closed by this
-# milestone (S1) - now ADMIN-only, with no legacy-ambient fallback, since
-# none of the five ever had one to preserve.
+# The previously-unauthenticated mutating endpoints closed by M22.3 (S1)
+# - now ADMIN-only, with no legacy-ambient fallback, since none of these
+# ever had one to preserve. The two Google connection-management routes
+# were moved OUT of this list on 2026-09-12 (User directive): Google
+# Workspace connect/disconnect is now open to any authenticated user,
+# not ADMIN-only - see server.py's _resolve_authenticated_principal.
 ADMIN_GATED_ROUTES: Tuple[Tuple[str, str], ...] = (
     ("POST", "/skills/{skill_id}/enable"),
     ("POST", "/skills/{skill_id}/disable"),
     ("DELETE", "/skills/{skill_id}"),
-    ("POST", "/connections/{connection_id}/authorize"),
-    ("DELETE", "/connections/{connection_id}"),
     ("GET", "/admin/users"),
     ("GET", "/admin/users/{user_id}/grants"),
     ("PUT", "/admin/users/{user_id}/grants"),
@@ -92,6 +93,8 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("GET", "/profile"): USER,
     ("POST", "/profile"): USER,
     ("GET", "/memory"): USER,
+    ("GET", "/memory/settings"): USER,
+    ("PUT", "/memory/settings"): USER,
     ("POST", "/memory"): USER,
     ("PUT", "/memory/{memory_id}"): USER,
     ("DELETE", "/memory/{memory_id}"): USER,
@@ -114,6 +117,8 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("POST", "/providers/keys"): USER,
     ("GET", "/providers"): USER,
     ("PUT", "/providers/config"): USER,
+    ("GET", "/providers/active-brain"): USER,
+    ("PUT", "/providers/active-brain"): USER,
     ("GET", "/usage"): USER,
     ("GET", "/usage/limits"): USER,
     ("PUT", "/usage/limits"): USER,
@@ -129,6 +134,12 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("GET", "/graph/path"): USER,
     ("GET", "/graph/explain"): USER,
     ("GET", "/graph/impact/{entity_id}"): USER,
+    # Google Workspace connection management - open to any authenticated
+    # user as of 2026-09-12 (User directive); previously ADMIN-only
+    # (see ADMIN_GATED_ROUTES's comment above for the full history).
+    ("POST", "/connections/{connection_id}/authorize"): USER,
+    ("DELETE", "/connections/{connection_id}"): USER,
+    ("POST", "/connections/credentials"): USER,
 }
 
 for _route in DEFERRED_PUBLIC_ROUTES:
@@ -142,6 +153,6 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 57 application routes (51 + 6 new M23 /graph/* routes) + 4 FastAPI
+# 62 application routes + 4 FastAPI routes.
 # auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 61
+EXPECTED_ROUTE_COUNT = 66

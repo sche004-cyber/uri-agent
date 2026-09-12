@@ -4,7 +4,6 @@ import '../../services/app_state.dart';
 import '../../services/app_state_scope.dart';
 import '../../services/uri_client.dart' show ProviderEntry, UsageLimitStatus;
 import '../../theme/uri_theme.dart';
-import '../../widgets/screen_header.dart';
 import '../../widgets/status_pill.dart';
 
 /// M22.5: Model provider catalogue and API key management screen.
@@ -25,6 +24,7 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
   String? _successMessage;
   UsageLimitStatus? _usageLimits;
   AppState? _state;
+  String _section = 'Accounts / API Keys';
 
   @override
   void didChangeDependencies() {
@@ -110,145 +110,218 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
     final basic = (_state?.accountInfo?.experienceTier ?? 'BASIC') == 'BASIC';
-
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: ScreenHeader(
-              title: 'Model Providers',
-              subtitle: basic
-                  ? 'Connect a provider and safely save its access key.'
-                  : 'Configure supported LLM providers, encrypted API keys, and endpoint overrides. Submitted keys are encrypted at rest with Fernet and never redisplayed.',
+    final visible = switch (_section) {
+      'Local Models' =>
+        _providers.where((provider) => provider.adapter == 'ollama').toList(),
+      'Custom Endpoints' =>
+        _providers.where((provider) => provider.adapter != 'ollama').toList(),
+      _ => _providers,
+    };
+    return Material(
+      color: Colors.transparent,
+      child: ListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          Text(
+            'Model Providers',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: UriSpace.xs),
+          Text(
+            basic ? 'Connect a provider and safely save its access key.' : 'Encrypted keys, local models, endpoints, and URI\'s primary Brain.',
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: colors.inkFaint),
+          ),
+          const SizedBox(height: UriSpace.md),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(UriSpace.md),
+              child: Row(
+                children: [
+                  Icon(Icons.psychology_outlined, color: colors.accentInk),
+                  const SizedBox(width: UriSpace.sm),
+                  Expanded(
+                    child: Text(
+                      _providers
+                              .where((provider) => provider.activeBrain)
+                              .map(
+                                (provider) =>
+                                    '${provider.displayName} · ${provider.activeModel ?? ''}',
+                              )
+                              .firstOrNull ??
+                          'No Active Brain selected',
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          if (_usageLimits?.ceilingReached == true || _usageLimits?.warning == true)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: UriSpace.lg, vertical: UriSpace.sm),
-                child: Material(
-                  color: _usageLimits!.ceilingReached ? colors.dangerSoft : colors.warningSoft,
-                  borderRadius: BorderRadius.circular(UriRadius.md),
-                  child: Padding(
-                    padding: const EdgeInsets.all(UriSpace.md),
-                    child: Text(_usageLimits!.ceilingReached
-                        ? 'Your monthly usage limit has been reached. Add or change a limit in Usage settings to continue.'
-                        : 'You are close to your monthly usage limit.'),
-                  ),
+          const SizedBox(height: UriSpace.md),
+          Wrap(
+            spacing: UriSpace.sm,
+            runSpacing: UriSpace.xs,
+            children: [
+              for (final section in const [
+                'Accounts / API Keys',
+                'Local Models',
+                'Custom Endpoints',
+              ])
+                ChoiceChip(
+                  label: Text(section),
+                  selected: _section == section,
+                  onSelected: (_) => setState(() => _section = section),
+                ),
+            ],
+          ),
+          if (_usageLimits?.ceilingReached == true ||
+              _usageLimits?.warning == true)
+            Padding(
+              padding: const EdgeInsets.only(top: UriSpace.md),
+              child: Text(
+                _usageLimits!.ceilingReached
+                    ? 'Your monthly usage limit has been reached.'
+                    : 'You are close to your monthly usage limit.',
+                style: TextStyle(
+                  color: _usageLimits!.ceilingReached
+                      ? colors.danger
+                      : colors.warning,
                 ),
               ),
             ),
           if (_errorMessage != null)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: UriSpace.lg,
-                  vertical: UriSpace.sm,
-                ),
-                child: Material(
-                  color: colors.dangerSoft,
-                  borderRadius: BorderRadius.circular(UriRadius.md),
-                  child: Padding(
-                    padding: const EdgeInsets.all(UriSpace.md),
-                    child: Row(
-                      children: [
-                        Icon(Icons.error_outline, color: colors.danger),
-                        const SizedBox(width: UriSpace.sm),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: TextStyle(color: colors.danger),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+            Padding(
+              padding: const EdgeInsets.only(top: UriSpace.md),
+              child: Text(
+                _errorMessage!,
+                style: TextStyle(color: colors.danger),
               ),
             ),
           if (_successMessage != null)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: UriSpace.lg,
-                  vertical: UriSpace.sm,
-                ),
-                child: Material(
-                  color: colors.successSoft,
-                  borderRadius: BorderRadius.circular(UriRadius.md),
-                  child: Padding(
-                    padding: const EdgeInsets.all(UriSpace.md),
-                    child: Row(
-                      children: [
-                        Icon(Icons.check_circle_outline, color: colors.success),
-                        const SizedBox(width: UriSpace.sm),
-                        Expanded(
-                          child: Text(
-                            _successMessage!,
-                            style: TextStyle(color: colors.success),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, size: 16),
-                          onPressed: () => setState(() => _successMessage = null),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+            Padding(
+              padding: const EdgeInsets.only(top: UriSpace.md),
+              child: Text(
+                _successMessage!,
+                style: TextStyle(color: colors.success),
               ),
             ),
+          const SizedBox(height: UriSpace.md),
           if (_loading)
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (_providers.isEmpty)
-            SliverFillRemaining(
-              child: Center(
-                child: Text(
-                  'No providers found in catalogue.',
-                  style: TextStyle(color: colors.inkFaint),
-                ),
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(UriSpace.xl),
+                child: CircularProgressIndicator(),
               ),
+            )
+          else if (visible.isEmpty)
+            Text(
+              'No providers in this section.',
+              style: TextStyle(color: colors.inkFaint),
             )
           else
-            SliverPadding(
-              padding: const EdgeInsets.all(UriSpace.lg),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final provider = _providers[index];
-                    return _ProviderCard(
-                      provider: provider,
-                      onConfigureKey: () => _showKeyDialog(provider),
-                      onEditConfig: () => _showConfigDialog(provider),
-                    );
-                  },
-                  childCount: _providers.length,
-                ),
-              ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: visible.length,
+              itemBuilder: (context, index) {
+                final provider = visible[index];
+                return _ProviderCard(
+                  provider: provider,
+                  onConfigureKey: () => _showKeyDialog(provider),
+                  onEditConfig: () => _showConfigDialog(provider),
+                  onSetActiveBrain: (model) =>
+                      _confirmActiveBrain(provider, model),
+                );
+              },
             ),
         ],
       ),
     );
   }
+
+  Future<void> _confirmActiveBrain(
+    ProviderEntry provider,
+    String? model,
+  ) async {
+    final selected = provider.models
+        .where((item) => item.modelId == model)
+        .firstOrNull;
+    final modelName = selected?.displayName ?? model ?? 'default model';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Change Active Brain?'),
+        content: Text(
+          'This will change the primary model URI uses for reasoning and planning to ${provider.displayName} ($modelName).',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    if (!mounted) return;
+    final state = _state ?? AppStateScope.of(context);
+    final success = await state.setActiveBrain(
+      provider.providerId,
+      model: model,
+    );
+    if (!mounted) return;
+    if (success) {
+      setState(
+        () => _successMessage =
+            '${provider.displayName} is now URI\'s Active Brain.',
+      );
+      await _loadProviders();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Active Brain updated.')));
+    } else {
+      setState(() => _errorMessage = 'URI could not change the Active Brain.');
+    }
+  }
 }
 
-class _ProviderCard extends StatelessWidget {
+class _ProviderCard extends StatefulWidget {
   const _ProviderCard({
     required this.provider,
     required this.onConfigureKey,
     required this.onEditConfig,
+    required this.onSetActiveBrain,
   });
 
   final ProviderEntry provider;
   final VoidCallback onConfigureKey;
   final VoidCallback onEditConfig;
+  final ValueChanged<String?> onSetActiveBrain;
+
+  @override
+  State<_ProviderCard> createState() => _ProviderCardState();
+}
+
+class _ProviderCardState extends State<_ProviderCard> {
+  String? _selectedModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedModel =
+        widget.provider.activeModel ??
+        widget.provider.models.firstOrNull?.modelId;
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
 
+    final provider = widget.provider;
     final statusPill = provider.configured
         ? StatusPill(
             label: provider.lastFour != null
@@ -282,28 +355,53 @@ class _ProviderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Wrap(
+              spacing: UriSpace.sm,
+              runSpacing: UriSpace.xs,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Expanded(
-                  child: Text(
-                    provider.displayName,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                Text(
+                  provider.displayName,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 statusPill,
-                const SizedBox(width: UriSpace.sm),
                 availabilityPill,
+                if (provider.activeBrain) ...[
+                  StatusPill(
+                    label: 'Active Brain',
+                    foreground: colors.accentInk,
+                    background: colors.accentSoft,
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: UriSpace.xs),
             Text(
               'Adapter: ${provider.adapter}  •  Endpoint: ${provider.baseUrl}',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
+              style: Theme.of(context).textTheme.bodySmall
                   ?.copyWith(color: colors.inkFaint),
             ),
             const SizedBox(height: UriSpace.md),
+            if (provider.models.isNotEmpty) ...[
+              DropdownButtonFormField<String>(
+                initialValue: _selectedModel,
+                decoration: const InputDecoration(
+                  labelText: 'Model',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  for (final model in provider.models)
+                    DropdownMenuItem(
+                      value: model.modelId,
+                      child: Text(model.displayName),
+                    ),
+                ],
+                onChanged: provider.activeBrain
+                    ? null
+                    : (value) => setState(() => _selectedModel = value),
+              ),
+              const SizedBox(height: UriSpace.md),
+            ],
             // Wrap, not Row: at narrower card widths (e.g. the BASIC-tier
             // layout, or a constrained settings content width) two
             // full-width icon buttons side by side can overflow a plain
@@ -317,14 +415,19 @@ class _ProviderCard extends StatelessWidget {
                 OutlinedButton.icon(
                   icon: const Icon(Icons.settings_outlined, size: 18),
                   label: const Text('Endpoint Config'),
-                  onPressed: onEditConfig,
+                  onPressed: widget.onEditConfig,
                 ),
                 FilledButton.icon(
                   icon: const Icon(Icons.key_outlined, size: 18),
-                  label: Text(
-                    provider.configured ? 'Update Key' : 'Add Key',
-                  ),
-                  onPressed: onConfigureKey,
+                  label: Text(provider.configured ? 'Update Key' : 'Add Key'),
+                  onPressed: widget.onConfigureKey,
+                ),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.psychology_outlined, size: 18),
+                  label: const Text('Set as Active Brain'),
+                  onPressed: provider.activeBrain
+                      ? null
+                      : () => widget.onSetActiveBrain(_selectedModel),
                 ),
               ],
             ),
@@ -412,9 +515,7 @@ class _KeyDialogState extends State<_KeyDialog> {
           children: [
             Text(
               'Provide an API key for ${widget.provider.displayName}. Keys are encrypted with PBKDF2 + Fernet at rest and are write-only.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
+              style: Theme.of(context).textTheme.bodySmall
                   ?.copyWith(color: colors.inkFaint),
             ),
             const SizedBox(height: UriSpace.md),
@@ -549,10 +650,7 @@ class _ConfigDialogState extends State<_ConfigDialog> {
             ),
             if (_dialogError != null) ...[
               const SizedBox(height: UriSpace.sm),
-              Text(
-                _dialogError!,
-                style: const TextStyle(color: Colors.red),
-              ),
+              Text(_dialogError!, style: const TextStyle(color: Colors.red)),
             ],
             if (_saving) ...[
               const SizedBox(height: UriSpace.md),

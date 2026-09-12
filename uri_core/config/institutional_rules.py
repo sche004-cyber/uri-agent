@@ -30,22 +30,26 @@ from typing import Any, Dict
 # JSON object with the same shape at INSTITUTIONAL_RULES_PATH (or by
 # passing an explicit dict to the drafting layer); any keys it omits
 # fall back to these defaults, so a partial override is safe.
+#
+# 2026-09-12 (User directive): this previously defaulted to one real
+# institution's actual name/offices/roles (National Institute of
+# Technology Sikkim), baked in from this project's own early
+# development/testing - meaning every fresh install silently assumed
+# that identity before the Brain had ever been told who the user
+# actually works for. Genuinely generic now: null/placeholder values
+# the Brain must either fill from real, already-established context
+# (the user's own confirmed profile/memory - see recall_memory,
+# remember_fact) or ask for outright, never assume from this file.
 DEFAULT_INSTITUTIONAL_RULES: Dict[str, Any] = {
-    "institution_name": "National Institute of Technology Sikkim",
-    "short_name": "NIT Sikkim",
-    "issuing_offices": [
-        "Office of the Registrar",
-        "Office of the Director",
-    ],
-    "signatory_roles": [
-        "Registrar",
-        "Dean (Administration)",
-    ],
+    "institution_name": None,
+    "short_name": None,
+    "issuing_offices": [],
+    "signatory_roles": [],
     # A *format*, not a frozen literal - {year} and {serial} are filled
     # by the Brain from real, current context (or left as an explicit
     # blank placeholder for a human to complete), never invented. The
     # old tool hardcoded a specific year and a literal "___" serial.
-    "reference_number_format": "NITS/{year}/Admin/{doc_kind}/{serial}",
+    "reference_number_format": "{institution_short_name}/{year}/Admin/{doc_kind}/{serial}",
     "language_register": (
         "formal Indian administrative English, concise and precise"
     ),

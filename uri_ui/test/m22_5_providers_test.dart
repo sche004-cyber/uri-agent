@@ -35,13 +35,11 @@ Future<AppState> _pumpProvidersScreen(
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  final appState = AppState(client: client ?? MockUriClient());
+  final appState = AppState(client ?? MockUriClient());
   await tester.pumpWidget(
     AppStateScope(
       state: appState,
-      child: const MaterialApp(
-        home: ProvidersScreen(),
-      ),
+      child: const MaterialApp(home: ProvidersScreen()),
     ),
   );
   await tester.pumpAndSettle();
@@ -53,8 +51,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('renders catalogue providers with display names and adapters',
-      (tester) async {
+  testWidgets('renders catalogue providers with display names and adapters', (
+    tester,
+  ) async {
     await _pumpProvidersScreen(tester);
 
     expect(find.text('Model Providers'), findsOneWidget);
@@ -64,8 +63,7 @@ void main() {
     expect(find.text('Anthropic'), findsOneWidget);
   });
 
-  testWidgets('key entry input is masked (obscureText: true)',
-      (tester) async {
+  testWidgets('key entry input is masked (obscureText: true)', (tester) async {
     await _pumpProvidersScreen(tester);
 
     // Find the first "Add Key" button and tap it
@@ -79,44 +77,49 @@ void main() {
     expect(textFieldFinder, findsOneWidget);
 
     final textField = tester.widget<TextField>(textFieldFinder);
-    expect(textField.obscureText, isTrue,
-        reason: 'API key input must always be masked.');
+    expect(
+      textField.obscureText,
+      isTrue,
+      reason: 'API key input must always be masked.',
+    );
   });
 
   testWidgets(
-      'submitting a key updates configured status with last-4 and never redisplays the raw key',
-      (tester) async {
-    await _pumpProvidersScreen(tester);
+    'submitting a key updates configured status with last-4 and never redisplays the raw key',
+    (tester) async {
+      await _pumpProvidersScreen(tester);
 
-    // Tap "Add Key" for OpenAI
-    await tester.tap(find.text('Add Key').first);
-    await tester.pumpAndSettle();
+      // Tap "Add Key" for OpenAI
+      await tester.tap(find.text('Add Key').first);
+      await tester.pumpAndSettle();
 
-    const rawKey = 'sk-test-super-secret-key-9876';
-    await tester.enterText(find.byType(TextField), rawKey);
-    await tester.pumpAndSettle();
+      const rawKey = 'sk-test-super-secret-key-9876';
+      await tester.enterText(find.byType(TextField), rawKey);
+      await tester.pumpAndSettle();
 
-    // Tap "Save Encrypted Key"
-    await tester.tap(find.text('Save Encrypted Key'));
-    await tester.pumpAndSettle();
+      // Tap "Save Encrypted Key"
+      await tester.tap(find.text('Save Encrypted Key'));
+      await tester.pumpAndSettle();
 
-    // Dialog should be dismissed
-    expect(find.byType(AlertDialog), findsNothing);
+      // Dialog should be dismissed
+      expect(find.byType(AlertDialog), findsNothing);
 
-    // Status pill should now show configured with last four digits
-    expect(find.textContaining('9876'), findsAtLeastNWidgets(1));
+      // Status pill should now show configured with last four digits
+      expect(find.textContaining('9876'), findsAtLeastNWidgets(1));
 
-    // The raw key must NEVER appear anywhere in the widget tree
-    expect(find.text(rawKey), findsNothing,
-        reason: 'Raw API key must never be displayed in the UI.');
-  });
+      // The raw key must NEVER appear anywhere in the widget tree
+      expect(
+        find.text(rawKey),
+        findsNothing,
+        reason: 'Raw API key must never be displayed in the UI.',
+      );
+    },
+  );
 
-  testWidgets('shows explicit error message when key submission fails',
-      (tester) async {
-    await _pumpProvidersScreen(
-      tester,
-      client: _FailingKeySubmitMockClient(),
-    );
+  testWidgets('shows explicit error message when key submission fails', (
+    tester,
+  ) async {
+    await _pumpProvidersScreen(tester, client: _FailingKeySubmitMockClient());
 
     await tester.tap(find.text('Add Key').first);
     await tester.pumpAndSettle();

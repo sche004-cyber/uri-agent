@@ -21,7 +21,10 @@ access, when the insecure override is used - no TLS, no reverse proxy,
 no authentication beyond this file's own login endpoints.
 """
 
+import json
 import os
+import tempfile
+import threading
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import List, Optional
@@ -33,6 +36,7 @@ from fastapi import (
     Form,
     Header,
     HTTPException,
+    Request,
     UploadFile,
 )
 from fastapi.middleware.cors import CORSMiddleware
@@ -65,7 +69,7 @@ from uri_core.core.experience_store import ExperienceStore
 from uri_core.core.skill_memory import SkillMemory
 from uri_core.skills.skill_installer import SkillInstaller
 from uri_core.core.identity import DeviceIdentityStore, UserIdentityStore
-from uri_core.config.model_roles import ROLE_REASONING, build_provider
+from uri_core.config.model_roles import ROLE_REASONING, build_provider, load_model_roles
 from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
 from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
 from uri_core.core.orchestrator import UriOrchestrator
@@ -90,6 +94,10 @@ from uri_core.core.user_memory import (
     MemoryEntry,
     MemoryStore,
     MemoryValidationError,
+)
+from uri_core.core.memory_settings import (
+    MemorySettingsStore,
+    MemorySettingsValidationError,
 )
 from uri_core.core.user_profile import (
     UserProfile,
@@ -174,6 +182,7 @@ _user_identity_store = UserIdentityStore()
 _device_identity_store = DeviceIdentityStore()
 _user_profile_store = UserProfileStore()
 _memory_store = MemoryStore()
+_memory_settings_store = MemorySettingsStore()
 
 # M23: graph context/evidence only - never authority (see
 # graph_store.py/graph_engine.py module docstrings). Legacy-ambient
@@ -266,6 +275,7 @@ class _UserContext:
 
     profile_store: UserProfileStore
     memory_store: MemoryStore
+    memory_settings_store: MemorySettingsStore
     growth_ledger_store: GrowthLedgerStore
     orchestrator: UriOrchestrator
     file_store: FileStore
@@ -308,17 +318,16 @@ def _build_user_context(user_id: str) -> _UserContext:
             user_id, "approvals.json", root=_USER_STATE_ROOT
         )
     )
+    memory_settings_store = MemorySettingsStore(
+        storage_path=user_scoped_path(
+            user_id, "memory_settings.json", root=_USER_STATE_ROOT
+        )
+    )
     account = _user_account_store.get_by_user_id(user_id)
     role = account.role if account is not None else None
-    principal = PrincipalContext(user_id=user_id, role=role, device_id=None)
-
-    approval_gate = ApprovalGate(
-        dispatcher=ToolDispatcher(),
-        capability_registry=_capability_registry,
-        approval_store=approval_store,
-        audit_trail=AuditTrail(),
-        capability_grants_store=_capability_grants_store,
-        principal=principal,
+    mode = account.mode if account is not None else DEFAULT_MODE
+    principal = PrincipalContext(
+        user_id=user_id, role=role, device_id=None, mode=mode
     )
 
     session_manager = SessionManager(
@@ -366,6 +375,23 @@ def _build_user_context(user_id: str) -> _UserContext:
         )
     )
 
+    # 2026-09-12 (User directive): passed as ApprovalGate(file_store=...)
+    # so both of its real dispatch points inject THIS user's own
+    # FileStore into a tool's constructor (see dispatcher.py) - not
+    # this user's own uploads directory, since a generated file was
+    # previously always saved to the ambient uri_workspace/uploads
+    # store instead and could never be found again via this same
+    # user's own GET /files/{file_id}/content lookup below.
+    approval_gate = ApprovalGate(
+        dispatcher=ToolDispatcher(),
+        capability_registry=_capability_registry,
+        approval_store=approval_store,
+        audit_trail=AuditTrail(),
+        capability_grants_store=_capability_grants_store,
+        principal=principal,
+        file_store=file_store,
+    )
+
     # M23: graph_store follows the exact same per-user-directory
     # discipline as file_store/experience_store/skill_memory above -
     # one user's structured graph never leaks into another's (see
@@ -399,6 +425,7 @@ def _build_user_context(user_id: str) -> _UserContext:
     return _UserContext(
         profile_store=profile_store,
         memory_store=memory_store,
+        memory_settings_store=memory_settings_store,
         growth_ledger_store=growth_ledger_store,
         orchestrator=orchestrator,
         file_store=file_store,
@@ -426,6 +453,7 @@ def _resolve_context(user_id: Optional[str]) -> _UserContext:
         return _UserContext(
             profile_store=_user_profile_store,
             memory_store=_memory_store,
+            memory_settings_store=_memory_settings_store,
             growth_ledger_store=_growth_ledger_store,
             orchestrator=_orchestrator,
             file_store=_file_store,
@@ -524,6 +552,26 @@ def _resolve_admin_principal(
         return require_admin(principal)
     except AuthorizationError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail)
+
+
+def _resolve_authenticated_principal(
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> PrincipalContext:
+    """Any signed-in user, regardless of role - 401 when there is no
+    login at all, never a 403 for a non-ADMIN role. Google Workspace
+    connect/disconnect (see POST /connections/credentials, POST
+    /connections/{id}/authorize, DELETE /connections/{id}) is
+    per-request User directive: open to every authenticated user, not
+    ADMIN-only - unlike the five endpoints that still require
+    _resolve_admin_principal (skills enable/disable/remove,
+    /admin/users*), which remain ADMIN-only and are unaffected by
+    this."""
+
+    if principal.user_id is None:
+        raise HTTPException(
+            status_code=401, detail="Sign in required for this action."
+        )
+    return principal
 
 
 def _record_growth_event_safely(
@@ -722,6 +770,22 @@ class LoginRequest(BaseModel):
 
 class UpdateGrantsRequest(BaseModel):
     grants: List[str]
+
+
+class MemorySettingsPayload(BaseModel):
+    persistent_memory: Optional[bool] = None
+    user_profile: Optional[bool] = None
+    memory_budget: Optional[StrictInt] = None
+    profile_budget: Optional[StrictInt] = None
+    memory_provider: Optional[str] = None
+    context_engine: Optional[str] = None
+    auto_compression: Optional[bool] = None
+    compression_threshold: Optional[StrictInt] = None
+    compression_target: Optional[StrictInt] = None
+    protected_recent_messages: Optional[StrictInt] = None
+
+    def supplied(self) -> dict:
+        return self.model_dump(exclude_none=True)
 
 
 def _memory_entry_to_dict(entry: MemoryEntry) -> dict:
@@ -940,6 +1004,7 @@ def update_mode(
     updated = _user_account_store.set_mode(principal.user_id, payload.mode)
     if updated is None:
         raise HTTPException(status_code=404, detail="Account not found.")
+    _user_contexts.pop(principal.user_id, None)
     return {"mode": updated.mode, "valid_modes": sorted(VALID_MODES)}
 
 
@@ -1076,7 +1141,10 @@ def ask(
     if user_id is not None:
         account = _user_account_store.get_by_user_id(user_id)
         role = account.role if account is not None else None
-        principal = PrincipalContext(user_id=user_id, role=role, device_id=None)
+        mode = account.mode if account is not None else DEFAULT_MODE
+        principal = PrincipalContext(
+            user_id=user_id, role=role, device_id=None, mode=mode
+        )
 
     result = context.orchestrator.process_user_input(
         session_id=payload.session_id,
@@ -1105,6 +1173,9 @@ def ask(
         "execution": result.get("execution"),
         "response": result.get("response"),
         "narrative": result.get("narrative"),
+        "narrative_unavailable_reason": result.get(
+            "narrative_unavailable_reason"
+        ),
     }
 
 
@@ -1865,6 +1936,136 @@ def _repo_root_for_credentials() -> str:
     return connection_status_module._repo_root()
 
 
+class GoogleCredentialsUploadRequest(BaseModel):
+    raw_json: Optional[str] = None
+    client_id: Optional[str] = None
+    client_secret: Optional[str] = None
+
+
+def _google_client_credentials(payload: GoogleCredentialsUploadRequest) -> dict:
+    """Validate and normalize a Google OAuth client-secrets document."""
+    if payload.raw_json is not None:
+        try:
+            credentials = json.loads(payload.raw_json)
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="raw_json must be valid Google OAuth client credentials JSON.",
+            ) from exc
+
+        if not isinstance(credentials, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Google OAuth credentials must be a JSON object.",
+            )
+
+        for client_type in ("installed", "web"):
+            client = credentials.get(client_type)
+            if (
+                isinstance(client, dict)
+                and isinstance(client.get("client_id"), str)
+                and client["client_id"].strip()
+                and isinstance(client.get("client_secret"), str)
+                and client["client_secret"].strip()
+            ):
+                return credentials
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Google OAuth credentials must contain an installed or web "
+                "object with client_id and client_secret."
+            ),
+        )
+
+    if (
+        isinstance(payload.client_id, str)
+        and payload.client_id.strip()
+        and isinstance(payload.client_secret, str)
+        and payload.client_secret.strip()
+    ):
+        return {
+            "installed": {
+                "client_id": payload.client_id.strip(),
+                "client_secret": payload.client_secret.strip(),
+            }
+        }
+
+    raise HTTPException(
+        status_code=400,
+        detail="Provide raw_json or both client_id and client_secret.",
+    )
+
+
+@app.post("/connections/credentials")
+def upload_google_credentials(
+    payload: GoogleCredentialsUploadRequest,
+    principal: PrincipalContext = Depends(_resolve_authenticated_principal),
+) -> dict:
+    """Atomically configure the install-wide Google OAuth client secret.
+
+    Open to any authenticated user (User directive, 2026-09-12) - not
+    ADMIN-only. This still writes one shared, install-wide
+    credentials.json every user's Google connection depends on, so any
+    signed-in user can now replace it for everyone on this install."""
+    credentials = _google_client_credentials(payload)
+    credentials_root = _repo_root_for_credentials()
+    os.makedirs(credentials_root, exist_ok=True)
+    destination = os.path.join(credentials_root, "credentials.json")
+    temporary_path: Optional[str] = None
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=credentials_root,
+            prefix=".credentials-",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary_file:
+            temporary_path = temporary_file.name
+            json.dump(credentials, temporary_file, indent=2)
+            temporary_file.flush()
+            os.fsync(temporary_file.fileno())
+        os.replace(temporary_path, destination)
+    except OSError as exc:
+        if temporary_path is not None:
+            try:
+                os.remove(temporary_path)
+            except OSError:
+                pass
+        raise HTTPException(
+            status_code=500,
+            detail=f"Google client credentials could not be saved: {exc}",
+        ) from exc
+
+    return {
+        "saved": True,
+        "detail": "Google client credentials configured successfully.",
+        "connections": list_connection_status(),
+    }
+
+
+@app.get("/memory/settings")
+def get_memory_settings(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    return _resolve_context(user_id).memory_settings_store.load().__dict__
+
+
+@app.put("/memory/settings")
+def update_memory_settings(
+    payload: MemorySettingsPayload,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    try:
+        return _resolve_context(user_id).memory_settings_store.update(
+            payload.supplied()
+        ).__dict__
+    except MemorySettingsValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @app.post("/files")
 async def upload_file(
     session_id: str = Form(...),
@@ -2057,28 +2258,78 @@ def delete_history(
     return {"deleted": deleted, "session_id": session_id}
 
 
+_LOOPBACK_HOSTS = {
+    "127.0.0.1", "::1", "localhost",
+    # FastAPI/Starlette's own TestClient reports this literal fixed
+    # pseudo-hostname for every request.client.host regardless of real
+    # network origin - recognized here only so existing/new tests
+    # against this endpoint can exercise the loopback-allowed path
+    # without a real socket; a real deployment never sees this string
+    # as an actual connecting client.
+    "testclient",
+}
+
+# 2026-09-12 (User directive): a single, module-level guard against two
+# concurrent OAuth consent flows racing each other (both would try to
+# bind their own local callback port and write token.json). Not
+# per-user - like the connection itself, this is one shared,
+# install-wide flow.
+_google_auth_flow_lock = threading.Lock()
+_google_auth_flow_state: dict = {"running": False, "last_error": None}
+
+
+def _run_google_auth_flow_in_background() -> None:
+    from uri_core.services.gmail_service import GmailService
+
+    try:
+        result = GmailService().connect()
+        if not result.get("success", True):
+            _google_auth_flow_state["last_error"] = result.get("reason")
+    except Exception as exc:  # noqa: BLE001 - reported via status, never raised into the request
+        _google_auth_flow_state["last_error"] = str(exc)
+    finally:
+        _google_auth_flow_state["running"] = False
+
+
 @app.post("/connections/{connection_id}/authorize")
 def authorize_connection(
     connection_id: str,
-    principal: PrincipalContext = Depends(_resolve_admin_principal),
+    request: Request,
+    principal: PrincipalContext = Depends(_resolve_authenticated_principal),
 ) -> dict:
-    """M16 Priority 4: start Google sign-in for a service.
+    """M16 Priority 4, revised 2026-09-12 (User directive): actually
+    start Google sign-in for a service, not just report what would be
+    required.
 
-    Honest about what is actually possible: Google's installed-app
-    consent flow opens a browser ON THE SERVER HOST (see
-    GmailService.connect / InstalledAppFlow.run_local_server), so a
-    phone cannot complete it remotely. This endpoint therefore does not
-    pretend to authorize anything from the client - it reports what is
-    genuinely required and returns the real, unchanged state.
+    Google's installed-app consent flow opens a browser and a local
+    callback server ON THE URI SERVER HOST (see GmailService.connect /
+    InstalledAppFlow.run_local_server) - genuinely correct for this
+    install (a loopback-only desktop app talking to its own local
+    backend), so launching it here is launching it on the same machine
+    the User is sitting at, not on some other person's server.
 
-    It deliberately does NOT invoke the interactive flow: a blocking
-    browser prompt must never be triggerable by an HTTP request (the
-    same rule connection_status.py already enforces for status reads).
+    Safety, preserved rather than removed: M22.3's original concern was
+    a REMOTE caller triggering an interactive prompt on a shared host.
+    That risk is addressed here, not discarded - this endpoint refuses
+    to start the flow for any request whose connecting client is not
+    the loopback address itself (request.client.host not in
+    _LOOPBACK_HOSTS), regardless of who is authenticated. Combined with
+    this server's own loopback-only default bind (scripts/
+    run_uri_server.py), a non-loopback caller cannot reach this
+    behavior at all under the sanctioned launch path.
 
-    M22.3 (S1): ADMIN-only - this is an install-host-scoped action, not
-    a per-user one (see docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md
-    section 6.1). Had no authentication of any kind before this
-    milestone.
+    Runs GmailService.connect() (which blocks on the interactive
+    consent) in a background thread rather than the request handler
+    itself, so the HTTP response returns immediately with "started"
+    rather than hanging for however long the User takes to complete
+    consent in their browser. Poll GET /connections afterward for the
+    real, resulting status once consent completes.
+
+    M22.3 (S1) opened this ADMIN-only; open to any authenticated user
+    (User directive, 2026-09-12) - still 401 for no login, no longer
+    403 for a non-ADMIN role. This remains an install-host-scoped
+    action, not a per-user one: any signed-in user's call affects the
+    one shared Google connection every user on this install shares.
     """
 
     if connection_id not in {"gmail", "drive"}:
@@ -2087,20 +2338,55 @@ def authorize_connection(
             detail=f"Unknown connection: {connection_id}",
         )
 
+    client_host = request.client.host if request.client else None
+    if client_host not in _LOOPBACK_HOSTS:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Google sign-in can only be started from the URI "
+                "server's own machine (loopback), never over the "
+                "network."
+            ),
+        )
+
     credentials_present = os.path.exists(
         os.path.join(_repo_root_for_credentials(), "credentials.json")
     )
 
+    if not credentials_present:
+        return {
+            "started": False,
+            "detail": (
+                "No Google client secret (credentials.json) is "
+                "configured on the URI server host yet, so sign-in "
+                "cannot be started."
+            ),
+            "connections": list_connection_status(),
+        }
+
+    with _google_auth_flow_lock:
+        if _google_auth_flow_state["running"]:
+            return {
+                "started": False,
+                "detail": (
+                    "A Google sign-in is already in progress - "
+                    "complete or close that browser window first."
+                ),
+                "connections": list_connection_status(),
+            }
+        _google_auth_flow_state["running"] = True
+        _google_auth_flow_state["last_error"] = None
+        threading.Thread(
+            target=_run_google_auth_flow_in_background,
+            name="google-oauth-consent",
+            daemon=True,
+        ).start()
+
     return {
-        "started": False,
+        "started": True,
         "detail": (
-            "Google sign-in must be completed on the URI server host, "
-            "where the consent browser opens. Run the one-time consent "
-            "there, then refresh this screen."
-            if credentials_present
-            else "No Google client secret (credentials.json) is "
-            "configured on the URI server host yet, so sign-in cannot "
-            "be started."
+            "Opening your browser for Google sign-in - complete the "
+            "consent there, then refresh this screen."
         ),
         "connections": list_connection_status(),
     }
@@ -2109,7 +2395,7 @@ def authorize_connection(
 @app.delete("/connections/{connection_id}")
 def disconnect_connection(
     connection_id: str,
-    principal: PrincipalContext = Depends(_resolve_admin_principal),
+    principal: PrincipalContext = Depends(_resolve_authenticated_principal),
 ) -> dict:
     """M16 Priority 2: a REAL disconnect. Previously the client faked
     this against mock state, so "Disconnected" was displayed while
@@ -2122,10 +2408,11 @@ def disconnect_connection(
     authorization with two scopes), so this is reported honestly as
     affecting both rather than pretending they are independent.
 
-    M22.3 (S1): ADMIN-only - revokes a shared, install-wide token, not
-    per-user state (see
-    docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md section 6.1). Had no
-    authentication of any kind before this milestone.
+    M22.3 (S1) opened this ADMIN-only; open to any authenticated user
+    (User directive, 2026-09-12) - still 401 for no login, no longer
+    403 for a non-ADMIN role. This still revokes one shared,
+    install-wide token, not per-user state: any signed-in user can now
+    disconnect Gmail/Drive for every user on this install.
     """
 
     if connection_id not in {"gmail", "drive"}:
@@ -2300,6 +2587,52 @@ class _ProviderConfigPayload(BaseModel):
     model: Optional[str] = None
 
 
+class ActiveBrainUpdateRequest(BaseModel):
+    provider_id: str
+    model: Optional[str] = None
+
+
+def _active_brain_for_user(user_id: Optional[str]) -> dict:
+    """Resolve the selected reasoning backend with a safe catalogue default."""
+    from uri_core.core.provider_registry import CATALOGUE_BY_ID, ProviderConfigStore
+
+    provider_id = "ollama"
+    model = "qwen3:14b"
+    role_config = load_model_roles().get(ROLE_REASONING, {})
+    configured_provider = role_config.get("provider_id", role_config.get("provider"))
+    if configured_provider in CATALOGUE_BY_ID:
+        provider_id = configured_provider
+    if isinstance(role_config.get("model"), str) and role_config["model"]:
+        model = role_config["model"]
+
+    is_configured = False
+    if user_id is not None:
+        try:
+            active_brain = ProviderConfigStore(user_id).get_active_brain()
+        except ValueError:
+            active_brain = None
+        if active_brain is not None and active_brain["provider_id"] in CATALOGUE_BY_ID:
+            provider_id = active_brain["provider_id"]
+            model = active_brain["model"]
+            is_configured = True
+
+    descriptor = CATALOGUE_BY_ID[provider_id]
+    display_name = next(
+        (
+            model_descriptor.display_name
+            for model_descriptor in descriptor.models
+            if model_descriptor.model_id == model
+        ),
+        model,
+    )
+    return {
+        "provider_id": provider_id,
+        "model": model,
+        "display_name": display_name,
+        "is_configured": is_configured,
+    }
+
+
 @app.post("/providers/keys")
 def submit_provider_key(
     payload: _ProviderKeyPayload,
@@ -2389,6 +2722,7 @@ def list_providers(
             key_store = None
             config_store = None
 
+    active_brain = _active_brain_for_user(user_id)
     result = []
     for descriptor in PROVIDER_CATALOGUE:
         pid = descriptor.provider_id
@@ -2409,6 +2743,7 @@ def list_providers(
                 cfg = ModelProviderConfig(
                     base_url=user_cfg.get("base_url", descriptor.base_url),
                     model=user_cfg.get("model", (descriptor.models[0].model_id if descriptor.models else "")),
+                    timeout_seconds=2.0,
                 )
                 # No api_key for the health-check probe - just connectivity
                 probe = OpenAICompatibleProvider(config=cfg)
@@ -2418,10 +2753,25 @@ def list_providers(
         elif descriptor.adapter == "ollama":
             from uri_core.core.model_providers import OllamaProvider
             try:
-                probe_ollama = OllamaProvider()
+                env_config = ModelProviderConfig.from_env()
+                probe_ollama = OllamaProvider(
+                    config=ModelProviderConfig(
+                        base_url=env_config.base_url,
+                        model=env_config.model,
+                        timeout_seconds=2.0,
+                        context_tokens=env_config.context_tokens,
+                    )
+                )
                 available = probe_ollama.describe().available
             except Exception:  # noqa: BLE001
                 available = False
+
+        user_cfg = config_store.get_provider_config(pid) if config_store else {}
+        selected_model = user_cfg.get("model")
+        if not selected_model and pid == active_brain["provider_id"]:
+            selected_model = active_brain["model"]
+        if not selected_model and descriptor.models:
+            selected_model = descriptor.models[0].model_id
 
         result.append({
             "provider_id": pid,
@@ -2431,9 +2781,73 @@ def list_providers(
             "configured": configured,
             "last_four": last_four,
             "available": available,
+            "models": [
+                {
+                    "model_id": model.model_id,
+                    "display_name": model.display_name,
+                    "context_tokens": model.context_tokens.value,
+                }
+                for model in descriptor.models
+            ],
+            "active_brain": active_brain["is_configured"] and pid == active_brain["provider_id"],
+            "active_model": selected_model,
         })
 
-    return {"providers": result}
+    return {"providers": result, "active_brain": active_brain}
+
+
+@app.get("/providers/active-brain")
+def get_active_brain(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    return _active_brain_for_user(user_id)
+
+
+@app.put("/providers/active-brain")
+def update_active_brain(
+    payload: ActiveBrainUpdateRequest,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+
+    from uri_core.core.provider_registry import CATALOGUE_BY_ID, ProviderConfigStore
+
+    descriptor = CATALOGUE_BY_ID.get(payload.provider_id)
+    if descriptor is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown provider_id: {payload.provider_id!r}.",
+        )
+
+    config_store = ProviderConfigStore(user_id)
+
+    # 2026-09-12 (User directive): a provider with no fixed catalogue
+    # models (e.g. LM Studio, or any custom OpenAI-compatible endpoint -
+    # "dynamic, depends on what the user has loaded", see
+    # provider_registry.py's own catalogue comment) must never silently
+    # fall back to a literal Ollama model name that has nothing to do
+    # with what this provider is actually serving. Prefer, in order:
+    # the model the client explicitly asked for, this user's own
+    # already-configured model override for this provider (PUT
+    # /providers/config), then the catalogue's own first model - only
+    # ever falling back to a hardcoded literal when this provider
+    # genuinely has no other source of a model name at all.
+    chosen_model = (
+        payload.model
+        or config_store.get_provider_config(payload.provider_id).get("model")
+        or (descriptor.models[0].model_id if descriptor.models else None)
+        or "qwen3:14b"
+    )
+
+    config_store.set_active_brain(payload.provider_id, chosen_model)
+    _user_contexts.pop(user_id, None)
+    return {
+        "active_brain": {
+            "provider_id": payload.provider_id,
+            "model": chosen_model,
+        }
+    }
 
 
 @app.put("/providers/config")

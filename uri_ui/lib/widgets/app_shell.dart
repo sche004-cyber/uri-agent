@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../theme/uri_theme.dart';
+import '../services/app_state_scope.dart';
 import 'uri_wordmark.dart';
 
 class UriSection {
-  const UriSection({required this.label, required this.icon, required this.builder});
+  const UriSection({
+    required this.label,
+    required this.icon,
+    required this.builder,
+  });
 
   final String label;
   final IconData icon;
@@ -47,7 +52,20 @@ class AppShell extends StatefulWidget {
 class AppShellState extends State<AppShell> {
   late int _index = widget.initialIndex;
 
-  void goTo(int index) => setState(() => _index = index);
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AppStateScope.of(context).loadActiveBrain();
+    });
+  }
+
+  void goTo(int index, {String? settingsCategory}) {
+    if (settingsCategory != null) {
+      AppStateScope.of(context).openSettingsCategory(settingsCategory);
+    }
+    setState(() => _index = index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +82,16 @@ class AppShellState extends State<AppShell> {
         backgroundColor: colors.canvas,
         body: Row(
           children: [
-            _Sidebar(sections: widget.sections, index: _index, onSelect: goTo),
-            Expanded(
-              child: SafeArea(
-                child: content,
+            _Sidebar(
+              sections: widget.sections,
+              index: _index,
+              onSelect: goTo,
+              onBrainTap: () => goTo(
+                ShellIndex.settings,
+                settingsCategory: 'Model Providers',
               ),
             ),
+            Expanded(child: SafeArea(child: content)),
           ],
         ),
       );
@@ -85,6 +107,13 @@ class AppShellState extends State<AppShell> {
           mainAxisSize: MainAxisSize.min,
           children: [_Wordmark()],
         ),
+        actions: [
+          _BrainStatusPill(
+            onTap: () =>
+                goTo(ShellIndex.settings, settingsCategory: 'Model Providers'),
+          ),
+          const SizedBox(width: UriSpace.sm),
+        ],
       ),
       body: SafeArea(child: content),
       bottomNavigationBar: NavigationBar(
@@ -93,7 +122,10 @@ class AppShellState extends State<AppShell> {
         backgroundColor: colors.surface,
         destinations: [
           for (final section in widget.sections)
-            NavigationDestination(icon: Icon(section.icon), label: section.label),
+            NavigationDestination(
+              icon: Icon(section.icon),
+              label: section.label,
+            ),
         ],
       ),
     );
@@ -101,11 +133,17 @@ class AppShellState extends State<AppShell> {
 }
 
 class _Sidebar extends StatelessWidget {
-  const _Sidebar({required this.sections, required this.index, required this.onSelect});
+  const _Sidebar({
+    required this.sections,
+    required this.index,
+    required this.onSelect,
+    required this.onBrainTap,
+  });
 
   final List<UriSection> sections;
   final int index;
   final ValueChanged<int> onSelect;
+  final VoidCallback onBrainTap;
 
   @override
   Widget build(BuildContext context) {
@@ -121,9 +159,19 @@ class _Sidebar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Padding(
-              padding: EdgeInsets.fromLTRB(UriSpace.lg, UriSpace.xl, UriSpace.lg, UriSpace.lg),
+              padding: EdgeInsets.fromLTRB(
+                UriSpace.lg,
+                UriSpace.xl,
+                UriSpace.lg,
+                UriSpace.lg,
+              ),
               child: _Wordmark(),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: UriSpace.md),
+              child: _BrainStatusPill(onTap: onBrainTap),
+            ),
+            const SizedBox(height: UriSpace.sm),
             for (var i = 0; i < sections.length; i++)
               _SidebarItem(
                 section: sections[i],
@@ -154,7 +202,11 @@ class _Wordmark extends StatelessWidget {
 }
 
 class _SidebarItem extends StatelessWidget {
-  const _SidebarItem({required this.section, required this.selected, required this.onTap});
+  const _SidebarItem({
+    required this.section,
+    required this.selected,
+    required this.onTap,
+  });
 
   final UriSection section;
   final bool selected;
@@ -185,7 +237,10 @@ class _SidebarItem extends StatelessWidget {
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 13,
+                  ),
                   child: Row(
                     children: [
                       Icon(
@@ -198,7 +253,9 @@ class _SidebarItem extends StatelessWidget {
                         section.label,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: selected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                           color: selected ? colors.accentInk : colors.inkSoft,
                         ),
                       ),
@@ -207,6 +264,75 @@ class _SidebarItem extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BrainStatusPill extends StatelessWidget {
+  const _BrainStatusPill({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
+    final state = AppStateScope.of(context);
+    final brain = state.activeBrain;
+    final configured = brain?.isConfigured ?? false;
+    final reachable =
+        configured && (state.activeBrainProvider?.available ?? false);
+    final label = !configured
+        ? 'Brain: None (click to configure)'
+        : 'Brain: ${brain!.providerId} (${brain.model})';
+    final statusColor = reachable ? Colors.green : Colors.orange;
+    return Semantics(
+      button: true,
+      label:
+          '$label${configured ? (reachable ? ', reachable' : ', unreachable') : ''}',
+      child: Tooltip(
+        message: configured
+            ? '${reachable ? 'Reachable' : 'Unreachable'} — open Model Providers'
+            : 'Open Model Providers',
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(999),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: UriSpace.sm,
+                vertical: UriSpace.xs,
+              ),
+              decoration: BoxDecoration(
+                color: colors.surfaceSunken,
+                border: Border.all(color: colors.border),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      label,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

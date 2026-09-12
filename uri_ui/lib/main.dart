@@ -29,7 +29,7 @@ void main() async {
   // As of M16 nothing in HttpUriClient falls back to mock data. Widget/
   // unit tests build their own AppState with MockUriClient directly and
   // are unaffected by this.
-  final appState = AppState(client: HttpUriClient(deviceId: deviceId));
+  final appState = AppState(HttpUriClient(deviceId: deviceId));
   // Resolve any previously persisted onboarding/preferences/server
   // address before the first frame, so a returning user never sees
   // onboarding flash by and a phone already pointed at its PC never

@@ -12,3 +12,14 @@ python-pptx>=1.0
 # M22.5: encrypted-at-rest provider key storage (Fernet / AES-128-CBC + HMAC).
 # Key derived from URI_PROVIDER_KEY_SECRET env var via PBKDF2-HMAC-SHA256.
 cryptography>=42
+# 2026-09-12: cross-platform CPU/memory/disk metrics (uri_core/tools/
+# system_performance.py) - a backend-only capability, no UI yet.
+psutil>=6.0
+# Already in active use by uri_core/services/pdf_reader.py (PDF text
+# extraction + OCR fallback for scanned pages) but never previously
+# declared here. PyMuPDF also requires the separate Tesseract-OCR
+# system binary (not a pip package) on PATH for the OCR fallback -
+# see pdf_reader.py's own hardcoded default path.
+pymupdf>=1.24
+pytesseract>=0.3
+Pillow>=10.0

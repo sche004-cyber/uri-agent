@@ -156,6 +156,63 @@ class CapabilityPlanner:
                 elif "order" in goal:
                     score += 20
 
+        elif tool_name == "system_performance":
+
+            performance_phrases = (
+                "pc performance", "computer performance", "system performance",
+                "cpu usage", "memory usage", "disk usage", "how is my pc",
+                "how is my computer", "system metrics", "performance metric",
+            )
+            if any(
+                phrase in goal or phrase in requested_output
+                for phrase in performance_phrases
+            ):
+                score += 100
+
+        elif tool_name == "remember_fact":
+
+            # 2026-09-12 (User directive): a request to save/add
+            # something to the user's profile was previously
+            # unscored (0), so it lost to whatever else scored
+            # anything at all - including, concretely, draft_
+            # institutional_order/note whenever the semantic
+            # interpreter's own paraphrase of "add this to my
+            # profile" happened to contain a word like "order"
+            # (see order_signal's bare substring match above).
+            # Scored decisively high so an explicit save/remember
+            # request always wins that competition.
+            remember_phrases = (
+                "add this to my profile", "add that to my profile",
+                "add to my profile", "save to my profile",
+                "save this to my profile", "remember that", "remember this",
+                "save this to memory", "update my profile",
+            )
+            if any(
+                phrase in goal or phrase in requested_output
+                for phrase in remember_phrases
+            ):
+                score += 150
+
+        elif tool_name == "recall_memory":
+
+            # semantic_result's "goal" is the interpreter's own
+            # paraphrase, not the user's raw words, so this matches
+            # concepts rather than an exact phrase - kept narrow by
+            # requiring a compound signal (a self/name/identity
+            # reference together with a recall/question-ish word),
+            # never a bare mention of "name" alone (which could just as
+            # easily appear inside "draft a letter with my name on it").
+            self_reference = any(
+                keyword in goal or keyword in requested_output
+                for keyword in ("my name", "user's name", "who i am", "who am i")
+            )
+            recall_signal = any(
+                keyword in goal or keyword in requested_output
+                for keyword in ("recall", "remember", "retrieve", "what do you know")
+            )
+            if self_reference or (recall_signal and "user" in goal):
+                score += 100
+
         elif tool_name == "generate_document":
 
             # M19: the generic destination for a document/file request
@@ -215,6 +272,85 @@ class CapabilityPlanner:
 
                 if format_hint and "document drafting" in task_type:
                     score += 20
+
+        elif tool_name == "convert_document":
+
+            # Narrow and specific on purpose (2026-09-12 lesson from
+            # web_search's own over-broad keyword regression): only
+            # "convert" itself, combined with a target format word,
+            # ever scores here - never a bare format word alone, which
+            # would also match a from-scratch generate_document request.
+            if "convert" in goal or "convert" in requested_output:
+                if any(
+                    keyword in goal or keyword in requested_output
+                    for keyword in ("word", "docx", ".doc")
+                ):
+                    score += 100
+
+        elif tool_name == "gmail_search":
+
+            # 2026-09-12 (User directive): previously unscored entirely
+            # (always 0), so a real, connected Gmail request like "how
+            # many unread emails" had nothing to compete with
+            # web_search's own broad keyword match on "search" and
+            # fell through to a generic web search for the literal
+            # word "gmail" instead of ever querying the account. "mail"
+            # bare is deliberately excluded (too generic - postal mail,
+            # "email me the report", etc.); "gmail"/"inbox"/"unread
+            # email(s)" are specific enough to stay narrow.
+            gmail_keywords = ("gmail", "inbox", "unread email", "unread message")
+            if any(
+                keyword in goal or keyword in requested_output or keyword in entities_text
+                for keyword in gmail_keywords
+            ):
+                score += 100
+
+        elif tool_name == "web_search":
+
+            web_keywords = (
+                "search", "web", "website", "online", "internet", "google",
+                "look through", "find information", "latest", "portal", "nit sikkim",
+            )
+
+            if "web search" in task_type or "information retrieval" in task_type:
+                score += 50
+
+            if any(
+                keyword in goal
+                or keyword in requested_output
+                or keyword in entities_text
+                for keyword in web_keywords
+            ):
+                score += 60
+
+            if (
+                "website" in goal
+                or "website" in requested_output
+                or "nit sikkim" in goal
+            ):
+                score += 50
+
+        elif tool_name == "fetch_url":
+
+            if (
+                "http://" in goal
+                or "https://" in goal
+                or "http://" in requested_output
+                or "https://" in requested_output
+            ):
+                score += 100
+
+            if "fetch" in goal and any(
+                keyword in goal for keyword in ("url", "page", "link")
+            ):
+                score += 70
+
+        elif tool_name == "read_attached_file":
+
+            if any(
+                keyword in goal for keyword in ("attachment", "attached", "upload")
+            ):
+                score += 100
 
         elif tool_name == "extract_student_records":
 

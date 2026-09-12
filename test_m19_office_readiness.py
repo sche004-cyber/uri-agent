@@ -10,6 +10,7 @@ import io
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from openpyxl import load_workbook
 from pptx import Presentation
@@ -286,6 +287,22 @@ class GmailDraftAndDriveUploadSafetyTests(unittest.TestCase):
             ),
             audit_trail=AuditTrail(),
         )
+
+        # 2026-09-12: GmailService now resolves its credentials/token
+        # paths via connection_status._repo_root() (previously its own
+        # independent, hardcoded repo-root derivation) - this class's
+        # "no credentials configured" assertions must stay true
+        # regardless of whether a REAL credentials.json/token.json
+        # exists on the machine actually running this suite (it can:
+        # this is a real, working dev install once Google sign-in has
+        # actually been completed once). Pinned to this test's own
+        # empty tmp_dir so these tests stay deterministic either way.
+        self._repo_root_patch = patch(
+            "uri_core.core.connection_status._repo_root",
+            return_value=self.tmp_dir,
+        )
+        self._repo_root_patch.start()
+        self.addCleanup(self._repo_root_patch.stop)
 
     def test_gmail_create_draft_is_approval_gated(self):
         result = self.approval_gate.execute_tool(

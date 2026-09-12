@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
 import '../models/attachment.dart';
 import '../models/uri_turn.dart';
 import '../theme/uri_theme.dart';
+import 'linkified_text.dart';
 import 'status_pill.dart';
 
 /// Renders one Ask-URI turn end to end, keeping three stages visually
@@ -75,7 +77,7 @@ class TurnCard extends StatelessWidget {
 
             if (turn.understanding != null) ...[
               const SizedBox(height: UriSpace.sm),
-              Text(turn.understanding!, style: theme.textTheme.bodyMedium),
+              LinkifiedText(turn.understanding!, style: theme.textTheme.bodyMedium),
             ],
 
             // ---- chat UX fix: persistent processing state ----
@@ -125,7 +127,23 @@ class TurnCard extends StatelessWidget {
             ],
 
             // ---- stage 3: result ----
-            if (turn.result != null) ...[
+            //
+            // The green "Result" treatment is reserved for what a real
+            // tool actually produced (detail carries "Tool: <name>"
+            // only then - see http_uri_client.dart), or anything a
+            // tool returned beyond plain text (sources/generatedFile/
+            // draftText). An ordinary conversational reply with none
+            // of that already appeared, verbatim, as turn.understanding
+            // above (2026-09-12, User directive) - showing it again
+            // here would only duplicate it inside a glaring highlight
+            // box that misrepresents a plain reply as a command-
+            // execution dump.
+            if (turn.result != null &&
+                (turn.result!.detail != null ||
+                    turn.result!.sources.isNotEmpty ||
+                    turn.result!.generatedFile != null ||
+                    turn.result!.draftText != null ||
+                    turn.understanding == null)) ...[
               const SizedBox(height: UriSpace.md),
               _ResultBlock(turn: turn, onOpenAttachment: onOpenAttachment),
             ],
@@ -412,14 +430,62 @@ class _ResultBlock extends StatelessWidget {
             ],
           ),
           const SizedBox(height: UriSpace.xs),
-          Text(result.summary, style: theme.textTheme.bodyLarge?.copyWith(color: colors.ink)),
+          LinkifiedText(
+            result.summary,
+            style: theme.textTheme.bodyLarge?.copyWith(color: colors.ink),
+          ),
           if (result.detail != null) ...[
             const SizedBox(height: 4),
-            Text(result.detail!, style: theme.textTheme.bodyMedium),
+            LinkifiedText(result.detail!, style: theme.textTheme.bodyMedium),
+          ],
+          // The drafted document's own real body (note_sheet/preview) -
+          // distinct from result.summary, which is the Brain's
+          // narrative ABOUT the draft, not the draft itself
+          // (2026-09-12, User directive: drafted text was missing from
+          // the UI entirely).
+          if (result.draftText != null) ...[
+            const SizedBox(height: UriSpace.sm),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(UriSpace.md),
+              decoration: BoxDecoration(
+                color: colors.surfaceSunken,
+                borderRadius: BorderRadius.circular(UriRadius.sm),
+                border: Border.all(color: colors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Draft',
+                          style: theme.textTheme.labelLarge?.copyWith(color: colors.inkFaint),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.copy_all_outlined, size: 16),
+                        tooltip: 'Copy draft text',
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () => Clipboard.setData(
+                          ClipboardData(text: result.draftText!),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SelectableText(
+                    result.draftText!,
+                    style: theme.textTheme.bodyMedium?.copyWith(color: colors.ink),
+                  ),
+                ],
+              ),
+            ),
           ],
           // M16: real, retrievable sources behind a researched answer.
           // Only rendered when the capability actually returned some -
-          // never a placeholder or an invented citation.
+          // never a placeholder or an invented citation. Clickable
+          // (2026-09-12, User directive) - opens in the default browser.
           if (result.sources.isNotEmpty) ...[
             const SizedBox(height: UriSpace.sm),
             Text(
@@ -430,12 +496,10 @@ class _ResultBlock extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             for (final source in result.sources)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  '• ${source.title} — ${source.url}',
-                  style: theme.textTheme.bodySmall,
-                ),
+              SourceLink(
+                title: source.title,
+                url: source.url,
+                style: theme.textTheme.bodySmall,
               ),
           ],
           // M19: the real file a generation capability produced

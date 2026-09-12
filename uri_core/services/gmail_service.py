@@ -61,14 +61,23 @@ class GmailService:
 
     def __init__(self):
 
-        project_root = Path(__file__).resolve().parents[2]
+        # 2026-09-12 (User directive): use the same resolved root as
+        # connection_status.py/server.py's authorize/disconnect
+        # endpoints (which already honor URI_GOOGLE_CREDENTIALS_DIR) -
+        # previously this class derived its own, independent root
+        # here, so a User-configured override would silently not apply
+        # to the one class that actually performs the interactive
+        # consent flow.
+        from uri_core.core.connection_status import _repo_root
+
+        credentials_root = Path(_repo_root())
 
         self.credentials_path = (
-            project_root / "credentials.json"
+            credentials_root / "credentials.json"
         )
 
         self.token_path = (
-            project_root / "token.json"
+            credentials_root / "token.json"
         )
 
         self.service = None

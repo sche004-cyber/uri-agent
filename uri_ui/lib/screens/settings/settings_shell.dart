@@ -8,6 +8,7 @@ import 'admin_grants_screen.dart';
 import 'capabilities_settings_screen.dart';
 import 'connections_settings_screen.dart';
 import 'diagnostics_settings_screen.dart';
+import 'memory_context_settings_screen.dart';
 import 'memory_settings_screen.dart';
 import 'preferences_settings_screen.dart';
 import 'profile_settings_screen.dart';
@@ -60,6 +61,13 @@ final _categories = <_SettingsCategory>[
     builder: (_) => const MemorySettingsScreen(),
   ),
   _SettingsCategory(
+    label: 'Memory & Context',
+    subtitle:
+        'Memory budgets, provider settings, and conversation compression.',
+    icon: Icons.memory_outlined,
+    builder: (_) => const MemoryContextSettingsScreen(),
+  ),
+  _SettingsCategory(
     label: 'Capabilities',
     subtitle: 'What URI can actually do right now, reported by the server.',
     icon: Icons.checklist_rounded,
@@ -92,7 +100,8 @@ List<_SettingsCategory> _getCategories(BuildContext context) {
     if (isAdmin)
       _SettingsCategory(
         label: 'Capability Grants',
-        subtitle: 'Per-user capability authorization and grants administration.',
+        subtitle:
+            'Per-user capability authorization and grants administration.',
         icon: Icons.admin_panel_settings_outlined,
         builder: (_) => const AdminGrantsScreen(),
       ),
@@ -133,7 +142,24 @@ class _SettingsShellState extends State<SettingsShell> {
       if (!mounted) return;
       final state = AppStateScope.of(context);
       if (!state.hasLoadedAccountInfo) state.loadAccountInfo();
+      _selectRequestedCategory(state.targetSettingsCategory);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _selectRequestedCategory(AppStateScope.of(context).targetSettingsCategory);
+  }
+
+  void _selectRequestedCategory(String? label) {
+    if (label == null) return;
+    final index = _getCategories(context)
+        .indexWhere((category) => category.label == label);
+    if (index >= 0) {
+      _selected = index;
+      AppStateScope.of(context).targetSettingsCategory = null;
+    }
   }
 
   @override
@@ -142,6 +168,16 @@ class _SettingsShellState extends State<SettingsShell> {
       listenable: AppStateScope.of(context),
       builder: (context, _) {
         final categories = _getCategories(context);
+        final requested = AppStateScope.of(context).targetSettingsCategory;
+        if (requested != null) {
+          final index = categories.indexWhere(
+            (category) => category.label == requested,
+          );
+          if (index >= 0) {
+            _selected = index;
+            AppStateScope.of(context).targetSettingsCategory = null;
+          }
+        }
 
         if (UriBreakpoints.isWide(context)) {
           final selected = (_selected != null && _selected! < categories.length)
@@ -192,7 +228,9 @@ class _WideSettings extends StatelessWidget {
         SizedBox(
           width: 260,
           child: Container(
-            decoration: BoxDecoration(border: Border(right: BorderSide(color: colors.border))),
+            decoration: BoxDecoration(
+              border: Border(right: BorderSide(color: colors.border)),
+            ),
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: UriSpace.md),
               children: [
@@ -214,7 +252,10 @@ class _WideSettings extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ScreenHeader(title: category.label, subtitle: category.subtitle),
+                  ScreenHeader(
+                    title: category.label,
+                    subtitle: category.subtitle,
+                  ),
                   category.builder(context),
                 ],
               ),
@@ -227,7 +268,11 @@ class _WideSettings extends StatelessWidget {
 }
 
 class _CategoryListTile extends StatelessWidget {
-  const _CategoryListTile({required this.category, required this.selected, required this.onTap});
+  const _CategoryListTile({
+    required this.category,
+    required this.selected,
+    required this.onTap,
+  });
 
   final _SettingsCategory category;
   final bool selected;
@@ -239,7 +284,10 @@ class _CategoryListTile extends StatelessWidget {
     return Material(
       color: selected ? colors.accentSoft : Colors.transparent,
       child: ListTile(
-        leading: Icon(category.icon, color: selected ? colors.accentInk : colors.inkFaint),
+        leading: Icon(
+          category.icon,
+          color: selected ? colors.accentInk : colors.inkFaint,
+        ),
         title: Text(
           category.label,
           style: TextStyle(
@@ -315,7 +363,12 @@ class _CompactSettingsDetail extends StatelessWidget {
                 tooltip: 'Back to Settings',
               ),
               const SizedBox(width: UriSpace.xs),
-              Expanded(child: Text(category.label, style: Theme.of(context).textTheme.headlineMedium)),
+              Expanded(
+                child: Text(
+                  category.label,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),

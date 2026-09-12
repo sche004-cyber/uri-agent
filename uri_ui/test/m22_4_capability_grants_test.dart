@@ -42,7 +42,7 @@ Future<AppState> _pumpApp(WidgetTester tester, {UriClient? client}) async {
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  final appState = AppState(client: client ?? MockUriClient());
+  final appState = AppState(client ?? MockUriClient());
   await appState.updatePreferences(
     const UserPreferences.initial().copyWith(completedOnboarding: true),
   );
@@ -56,8 +56,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('admin sees Capability Grants category and can toggle a grant',
-      (tester) async {
+  testWidgets('admin sees Capability Grants category and can toggle a grant', (
+    tester,
+  ) async {
     final appState = await _pumpApp(tester);
     await tester.runAsync(() => appState.loadAccountInfo());
     await tester.pumpAndSettle();
@@ -90,9 +91,13 @@ void main() {
     expect(toggledWidget.value, !initialValue);
   });
 
-  testWidgets('grant toggle reverts if backend rejects the update',
-      (tester) async {
-    final appState = await _pumpApp(tester, client: _FailingGrantUpdateMockClient());
+  testWidgets('grant toggle reverts if backend rejects the update', (
+    tester,
+  ) async {
+    final appState = await _pumpApp(
+      tester,
+      client: _FailingGrantUpdateMockClient(),
+    );
     await tester.runAsync(() => appState.loadAccountInfo());
     await tester.pumpAndSettle();
 
@@ -119,8 +124,9 @@ void main() {
     expect(find.byType(SnackBar), findsOneWidget);
   });
 
-  testWidgets('non-admin user does NOT see Capability Grants category',
-      (tester) async {
+  testWidgets('non-admin user does NOT see Capability Grants category', (
+    tester,
+  ) async {
     final appState = await _pumpApp(tester, client: _NonAdminMockClient());
     await tester.runAsync(() => appState.loadAccountInfo());
     await tester.pumpAndSettle();

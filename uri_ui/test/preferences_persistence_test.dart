@@ -38,25 +38,28 @@ void main() {
     expect(loaded.focusAreas, ['Document drafting', 'Scheduling & meetings']);
   });
 
-  test('a returning app instance sees a prior session\'s completed onboarding', () async {
-    // First "app launch": completes onboarding and persists it.
-    final firstLaunch = AppState(client: MockUriClient());
-    await firstLaunch.updatePreferences(
-      const UserPreferences(
-        focusAreas: ['Records & data lookups'],
-        communicationStyle: CommunicationStyle.concise,
-        autonomyLevel: AutonomyLevel.askEveryTime,
-        completedOnboarding: true,
-      ),
-    );
+  test(
+    'a returning app instance sees a prior session\'s completed onboarding',
+    () async {
+      // First "app launch": completes onboarding and persists it.
+      final firstLaunch = AppState(MockUriClient());
+      await firstLaunch.updatePreferences(
+        const UserPreferences(
+          focusAreas: ['Records & data lookups'],
+          communicationStyle: CommunicationStyle.concise,
+          autonomyLevel: AutonomyLevel.askEveryTime,
+          completedOnboarding: true,
+        ),
+      );
 
-    // A brand new AppState simulates the app being reopened.
-    final secondLaunch = AppState(client: MockUriClient());
-    expect(secondLaunch.preferences.completedOnboarding, isFalse);
+      // A brand new AppState simulates the app being reopened.
+      final secondLaunch = AppState(MockUriClient());
+      expect(secondLaunch.preferences.completedOnboarding, isFalse);
 
-    await secondLaunch.loadPersistedPreferences();
+      await secondLaunch.loadPersistedPreferences();
 
-    expect(secondLaunch.preferences.completedOnboarding, isTrue);
-    expect(secondLaunch.preferences.focusAreas, ['Records & data lookups']);
-  });
+      expect(secondLaunch.preferences.completedOnboarding, isTrue);
+      expect(secondLaunch.preferences.focusAreas, ['Records & data lookups']);
+    },
+  );
 }

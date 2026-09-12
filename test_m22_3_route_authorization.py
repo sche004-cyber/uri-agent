@@ -1,5 +1,5 @@
 """M22.3: route classification enumeration and the negative
-authorization matrix for the five endpoints S1 closes - see
+authorization matrix for the endpoints S1 closes - see
 docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md sections 14.1/14.2 and
 15.
 
@@ -9,14 +9,19 @@ Two concerns, kept in one file because they share the same fixture:
    route_classification.ROUTE_CLASSIFICATION, and the counts match - a
    route added without updating that table fails this test immediately
    (invariant: "a new route can never silently default to public").
-2. The five previously-unauthenticated mutating endpoints now require
-   ADMIN: 401 anonymous, 403 for a logged-in non-admin, success for a
-   logged-in ADMIN.
+2. The remaining ADMIN-gated mutating endpoints (skill enable/disable/
+   remove) require ADMIN: 401 anonymous, 403 for a logged-in non-admin,
+   success for a logged-in ADMIN. The two Google connection-management
+   routes were moved to AUTHENTICATED_USER_ROUTES on 2026-09-12 (User
+   directive: Google Workspace access is open to any authenticated
+   user, not ADMIN-only) - still 401 anonymous, never 403 for a plain
+   USER.
 """
 
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -116,6 +121,22 @@ class AdminGatedEndpointsTests(unittest.TestCase):
         )
         server._user_contexts = {}
 
+        # 2026-09-12: this test's own POST /connections/gmail/authorize
+        # calls must never see a real credentials.json, regardless of
+        # what genuinely exists in the real repo root on the machine
+        # running this suite (that endpoint now actually starts a real,
+        # browser-launching OAuth flow in a background thread when
+        # credentials are present - see server.py) - pinned to this
+        # test's own empty temp dir so this test class can never
+        # trigger a real external side effect no matter what state the
+        # rest of the repo is in.
+        self._credentials_root_patch = patch(
+            "uri_core.app.server._repo_root_for_credentials",
+            return_value=self.temp_dir.name,
+        )
+        self._credentials_root_patch.start()
+        self.addCleanup(self._credentials_root_patch.stop)
+
         edge.reset_rate_limiters()
 
         self.client = TestClient(server.app)
@@ -152,6 +173,13 @@ class AdminGatedEndpointsTests(unittest.TestCase):
         ("post", "/skills/nonexistent-skill/enable"),
         ("post", "/skills/nonexistent-skill/disable"),
         ("delete", "/skills/nonexistent-skill"),
+    )
+
+    # Moved out of ADMIN_ROUTES on 2026-09-12 (User directive): Google
+    # Workspace connect/disconnect/credentials is open to any
+    # authenticated user now, not ADMIN-only - still 401 anonymous,
+    # never 403 for a plain USER.
+    AUTHENTICATED_USER_ROUTES = (
         ("post", "/connections/gmail/authorize"),
         ("delete", "/connections/gmail"),
     )
@@ -193,6 +221,24 @@ class AdminGatedEndpointsTests(unittest.TestCase):
             headers={"Authorization": "Bearer not-a-real-token"},
         )
         self.assertEqual(response.status_code, 401)
+
+    def test_anonymous_caller_gets_401_on_connections_routes(self):
+        for method, path in self.AUTHENTICATED_USER_ROUTES:
+            with self.subTest(route=(method, path)):
+                response = self._call(method, path)
+                self.assertEqual(response.status_code, 401, response.text)
+
+    def test_non_admin_user_is_not_403d_on_connections_routes(self):
+        # A plain, non-admin authenticated user must reach the handler
+        # (whatever domain-level status it then returns, e.g. 404 for an
+        # unknown connection id) - 403 would only ever come from an
+        # ADMIN-only dependency, which these routes no longer use.
+        for method, path in self.AUTHENTICATED_USER_ROUTES:
+            with self.subTest(route=(method, path)):
+                response = self._call(
+                    method, path, headers=self._auth(self.user_token)
+                )
+                self.assertNotIn(response.status_code, (401, 403))
 
 
 if __name__ == "__main__":

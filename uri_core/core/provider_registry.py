@@ -221,3 +221,26 @@ class ProviderConfigStore:
         existing.update(config)
         store[provider_id] = existing
         self.save(store)
+
+    def get_active_brain(self) -> Optional[Dict[str, str]]:
+        """Return the user's selected reasoning backend, if one is saved."""
+        active_brain = self.load().get("active_brain")
+        if not isinstance(active_brain, dict):
+            return None
+
+        provider_id = active_brain.get("provider_id")
+        model = active_brain.get("model")
+        if not isinstance(provider_id, str) or not isinstance(model, str):
+            return None
+        if not provider_id or not model:
+            return None
+        return {"provider_id": provider_id, "model": model}
+
+    def set_active_brain(self, provider_id: str, model: str) -> None:
+        """Persist the user's selected reasoning backend without key material."""
+        store = self.load()
+        store["active_brain"] = {
+            "provider_id": provider_id,
+            "model": model,
+        }
+        self.save(store)

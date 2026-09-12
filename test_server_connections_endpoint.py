@@ -57,9 +57,18 @@ class ServerConnectionsEndpointTests(unittest.TestCase):
         )
 
     def test_endpoint_never_claims_connected_without_real_credentials(self):
-        # In this repo/test environment no credentials.json exists, so
-        # nothing may be reported as connected.
-        body = self.client.get("/connections").json()
+        # 2026-09-12: pinned to a directory with no credentials.json/
+        # token.json, rather than assuming the real repo root has
+        # none - it can genuinely have both once Google sign-in has
+        # actually been completed on this machine (a real, working
+        # outcome, not a test-environment leak).
+        import tempfile
+
+        with patch(
+            "uri_core.core.connection_status._repo_root",
+            return_value=tempfile.mkdtemp(),
+        ):
+            body = self.client.get("/connections").json()
 
         statuses = {entry["status"] for entry in body["connections"]}
         self.assertNotIn("connected", statuses)

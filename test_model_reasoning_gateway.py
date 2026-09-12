@@ -412,7 +412,7 @@ class ModelReasoningGatewayDefaultPolicyPathTests(unittest.TestCase):
 
         self.assertNotEqual(policy_text, "")
         self.assertIn("You are URI", policy_text)
-        self.assertIn("NIT Sikkim Administrative AI Assistant", policy_text)
+        self.assertIn("an administrative AI assistant", policy_text)
 
     def test_default_policy_text_reaches_the_built_reasoning_request(self):
         gateway = ModelReasoningGateway()
@@ -463,7 +463,7 @@ class ModelReasoningGatewayDefaultPolicyPathTests(unittest.TestCase):
         # unchanged; only its position moved.
         self.assertIn("You are URI", captured["system"])
         self.assertIn(
-            "NIT Sikkim Administrative AI Assistant", captured["system"]
+            "an administrative AI assistant", captured["system"]
         )
         self.assertNotIn("You are URI", captured["user"])
 

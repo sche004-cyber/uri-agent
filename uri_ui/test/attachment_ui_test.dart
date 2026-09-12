@@ -19,9 +19,7 @@ class _RejectingClient extends MockUriClient {
     required String filename,
     required List<int> bytes,
   }) async {
-    throw const AttachmentException(
-      "Files of type '.exe' are not accepted.",
-    );
+    throw const AttachmentException("Files of type '.exe' are not accepted.");
   }
 }
 
@@ -38,7 +36,9 @@ Future<void> _pump(
   await tester.pumpWidget(
     AppStateScope(
       state: state,
-      child: MaterialApp(home: Scaffold(body: AskUriScreen(filePicker: picker))),
+      child: MaterialApp(
+        home: Scaffold(body: AskUriScreen(filePicker: picker)),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -50,7 +50,7 @@ void main() {
   testWidgets('no attach control is shown when no picker is available', (
     tester,
   ) async {
-    await _pump(tester, AppState(client: MockUriClient()));
+    await _pump(tester, AppState(MockUriClient()));
 
     // The UI must not offer an affordance it cannot fulfil.
     expect(find.byIcon(Icons.attach_file_rounded), findsNothing);
@@ -59,11 +59,7 @@ void main() {
   testWidgets('the attach control appears when a picker is available', (
     tester,
   ) async {
-    await _pump(
-      tester,
-      AppState(client: MockUriClient()),
-      picker: () async => null,
-    );
+    await _pump(tester, AppState(MockUriClient()), picker: () async => null);
 
     expect(find.byIcon(Icons.attach_file_rounded), findsOneWidget);
   });
@@ -73,7 +69,7 @@ void main() {
   ) async {
     await _pump(
       tester,
-      AppState(client: MockUriClient()),
+      AppState(MockUriClient()),
       picker: () async =>
           const PickedFile(name: 'minutes.pdf', bytes: [1, 2, 3, 4]),
     );
@@ -85,11 +81,7 @@ void main() {
   });
 
   testWidgets('a cancelled pick attaches nothing', (tester) async {
-    await _pump(
-      tester,
-      AppState(client: MockUriClient()),
-      picker: () async => null,
-    );
+    await _pump(tester, AppState(MockUriClient()), picker: () async => null);
 
     await tester.tap(find.byIcon(Icons.attach_file_rounded));
     await tester.pumpAndSettle();
@@ -102,9 +94,8 @@ void main() {
   ) async {
     await _pump(
       tester,
-      AppState(client: _RejectingClient()),
-      picker: () async =>
-          const PickedFile(name: 'payload.exe', bytes: [1, 2]),
+      AppState(_RejectingClient()),
+      picker: () async => const PickedFile(name: 'payload.exe', bytes: [1, 2]),
     );
 
     await tester.tap(find.byIcon(Icons.attach_file_rounded));
@@ -116,7 +107,7 @@ void main() {
   });
 
   testWidgets('an attachment can be removed', (tester) async {
-    final state = AppState(client: MockUriClient());
+    final state = AppState(MockUriClient());
     await _pump(
       tester,
       state,

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../services/app_state.dart';
 import '../../services/app_state_scope.dart';
-import '../../services/uri_client.dart' show AccountInfo, DeviceSession, ModeInfo;
+import '../../services/uri_client.dart'
+    show AccountInfo, DeviceSession, ModeInfo;
 import '../../theme/uri_theme.dart';
 import '../../widgets/status_pill.dart';
 
@@ -88,7 +89,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           children: [
             _Row(
               icon: Icons.person_outline_rounded,
-              trailing: TextButton(onPressed: state.logout, child: const Text('Log out')),
+              trailing: TextButton(
+                onPressed: state.logout,
+                child: const Text('Log out'),
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -112,8 +116,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               child: Text(
                 state.hasLoadedIdentity
                     ? (state.identity != null
-                        ? 'User ID: ${state.identity!.userId}'
-                        : 'Could not read this install\'s identity from the server.')
+                          ? 'User ID: ${state.identity!.userId}'
+                          : 'Could not read this install\'s identity from the server.')
                     : 'Checking…',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: state.identity == null && state.hasLoadedIdentity
@@ -157,7 +161,12 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 /// experience_tier changes how much this client explains, mode changes
 /// which capabilities CapabilityResolver actually returns.
 class _ModeSection extends StatelessWidget {
-  const _ModeSection({required this.modeInfo, required this.loaded, required this.busy, required this.onSelect});
+  const _ModeSection({
+    required this.modeInfo,
+    required this.loaded,
+    required this.busy,
+    required this.onSelect,
+  });
   final ModeInfo? modeInfo;
   final bool loaded;
   final bool busy;
@@ -167,22 +176,37 @@ class _ModeSection extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     child: Padding(
       padding: const EdgeInsets.all(UriSpace.lg),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Work mode', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 2),
-        const Text('Choose the kind of work you are doing. Diagnostic mode is for viewing information only.'),
-        const SizedBox(height: UriSpace.sm),
-        if (!loaded) const SizedBox(height: 32, child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
-        else SegmentedButton<String>(
-          segments: const [
-            ButtonSegment(value: 'office', label: Text('Office')),
-            ButtonSegment(value: 'diagnostic', label: Text('Diagnostic')),
-            ButtonSegment(value: 'admin', label: Text('Admin')),
-          ],
-          selected: {modeInfo?.mode ?? 'office'},
-          onSelectionChanged: busy ? null : (selection) => onSelect(selection.first),
-        ),
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Work mode', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 2),
+          const Text(
+            'Adjusts capability dispatch scope. Does not change account security role.',
+          ),
+          const SizedBox(height: UriSpace.sm),
+          if (!loaded)
+            const SizedBox(
+              height: 32,
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          else
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: 'office', label: Text('Office')),
+                ButtonSegment(value: 'diagnostic', label: Text('Diagnostic')),
+                ButtonSegment(
+                  value: 'admin',
+                  label: Text('Full Capability (Admin Mode)'),
+                ),
+              ],
+              selected: {modeInfo?.mode ?? 'office'},
+              onSelectionChanged: busy
+                  ? null
+                  : (selection) => onSelect(selection.first),
+            ),
+        ],
+      ),
     ),
   );
 }
@@ -288,7 +312,9 @@ class _DevicesSection extends StatelessWidget {
             else if (devices.isEmpty)
               Text(
                 'No active devices could be read from the server.',
-                style: theme.textTheme.bodyMedium?.copyWith(color: colors.inkFaint),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.inkFaint,
+                ),
               )
             else
               for (final device in devices)
@@ -296,7 +322,11 @@ class _DevicesSection extends StatelessWidget {
                   padding: const EdgeInsets.only(top: UriSpace.xs),
                   child: Row(
                     children: [
-                      Icon(Icons.devices_other_outlined, size: 16, color: colors.inkFaint),
+                      Icon(
+                        Icons.devices_other_outlined,
+                        size: 16,
+                        color: colors.inkFaint,
+                      ),
                       const SizedBox(width: UriSpace.sm),
                       Expanded(
                         child: Column(
@@ -313,13 +343,18 @@ class _DevicesSection extends StatelessWidget {
                                 ),
                                 if (device.deviceId == currentDeviceId) ...[
                                   const SizedBox(width: UriSpace.xs),
-                                  Text('(this device)', style: theme.textTheme.labelSmall),
+                                  Text(
+                                    '(this device)',
+                                    style: theme.textTheme.labelSmall,
+                                  ),
                                 ],
                               ],
                             ),
                             Text(
                               '${device.sessionCount} active session(s)',
-                              style: theme.textTheme.bodySmall?.copyWith(color: colors.inkFaint),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.inkFaint,
+                              ),
                             ),
                           ],
                         ),
@@ -360,7 +395,7 @@ class _Row extends StatelessWidget {
           Icon(icon, size: 16, color: colors.inkFaint),
           const SizedBox(width: UriSpace.sm),
           Expanded(child: child),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );
