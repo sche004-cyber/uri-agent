@@ -50,11 +50,13 @@
 - M22.3 closed S1 (unauthenticated mutating endpoints) and S5 (unlimited
   auth attempts); remote/mobile security readiness still requires M22.4's
   per-user capability authority before it can be claimed.
+- **Permanent Acceptance Rule & Four-Stage Lifecycle (12 Sep 2026):** Every new add-on, capability, connector, integration, memory, graph, model, workflow, UI-to-backend feature, or extension must follow the 4-stage lifecycle (Audit → Architecture → Migration → Validation). A feature is not DONE merely because code exists or unit tests pass; it is complete only when the Brain can discover and use it through URI's canonical agent loop, execution results feed back into reasoning, and behavior is live-verified end-to-end. See [URI Four-Stage Development Lifecycle](docs/governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md).
 
 ## References
 
 - [AGENTS.md](AGENTS.md) for universal agent working rules.
 - [ORCHESTRATION.md](ORCHESTRATION.md) for multi-agent roles, delegation, and workflow rules.
+- [URI Four-Stage Development Lifecycle](docs/governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md) for mandatory feature development lifecycle and permanent acceptance rule.
 - [URI_MILESTONE_TRACKER.md](URI_MILESTONE_TRACKER.md) for delivery history.
 - [URI_M22_ARCHITECTURE.md](URI_M22_ARCHITECTURE.md) for M22 design and plan.
 - `URI_Model_Centric_Architecture_Docs/` for governing architecture, policy,

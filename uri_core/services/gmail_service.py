@@ -7,6 +7,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+from uri_core.core.google_auth_common import load_usable_credentials
+
 
 class GmailService:
     """
@@ -52,22 +54,10 @@ class GmailService:
         'https://www.googleapis.com/auth/gmail.readonly',
         'https://www.googleapis.com/auth/gmail.compose',
         'https://www.googleapis.com/auth/drive.readonly',
-        # M19: least-privilege upload scope - covers only files this
-        # app itself creates (see DriveService.upload_file), never the
-        # broader 'drive' scope that would grant read/write over the
-        # user's entire Drive.
         'https://www.googleapis.com/auth/drive.file',
     ]
 
     def __init__(self):
-
-        # 2026-09-12 (User directive): use the same resolved root as
-        # connection_status.py/server.py's authorize/disconnect
-        # endpoints (which already honor URI_GOOGLE_CREDENTIALS_DIR) -
-        # previously this class derived its own, independent root
-        # here, so a User-configured override would silently not apply
-        # to the one class that actually performs the interactive
-        # consent flow.
         from uri_core.core.connection_status import _repo_root
 
         credentials_root = Path(_repo_root())
@@ -152,10 +142,38 @@ class GmailService:
         Return Gmail connection status.
         """
 
-        return {
-            "connected": self.service is not None,
-            "mode": "READ_ONLY"
-        }
+        if self.service is None:
+            self.ensure_connected_from_token()
+        return {"connected": self.service is not None, "mode": "READ_ONLY"}
+
+    def ensure_connected_from_token(self) -> dict:
+        """Establish a Gmail client from the stored token without OAuth consent.
+
+        Never launches ``InstalledAppFlow`` and never exposes credential or
+        exception details.  ``connect()`` remains the sole interactive flow.
+        """
+        if self.service is not None:
+            return {"connected": True, "reason": "connected"}
+
+        if not self.token_path.exists():
+            return {"connected": False, "reason": "no_token"}
+
+        creds = load_usable_credentials(
+            token_path=str(self.token_path),
+            scopes=self.SCOPES,
+            allow_refresh=True,
+        )
+        if creds is None:
+            return {"connected": False, "reason": "invalid_token"}
+
+        try:
+            if not creds.has_scopes(self.SCOPES):
+                return {"connected": False, "reason": "scope_missing"}
+            self.service = build("gmail", "v1", credentials=creds)
+            return {"connected": True, "reason": "connected"}
+        except Exception:
+            self.service = None
+            return {"connected": False, "reason": "auth_error"}
 
     def create_draft(self, to: str, subject: str, body: str) -> dict:
         """M19: creates a real Gmail DRAFT - never sends it. The
@@ -749,5 +767,3 @@ class GmailService:
                 "success": False,
                 "reason": str(error)
             }
-
-

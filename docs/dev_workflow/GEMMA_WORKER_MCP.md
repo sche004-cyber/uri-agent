@@ -1,0 +1,165 @@
+# Gemma 4 MCP Worker Bridge Documentation
+
+## Overview
+
+The **Gemma 4 MCP Worker Bridge** (`scripts/gemma_worker_mcp.py`) is an isolated, development-only Model Context Protocol (MCP) bridge. It allows Antigravity (Gemini 3.8 Flash) to invoke the locally running Ollama instance serving `gemma4:12b` as the dedicated implementation worker under the AO-4 multi-agent operating model.
+
+This bridge is **development infrastructure**. It is not part of the URI runtime, does not alter the M22 milestone roadmap, and does not replace Antigravity's primary model selector.
+
+---
+
+## Architecture & Role Contract
+
+```
+Claude Code (CLI)
+  │ (Plans milestone & audits)
+  ▼
+User
+  │ (Accepts plan)
+  ▼
+Antigravity (Gemini 3.8 Flash)
+  │ [gemma_implement tool call]
+  ▼
+MCP Bridge (scripts/gemma_worker_mcp.py)
+  │ [HTTP POST /api/generate]
+  ▼
+Ollama (http://127.0.0.1:11434)
+  │ (Executes inference)
+  ▼
+gemma4:12b
+  │ (Produces code blocks + GEMMA RETURN REPORT)
+  ▼
+MCP Bridge
+  │ (Validates scope & protected boundaries, optionally writes to worktree)
+  ▼
+Antigravity
+  │ (Audits code, tests, coordinates remediation if needed)
+  ▼
+Claude Code (CLI)
+  │ (Independent verification -> VERIFIED / NOT VERIFIED)
+  ▼
+Commit & Push (Claude only) -> Next Milestone Plan (Claude)
+```
+
+### Role Separation
+1. **Claude Code (CLI):**
+   - Mandatory architecture planner.
+   - Independent final verifier (`VERIFIED` / `NOT VERIFIED`).
+   - Final release authority; performs commit and push after `VERIFIED`.
+2. **Gemma 4 12B (Local Ollama):**
+   - Dedicated implementation worker.
+   - Writes/modifies code strictly within the assigned `allowed_scope`.
+   - Produces the structured `GEMMA RETURN REPORT`.
+   - **Zero Git authority:** Cannot commit, push, or branch.
+   - **Zero architectural authority:** Cannot approve or verify milestones.
+3. **Antigravity (Gemini 3.8 Flash):**
+   - Loop manager and release coordinator.
+   - Dispatches implementation and bounded remediation task packages to Gemma via `gemma_implement`.
+   - Audits implementation against acceptance criteria and tests.
+   - Coordinates remediation loops when defects or findings arise.
+   - Does **not** replace Claude as the independent final verifier.
+4. **User:**
+   - Accepts milestone architecture plans.
+   - Resolves architectural escalations.
+
+---
+
+## MCP Configuration
+
+### Configuration Location
+The MCP server is registered in the global Antigravity MCP configuration:
+- **Windows Path:** `C:\Users\cheta\.gemini\config\mcp_config.json`
+
+### Entry
+```json
+{
+  "mcpServers": {
+    "uri-gemma-worker": {
+      "command": "C:\\Users\\cheta\\Development\\uri-agent\\.venv\\Scripts\\python.exe",
+      "args": [
+        "C:\\Users\\cheta\\Development\\uri-agent\\scripts\\gemma_worker_mcp.py"
+      ]
+    }
+  }
+}
+```
+
+### Discovery
+Antigravity's Language Server automatically loads servers declared in `~/.gemini/config/mcp_config.json`. When active, it spawns `python scripts/gemma_worker_mcp.py` via standard input/output (stdio) and exchanges JSON-RPC 2.0 messages.
+
+---
+
+## MCP Tool Surface: `gemma_implement`
+
+The bridge exposes a single, intentionally narrow tool: **`gemma_implement`**.
+
+### Input Schema (`task_package`)
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `task_id` | `string` | Yes | Unique identifier for the task (e.g. `M22.3-task-auth-routes`). |
+| `milestone_id` | `string` | No | Canonical milestone identifier (e.g. `M22.3`). Defaults to `task_id`. |
+| `goal` | `string` | Yes | Summary of what the task accomplishes. |
+| `allowed_scope` | `array[string]` | Yes | Exact list of relative file paths that Gemma is authorized to touch. |
+| `instructions` | `string` | Yes | Detailed implementation or remediation instructions. |
+| `negative_constraints`| `array[string]` | No | Prohibited actions (e.g. out-of-scope files, non-reliance on tier). |
+| `acceptance_criteria` | `array[string]` | No | Acceptance criteria from the approved plan. |
+| `test_plan` | `string` | No | Required tests to add or run. |
+| `context` | `map[string, string]` | No | Excerpts/contents of relevant files. |
+| `remediation_notes` | `string` | No | Defect findings if invoked during remediation after `NOT VERIFIED`. |
+| `apply_to_worktree` | `boolean` | No | `true`: writes authorized files to disk; `false` (default): returns proposals only. |
+
+### Output Format
+The tool returns a JSON structure containing:
+- `status`: `"ok"`, `"unavailable"`, `"invalid_request"`, or `"error"`.
+- `model_metadata`: Model ID (`gemma4:12b`), context limit (16384), latency, eval count.
+- `files_proposed`: List of proposed files with path, code content, authorization flag, and rejection reasons (if any).
+- `files_written`: List of files written to disk (if `apply_to_worktree=true` and authorized).
+- `rejected_files`: List of files rejected due to being out-of-scope or protected.
+- `gemma_return_report`: Structured dictionary parsed from Gemma's `GEMMA RETURN REPORT`.
+- `raw_response`: Full text generated by Gemma.
+
+---
+
+## Security Boundaries & Safety Guarantees
+
+1. **Local Loopback Only:**
+   - Connects strictly to `http://127.0.0.1:11434`. No remote network requests.
+2. **Strict Model Pinning:**
+   - Hardcoded to `gemma4:12b`.
+   - Fails closed if `gemma4:12b` is not installed or Ollama is offline.
+   - **No silent substitution:** Will never switch to Qwen or any other model.
+3. **Protected Path Enforcement:**
+   - Protected files (e.g. `uri_core/core/approval_gate.py`, `security_boundary.py`, `AGENTS.md`, `ORCHESTRATION.md`, architecture ADRs) cannot be modified.
+   - Any attempt to include them in `allowed_scope` is rejected at input validation.
+   - Any attempt by Gemma to output code for a protected path is rejected at output validation.
+4. **Scope Enclosure:**
+   - Any file generated by Gemma outside the caller's `allowed_scope` is marked unauthorized and excluded from worktree writes.
+5. **Path Traversal Protection:**
+   - Rejects `..`, absolute paths outside the repo root, and malformed paths.
+6. **Credential Filtering:**
+   - Inputs are scanned for API keys, bearer tokens, passwords, and secrets. Matching inputs fail closed with `invalid_request`.
+7. **Prohibited Directive Filtering:**
+   - Directives attempting to trigger git commits, pushes, shell command execution, or bypassing Claude verification are rejected at input validation.
+8. **Bounded Context:**
+   - Strict limits on string lengths, request byte sizes, and file counts prevent buffer exhaustion or model denial of service.
+
+---
+
+## Failure Behavior
+
+| Scenario | Tool Status | Behavior |
+| :--- | :--- | :--- |
+| Ollama service not running | `"unavailable"` | Explicit error stating Ollama is unreachable at `127.0.0.1:11434`. |
+| `gemma4:12b` missing | `"unavailable"` | Explicit error listing installed models; refuses to run. |
+| Protected file in scope | `"invalid_request"` | Input validation error stating protected file is blocked. |
+| Forbidden directive | `"invalid_request"` | Input validation error stating prohibited directive detected. |
+| Out-of-scope file in Gemma output | `"ok"` | File marked `authorized: false`, added to `rejected_files`, omitted from writes. |
+
+---
+
+## Disabling or Removing the Bridge
+
+To safely disable the Gemma MCP bridge without touching the repository:
+1. Open `C:\Users\cheta\.gemini\config\mcp_config.json`.
+2. Remove the `"uri-gemma-worker"` key under `"mcpServers"`.
+3. Save the file. Antigravity will stop spawning the worker.

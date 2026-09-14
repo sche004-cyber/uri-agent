@@ -31,6 +31,10 @@ milestone status:
    [Project Memory](PROJECT_MEMORY.md) — current delivery state and handoff.
 6. [Multi-Agent Orchestration Architecture](ORCHESTRATION.md)
    — canonical AO-4 agent team roles, coordination loop, and workflow rules.
+7. [URI Four-Stage Development Lifecycle](docs/governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md)
+   — mandatory four-stage lifecycle (Audit → Architecture → Migration → Validation) and permanent acceptance rule for all future add-ons.
+8. [URI Active Milestone Control](docs/governance/URI_ACTIVE_MILESTONE.md)
+   — single authoritative record of current approved milestone, state, authorized scope, agent roles, and stop conditions.
 
 Do not duplicate or weaken these documents in implementation notes.
 
@@ -84,9 +88,21 @@ CLAUDE PLANS → CLAUDE PRE-AUDITS → USER ACCEPTS → ANTIGRAVITY INITIATES TA
 - Do not treat a route as safe merely because a caller is authenticated:
   route classification and role enforcement are M22.3's explicit work.
 - In prompt context assembly for the coordinator, Antigravity must explicitly inject negative constraints (prohibited features, deferred work, protected files) as first-class context to prevent scope drift.
+- **Permanent Acceptance Rule:** "A feature is not DONE merely because its code exists or its unit tests pass. It is complete only when the Brain can discover and use it through URI's canonical agent loop, execution results are fed back into reasoning, and the user-visible behavior has been live-verified end-to-end."
+- **Four-Stage Development Lifecycle:** Every new add-on, capability, connector, integration, memory feature, graph feature, model feature, automation, workflow, UI-to-backend feature, skill, or future extension must strictly follow the four stages:
+  1. *Stage 1 — Evidence & Root-Cause Audit* (`docs/research/<M>_ROOT_CAUSE_AUDIT.md`)
+  2. *Stage 2 — Canonical Architecture Design* (`docs/architecture/<M>_CANONICAL_ARCHITECTURE.md`)
+  3. *Stage 3 — Migration & Integration Plan* (`docs/plans/<M>_MIGRATION_PLAN.md`)
+  4. *Stage 4 — Implementation & End-to-End Validation* (component, integration, agent-loop behavioral, and live UI verification)
+  No add-on may bypass this lifecycle unless it is a clearly bounded local bug fix with known root cause, minimal local scope, no architectural impact, and regression coverage. See [URI Four-Stage Development Lifecycle](docs/governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md).
 
 ## Working practice
 
+- Before asking the User for milestone-specific coordination approval, read
+  [docs/governance/URI_ACTIVE_MILESTONE.md](docs/governance/URI_ACTIVE_MILESTONE.md).
+  If the requested read/write/task scope is already explicitly authorized
+  there, proceed within that scope without asking again. If the requested
+  action exceeds that scope, ask for approval.
 - Inspect only the files necessary for the assigned scope. Preserve unrelated
   dirty-worktree changes.
 - Do not modify application code or tests during documentation-only work.

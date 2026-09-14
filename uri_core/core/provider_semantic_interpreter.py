@@ -58,6 +58,20 @@ Rules:
 - requires_evidence must be true or false.
 - requires_clarification must be true or false.
 - suggested_next_step must be the safest logical next step.
+
+Personal disclosure (2026-09-12): when the user is telling URI a fact
+ABOUT THEMSELVES in first person (their workplace, name, preference,
+contact detail, or similar) - e.g. "I work at X", "my favorite format
+is docx", "call me Y" - this is NOT a request for information about
+whatever they mentioned. Even if the disclosure names a place,
+organization, or other entity, do not classify it as an information-
+retrieval/search request about that entity. Instead:
+- task_type must be "personal information disclosure".
+- goal must state that the user is sharing a fact about themselves,
+  preserving the actual fact (e.g. "the user's workplace is X").
+- requested_output must be "save this fact about the user to memory".
+- requires_clarification must be false (the disclosure is already
+  complete information, not a question needing an answer).
 """
 
 REQUIRED_KEYS = [
@@ -70,6 +84,39 @@ REQUIRED_KEYS = [
     "requires_clarification",
     "suggested_next_step",
 ]
+
+# 2026-09-12: the SYSTEM_PROMPT's own "personal disclosure" instruction
+# (above) asks the model to classify a first-person self-disclosure
+# distinctly, but a small local model does not reliably follow it -
+# live-verified: "I work at NIT Sikkim" kept coming back classified as
+# an information-retrieval request about NIT Sikkim regardless of the
+# added prompt guidance. This deterministic raw-text check is the
+# authoritative fallback: URI's own runtime, not the model's prompt
+# compliance, decides this classification. Mirrors capability_planner's
+# existing keyword-based routing convention - not a change to how the
+# Brain itself reasons, only to what URI's semantic layer reports.
+import re as _re
+
+_DISCLOSURE_PATTERNS = [
+    _re.compile(pattern, _re.IGNORECASE)
+    for pattern in (
+        r"\bi work (at|for) (?P<fact>.+)",
+        r"\bi study (at|in) (?P<fact>.+)",
+        r"\bi live (in|at) (?P<fact>.+)",
+        r"\bi(?:'m| am) from (?P<fact>.+)",
+        r"\bmy (workplace|job|role) is (?P<fact>.+)",
+        r"\bmy name is (?P<fact>.+)",
+        r"\bcall me (?P<fact>.+)",
+        r"\bmy (favorite|favourite) (?P<fact>.+)",
+        r"\bi prefer (?P<fact>.+)",
+        r"\bmy email is (?P<fact>.+)",
+        r"\bmy phone(?: number)? is (?P<fact>.+)",
+    )
+]
+
+
+def _detect_personal_disclosure(user_text: str) -> bool:
+    return any(pattern.search(user_text or "") for pattern in _DISCLOSURE_PATTERNS)
 
 
 class ProviderSemanticInterpreter:
@@ -126,7 +173,7 @@ class ProviderSemanticInterpreter:
                 f"Semantic interpreter unavailable: {exc}"
             ) from exc
 
-        return self._parse(response.content)
+        return self._parse(response.content, user_text)
 
     def _complete(self, provider: ModelProvider, user_text: str) -> dict:
         response = provider.complete(
@@ -135,9 +182,9 @@ class ProviderSemanticInterpreter:
             temperature=0,
             max_tokens=500,
         )
-        return self._parse(response.content)
+        return self._parse(response.content, user_text)
 
-    def _parse(self, content: str) -> dict:
+    def _parse(self, content: str, user_text: str = "") -> dict:
         content = content.strip()
 
         if content.startswith("```"):
@@ -151,5 +198,11 @@ class ProviderSemanticInterpreter:
             raise ValueError(
                 f"Semantic interpreter returned incomplete result. Missing: {missing}"
             )
+
+        if _detect_personal_disclosure(user_text):
+            result["task_type"] = "personal information disclosure"
+            result["goal"] = f"the user is sharing a fact about themselves: {user_text}"
+            result["requested_output"] = "save this fact about the user to memory"
+            result["requires_clarification"] = False
 
         return result

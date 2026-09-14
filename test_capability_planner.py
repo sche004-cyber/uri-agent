@@ -73,6 +73,77 @@ class CapabilityPlannerRegistryRegressionTests(unittest.TestCase):
         self.assertEqual(result["tool_name"], "fetch_drive_spreadsheet")
 
 
+class CapabilityPlannerPersonalDisclosureTests(unittest.TestCase):
+    """2026-09-12: "I work at NIT Sikkim" used to route to web_search
+    (a hardcoded "nit sikkim" literal in web_search's own scoring beat
+    remember_fact, which only scored on magic trigger phrases like
+    "add this to my profile"). A plain first-person disclosure must
+    win remember_fact without needing a trigger phrase, and the
+    institution's name must never, on its own, route to web_search."""
+
+    def setUp(self):
+        self.planner = CapabilityPlanner()
+
+    def test_plain_workplace_disclosure_selects_remember_fact(self):
+        result = self.planner.plan(
+            {
+                "task_type": "personal information",
+                "domain": "",
+                "goal": "i work at nit sikkim",
+                "requested_output": "",
+                "entities": [],
+            }
+        )
+
+        self.assertEqual(result["status"], "capability_selected")
+        self.assertEqual(result["tool_name"], "remember_fact")
+
+    def test_paraphrased_workplace_disclosure_selects_remember_fact(self):
+        result = self.planner.plan(
+            {
+                "task_type": "personal information",
+                "domain": "",
+                "goal": "the user's workplace is nit sikkim",
+                "requested_output": "",
+                "entities": [],
+            }
+        )
+
+        self.assertEqual(result["status"], "capability_selected")
+        self.assertEqual(result["tool_name"], "remember_fact")
+
+    def test_semantic_interpreter_disclosure_contract_selects_remember_fact(self):
+        # Mirrors the exact shape provider_semantic_interpreter.py's
+        # SYSTEM_PROMPT asks the model to produce for a first-person
+        # disclosure - this is the reliable signal, independent of how
+        # the model paraphrases the free-text goal.
+        result = self.planner.plan(
+            {
+                "task_type": "personal information disclosure",
+                "domain": "",
+                "goal": "the user's workplace is NIT Sikkim",
+                "requested_output": "save this fact about the user to memory",
+                "entities": [{"name": "NIT Sikkim", "type": "Institution"}],
+            }
+        )
+
+        self.assertEqual(result["status"], "capability_selected")
+        self.assertEqual(result["tool_name"], "remember_fact")
+
+    def test_institution_name_alone_does_not_select_web_search(self):
+        result = self.planner.plan(
+            {
+                "task_type": "personal information",
+                "domain": "",
+                "goal": "i work at nit sikkim",
+                "requested_output": "",
+                "entities": ["nit sikkim"],
+            }
+        )
+
+        self.assertNotEqual(result.get("tool_name"), "web_search")
+
+
 class CapabilityPlannerGapAwarenessTests(unittest.TestCase):
     """New in Milestone 6: the two "no candidate" branches now include
     known_gaps - informational only. A planned/not_implemented

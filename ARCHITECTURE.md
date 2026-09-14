@@ -17,6 +17,7 @@ This page is a map, not a substitute for governing architecture.
 - [URI Model ↔ Runtime Contract](URI_Model_Centric_Architecture_Docs/URI_MODEL_RUNTIME_CONTRACT.md)
 - [URI M22 Architecture](URI_M22_ARCHITECTURE.md)
 - [Multi-Agent Orchestration Architecture](ORCHESTRATION.md)
+- [URI Four-Stage Development Lifecycle](docs/governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md)
 
 ## Document Precedence
 
@@ -60,5 +61,16 @@ Development orchestration mirrors runtime principles: reasoning proposes, determ
 - **Claude Code (CLI):** Architecture & security specialist (security boundaries, cross-module contracts, deep audit).
 - **Gemma 3:** Excluded from active development team.
 - **Specification:** [ORCHESTRATION.md](ORCHESTRATION.md).
+
+## Four-Stage Development Lifecycle & Permanent Acceptance Rule
+
+Every new add-on, capability, connector, integration, memory feature, graph feature, model feature, automation, workflow, UI-to-backend feature, skill, or extension must pass through the [Four-Stage Development Lifecycle](docs/governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md):
+1. **Stage 1 — Evidence & Root-Cause Audit** (`docs/research/<M>_ROOT_CAUSE_AUDIT.md`)
+2. **Stage 2 — Canonical Architecture Design** (`docs/architecture/<M>_CANONICAL_ARCHITECTURE.md`)
+3. **Stage 3 — Migration & Integration Plan** (`docs/plans/<M>_MIGRATION_PLAN.md`)
+4. **Stage 4 — Implementation & End-to-End Validation** (Component, Integration, Agent-Loop, and Live UI)
+
+**Permanent Acceptance Rule:** "A feature is not DONE merely because its code exists or its unit tests pass. It is complete only when the Brain can discover and use it through URI's canonical agent loop, execution results are fed back into reasoning, and the user-visible behavior has been live-verified end-to-end."
+
 
 

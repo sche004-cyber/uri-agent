@@ -150,6 +150,38 @@ audited by Claude for UI/backend parity before the milestone can reach
 deferral is a plan decision Claude must state explicitly, not an implicit
 consequence of the declaration.
 
+### 1.6 Four-Stage Development Lifecycle & Permanent Acceptance Rule (2026-09-12)
+
+Every new add-on, capability, connector, integration, memory feature, graph feature, model feature, automation, workflow, UI-to-backend feature, skill, or future extension must strictly follow the **URI Four-Stage Development Lifecycle** ([full governance specification](docs/governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md)):
+
+1. **Stage 1 — Evidence & Root-Cause Audit (`docs/research/<M>_ROOT_CAUSE_AUDIT.md`):** Establish what is actually happening in the live system before designing or fixing anything. Trace actual production paths; no implementation, speculative patches, regexes, or architecture changes during this stage.
+2. **Stage 2 — Canonical Architecture Design (`docs/architecture/<M>_CANONICAL_ARCHITECTURE.md`):** Define how the add-on should fit into URI's canonical agent loop based strictly on Stage 1 evidence.
+3. **Stage 3 — Migration & Integration Plan (`docs/plans/<M>_MIGRATION_PLAN.md`):** Define a bounded, reversible migration path from the current state to the canonical architecture without regressions.
+4. **Stage 4 — Implementation & End-to-End Validation:** Implement the accepted migration plan and validate through the complete canonical agent loop:
+   ```
+   user request → latest/relevant context → Brain decision → capability discovery → action selection → deterministic validation → execution → execution evidence/result → result fed back to Brain → grounded natural-language response
+   ```
+
+> [!IMPORTANT]
+> **PERMANENT ACCEPTANCE RULE:**  
+> "A feature is not DONE merely because its code exists or its unit tests pass. It is complete only when the Brain can discover and use it through URI's canonical agent loop, execution results are fed back into reasoning, and the user-visible behavior has been live-verified end-to-end."
+
+**The 10 Invariants:** Every capability/add-on must answer:
+1. How is it discovered?
+2. How does the Brain know it is available?
+3. How does the Brain know when to use it?
+4. What action contract does it expose?
+5. What runtime state does it need?
+6. What permissions/approvals apply?
+7. How does execution happen?
+8. How does the result return to reasoning?
+9. How are follow-up references grounded?
+10. How is it tested end-to-end?
+
+If any answer is missing, the feature is not integration-complete.
+
+No add-on may bypass this lifecycle unless it is a clearly bounded local bug fix with known root cause, minimal local scope, no architectural impact, and regression coverage.
+
 ---
 
 ## 2. Active Coordination Loop

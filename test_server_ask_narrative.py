@@ -6,6 +6,7 @@ memory stores and passes it through; the response carries an additive
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -183,6 +184,28 @@ class AskNarrativeEndpointTests(unittest.TestCase):
         # The structured, pre-existing fields are unaffected either way.
         self.assertEqual(
             response.json()["execution"]["status"], "success"
+        )
+
+    def test_ask_relays_narrative_unavailable_reason(self):
+        with patch.object(
+            server._orchestrator,
+            "process_user_input",
+            return_value={
+                "status": "success",
+                "session_id": "s1",
+                "response": {"message": "A usable fallback."},
+                "narrative": None,
+                "narrative_unavailable_reason": "provider_unavailable",
+            },
+        ):
+            response = self.client.post(
+                "/ask", json={"session_id": "s1", "text": "hello"}
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["narrative_unavailable_reason"],
+            "provider_unavailable",
         )
 
 

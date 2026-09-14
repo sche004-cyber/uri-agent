@@ -285,6 +285,10 @@ class PostExecutionClarificationTests(_IsolatedOrchestratorCase):
             session.last_goal_attempt_history[0]["proposal"]["capability"],
             "extract_student_records",
         )
+        self.assertEqual(
+            session.last_goal_attempt_history[-1]["proposal"]["capability_id"],
+            "extract_student_records",
+        )
 
 
 class TolerantEvaluationRecoveryTests(_IsolatedOrchestratorCase):

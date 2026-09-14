@@ -41,22 +41,20 @@ class GmailSearchServiceAuthTests(unittest.TestCase):
         self.assertFalse(service.authenticate())
 
     @patch("uri_core.services.gmail_search_service.build")
-    @patch("uri_core.services.gmail_search_service.Credentials")
+    @patch("uri_core.services.gmail_search_service.load_usable_credentials")
     def test_reads_the_same_json_token_gmailservice_writes(
-        self, mock_credentials_cls, mock_build
+        self, mock_load_credentials, mock_build
     ):
         _fake_token_json(self.token_path)
-        mock_creds = MagicMock(valid=True)
-        mock_credentials_cls.from_authorized_user_file.return_value = mock_creds
+        mock_load_credentials.return_value = MagicMock()
 
         service = GmailSearchService(token_path=self.token_path)
         ok = service.authenticate()
 
         self.assertTrue(ok)
-        mock_credentials_cls.from_authorized_user_file.assert_called_once()
         # The path passed must be the real token.json path, never a
         # pickle file.
-        called_path = mock_credentials_cls.from_authorized_user_file.call_args[0][0]
+        called_path = mock_load_credentials.call_args.kwargs["token_path"]
         self.assertEqual(called_path, self.token_path)
 
     def test_get_unread_count_reports_real_label_count(self):

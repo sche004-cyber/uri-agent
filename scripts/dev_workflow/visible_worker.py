@@ -63,6 +63,7 @@ import ctypes
 import datetime
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -82,8 +83,11 @@ CODEX_EXE_CANDIDATES = (
 
 def _resolve_codex_exe() -> str:
     for candidate in CODEX_EXE_CANDIDATES:
-        if candidate == "codex" or os.path.exists(candidate):
+        if candidate != "codex" and os.path.exists(candidate):
             return candidate
+    resolved = shutil.which("codex")
+    if resolved:
+        return resolved
     return "codex"
 
 

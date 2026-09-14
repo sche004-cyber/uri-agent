@@ -1,0 +1,227 @@
+{
+  "rows": [
+    {
+      "id": "conv_1",
+      "expected_mode": "conversation",
+      "brain_mode": "clarification",
+      "brain_capability": "web_search",
+      "golden_category": "false_clarification",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "all_gates_passed"
+      ],
+      "effect": "brain_wrong_and_gate_did_not_catch_it"
+    },
+    {
+      "id": "conv_2",
+      "expected_mode": "conversation",
+      "brain_mode": "unsupported",
+      "brain_capability": null,
+      "golden_category": "false_unsupported",
+      "gate_outcome": "INVALID_PROPOSAL",
+      "gate_reasons": [
+        "false_unsupported_claim_rejected_by_directory"
+      ],
+      "effect": "brain_wrong_no_capability_proposed_gate_cannot_supply_one"
+    },
+    {
+      "id": "clarify_1",
+      "expected_mode": "clarification",
+      "brain_mode": "clarification",
+      "brain_capability": "extract_student_records",
+      "golden_category": "correct",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "all_gates_passed"
+      ],
+      "effect": "brain_correct"
+    },
+    {
+      "id": "clarify_2",
+      "expected_mode": "clarification",
+      "brain_mode": "single_action",
+      "brain_capability": "extract_student_records",
+      "golden_category": "missed_clarification",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "all_gates_passed"
+      ],
+      "effect": "brain_wrong_and_gate_did_not_catch_it"
+    },
+    {
+      "id": "continue_1",
+      "expected_mode": "workflow_continuation",
+      "brain_mode": "clarification",
+      "brain_capability": null,
+      "golden_category": "missed_continuation",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "clarification_pending_no_capability_named"
+      ],
+      "effect": "brain_wrong_no_capability_proposed_gate_cannot_supply_one"
+    },
+    {
+      "id": "continue_2",
+      "expected_mode": "workflow_continuation",
+      "brain_mode": "single_action",
+      "brain_capability": "extract_student_records",
+      "golden_category": "missed_continuation",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "all_gates_passed"
+      ],
+      "effect": "brain_wrong_and_gate_did_not_catch_it"
+    },
+    {
+      "id": "unsupported_1",
+      "expected_mode": "unsupported",
+      "brain_mode": "unsupported",
+      "brain_capability": null,
+      "golden_category": "correct",
+      "gate_outcome": "INVALID_PROPOSAL",
+      "gate_reasons": [
+        "false_unsupported_claim_rejected_by_directory"
+      ],
+      "effect": "brain_correct"
+    },
+    {
+      "id": "unsupported_2",
+      "expected_mode": "unsupported",
+      "brain_mode": "clarification",
+      "brain_capability": null,
+      "golden_category": "missed_unsupported",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "clarification_pending_no_capability_named"
+      ],
+      "effect": "brain_wrong_no_capability_proposed_gate_cannot_supply_one"
+    },
+    {
+      "id": "disclosure_1",
+      "expected_mode": "single_action",
+      "brain_mode": "single_action",
+      "brain_capability": "remember_fact",
+      "golden_category": "correct",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "all_gates_passed"
+      ],
+      "effect": "brain_correct"
+    },
+    {
+      "id": "disclosure_2",
+      "expected_mode": "single_action",
+      "brain_mode": "single_action",
+      "brain_capability": "remember_fact",
+      "golden_category": "correct",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "all_gates_passed"
+      ],
+      "effect": "brain_correct"
+    },
+    {
+      "id": "office_note",
+      "expected_mode": "single_action",
+      "brain_mode": "single_action",
+      "brain_capability": "draft_institutional_note",
+      "golden_category": "correct",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "all_gates_passed"
+      ],
+      "effect": "brain_correct"
+    },
+    {
+      "id": "convert_doc",
+      "expected_mode": "single_action",
+      "brain_mode": "single_action",
+      "brain_capability": "convert_document",
+      "golden_category": "correct",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "all_gates_passed"
+      ],
+      "effect": "brain_correct"
+    },
+    {
+      "id": "gmail_multi_1",
+      "expected_mode": "multi_action",
+      "brain_mode": "clarification",
+      "brain_capability": null,
+      "golden_category": "false_clarification",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "clarification_pending_no_capability_named"
+      ],
+      "effect": "brain_wrong_no_capability_proposed_gate_cannot_supply_one"
+    },
+    {
+      "id": "gmail_multi_2",
+      "expected_mode": "multi_action",
+      "brain_mode": "clarification",
+      "brain_capability": null,
+      "golden_category": "false_clarification",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "clarification_pending_no_capability_named"
+      ],
+      "effect": "brain_wrong_no_capability_proposed_gate_cannot_supply_one"
+    },
+    {
+      "id": "gmail_draft_approval",
+      "expected_mode": "approval_required",
+      "brain_mode": "single_action",
+      "brain_capability": "gmail_create_draft",
+      "golden_category": "false_capability",
+      "gate_outcome": "APPROVAL_REQUIRED",
+      "gate_reasons": [
+        "capability_or_action_requires_approval"
+      ],
+      "effect": "brain_wrong_gate_outcome_APPROVAL_REQUIRED"
+    },
+    {
+      "id": "topic_switch",
+      "expected_mode": "single_action",
+      "brain_mode": "clarification",
+      "brain_capability": null,
+      "golden_category": "false_clarification",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "clarification_pending_no_capability_named"
+      ],
+      "effect": "brain_wrong_no_capability_proposed_gate_cannot_supply_one"
+    },
+    {
+      "id": "ambiguous_1",
+      "expected_mode": "clarification",
+      "brain_mode": "clarification",
+      "brain_capability": null,
+      "golden_category": "correct",
+      "gate_outcome": "READY",
+      "gate_reasons": [
+        "clarification_pending_no_capability_named"
+      ],
+      "effect": "brain_correct"
+    },
+    {
+      "id": "gmail_unread_only",
+      "expected_mode": "single_action",
+      "brain_mode": "clarification",
+      "brain_capability": "gmail_search",
+      "golden_category": "false_clarification",
+      "gate_outcome": "DISCONNECTED",
+      "gate_reasons": [
+        "unavailable_runtime"
+      ],
+      "effect": "brain_wrong_gate_outcome_DISCONNECTED"
+    }
+  ],
+  "summary": {
+    "total": 18,
+    "raw_brain_accuracy": 0.389,
+    "post_gate_safe_rejection_rate_of_brain_errors": 0.0,
+    "brain_errors_gate_could_not_address_no_capability_proposed": 6,
+    "brain_errors_gate_let_through_unsafely": 3
+  }
+}

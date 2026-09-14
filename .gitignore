@@ -4,6 +4,7 @@ __pycache__/
 
 # Sensitive credentials - must never enter version history
 credentials.json
+URI.json
 token.json
 token.pickle
 .env
@@ -66,3 +67,18 @@ temp_evidence/
 
 # M16: user-attached files (uploaded content, not source)
 uri_workspace/uploads/
+
+# Live-test evidence capture (2026-09-14): server stdout/stderr logs and
+# real Gmail-attachment content pulled down during live M30.7x scenario
+# verification - install-local runtime output, and in at least one case
+# (Mess Sheet_ June to Dec 2026.xlsx) a real institutional record with
+# student names/roll numbers/emails, never source and never safe to push.
+uri_workspace/evidence/
+
+# Telemetry/shadow-log JSONL and the Graphify system index are real,
+# privacy-scrubbed-by-design runtime state (see decision_engine.py's own
+# record_shadow_trace docstring) but still install-local, regenerated
+# output, not source - matches uri_workspace/logs/'s own rationale above.
+uri_workspace/canonical_execution_log.jsonl
+uri_workspace/decision_engine_shadow_log.jsonl
+uri_workspace/graphify_index.json

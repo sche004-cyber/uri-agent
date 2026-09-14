@@ -13,6 +13,7 @@ from uri_core.core.capability_feasibility import CapabilityFeasibility
 from uri_core.core.provider_semantic_interpreter import (
     ProviderSemanticInterpreter
 )
+from uri_core.core.model_router import AllProvidersUnreachableError
 from uri_core.core.skill_memory import SkillMemory
 from uri_core.core.capability_planner import CapabilityPlanner
 from uri_core.core.conversational_classifier import (
@@ -63,6 +64,8 @@ from uri_core.services.evidence_processor import (
     EvidenceProcessor
 )
 from uri_core.core.context_budget import bound_json_value, fit_within_budget
+from uri_core.core.multi_action_dispatch import MultiActionDispatch
+from uri_core.core.turn_state import _project_active_pointer
 
 
 # M21: bounds on the persisted session state fed into every Brain call's
@@ -119,7 +122,8 @@ class UriOrchestrator:
         capability_registry=None,
         capability_feasibility=None,
         principal=None,
-        graph_store=None
+        graph_store=None,
+        multi_action_dispatch=None
     ):
 
         # Milestone 11 Part 2 (Brain re-evaluation loop): a safety cap
@@ -256,6 +260,14 @@ class UriOrchestrator:
             else CapabilityRegistry()
         )
 
+        # M27: protocol/execution wiring lives in multi_action_dispatch.py;
+        # this orchestrator only supplies turn state and invokes the boundary.
+        self.multi_action_dispatch = (
+            multi_action_dispatch
+            if multi_action_dispatch is not None
+            else MultiActionDispatch(capability_registry=self.capability_registry)
+        )
+
         # M20: read-only "is this genuinely usable right now" snapshot,
         # composed from self.capability_registry + real connection
         # state - see capability_feasibility.py. Narrows
@@ -365,8 +377,21 @@ class UriOrchestrator:
         try:
             return self.semantic_interpreter.interpret(user_text)
 
-        except Exception:
-            return {
+        except Exception as exc:
+            # ProviderSemanticInterpreter deliberately keeps its public
+            # ValueError contract, chaining the router's terminal failure as
+            # the cause.  A malformed response also raises ValueError, but
+            # has no AllProvidersUnreachableError in that chain and must
+            # remain the non-gating, reached-but-invalid case.
+            error_chain = []
+            current_error = exc
+            while current_error is not None and current_error not in error_chain:
+                error_chain.append(current_error)
+                current_error = (
+                    current_error.__cause__ or current_error.__context__
+                )
+
+            degraded = {
                 "goal": user_text,
                 "task_type": "",
                 "domain": "",
@@ -379,6 +404,12 @@ class UriOrchestrator:
                     "the Brain will still reason about it directly."
                 ),
             }
+            if any(
+                isinstance(error, AllProvidersUnreachableError)
+                for error in error_chain
+            ):
+                degraded["interpretation_unreachable"] = True
+            return degraded
 
     # ==========================================================
     # MODEL REASONING SHADOW
@@ -466,6 +497,23 @@ class UriOrchestrator:
             len(history) - MAX_EXECUTION_HISTORY_ENTRIES
         )
         return workflow
+
+    def _pending_interaction(self, session):
+        """One read-side view of URI's two durable pause mechanisms.
+
+        This deliberately does not change either pause writer.  Callers that
+        need to decide whether legacy workflow recovery/resume applies use
+        this shared projection rather than reimplementing the predicate.
+        """
+        pointer = _project_active_pointer(session)
+        workflow = getattr(session, "active_workflow", None)
+        status = getattr(session, "active_workflow_status", None)
+        return {
+            "pointer": pointer,
+            "workflow": workflow,
+            "has_workflow": workflow is not None,
+            "waiting_for_workflow_input": workflow is not None and status == "waiting_for_input",
+        }
 
     def _build_model_session_context(
         self,
@@ -722,6 +770,9 @@ class UriOrchestrator:
             query_context["soul"] = ""
             query_context["session"] = {}
             query_context["capabilities"] = []
+            query_context["multi_action_capabilities"] = (
+                self.multi_action_dispatch.model_context(session_id, user_text)
+            )
 
             session_context = (
                 self._build_model_session_context(
@@ -1739,7 +1790,11 @@ class UriOrchestrator:
         session,
         session_id,
         user_text,
-        attempt_history_so_far=None
+        attempt_history_so_far=None,
+        capability_id=None,
+        action=None,
+        known_inputs=None,
+        missing_field=None,
     ):
         """Milestone 13 Part 1/2: pauses a turn on the Brain's own
         decision that more information is needed, before anything
@@ -1815,6 +1870,10 @@ class UriOrchestrator:
                     "proposal": {
                         "type": "clarification",
                         "question": question,
+                        "capability_id": capability_id,
+                        "action": action,
+                        "known_inputs": dict(known_inputs or {}),
+                        "missing_field": missing_field,
                     },
                     "result": {
                         "status": "awaiting_user_response",
@@ -2748,6 +2807,12 @@ class UriOrchestrator:
                         stop_reason="clarification_needed",
                     )
 
+                    last_capability = None
+                    if attempt_history and isinstance(attempt_history[-1], dict):
+                        last_proposal = attempt_history[-1].get("proposal") or {}
+                        if last_proposal.get("type") == "capability":
+                            last_capability = last_proposal.get("capability")
+
                     self._apply_clarification_pause(
                         response,
                         clarification["question"],
@@ -2756,6 +2821,7 @@ class UriOrchestrator:
                         session_id=session_id,
                         user_text=user_text,
                         attempt_history_so_far=attempt_history,
+                        capability_id=last_capability,
                     )
 
                     return
@@ -4186,7 +4252,8 @@ class UriOrchestrator:
             # workflow state. The model never decides recovery.
             # --------------------------------------------------
 
-            if session.active_workflow is not None:
+            pending_interaction = self._pending_interaction(session)
+            if pending_interaction["has_workflow"]:
 
                 recovery_result = (
                     self._recover_active_workflow(
@@ -4207,12 +4274,7 @@ class UriOrchestrator:
             # Resume a previously paused workflow first.
             # --------------------------------------------------
 
-            if (
-                session.active_workflow is not None
-                and
-                session.active_workflow_status
-                == "waiting_for_input"
-            ):
+            if pending_interaction["waiting_for_workflow_input"]:
 
                 resumed = (
                     self._resume_active_workflow(
@@ -4437,6 +4499,43 @@ class UriOrchestrator:
                     None
             }
 
+            # M30-PFC: an attempted-and-terminally-unavailable model path
+            # is categorically different from a disabled model path or a
+            # malformed response that a provider actually returned.  In this
+            # state, a learned skill cannot become an independent execution
+            # authority for the turn.
+            model_terminally_unavailable = bool(
+                semantic_result.get("interpretation_unreachable")
+            ) or (
+                model_reasoning.get("status") == "reasoning_failed"
+                and "all providers exhausted" in str(
+                    model_reasoning.get("error", "")
+                ).lower()
+            )
+
+            # M27: only an explicit registered multi-action proposal is
+            # handled here.  All legacy proposals deliberately fall through
+            # to the existing ApprovalGate/ToolDispatcher paths below.
+            multi_action_result = self.multi_action_dispatch.dispatch(
+                model_reasoning,
+                session_id=session_id,
+                user_text=user_text,
+                principal=principal,
+            )
+            if multi_action_result is not None:
+                response.update({
+                    key: value for key, value in multi_action_result.items()
+                    if key != "handled"
+                })
+                self._draft_narrative_safely(
+                    user_text=user_text,
+                    response=response,
+                    personalization_context=personalization_context,
+                    session_id=session_id,
+                )
+                self._persist_session(session_id)
+                return response
+
             # --------------------------------------------------
             # Milestone 13 Part 1: pre-execution Brain sanity check.
             #
@@ -4531,6 +4630,7 @@ class UriOrchestrator:
                             session=session,
                             session_id=session_id,
                             user_text=user_text,
+                            capability_id=model_capability_proposal,
                         )
 
                     # "unavailable": the sanity check itself produced
@@ -4562,8 +4662,34 @@ class UriOrchestrator:
                 # overridden). The Brain's own "I need more
                 # information" decision is honored the same way
                 # regardless of which call it came from.
-                initial_clarification = self._model_clarification(
-                    model_reasoning
+                # 2026-09-12 (User-reported defect, live-verified): this
+                # clarification comes from a separate, unconstrained
+                # reasoning call and used to have absolute priority over
+                # BOTH the semantic interpreter's own structured
+                # requires_clarification=False signal AND a
+                # CapabilityPlanner match already confident enough to
+                # execute - so an already-resolved request ("I work at
+                # NIT Sikkim"; "how many unread emails" with a connected
+                # Gmail account) still got a redundant clarifying
+                # question instead of ever running. Skip the Brain's
+                # clarification only when the deterministic layer is
+                # ALREADY both explicit (interpreter says no
+                # clarification needed) and confident (a real capability
+                # match) - this preserves the original protection this
+                # branch exists for: a genuinely incomplete request
+                # (e.g. a missing roll number) where the semantic
+                # interpreter itself reports requires_clarification=True
+                # still lets the Brain's clarification through unchanged.
+                deterministic_match_is_confident_and_complete = (
+                    semantic_result.get("requires_clarification") is False
+                    and capability_planner_plan.get("status")
+                    == "capability_selected"
+                )
+
+                initial_clarification = (
+                    None
+                    if deterministic_match_is_confident_and_complete
+                    else self._model_clarification(model_reasoning)
                 )
 
                 if initial_clarification is not None:
@@ -4647,7 +4773,7 @@ class UriOrchestrator:
                     "source": "model_reasoning",
                 }
 
-            elif learned_skill:
+            elif learned_skill and not model_terminally_unavailable:
 
                 plan = {
                     "status":
@@ -4668,6 +4794,42 @@ class UriOrchestrator:
                     "source": "skill_memory",
                     "success_count": learned_skill.get("success_count", 0),
                 }
+
+            elif model_terminally_unavailable:
+
+                # Fail closed before any learned-skill execution or session
+                # persistence.  This reuses the existing deterministic
+                # provider-unavailable response convention.
+                response.update({
+                    "status": "unavailable",
+                    "plan": {
+                        "status": "model_unavailable",
+                        "tool_name": None,
+                        "reason": (
+                            "URI could not reach the required model provider, "
+                            "so it did not execute a learned skill."
+                        ),
+                        "source": "model_failure_gate",
+                    },
+                    "execution": {
+                        "status": "unavailable",
+                        "tool": None,
+                    },
+                    "response": {
+                        "message": (
+                            "URI could not reach its model provider, so it "
+                            "did not execute this request."
+                        ),
+                        "suggested_next_step": (
+                            "Please try again when the model provider is "
+                            "available."
+                        ),
+                    },
+                    "narrative_unavailable_reason": (
+                        "drafting_provider_unreachable"
+                    ),
+                })
+                return response
 
             else:
 

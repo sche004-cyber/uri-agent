@@ -105,6 +105,10 @@ from uri_core.core.user_profile import (
     UserProfileValidationError,
 )
 from uri_core.core.graph_store import GraphStore
+from uri_core.core.graphify_index import (
+    DEFAULT_INDEX_PATH, GraphifyIndex, build_index, load_index, save_index,
+)
+from uri_core.core.startup_services import run_startup_services
 from uri_core.core.graph_engine import (
     graph_explain,
     graph_get_entity,
@@ -193,6 +197,17 @@ _memory_settings_store = MemorySettingsStore()
 # for an anonymous/legacy caller - never two silently-divergent files.
 _graph_store = GraphStore()
 _orchestrator.graph_store = _graph_store
+
+# Graphify Foundation: a system-level, read-only capability/skill/
+# workflow/memory-pointer index - "URI's cognitive index and GPS."
+# Separate from _graph_store above (M23's own per-user facts/memory
+# graph, unchanged). Starts empty; GraphifyIndexLoader (below,
+# registered as a Startup Service) loads or builds the real index at
+# real application startup. Never authoritative - see
+# graphify_index.py's own module docstring. A bare, non-lifespan
+# TestClient(app) (every existing test's own convention) never
+# populates this beyond empty, which is always a safe, valid state.
+_graphify_index = GraphifyIndex()
 
 # Growth ledger: see growth_ledger.py. Every event is recorded only as
 # a side effect of a real, already-succeeded user-driven write below
@@ -650,6 +665,51 @@ def _initialize_user_scoped_stores(
     )
 
 
+class _UserScopedStoreInitializer:
+    """Startup Service wrapper around the pre-existing
+    `_initialize_user_scoped_stores()` - identical behavior, now the
+    first entry in a real, generic list instead of `_lifespan()`'s own
+    only hardcoded call."""
+
+    def start(self) -> None:
+        _initialize_user_scoped_stores()
+
+
+class _GraphifyIndexLoader:
+    """Startup Service: loads the persisted Graphify Foundation index
+    (`uri_workspace/graphify_index.json`), or builds a fresh one from
+    the real, already-existing authorities (`CapabilityDirectory`,
+    `SkillMemory`, `WorkflowPlanner`, `MemoryStore`) when none is
+    persisted yet or the persisted one is empty. Never raises, never
+    blocks server startup - see `graphify_index.py`'s own module
+    docstring for why an empty/stale index is always a safe state."""
+
+    def start(self) -> None:
+        global _graphify_index
+
+        index = load_index(DEFAULT_INDEX_PATH)
+        if not index.records:
+            capability_directory = None
+            try:
+                from uri_core.core.decision_engine import build_turn_state_and_directory
+
+                _, capability_directory = build_turn_state_and_directory(
+                    orchestrator=_orchestrator, session_id=None, user_text="", principal=None,
+                )
+            except Exception:
+                capability_directory = None
+
+            index = build_index(
+                capability_directory=capability_directory,
+                skill_memory=getattr(_orchestrator, "skill_memory", None),
+                workflow_planner=getattr(_orchestrator, "workflow_planner", None),
+                memory_store=_memory_store,
+            )
+            save_index(index, DEFAULT_INDEX_PATH)
+
+        _graphify_index = index
+
+
 @asynccontextmanager
 async def _lifespan(_app: FastAPI):
     """FastAPI/Starlette lifespan: the one place explicit application
@@ -658,8 +718,18 @@ async def _lifespan(_app: FastAPI):
     `with TestClient(app):`; does not run for a bare
     `TestClient(app)` with no `with` block, which every existing test
     in this repo uses - those tests are unaffected either way because
-    they already override the store globals directly in setUp()."""
-    _initialize_user_scoped_stores()
+    they already override the store globals directly in setUp() (and,
+    for `_graphify_index`, an empty/default index is always a safe,
+    valid state - see `graphify_index.py`'s own module docstring).
+
+    Startup Services (docs/plans/M30_GRAPHIFY_FOUNDATION_PLAN.md §A.5):
+    a real, generic list, not a hardcoded one-off - a service's own
+    failure never blocks another service or prevents the server from
+    starting (see `run_startup_services()`)."""
+    run_startup_services([
+        _UserScopedStoreInitializer(),
+        _GraphifyIndexLoader(),
+    ])
     yield
 
 
@@ -1146,12 +1216,130 @@ def ask(
             user_id=user_id, role=role, device_id=None, mode=mode
         )
 
-    result = context.orchestrator.process_user_input(
-        session_id=payload.session_id,
-        user_text=payload.text,
-        personalization_context=personalization_context,
-        principal=principal,
-    )
+    # M30.7: pending WorkflowExecutor pauses otherwise resume inside the
+    # legacy orchestrator before the Decision Contract can judge whether this
+    # message is actually a continuation.  This isolated, default-off branch
+    # gives that judgment one chance first; every fallback keeps the legacy
+    # order below intact.
+    result = None
+    early_executed = False
+    legacy_fallback = None
+    try:
+        if os.environ.get("URI_ENABLE_WORKFLOW_CONTINUATION_MODE") == "1":
+            from uri_core.core.canonical_execution import run_canonical_for_ask
+
+            session = context.orchestrator.session_manager.get_session(payload.session_id)
+            if (
+                session.active_workflow is not None
+                and session.active_workflow_status == "waiting_for_input"
+            ):
+                observed = {}
+
+                def _observe_decision(contract, gate_result):
+                    observed["mode"] = contract.get("mode")
+                    observed["gate_outcome"] = getattr(gate_result, "outcome", None)
+
+                early_result = run_canonical_for_ask(
+                    orchestrator=context.orchestrator,
+                    session_id=payload.session_id,
+                    user_text=payload.text,
+                    principal=principal,
+                    personalization_context=personalization_context,
+                    decision_observer=_observe_decision,
+                )
+                if observed.get("mode") == "workflow_continuation" and early_result is not None:
+                    if early_result.get("_canonical_fallback"):
+                        legacy_fallback = early_result
+                    else:
+                        result = early_result
+                        early_executed = True
+                elif observed.get("mode") and observed.get("mode") != "workflow_continuation":
+                    context.orchestrator._clear_active_workflow(session)
+    except Exception:
+        pass
+
+    # M30.8: canonical is the default authority.  A canonical response is
+    # terminal whether it executes or correctly reports clarification,
+    # unsupported, connection, approval, or conversation state.  Legacy is
+    # reached only for an explicit engine/model failure marker.  A narrowed
+    # allowlist is the emergency rollback lever and deliberately restores
+    # legacy-first behavior for the process.
+    if result is None and not early_executed:
+        try:
+            from uri_core.core.canonical_execution import (
+                canonical_killswitch_enabled,
+                decision_engine_live_enabled,
+                run_canonical_for_ask,
+            )
+
+            if decision_engine_live_enabled():
+                if canonical_killswitch_enabled():
+                    legacy_fallback = {
+                        "fallback_reason": "CANONICAL_KILLSWITCH",
+                        "gate_outcome": "KILLSWITCH",
+                    }
+                elif legacy_fallback is None:
+                    canonical_result = run_canonical_for_ask(
+                        orchestrator=context.orchestrator,
+                        session_id=payload.session_id,
+                        user_text=payload.text,
+                        principal=principal,
+                        personalization_context=personalization_context,
+                    )
+                    if canonical_result.get("_canonical_fallback"):
+                        legacy_fallback = canonical_result
+                    else:
+                        result = canonical_result
+        except Exception:
+            legacy_fallback = {
+                "fallback_reason": "engine_failure:canonical_route_exception",
+                "gate_outcome": "DEGRADED",
+            }
+
+    if result is None:
+        result = context.orchestrator.process_user_input(
+            session_id=payload.session_id,
+            user_text=payload.text,
+            personalization_context=personalization_context,
+            principal=principal,
+        )
+        if legacy_fallback is not None:
+            try:
+                from uri_core.core.decision_engine import record_shadow_trace
+
+                record_shadow_trace({
+                    "event": "legacy_fallback",
+                    "session_id": payload.session_id,
+                    "user_text_length_bucket": len(payload.text or "") // 20 * 20,
+                    "fallback_reason": legacy_fallback.get("fallback_reason"),
+                    "gate_outcome": legacy_fallback.get("gate_outcome"),
+                })
+            except Exception:
+                pass
+
+    # M30.3: canonical Brain Decision Engine, SHADOW MODE ONLY - proposes
+    # a decision for comparison, never executes, never alters `result`.
+    # Env-var gated (default off, see decision_engine.py's own docstring
+    # for why an env var rather than a constructor flag); the call itself
+    # is fully self-contained and swallows its own failures, but the
+    # flag check + import are also guarded here so a shadow-mode issue
+    # can never reach a real user's response.
+    try:
+        from uri_core.core.decision_engine import (
+            decision_engine_shadow_enabled,
+            run_shadow_for_ask,
+        )
+
+        if decision_engine_shadow_enabled():
+            run_shadow_for_ask(
+                orchestrator=context.orchestrator,
+                session_id=payload.session_id,
+                user_text=payload.text,
+                principal=principal,
+                old_path_result=result,
+            )
+    except Exception:
+        pass
 
     # UriOrchestrator's raw dict also carries shadow-evaluation internals
     # (model_reasoning, skill_router_shadow) - audit-trail data that
@@ -1248,6 +1436,19 @@ def cancel(
         session_id=payload.session_id,
         personalization_context=personalization_context,
     )
+
+
+@app.get("/system/performance")
+def system_performance(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Read-only real CPU/memory/disk snapshot for the dashboard's
+    System tab (2026-09-12, User directive). No GPU/temperature/fan/
+    power metrics - psutil cannot read those on this platform, and the
+    UI must show them as unavailable rather than fabricate a value."""
+    from uri_core.tools.system_performance import SystemPerformanceTool
+
+    return SystemPerformanceTool().report()
 
 
 @app.get("/tasks")

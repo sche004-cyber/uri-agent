@@ -1,0 +1,395 @@
+```python
+# uri_ui/lib/services/uri_client.dart
+import 'package:flutter/material.dart';
+
+class ProviderEntry {
+  final String providerId;
+  final String displayName;
+  final String adapter;
+  final String baseUrl;
+  final bool configured;
+  final String? lastFour;
+  final bool available;
+
+  ProviderEntry({
+    required this.providerId,
+    required this.displayName,
+    required this.adapter,
+    required this.baseUrl,
+    required this.configured,
+    this.lastFour,
+    required this.available,
+  });
+
+  factory ProviderEntry.fromJson(Map<String, dynamic> json) {
+    return ProviderEntry(
+      providerId: json['provider_id'] ?? '',
+      displayName: json['display_name'] ?? '',
+      adapter: json['adapter'] ?? '',
+      baseUrl: json['base_url'] ?? '',
+      configured: json['configured'] ?? false,
+      lastFour: json['last_four'] as String?,
+      available: json['available'] ?? true,
+    );
+  }
+}
+
+class ProviderKeyResult {
+  final String providerId;
+  final bool configured;
+  final String lastFour;
+
+  ProviderKeyResult({
+    required this.providerId,
+    required this.configured,
+    required this.lastFour,
+  });
+
+  factory ProviderKeyResult.fromJson(Map<String, dynamic> json) {
+    return ProviderKeyResult(
+      providerId: json['provider_id'] ?? '',
+      configured: json['configured'] ?? false,
+      lastFour: json['last_four'] ?? '',
+    );
+  }
+}
+
+abstract class UriClient {
+  Future<List<ProviderEntry>> listProviders();
+  Future<ProviderKeyResult?> submitProviderKey(String providerId, String apiKey);
+  Future<bool> updateProviderConfig(String providerId, {String? baseUrl, String? model});
+}
+```
+
+```dart
+// uri_ui/lib/services/http_uri_client.dart
+import 'dart:convert';
+import 'package:http_client/http_client.dart'; // Assuming a standard HTTP client or http package
+import 'uri_client.dart';
+
+class HttpUriClient implements UriClient {
+  final String baseUrl;
+  HttpUriClient(this.baseUrl);
+
+  static const _jsonHeaders = {'Content-Type': 'application/json', 'Accept': 'application/json'};
+
+  @override
+  Future<List<ProviderEntry>> listProviders() async {
+    final response = await _get('$baseUrl/providers');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final List decoded = data['providers'] ?? [];
+      return decoded.map((e) => ProviderEntry.fromJson(e)).toList();
+    }
+    throw Exception('Failed to fetch providers');
+  }
+
+  @override
+  Future<ProviderKeyResult?> submitProviderKey(String providerId, String apiKey) async {
+    final response = await _post('$baseUrl/providers/keys', {
+      'provider_id': providerId,
+      'api_key': apiKey,
+    });
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return ProviderKeyResult.fromJson(data);
+    }
+    return null;
+  }
+
+  @override
+  Future<bool> updateProviderConfig(String providerId, {String? baseUrl, String? model}) async {
+    final response = await _put('$baseUrl/providers/config', {
+      'provider_id': providerId,
+      'base_url': baseUrl,
+      'model': model,
+    });
+    return response.statusCode == 200;
+  }
+
+  // Helper methods abstracted for the example
+  Future<dynamic> _get(String url) async { /* Implementation of GET */ }
+  Future<dynamic> _post(String url, Map body) async { /* Implementation of POST */ }
+  Future<dynamic> _put(String url, Map body) async { /* Implementation of PUT */ }
+}
+```
+
+```dart
+// uri_ui/lib/services/mock_uri_client.dart
+import 'uri_client.dart';
+
+class MockUriClient implements UriClient {
+  final List<ProviderEntry> _mockProviders = [
+    ProviderEntry(providerId: 'openai', displayName: 'OpenAI', adapter: 'openai', baseUrl: 'https://api.openai.com/v1', configured: false, available: true),
+    ProviderEntry(providerId: 'groq', displayName: 'Groq', adapter: 'groq', baseUrl: 'https://api.groq.com/v1', configured: false, available: true),
+    ProviderEntry(providerId: 'anthropic', displayName: 'Anthropic', adapter: 'anthropic', baseUrl: 'https://api.anthropic.com', configured: false, available: true),
+    ProviderEntry(providerId: 'ollama', displayName: 'Ollama', adapter: 'ollama', baseUrl: 'http://localhost:11434', configured: false, available: true),
+  ];
+
+  @override
+  Future<List<ProviderEntry>> listProviders() async {
+    return List.from(_mockProviders);
+  }
+
+  @override
+  Future<ProviderKeyResult?> submitProviderKey(String providerId, String apiKey) async {
+    // Simulate logic: only return the last 4 characters and set configured to true
+    return ProviderKeyResult(
+      providerId: providerId,
+      configured: true,
+      lastFour: apiKey.length >= 4 ? apiKey.substring(apiKey.length - 4) : "****",
+    );
+  }
+
+  @override
+  Future<bool> updateProviderConfig(String providerId, {String? baseUrl, String? model}) async {
+    // Mock success for config updates
+    return true;
+  }
+}
+```
+
+```dart
+// uri_ui/lib/services/app_state.dart
+import 'package:flutter/material.dart';
+import 'uri_client.dart';
+
+class AppState {
+  final UriClient _client;
+  AppState(this._client);
+
+  Future<List<ProviderEntry>> listProviders() => _client.listProviders();
+
+  Future<ProviderKeyResult?> submitProviderKey(String providerId, String apiKey) => 
+      _client.submitProviderKey(providerId, apiKey);
+
+  Future<bool> updateProviderConfig(String providerId, {String? baseUrl, String? model}) => 
+      _client.updateProviderConfig(providerId, baseUrl: baseUrl, model: model);
+}
+```
+
+```dart
+// uri_ui/lib/screens/settings/providers_screen.dart
+import 'package:flutter/material.dart';
+import '../../services/app_state.dart';
+import '../../services/uri_client.dart';
+
+class ProvidersScreen extends StatefulWidget {
+  final AppState state;
+  const ProvidersScreen({super.key, required this.state});
+
+  @override
+  State<ProvidersScreen> createState() => _ProvidersScreenState();
+}
+
+class _ProvidersScreenState extends State<ProvidersScreen> {
+  List<ProviderEntry> _providers = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshProviders();
+  }
+
+  void _refreshProviders() async {
+    setState(() => _isLoading = true);
+    try {
+      final list = await widget.state.listProviders();
+      setState(() {
+        _providers = list;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Failed to load providers.";
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _handleSubmitKey(String providerId, String apiKey) async {
+    final result = await widget.state.submitProviderKey(providerId, apiKey);
+    if (result != null) {
+      setState(() => _errorMessage = null);
+      _refreshProviders(); // Refresh list to show updated status/last 4
+    } else {
+      setState(() => _errorMessage = "Failed to submit API key. Please try again.");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
+    if (_errorMessage != null) return Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)));
+
+    return Scaffold(
+      app_bar: AppBar(title: const Text("Model Providers")),
+      body: ListView.builder(
+        itemCount: _providers.length,
+        itemBuilder: (context, index) {
+          final item = _providers[index];
+          return ListTile(
+            title: Text(item.displayName),
+            subtitle: Text("${item.adapter} • ${item.baseUrl}"),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (item.configured) 
+                  _buildStatusPill("Configured", Colors.green),
+                const SizedBox(width: 8),
+                if (item.configured) Text("...${item.lastFour}"),
+                const SizedBox(width: 12),
+                Icon(item.available ? Icons.check_circle : Icons.warning, 
+                     color: item.available ? Colors.green : Colors.orange),
+              ],
+            ),
+            onTap: () => _showConfigDialog(item),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildStatusPill(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
+      child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 12)),
+    );
+  }
+
+  void _showConfigDialog(ProviderEntry item) {
+    final keyController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Configure ${item.displayName}"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: keyController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: "Enter API Key"),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _handleSubmitKey(item.providerId, keyController.text);
+                Navigator.pop(context);
+              },
+              child: const Text("Confirm Key"),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+```dart
+// uri_ui/lib/screens/settings/settings_shell.dart
+import 'package:flutter/material.dart';
+import 'providers_screen.dart';
+import 'admin_grants_screen.dart'; // Existing M22.4
+
+class SettingsShell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> _categories = [
+      {
+        'title': 'Capability Grants',
+        'icon': Icons.shield_outlined,
+        'screen': AdminGrantsScreen(),
+      },
+      {
+        'title': 'Model Providers',
+        'icon': Icons.hub_outlined,
+        'subtitle': 'Configure LLM provider endpoints and API keys.',
+        'screen': ProvidersScreen(state: context.watch<AppState>()),
+      },
+    ];
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Settings')),
+      body: ListView.builder(
+        itemCount: _categories.length,
+        itemBuilder: (context, index) {
+          final cat =_categories[index];
+          return ListTile(
+            leading: Icon(cat['icon']),
+            title: Text(cat['title']),
+            subtitle: cat['subtitle'] != null ? Text(cat['subtitle']) : null,
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => cat['screen'])),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+```dart
+// uri_ui/test/m22_5_providers_test.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import '../services/mock_uri_client.dart';
+import '../services/app_state.dart';
+import '../screens/settings/providers_screen.dart';
+
+void main() {
+  group('M22.5 Provider Logic Tests', () {
+    final mockClient = MockUriClient();
+    final state = AppState(mockClient);
+
+    testWidgets('Verify provider list renders correctly', (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(home: ProvidersScreen(state: state)));
+      
+      expect(find.text('OpenAI'), findsOneWidget);
+      expect(find.text('Groq'), findsOneWidget);
+    });
+
+    testWidgets('Verify API key input is masked', (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(home: ProvidersScreen(state: state)));
+      
+      await tester.tap(find.byType(_ProvidersScreenState)); // Simplified tap logic for example
+      // Find the TextField in the dialog
+      final textField = tester.enterText(find.byType(TextField));
+    });
+
+    testWidgets('Verify submission updates status and shows last 4', (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(home: ProvidersScreen(state: state)));
+      // Logic to interact with dialog and verify UI update after mock_uri_client return
+    });
+  });
+}
+```
+
+```python
+# test_provider_keys_boundary.py
+from pathlib import Path
+
+# ... existing imports ...
+
+_PROMPT_ASSEMBLY_MODULES = {
+    "core": Path("uri_core/core/document_composer.py"), # Old path
+    "services": Path("uri_core/services/document_composer.py"), # New path
+}
+
+# Update the specific reference for the prompt assembly logic:
+def update_boundary_paths():
+    # This replaces the incorrect core path with the correct services path
+    # to ensure the document composer is correctly pulled from the service layer.
+    target = "uri_core/core/document_composer.py"
+    replacement = "uri_core/services/document_composer.py"
+    
+    # Logic to perform the swap in the configuration file or environment
+    pass 
+
+# Update logic specifically for M22.5 requirement:
+# Change Path("uri_core/core/document_composer.py") -> Path("uri_core/services/document_composer.py")
+```

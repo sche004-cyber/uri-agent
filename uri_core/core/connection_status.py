@@ -32,6 +32,8 @@ ConnectionStatus enum (see uri_ui/lib/models/connection.dart):
 import os
 from typing import Any, Dict, List
 
+from uri_core.core.google_auth_common import load_usable_credentials
+
 STATUS_CONNECTED = "connected"
 STATUS_NEEDS_AUTHORIZATION = "needs_authorization"
 STATUS_NOT_CONNECTED = "not_connected"
@@ -57,17 +59,11 @@ def _token_is_usable(token_path: str, scopes: List[str]) -> bool:
     real call time; a token file that cannot even be parsed is not.
     Never raises."""
 
-    if not os.path.exists(token_path):
-        return False
-
-    try:
-        from google.oauth2.credentials import Credentials
-
-        Credentials.from_authorized_user_file(token_path, scopes)
-        return True
-
-    except Exception:
-        return False
+    return load_usable_credentials(
+        token_path=token_path,
+        scopes=scopes,
+        allow_refresh=False,
+    ) is not None
 
 
 def _google_service_status(

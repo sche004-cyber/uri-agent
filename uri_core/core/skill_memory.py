@@ -147,6 +147,11 @@ class SkillMemory:
             .lower()
         )
 
+        # An all-empty classification represents absence of a semantic
+        # signal, never a reusable learned workflow.
+        if not task_type and not domain:
+            return None
+
         matches = []
 
         for skill in memory.get(

@@ -76,7 +76,26 @@ class WorkflowPlanner:
         task: str,
         semantic_result: dict = None
     ) -> list:
-
+        # M30.8 audit correction (Claude, bounded repair): the M30.8 plan's
+        # own §2 inspection claimed "exactly one real template exists" and
+        # flattened this method to always return the 6-step
+        # generic_evidence_drafting_workflow (ending in draft_output, which
+        # ALWAYS drafts something - see workflow_capability_router.py's own
+        # draft_output docstring). That claim was empirically false: a
+        # genuine capability-gap task ("optimize my pc", no registered
+        # adapter) used to route through this catch-all branch ending in
+        # prepare_output, which deterministically reports {"status":
+        # "failed", ...} for exactly this reason (see its own docstring -
+        # "no real, implemented capability behind this generic bucket at
+        # all... must be reported as such rather than silently faked").
+        # Flattening away this branch silently converted that honest
+        # failure into a fabricated "success" (test_orchestrator_
+        # conversational_no_capability.py, test_orchestrator_response_
+        # narrative.py's hallucinated-success-rejection test - both regressed
+        # by this change and are restored by this revert). Restoring the
+        # original task-type distinction is not new scope: the plan itself
+        # required "no functional loss" for this exact change, and this
+        # revert is what actually delivers that already-approved constraint.
         semantic_result = (
             semantic_result or {}
         )
@@ -102,43 +121,7 @@ class WorkflowPlanner:
         if (
             "insurance" in combined
             or "renewal" in combined
-        ):
-
-            return [
-                self._create_step(
-                    "step_1",
-                    "retrieve_evidence",
-                    []
-                ),
-                self._create_step(
-                    "step_2",
-                    "verify_facts",
-                    ["step_1"]
-                ),
-                self._create_step(
-                    "step_3",
-                    "identify_missing_information",
-                    ["step_2"]
-                ),
-                self._create_step(
-                    "step_4",
-                    "prepare_decision_context",
-                    ["step_3"]
-                ),
-                self._create_step(
-                    "step_5",
-                    "draft_output",
-                    ["step_4"]
-                ),
-                self._create_step(
-                    "step_6",
-                    "review_result",
-                    ["step_5"]
-                )
-            ]
-
-        if (
-            "note" in combined
+            or "note" in combined
             or "noting" in combined
         ):
 

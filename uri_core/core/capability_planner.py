@@ -193,6 +193,52 @@ class CapabilityPlanner:
             ):
                 score += 150
 
+            # 2026-09-12 (User directive): "it should update when the
+            # user says something about himself... build a story about
+            # the user every time he tells something about himself" -
+            # a plain first-person disclosure (workplace, preference,
+            # identity) is itself the save request; it should never
+            # need a magic "remember"/"add to my profile" phrase first.
+            # Narrow to actual self-disclosure patterns, not just any
+            # sentence containing "i" - so "I want to convert this
+            # PDF" still doesn't compete here.
+            # Strongest, most reliable signal: the semantic interpreter's
+            # own prompt (2026-09-12) asks it to classify a first-person
+            # self-disclosure with this exact task_type/requested_output,
+            # regardless of how it paraphrases the goal text itself.
+            if "personal information disclosure" in task_type:
+                score += 200
+            if "save this fact about the user" in requested_output:
+                score += 200
+
+            disclosure_phrases = (
+                "i work at", "i work for", "i study at", "i study in",
+                "i live in", "i live at", "i am from", "i'm from",
+                "my workplace is", "my job is", "my role is",
+                "my name is", "call me",
+                "my favorite", "my favourite", "i prefer",
+                "my email is", "my phone number is",
+            )
+            disclosure_text = f"{goal} {requested_output} {entities_text}"
+            if any(phrase in disclosure_text for phrase in disclosure_phrases):
+                score += 120
+
+            # The semantic interpreter paraphrases user_text through an
+            # LLM, so it may describe the same disclosure as e.g. "the
+            # user's workplace is NIT Sikkim" rather than echoing "I
+            # work at" verbatim - a second, looser signal: the goal is
+            # ABOUT the user's own identity/workplace/preference (not a
+            # request to fetch/change something else) together with a
+            # concrete value to remember.
+            about_user = any(
+                keyword in goal
+                for keyword in ("user's workplace", "user works", "user's employer",
+                                 "user's preference", "user's name", "user's favorite",
+                                 "user's favourite")
+            )
+            if about_user:
+                score += 120
+
         elif tool_name == "recall_memory":
 
             # semantic_result's "goal" is the interpreter's own
@@ -307,9 +353,16 @@ class CapabilityPlanner:
 
         elif tool_name == "web_search":
 
+            # 2026-09-12: a hardcoded "nit sikkim" literal used to live
+            # here (a leftover from the identity-genericization
+            # regression flagged in the M24 audit) - it made ANY
+            # mention of the institution's name score as a web search,
+            # even a personal statement like "I work at NIT Sikkim"
+            # that should have gone to remember_fact instead. Removed;
+            # this tool now only scores on genuine web-search language.
             web_keywords = (
                 "search", "web", "website", "online", "internet", "google",
-                "look through", "find information", "latest", "portal", "nit sikkim",
+                "look through", "find information", "latest", "portal",
             )
 
             if "web search" in task_type or "information retrieval" in task_type:
@@ -323,11 +376,7 @@ class CapabilityPlanner:
             ):
                 score += 60
 
-            if (
-                "website" in goal
-                or "website" in requested_output
-                or "nit sikkim" in goal
-            ):
+            if "website" in goal or "website" in requested_output:
                 score += 50
 
         elif tool_name == "fetch_url":

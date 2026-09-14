@@ -1,9 +1,8 @@
 import os
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 from uri_core.core.connection_status import _repo_root
+from uri_core.core.google_auth_common import load_usable_credentials
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
@@ -37,22 +36,13 @@ class GmailSearchService:
         Never launches an interactive consent flow itself - if no
         usable token exists yet, this honestly reports False rather
         than starting a second, redundant browser flow."""
-        if not os.path.exists(self.token_path):
+        creds = load_usable_credentials(
+            token_path=self.token_path,
+            scopes=SCOPES,
+            allow_refresh=True,
+        )
+        if creds is None:
             return False
-
-        try:
-            creds = Credentials.from_authorized_user_file(self.token_path, SCOPES)
-        except Exception:
-            return False
-
-        if not creds.valid:
-            if creds.expired and creds.refresh_token:
-                try:
-                    creds.refresh(Request())
-                except Exception:
-                    return False
-            else:
-                return False
 
         try:
             self.service = build('gmail', 'v1', credentials=creds)

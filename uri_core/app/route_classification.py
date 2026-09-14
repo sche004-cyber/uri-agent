@@ -90,6 +90,7 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("POST", "/approve"): USER,
     ("POST", "/cancel"): USER,
     ("GET", "/tasks"): USER,
+    ("GET", "/system/performance"): USER,
     ("GET", "/profile"): USER,
     ("POST", "/profile"): USER,
     ("GET", "/memory"): USER,
@@ -153,6 +154,6 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 62 application routes + 4 FastAPI routes.
+# 63 application routes + 4 FastAPI routes.
 # auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 66
+EXPECTED_ROUTE_COUNT = 67
