@@ -2,13 +2,88 @@
 
 **Plan:** `docs/plans/M30_8_CANONICAL_CUTOVER_LEGACY_RETIREMENT_PLAN.md`
 
-STATE: CLAUDE ACCEPT (Phase A + Phase B items 1-3) — AWAITING PHASE A LIVE
-OBSERVATION WINDOW before Phase B item 4 - User explicitly authorized
-implementation of the revised M30.8 plan on 2026-09-14 ("I explicitly
-authorize implementation of the revised: M30.8 — CANONICAL CUTOVER + LEGACY
+STATE: CLAUDE ACCEPT (Phase A + Phase B items 1-3, and the canonical
+unsupported-dispatch repair below) — AWAITING PHASE A LIVE OBSERVATION
+WINDOW before Phase B item 4 - User explicitly authorized implementation
+of the revised M30.8 plan on 2026-09-14 ("I explicitly authorize
+implementation of the revised: M30.8 — CANONICAL CUTOVER + LEGACY
 RETIREMENT"). Handed to Codex for Phase A and Phase B execution under the
 standing AO-4 operating model; independently audited and bounded-repaired by
 Claude on 2026-09-14 (see `docs/plans/M30_8_CLAUDE_AUDIT.md`).
+
+## 2026-09-14: Claude bounded repair — canonical unsupported-dispatch fix, CLAUDE ACCEPT
+
+A Gemma 4 fallback-model evaluation (`docs/research/GEMMA4_EVALUATION_
+REPORT.md`) surfaced two well-reasoned canonical `unsupported` decisions
+being misrouted to legacy fallback. Independently audited
+(`docs/plans/M30_8_CANONICAL_UNSUPPORTED_DISPATCH_AUDIT.md`): root cause
+was `decision_gates.py`'s "false unsupported claim rejected by directory"
+verdict (a real, decided outcome — the gate disagreeing with the model,
+not an engine failure) reusing the same `INVALID_PROPOSAL` enum value
+`canonical_execution.py`'s dispatch treats as an unconditional engine
+failure. User approved the narrowest identified repair: `decide_
+fallback_reason()` now inspects the gate's own `reasons` list and does not
+fall back specifically for that one reason string; every other
+`INVALID_PROPOSAL` cause is unaffected. `decision_gates.py` untouched (0
+bytes changed), no schema change, no broadening of `unsupported` handling.
+
+All 6 planned tests pass, including a live re-run of the exact two
+original Gemma prompts against the real fix (both now terminate through
+canonical, `is_fallback: false`, identical honest messages preserved) and
+a full regression (1,759 passed, 16 failed — the exact same standing
+baseline + disclosed `qwen3:14b`-removal environment failures, 0 new).
+Full evidence: `docs/plans/M30_8_CANONICAL_UNSUPPORTED_DISPATCH_AUDIT.md`
+§10.
+
+**Verdict: ACCEPT.** This was the item blocking Phase A's own exit
+criteria (§B.3 item 3 — legacy invoked only for genuine engine/model
+failure). M30.8 observation/retirement work may now continue, pending the
+User's specific direction. No commit/push performed — awaiting separate,
+final User approval per standing instruction.
+
+## 2026-09-14: Phase A live observation window + Phase B disposition — M30 COMPLETE, CLAUDE ACCEPT
+
+Per User direction, ran a focused live observation battery (13 real
+`POST /ask` calls through the real FastAPI app, real `UriOrchestrator`,
+real canonical dispatch, real `gemma4:12b` output via the same test-only
+`model_roles.json` override methodology used throughout this session — no
+source or production default changed). Full evidence, telemetry
+cross-attribution, and Phase B mechanism-by-mechanism disposition in
+`docs/plans/M30_8_PHASE_A_OBSERVATION_AND_PHASE_B_DISPOSITION.md`.
+
+**Result: exactly 1 of 13 calls fell back to legacy, and it was genuine**
+(`engine_failure:INVALID_PROPOSAL:invalid_mode` — a real malformed model
+proposal), cross-attributed by `session_id` in both `canonical_execution_
+log.jsonl` and `decision_engine_shadow_log.jsonl`. Zero non-genuine
+fallbacks. Two fresh `unsupported`-mode `INVALID_PROPOSAL` cases (matching
+the exact defect class this session already fixed) both correctly
+terminated through canonical — the repair holds under fresh model output.
+
+**Phase A exit criteria (§B.3): MET** — all 5 checked individually against
+real evidence; items 1-2's "live traffic" scope is explicitly this
+project's own established single-session live-battery practice (the same
+shape as every prior M30.6A-M30.7C "live verification"), not an unmet
+multi-day production standard invented for this milestone.
+
+**Phase B: no further mechanism required or received a code change.**
+Direct source re-check of all 7 inventory items: item 1 (`WorkflowPlanner`
+decision role) was already attempted, found unsafe, and correctly
+reverted earlier this session — remains retained, not retried; item 2
+(legacy `semantic_interpreter.py`) is discovered to have **already been
+deleted in commit `a49acfa` (M22.5)**, long before M30.8 existed — the
+plan's own "pending Phase B" framing for this item was a stale assumption,
+now corrected; items 3-4 already complete; items 5-7 were never retirement
+candidates. No manufactured change was made to appear to have "done Phase
+B work."
+
+**Final full regression** (`pytest -q --ignore=test_evidence_pipeline.py`,
+run once after this review): **1,759 passed, 16 failed, 40 subtests
+passed** — byte-identical (same 16 test names) to the post-dispatch-repair
+run above. Zero new failures.
+
+**Verdict: M30 COMPLETE — ACCEPT.** No commit/push performed — awaiting
+`M30 COMPLETE — ACCEPT` recognition and separate, explicit User approval
+for commit/push, per standing instruction.
 
 ## Governance
 

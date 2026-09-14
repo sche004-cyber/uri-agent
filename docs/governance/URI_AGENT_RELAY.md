@@ -79,11 +79,60 @@ and disclosed.
 describes the old M30-PFC scope despite §1 naming M30.8 as current —
 Antigravity should correct this per its own Write Ownership rule.
 
+**FOLLOW-UP (Claude, 2026-09-14) — canonical unsupported-dispatch repair,
+CLAUDE ACCEPT:** after the ACCEPT above and the User's separate commit/push
+of the accepted M22.5-M30.8 backend history, a test-only Gemma 4
+(`gemma4:12b`) evaluation (`docs/research/GEMMA4_EVALUATION_REPORT.md`,
+explicitly not a milestone, not a production switch) surfaced two
+well-reasoned canonical `unsupported` decisions being misrouted to legacy
+fallback. Audited in `docs/plans/M30_8_CANONICAL_UNSUPPORTED_DISPATCH_
+AUDIT.md`: root cause was `decision_gates.py`'s "false unsupported claim
+rejected by directory" verdict — a real, decided outcome, not an engine
+failure — reusing the `INVALID_PROPOSAL` enum value `canonical_
+execution.py`'s dispatch treats as an unconditional fallback trigger. User
+approved the narrowest identified repair (rule 17, no new Codex handoff):
+`decide_fallback_reason()` now inspects the gate's own `reasons` list and
+does not fall back specifically for that one reason string; every other
+`INVALID_PROPOSAL` cause is unaffected; `decision_gates.py` untouched (0
+bytes changed); no schema change. All 6 planned tests pass, including a
+live re-run of the exact two original Gemma prompts (both now terminate
+through canonical) and a full regression (1,759 passed, 16 failed — same
+standing baseline, 0 new). Full evidence in that audit doc's §10.
+**Verdict: ACCEPT.** This was the item blocking Phase A's own exit
+criteria (§B.3 item 3). No commit/push performed for this repair — awaiting
+separate, final User approval.
+
+**FOLLOW-UP 2 (Claude, 2026-09-14) — Phase A live observation + Phase B
+disposition, M30 COMPLETE:** ran a focused live observation battery (13
+real `POST /ask` calls through the real FastAPI app/orchestrator/canonical
+dispatch, real `gemma4:12b` output via the same test-only override
+methodology, no source/production default changed). Full evidence in
+`docs/plans/M30_8_PHASE_A_OBSERVATION_AND_PHASE_B_DISPOSITION.md`.
+**Result: 1/13 fallback, genuine** (malformed model proposal, reason-coded
+`engine_failure:INVALID_PROPOSAL:invalid_mode`, cross-attributed in both
+telemetry logs); zero non-genuine fallbacks; the exact defect class fixed
+in Follow-up 1 did not recur under fresh model output. **Phase A exit
+criteria (§B.3): MET**, scoped honestly to this project's own established
+single-session live-battery practice. **Phase B: no mechanism required or
+received a code change** — direct source re-check found item 1
+(`WorkflowPlanner`) correctly remains reverted (retrying it without
+action-level capability matching would repeat the same regression), item
+2 (legacy `semantic_interpreter.py`) was **already deleted in M22.5**
+(commit `a49acfa`, long before M30.8), items 3-4 already complete, items
+5-7 never retirement candidates. Final full regression (run once, after
+this review): **1,759 passed, 16 failed, 40 subtests passed** — identical
+16 test names to Follow-up 1's own run, zero new failures.
+
+> **M30 COMPLETE — ACCEPT.**
+
+No commit/push performed — awaiting the User's separate, explicit
+approval for that, per standing instruction.
+
 **REQUIRED NEXT ACTION:**
-Antigravity to record this ACCEPT in `docs/governance/URI_ACTIVE_
-MILESTONE.md`, correct the stale §4 write-scope note above, and begin the
-Phase A live observation window per the plan's own §B.3 before any Phase B
-item 4 work is proposed. No commit/push is authorized by this audit.
+Antigravity to record `M30 COMPLETE — ACCEPT` and this Phase A/Phase B
+disposition in `docs/governance/URI_ACTIVE_MILESTONE.md`, and correct the
+stale §4 write-scope note above. Commit/push remains withheld pending the
+User's own explicit, separate instruction.
 
 **STOP CONDITIONS (unchanged):**
 - Do NOT commit or push without separate explicit User instruction.

@@ -51,7 +51,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from uri_core.core.decision_engine import (
     DEFAULT_SHADOW_LOG_PATH,
@@ -227,6 +227,7 @@ def decide_fallback_reason(
     gate_outcome: str,
     capability_id: Optional[str],
     mode: Optional[str],
+    reasons: Sequence[str] = (),
 ) -> Optional[str]:
     """Pure, deterministic, model-free: the exact eligibility check
     `run_canonical_for_ask()` applies once a Decision Contract and its
@@ -236,7 +237,22 @@ def decide_fallback_reason(
     otherwise names the specific reason execution never happens, for
     both correctness and telemetry. Extracted as its own function so
     every non-READY outcome's fallback behavior is unit-testable
-    without any model or orchestrator involved."""
+    without any model or orchestrator involved.
+
+    `reasons` is the GateResult's own `reasons` list, inspected only for
+    one specific, already-uniquely-named string:
+    "false_unsupported_claim_rejected_by_directory" - decision_gates.py's
+    own real, decided verdict that the model's "unsupported" claim is
+    false because a plausibly-matching, available capability exists. That
+    verdict is a completed canonical decision, not an engine/proposal
+    defect - it happens to reuse the INVALID_PROPOSAL outcome value, but
+    dispatching it as an engine failure would fall back to legacy for a
+    turn canonical already decided correctly. Every other INVALID_PROPOSAL
+    cause (malformed contract, unknown capability/action, a continuation
+    with no active pointer, a mode requiring a capability that named none)
+    is unaffected and still falls back exactly as before."""
+    if gate_outcome == "INVALID_PROPOSAL" and "false_unsupported_claim_rejected_by_directory" in reasons:
+        return None
     if gate_outcome in {"INVALID_PROPOSAL", "DEGRADED"}:
         return f"engine_failure:{gate_outcome}"
     if gate_outcome != "READY":
@@ -437,6 +453,7 @@ def run_canonical_for_ask(
 
             fallback_reason = decide_fallback_reason(
                 gate_outcome=gate_result.outcome, capability_id=capability_id, mode=mode,
+                reasons=getattr(gate_result, "reasons", ()),
             )
             if fallback_reason is None and gate_result.outcome == "READY" and mode in EXECUTABLE_MODES:
                 canonical_attempted = True

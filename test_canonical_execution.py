@@ -160,6 +160,39 @@ class FallbackDecisionTests(unittest.TestCase):
         reason = decide_fallback_reason(gate_outcome="READY", capability_id=None, mode="workflow_continuation")
         self.assertEqual(reason, "mode_not_executable:workflow_continuation")
 
+    def test_false_unsupported_claim_rejected_is_a_completed_decision_not_a_fallback(self):
+        # M30.8 canonical unsupported-dispatch repair (docs/plans/
+        # M30_8_CANONICAL_UNSUPPORTED_DISPATCH_AUDIT.md): decision_gates.py's
+        # own "the model's unsupported claim is false, a plausibly-matching
+        # available capability exists" verdict is a real, decided outcome,
+        # not an engine/proposal defect - it must not fall back to legacy.
+        reason = decide_fallback_reason(
+            gate_outcome="INVALID_PROPOSAL", capability_id=None, mode="unsupported",
+            reasons=["false_unsupported_claim_rejected_by_directory"],
+        )
+        self.assertIsNone(reason)
+
+    def test_other_invalid_proposal_reasons_still_fall_back(self):
+        # Regression: the new reasons-based carve-out must not broaden to
+        # any other INVALID_PROPOSAL cause - every one of these is a real
+        # engine/proposal defect and must keep falling back exactly as
+        # before this repair.
+        other_reasons = [
+            (),
+            ["unknown_capability"],
+            ["unknown_action:send_email"],
+            ["continuation_without_active_pointer"],
+            ["continuation_no_durable_capability"],
+            ["mode_action_execution_requires_a_capability_reference"],
+        ]
+        for reasons in other_reasons:
+            with self.subTest(reasons=reasons):
+                reason = decide_fallback_reason(
+                    gate_outcome="INVALID_PROPOSAL", capability_id=None, mode="unsupported",
+                    reasons=reasons,
+                )
+                self.assertEqual(reason, "engine_failure:INVALID_PROPOSAL")
+
 
 class CanonicalTerminalOutcomeTests(unittest.TestCase):
     """M30.8: valid canonical decisions are terminal, never fallbacks."""
@@ -203,6 +236,72 @@ class CanonicalTerminalOutcomeTests(unittest.TestCase):
         result = self._run(contract, SimpleNamespace(outcome="DEGRADED", missing_field=None))
         self.assertTrue(result["_canonical_fallback"])
         self.assertEqual(result["fallback_reason"], "engine_failure:DEGRADED")
+
+    def test_false_unsupported_claim_rejected_terminates_through_canonical(self):
+        # Integration: reproduces the exact shape of the Gemma 4
+        # evaluation's two failing scenarios (docs/research/
+        # GEMMA4_EVALUATION_REPORT.md sec4) - a well-formed "unsupported"
+        # contract whose reason correctly names a real capability's exact
+        # scope limit, gated INVALID_PROPOSAL with the "false unsupported
+        # claim rejected by directory" reason. Must terminate through the
+        # non-execution envelope, never legacy fallback.
+        cases = [
+            "The available 'convert_document' capability only supports "
+            "converting PDF to DOCX, not DOCX to LaTeX.",
+            "The Gmail capability explicitly states it can only prepare "
+            "drafts but never send emails, and no other capability "
+            "supports sending emails.",
+        ]
+        for unsupported_reason in cases:
+            with self.subTest(unsupported_reason=unsupported_reason):
+                contract = {
+                    "mode": "unsupported", "capability": None, "actions": [],
+                    "unsupported_reason": unsupported_reason,
+                }
+                gate = SimpleNamespace(
+                    outcome="INVALID_PROPOSAL", missing_field=None,
+                    reasons=["false_unsupported_claim_rejected_by_directory"],
+                )
+                result = self._run(contract, gate)
+                self.assertNotIn("_canonical_fallback", result)
+                self.assertEqual(result["status"], "unavailable")
+                self.assertEqual(result["response"]["message"], unsupported_reason)
+
+    def test_false_unsupported_claim_telemetry_records_no_fallback(self):
+        # Telemetry: the gate's own honest INVALID_PROPOSAL classification
+        # must still be recorded (nothing hidden from the audit trail) but
+        # fallback_used/fallback_reason must reflect that this was NOT
+        # dispatched as a fallback.
+        from uri_core.core import canonical_execution
+
+        log_path = os.path.join(tempfile.mkdtemp(), "canonical.jsonl")
+        contract = {
+            "mode": "unsupported", "capability": None, "actions": [],
+            "unsupported_reason": "The Gmail capability explicitly states "
+            "it can only prepare drafts but never send emails.",
+        }
+        gate = SimpleNamespace(
+            outcome="INVALID_PROPOSAL", missing_field=None,
+            reasons=["false_unsupported_claim_rejected_by_directory"],
+        )
+        with patch.object(
+            canonical_execution, "build_turn_state_and_directory",
+            return_value=(SimpleNamespace(data={}), object()),
+        ), patch.object(
+            canonical_execution, "propose_decision",
+            return_value=SimpleNamespace(status="ok", contract=contract, invalid_reason=None),
+        ), patch("uri_core.core.decision_gates.evaluate_gates", return_value=gate):
+            canonical_execution.run_canonical_for_ask(
+                orchestrator=_FakeOrchestrator(), session_id="m30-8", user_text="send that email",
+                principal=None, log_path=log_path,
+            )
+
+        with open(log_path, "r", encoding="utf-8") as f:
+            telemetry = json.loads(f.read().strip().splitlines()[-1])
+
+        self.assertEqual(telemetry["gate_outcome"], "INVALID_PROPOSAL")
+        self.assertFalse(telemetry["fallback_used"])
+        self.assertIsNone(telemetry["fallback_reason"])
 
     def test_narrowed_allowlist_is_an_explicit_killswitch(self):
         from uri_core.core import canonical_execution
