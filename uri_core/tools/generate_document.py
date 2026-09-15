@@ -51,7 +51,13 @@ _MEDIA_TYPES = {
 # it decides which renderer runs; everything about the CONTENT is left
 # to the Brain.
 _FORMAT_KEYWORDS = (
-    ("pptx", ("powerpoint", "presentation", "slide deck", "slides", "slideshow")),
+    (
+        "pptx",
+        (
+            "powerpoint", "presentation", "slide deck", "slides", "slide",
+            "slideshow", "pptx", "ppt",
+        ),
+    ),
     ("xlsx", ("excel", "spreadsheet", "workbook", "xlsx")),
     ("pdf", ("pdf",)),
 )
@@ -167,7 +173,12 @@ class GenerateDocumentTool:
             }
 
         return {
-            "status": "success",
+            # Propagates the composer's own honest status - "success"
+            # only when the Brain actually authored the content actually
+            # rendered into this file, "degraded" when a plain fallback
+            # template was rendered instead. See docs/plans/
+            # URI_NATIVE_TOOL_AUDIT.md Root Cause A.
+            "status": result["status"],
             "file": record.to_reference(),
             "output_format": output_format,
             "composed_by": result["composed_by"],

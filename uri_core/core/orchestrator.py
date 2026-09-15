@@ -1,6 +1,8 @@
 import json
 import os
 
+from typing import Any, Dict, Optional
+
 from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
 
@@ -2214,6 +2216,329 @@ class UriOrchestrator:
 
         return executor
 
+    # Capabilities whose own argument boundary extracts a URL literally
+    # from request_text (see fetch_url.py's module docstring - it takes
+    # NO model-supplied url argument by design, and that boundary is
+    # never weakened here). For exactly these capabilities, a completed
+    # PRIOR step in the SAME workflow run is a legitimate source for
+    # that literal text - it is real evidence this process itself
+    # already fetched from a real API, not a Brain-invented string -
+    # distinct in kind from letting the Brain supply an arbitrary URL.
+    _URL_CONSUMING_CAPABILITIES = frozenset({"fetch_url"})
+
+    # Capabilities that already read decision_context["verified_evidence"]
+    # themselves (institutional_drafting.py / generate_document.py, both
+    # source-confirmed) - a general-purpose enrichment channel distinct
+    # from _URL_CONSUMING_CAPABILITIES' strict literal-argument boundary.
+    # Generalizes Root Cause B (native-tool audit) beyond the URL-only
+    # case: retrieved evidence from ANY completed depends_on step (Gmail,
+    # Drive, web search, a fetched page) can now reach a downstream
+    # drafting step through the exact same seam those tools already
+    # merge attached-file evidence through - no new file, no new store.
+    _EVIDENCE_CONSUMING_CAPABILITIES = frozenset({
+        "draft_institutional_note", "draft_institutional_order", "generate_document",
+    })
+    # Reuses institutional_drafting.py's own existing cap VALUES
+    # (_MAX_EVIDENCE_FILES / _MAX_EVIDENCE_CHARS_PER_FILE) for the same
+    # reason that module bounds attached-file evidence - a session with
+    # many/rich results can never produce an unbounded drafting prompt.
+    _MAX_EVIDENCE_ITEMS_PER_SOURCE = 3
+    _MAX_EVIDENCE_CONTENT_CHARS = 4000
+    # Across ALL depends_on sources combined, so a step depending on
+    # several evidence-producing steps still can't grow unbounded.
+    _MAX_EVIDENCE_ITEMS_TOTAL = 5
+
+    @staticmethod
+    def _extract_trusted_url_from_step_output(output: Any) -> Optional[str]:
+        """Looks for a real URL inside an already-completed step's own
+        tool output - never inside anything Brain-authored. Recognizes
+        the two shapes real evidence tools in this codebase actually
+        return: web_search.py's {"results": [{"url": ...}, ...]} and
+        fetch_url.py's/drive_search.py's own bare {"url": ...}. Returns
+        None (never guesses) when neither shape is present."""
+        if not isinstance(output, dict):
+            return None
+        direct = output.get("url")
+        if isinstance(direct, str) and direct.startswith(("http://", "https://")):
+            return direct
+        results = output.get("results")
+        if isinstance(results, list):
+            candidates = [
+                item["url"] for item in results
+                if isinstance(item, dict)
+                and isinstance(item.get("url"), str)
+                and item["url"].startswith(("http://", "https://"))
+            ]
+            # Minimal source selection: a large institutional PDF
+            # (annual reports, etc.) is real evidence but often exceeds
+            # fetch_url's own size bound - prefer an ordinary page when
+            # one is available among the same search's results, rather
+            # than always taking the first (highest-ranked-by-search)
+            # candidate regardless of fetchability. Falls back to the
+            # first candidate when every result is a PDF - never
+            # invents a URL that was not actually returned.
+            for url in candidates:
+                if not url.lower().endswith(".pdf"):
+                    return url
+            if candidates:
+                return candidates[0]
+        return None
+
+    @staticmethod
+    def _evidence_items_from_list(
+        items: Any,
+        *,
+        source_capability: str,
+        evidence_type: str,
+        summary_field: str,
+        content_field: str,
+        metadata_fields: tuple,
+        max_items: int,
+        max_content_chars: int,
+    ) -> list:
+        """Turns one real tool's own list-shaped output (web_search's/
+        gmail_search's "results", drive_search's "files") into typed
+        evidence items - metadata (summary_field + metadata_fields) kept
+        whole, content (content_field) capped so a rich result set can
+        never produce an unbounded drafting prompt. Never invents a
+        field: a missing one is simply omitted, never guessed."""
+        if not isinstance(items, list):
+            return []
+
+        out = []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            content = item.get(content_field) or ""
+            content = str(content)
+            truncated = len(content) > max_content_chars
+            out.append({
+                "source_capability": source_capability,
+                "evidence_type": evidence_type,
+                "summary": item.get(summary_field),
+                "content": content[:max_content_chars],
+                "truncated": truncated,
+                "metadata": {
+                    field: item.get(field)
+                    for field in metadata_fields
+                    if item.get(field) is not None
+                },
+            })
+            if len(out) >= max_items:
+                break
+        return out
+
+    def _extract_evidence_items_from_step_output(
+        self, capability_id: str, output: Any
+    ) -> list:
+        """Looks for real, typed evidence inside an already-completed
+        step's own tool output - never inside anything Brain-authored.
+        Recognizes exactly the shapes the initial 5 evidence-producing
+        capabilities are live-confirmed to return (web_search, gmail_
+        search, gmail_find_draft, drive_search, fetch_url). Returns []
+        (never guesses, never fabricates a placeholder) when the shape
+        isn't recognized or the tool reported no usable content -
+        distinct from the separate _URL_CONSUMING_CAPABILITIES path,
+        which this function does not touch or replace."""
+        if not isinstance(output, dict):
+            return []
+
+        if capability_id == "web_search":
+            return self._evidence_items_from_list(
+                output.get("results"),
+                source_capability=capability_id,
+                evidence_type="web_result",
+                summary_field="title",
+                content_field="content",
+                metadata_fields=("url",),
+                max_items=self._MAX_EVIDENCE_ITEMS_PER_SOURCE,
+                max_content_chars=self._MAX_EVIDENCE_CONTENT_CHARS,
+            )
+
+        if capability_id == "gmail_search":
+            return self._evidence_items_from_list(
+                output.get("results"),
+                source_capability=capability_id,
+                evidence_type="email_message",
+                summary_field="subject",
+                content_field="snippet",
+                metadata_fields=("date",),
+                max_items=self._MAX_EVIDENCE_ITEMS_PER_SOURCE,
+                max_content_chars=self._MAX_EVIDENCE_CONTENT_CHARS,
+            )
+
+        if capability_id == "drive_search":
+            return self._evidence_items_from_list(
+                output.get("files"),
+                source_capability=capability_id,
+                evidence_type="drive_file",
+                summary_field="name",
+                content_field="name",
+                metadata_fields=("id", "mimeType"),
+                max_items=self._MAX_EVIDENCE_ITEMS_PER_SOURCE,
+                max_content_chars=self._MAX_EVIDENCE_CONTENT_CHARS,
+            )
+
+        if capability_id == "gmail_find_draft":
+            draft = output.get("draft")
+            if not isinstance(draft, dict):
+                return []
+            body = str(draft.get("body") or "")
+            return [{
+                "source_capability": capability_id,
+                "evidence_type": "email_draft",
+                "summary": draft.get("subject"),
+                "content": body[: self._MAX_EVIDENCE_CONTENT_CHARS],
+                "truncated": len(body) > self._MAX_EVIDENCE_CONTENT_CHARS,
+                "metadata": {
+                    k: draft.get(k)
+                    for k in ("message_id", "thread_id")
+                    if draft.get(k) is not None
+                },
+            }]
+
+        if capability_id == "fetch_url":
+            text = output.get("text")
+            if not text:
+                return []
+            text = str(text)
+            return [{
+                "source_capability": capability_id,
+                "evidence_type": "fetched_page",
+                "summary": output.get("url"),
+                "content": text[: self._MAX_EVIDENCE_CONTENT_CHARS],
+                "truncated": (
+                    len(text) > self._MAX_EVIDENCE_CONTENT_CHARS
+                    or bool(output.get("truncated"))
+                ),
+                "metadata": {
+                    k: output.get(k)
+                    for k in ("url", "content_type")
+                    if output.get(k) is not None
+                },
+            }]
+
+        return []
+
+    def _resolve_step_decision_context(
+        self,
+        *,
+        capability_id: str,
+        step: Dict[str, Any],
+        workflow: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """The runtime - never the Brain - decides whether a workflow
+        step's tool call receives retrieved evidence from a completed
+        depends_on step, for the narrow set of capabilities that already
+        read decision_context["verified_evidence"] themselves (see
+        _EVIDENCE_CONSUMING_CAPABILITIES). Reuses the EXACT seam
+        institutional_drafting.py/generate_document.py already merge
+        attached-file evidence through - no new file, no new store, no
+        second workflow engine. Returns {} (never a fabricated empty
+        evidence list) when no dependency produced anything usable -
+        the consuming tool then proceeds exactly as it already does
+        today with no evidence, per its own existing honest-fallback
+        discipline. Stamps step["evidence_provenance"] as a LIST (this
+        mechanism's own shape - distinct from _resolve_step_request_
+        text's single-dict shape for _URL_CONSUMING_CAPABILITIES; the
+        two capability sets are disjoint, so a step never needs both)."""
+        if capability_id not in self._EVIDENCE_CONSUMING_CAPABILITIES:
+            return {}
+
+        depends_on = step.get("depends_on") or []
+        if not isinstance(depends_on, list):
+            return {}
+
+        steps_by_id = {
+            s.get("step_id"): s
+            for s in workflow.get("steps", [])
+            if isinstance(s, dict)
+        }
+
+        collected = []
+        provenance = []
+
+        for dep_id in depends_on:
+            dep_step = steps_by_id.get(dep_id)
+            if not isinstance(dep_step, dict) or dep_step.get("status") != "completed":
+                continue
+            dep_capability = dep_step.get("capability")
+            items = self._extract_evidence_items_from_step_output(
+                dep_capability, dep_step.get("output")
+            )
+            for item in items:
+                if len(collected) >= self._MAX_EVIDENCE_ITEMS_TOTAL:
+                    break
+                collected.append(item)
+                provenance.append({
+                    "source_step": dep_id,
+                    "source_capability": dep_capability,
+                    "evidence_type": item["evidence_type"],
+                    "trust": "runtime_verified_same_workflow",
+                })
+            if len(collected) >= self._MAX_EVIDENCE_ITEMS_TOTAL:
+                break
+
+        if not collected:
+            return {}
+
+        step["evidence_provenance"] = provenance
+        return {"verified_evidence": {"retrieved_evidence": collected}}
+
+    def _resolve_step_request_text(
+        self,
+        *,
+        capability_id: str,
+        step: Dict[str, Any],
+        workflow: Dict[str, Any],
+        goal: str,
+    ) -> str:
+        """The runtime - never the Brain - decides what literal text a
+        workflow step's tool call receives, for the narrow set of
+        capabilities whose own security boundary requires the argument
+        to appear literally in that text (see
+        _URL_CONSUMING_CAPABILITIES). Trusted evidence can only come
+        from a step this SAME workflow run already executed and that
+        this step explicitly depends on (step["depends_on"]) - never
+        from the Brain's own proposal text, and never from a step that
+        has not actually completed yet. Stamps a provenance record onto
+        the consuming step itself (evidence_provenance) so which prior
+        step/capability/URL fed this call is real, inspectable state,
+        not an invisible side effect - addressing the native-tool
+        audit's Root Cause B (trusted inter-step evidence) without a
+        second workflow engine or a new state store: workflow["steps"]
+        already carries each step's own completed output."""
+        if capability_id not in self._URL_CONSUMING_CAPABILITIES:
+            return goal
+
+        depends_on = step.get("depends_on") or []
+        if not isinstance(depends_on, list):
+            return goal
+
+        steps_by_id = {
+            s.get("step_id"): s
+            for s in workflow.get("steps", [])
+            if isinstance(s, dict)
+        }
+
+        for dep_id in depends_on:
+            dep_step = steps_by_id.get(dep_id)
+            if not isinstance(dep_step, dict) or dep_step.get("status") != "completed":
+                continue
+            url = self._extract_trusted_url_from_step_output(dep_step.get("output"))
+            if url is None:
+                continue
+            step["evidence_provenance"] = {
+                "source_step": dep_id,
+                "source_capability": dep_step.get("capability"),
+                "value_type": "url",
+                "value": url,
+                "trust": "runtime_verified_same_workflow",
+            }
+            return f"{goal}\n\nSource URL to fetch: {url}"
+
+        return goal
+
     def _model_workflow_step_handler(
         self,
         capability_id,
@@ -2243,9 +2568,22 @@ class UriOrchestrator:
         overrides an outer "success")."""
 
         def _handler(step, workflow):
-            call_k = {"session_id": session_id, "request_text": goal}
+            request_text = self._resolve_step_request_text(
+                capability_id=capability_id,
+                step=step,
+                workflow=workflow,
+                goal=goal,
+            )
+            call_k = {"session_id": session_id, "request_text": request_text}
             if principal is not None:
                 call_k["principal"] = principal
+            decision_context = self._resolve_step_decision_context(
+                capability_id=capability_id,
+                step=step,
+                workflow=workflow,
+            )
+            if decision_context:
+                call_k["decision_context"] = decision_context
             result = self.approval_gate.execute_tool(capability_id, **call_k)
 
             status = real_tool_status(result)
@@ -2515,10 +2853,19 @@ class UriOrchestrator:
 
         execution_status = execution.get("status")
 
-        if execution_status == "success":
+        if execution_status in ("success", "degraded"):
 
             response_data = {
-                "message": "URI completed the Brain-composed workflow.",
+                "message": (
+                    "URI completed the Brain-composed workflow."
+                    if execution_status == "success"
+                    else (
+                        "URI completed the Brain-composed workflow, but "
+                        "at least one step fell back to a plain result "
+                        "instead of a Brain-authored one - review before "
+                        "relying on it."
+                    )
+                ),
                 "workflow": execution.get("workflow"),
                 "execution_log": execution.get("execution_log"),
             }
@@ -2884,7 +3231,13 @@ class UriOrchestrator:
                     ],
                 }
 
-                if execution.get("status") == "success":
+                if execution.get("status") in ("success", "degraded"):
+                    # "degraded" (native-tool audit, Root Cause A) still
+                    # means the workflow reached real completion (every
+                    # step produced a real artifact) - only its quality
+                    # was lower than a full Brain-authored result. Never
+                    # clearing here would leave a genuinely finished
+                    # workflow marked "active" indefinitely.
                     self._clear_active_workflow(session)
 
             else:

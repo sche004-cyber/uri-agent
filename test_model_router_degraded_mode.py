@@ -121,7 +121,11 @@ class TestModelRouterDegradedMode(unittest.TestCase):
                 brief={"document_type": "noting", "purpose": "administrative"},
                 request_text="Draft administrative approval",
             )
-            self.assertEqual(result["status"], "success")
+            # Native-tool audit (docs/plans/URI_NATIVE_TOOL_AUDIT.md, Root
+            # Cause A): a fallback document is real output but must not be
+            # reported as an ordinary, full-quality "success" - "degraded"
+            # is the honest status for this branch.
+            self.assertEqual(result["status"], "degraded")
             self.assertEqual(result["composed_by"], "fallback")
             self.assertIn("The reasoning model was unreachable", result["detail"])
             self.assertIn("DRAFT (NOTING)", result["body"])
@@ -137,7 +141,7 @@ class TestModelRouterDegradedMode(unittest.TestCase):
                 brief={"document_type": "order", "purpose": "policy"},
                 request_text="Draft office order",
             )
-            self.assertEqual(result["status"], "success")
+            self.assertEqual(result["status"], "degraded")
             self.assertEqual(result["composed_by"], "fallback")
             self.assertIn("The reasoning model was unreachable", result["detail"])
 

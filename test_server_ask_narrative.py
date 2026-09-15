@@ -183,7 +183,7 @@ class AskNarrativeEndpointTests(unittest.TestCase):
         self.assertIsNone(response.json()["narrative"])
         # The structured, pre-existing fields are unaffected either way.
         self.assertEqual(
-            response.json()["execution"]["status"], "success"
+            response.json()["execution"]["status"], "degraded"
         )
 
     def test_ask_relays_narrative_unavailable_reason(self):

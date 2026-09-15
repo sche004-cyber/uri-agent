@@ -157,7 +157,7 @@ class NarrativeAdditiveSuccessTests(unittest.TestCase):
             },
         )
 
-        self.assertEqual(result["execution"]["status"], "success")
+        self.assertEqual(result["execution"]["status"], "degraded")
         self.assertEqual(
             result["narrative"],
             "I've drafted the office note for your review.",
@@ -233,13 +233,13 @@ class NarrativeFallbackOnFailureTests(unittest.TestCase):
 
         self.assertNotIn("narrative", result)
         self.assertEqual(result["status"], "success")
-        self.assertEqual(result["execution"]["status"], "success")
+        self.assertEqual(result["execution"]["status"], "degraded")
 
     def test_empty_draft_falls_back_cleanly(self):
         result = self._run(_FakeDraftingProvider(content="   "))
 
         self.assertNotIn("narrative", result)
-        self.assertEqual(result["execution"]["status"], "success")
+        self.assertEqual(result["execution"]["status"], "degraded")
 
     def test_hallucinated_success_claim_for_a_non_success_outcome_is_rejected(
         self,

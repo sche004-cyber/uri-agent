@@ -42,12 +42,56 @@ class ConvertDocumentToolTests(unittest.TestCase):
         )
         self.assertEqual(result["status"], "not_implemented")
 
+    @patch("uri_core.tools.convert_document.convert_pdf_to_docx_preserving_layout")
+    def test_layout_preserving_conversion_is_the_real_success_path(
+        self, mock_layout_convert
+    ):
+        """Native-tool audit Pilot 3: when the real pdf2docx-backed
+        layout conversion succeeds, that IS the success path - full
+        fidelity, not the plain-text fallback."""
+        self._attach_pdf()
+
+        def _fake_convert(pdf_path, docx_path):
+            with open(docx_path, "wb") as handle:
+                handle.write(b"layout-preserved-docx-bytes")
+            return {
+                "status": "success",
+                "docx_path": docx_path,
+                "preserved": ["page size/orientation", "fonts and styles"],
+                "not_preserved": [],
+            }
+
+        mock_layout_convert.side_effect = _fake_convert
+
+        result = self.tool.convert(
+            session_id="s1", request_text="convert this into a word file"
+        )
+
+        self.assertEqual(result["status"], "success")
+        self.assertTrue(result["layout_preserved"])
+        self.assertEqual(result["output_format"], "docx")
+        self.assertTrue(result["file"]["filename"].endswith(".docx"))
+
+        stored_path = self.file_store.path_for(result["file"]["file_id"])
+        self.assertIsNotNone(stored_path)
+        with open(stored_path, "rb") as handle:
+            self.assertEqual(handle.read(), b"layout-preserved-docx-bytes")
+
+    @patch("uri_core.tools.convert_document.convert_pdf_to_docx_preserving_layout")
     @patch("uri_core.tools.convert_document.DocumentWriterService")
     @patch("uri_core.tools.convert_document.PDFReader")
-    def test_successful_conversion_stores_a_real_docx(
-        self, mock_reader_cls, mock_writer_cls
+    def test_plain_text_fallback_is_honestly_degraded_not_success(
+        self, mock_reader_cls, mock_writer_cls, mock_layout_convert
     ):
+        """Native-tool audit Pilot 3 + Root Cause A discipline: when
+        layout-preserving conversion genuinely fails, the plain-text
+        fallback still produces a real file, but must report
+        "degraded" - never the old, incorrect unconditional "success"."""
         self._attach_pdf()
+        mock_layout_convert.return_value = {
+            "status": "error",
+            "message": "unsupported PDF structure",
+        }
         mock_reader_cls.return_value.read_pdf.return_value = {
             "success": True,
             "text": "Real extracted resume text.",
@@ -58,7 +102,8 @@ class ConvertDocumentToolTests(unittest.TestCase):
             session_id="s1", request_text="convert this into a word file"
         )
 
-        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["status"], "degraded")
+        self.assertFalse(result["layout_preserved"])
         self.assertEqual(result["output_format"], "docx")
         self.assertTrue(result["file"]["filename"].endswith(".docx"))
 
@@ -106,7 +151,7 @@ class ConvertDocumentToolTests(unittest.TestCase):
             request_text="convert this to word and update my salary to 90000",
         )
 
-        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["status"], "degraded")
         self.assertTrue(result["edited"])
         stored_path = self.file_store.path_for(result["file"]["file_id"])
         with open(stored_path, "rb") as handle:
@@ -136,7 +181,7 @@ class ConvertDocumentToolTests(unittest.TestCase):
             request_text="convert this to word and update my salary to 90000",
         )
 
-        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["status"], "degraded")
         self.assertFalse(result["edited"])
         stored_path = self.file_store.path_for(result["file"]["file_id"])
         with open(stored_path, "rb") as handle:

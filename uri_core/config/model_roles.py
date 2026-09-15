@@ -132,6 +132,74 @@ def load_model_roles(path: str = MODEL_ROLES_PATH) -> Dict[str, Dict[str, Any]]:
     return _deep_merge(DEFAULT_MODEL_ROLES, override)
 
 
+ACTIVE_BRAIN_OVERRIDE_ROLES = (
+    ROLE_SEMANTIC_INTERPRETATION,
+    ROLE_REASONING,
+    ROLE_DRAFTING,
+    # Added by the native-tool audit (docs/plans/URI_NATIVE_TOOL_AUDIT.md,
+    # Root Cause A): document_composition was one of the four original
+    # M21 call sites this module names in its own module docstring, but
+    # was never added when semantic_interpretation joined this tuple -
+    # an oversight, not a deliberate exclusion. Without it, every
+    # draft_institutional_note/order/generate_document call silently
+    # ignored the user's configured Active Brain and always tried the
+    # deployment-wide default model, regardless of what was actually
+    # installed and healthy - confirmed live to always fall back to a
+    # placeholder draft while still reporting "success".
+    ROLE_DOCUMENT_COMPOSITION,
+)
+
+
+def apply_active_brain_override(
+    role: str, principal: Optional[Any], role_config: Dict[str, Any]
+) -> Dict[str, Any]:
+    """A user's Active Brain is a per-user override for the Brain-authored
+    roles named in ACTIVE_BRAIN_OVERRIDE_ROLES - semantic interpretation
+    (the first real model call on every turn), reasoning/planning, the
+    final narrative draft, and document composition (notes/orders/
+    generated files). Returns role_config unchanged when there is
+    nothing to override (no principal/user_id, no stored active brain, or
+    an unrecognised provider_id) - never guesses a substitute.
+
+    Shared by build_provider() (its own direct callers, which pass no
+    provider_id_override) and ModelRouter (uri_core/core/model_router.py),
+    which must consult this BEFORE picking a candidate/model, since it
+    always calls build_provider() with an explicit provider_id_override -
+    the exact reason a bounded repair was needed here rather than only in
+    build_provider() itself: a user's Active Brain choice previously never
+    reached ModelRouter.attempt() at all, for any of these three roles, so
+    it could configure a real installed model and still see every real
+    turn blocked at the deployment-wide default (docs/plans/
+    URI_APPROVED_UI_STARTUP_FLOW_AUDIT.md)."""
+
+    if (
+        role not in ACTIVE_BRAIN_OVERRIDE_ROLES
+        or principal is None
+        or not getattr(principal, "user_id", None)
+    ):
+        return role_config
+
+    from uri_core.core.provider_registry import CATALOGUE_BY_ID, ProviderConfigStore
+
+    active_brain = ProviderConfigStore(principal.user_id).get_active_brain()
+    if active_brain is None:
+        return role_config
+
+    descriptor = CATALOGUE_BY_ID.get(active_brain["provider_id"])
+    if descriptor is None:
+        return role_config
+
+    role_config = dict(role_config)
+    role_config.update(
+        {
+            "provider": descriptor.adapter,
+            "provider_id": descriptor.provider_id,
+            "model": active_brain["model"],
+        }
+    )
+    return role_config
+
+
 def build_provider(
     role: str,
     principal: Optional[Any] = None,
@@ -166,31 +234,22 @@ def build_provider(
     """
     role_config = load_model_roles(roles_path).get(role, {})
 
-    # A user's active brain is a per-user override for the two Brain-authored
-    # roles: reasoning/planning and the final narrative draft.  This keeps the
-    # runtime's authority boundary unchanged; it only makes the configured
-    # text generator reachable by both existing call sites.
-    # It remains subject to the catalogue and existing provider/key rules.
-    if (
-        provider_id_override is None
-        and role in (ROLE_REASONING, ROLE_DRAFTING)
-        and principal is not None
-        and getattr(principal, "user_id", None)
-    ):
-        from uri_core.core.provider_registry import CATALOGUE_BY_ID, ProviderConfigStore
-
-        active_brain = ProviderConfigStore(principal.user_id).get_active_brain()
-        if active_brain is not None:
-            descriptor = CATALOGUE_BY_ID.get(active_brain["provider_id"])
-            if descriptor is not None:
-                role_config = dict(role_config)
-                role_config.update(
-                    {
-                        "provider": descriptor.adapter,
-                        "provider_id": descriptor.provider_id,
-                        "model": active_brain["model"],
-                    }
-                )
+    # provider_id_override is set only by ModelRouter.attempt(), which has
+    # already decided WHICH provider/adapter to try (see model_router.py's
+    # own _ordered_candidates - deliberately not active-brain-aware, to
+    # avoid a cloud-provider Active Brain silently redirecting the router's
+    # own fallback-chain provider selection). Applying the model override
+    # here too - but ONLY when it agrees with the provider already chosen
+    # - is what actually lets a user's Active Brain model reach the real
+    # provider.complete() call for a router-mediated role (previously it
+    # never did, for any role - see apply_active_brain_override's own
+    # docstring). Direct callers (provider_id_override is None) get the
+    # full override, unchanged from before this repair.
+    overridden_role_config = apply_active_brain_override(role, principal, role_config)
+    if provider_id_override is None:
+        role_config = overridden_role_config
+    elif overridden_role_config.get("provider", "ollama") == provider_id_override:
+        role_config = overridden_role_config
 
     provider_name = provider_id_override or role_config.get("provider", "ollama")
 

@@ -480,7 +480,17 @@ class QueryContextReachesReasoningRequestTests(_IsolatedOrchestratorCase):
             },
         )
 
-        self.assertEqual(len(captured_requests), 1)
+        # Native-tool audit (docs/plans/URI_NATIVE_TOOL_AUDIT.md, Root
+        # Cause A): document composition in this test environment has
+        # no real reachable model, so it now honestly reports
+        # "degraded" instead of the old, incorrect unconditional
+        # "success" - and a degraded result correctly triggers a second
+        # Brain re-evaluation call (_continue_brain_evaluation_loop),
+        # exactly the continuation behavior the cross-cutting contract
+        # requires. This test's own concern (query_context shape) is
+        # about the FIRST call, which is unaffected - inspect that one
+        # specifically rather than requiring exactly one call total.
+        self.assertEqual(len(captured_requests), 2)
         request = json.loads(captured_requests[0])
 
         self.assertIn("query_context", request)

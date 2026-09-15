@@ -87,9 +87,16 @@ class DocumentComposer:
     ) -> Dict[str, Any]:
         """Returns {"status", "body", "composed_by", "detail"}.
         composed_by is "brain" when the model authored an accepted draft,
-        "fallback" when URI used its plain rendering instead. status is
-        always "success" (a document is always produced); detail explains
-        a fallback."""
+        "fallback" when URI used its plain rendering instead. A document
+        is always produced either way (never a hard failure just because
+        the model was unreachable) - but status now honestly reflects
+        which one happened: "success" only when the Brain actually
+        composed it, "degraded" when URI substituted its own plain
+        template. Callers must propagate this status rather than
+        re-hardcoding "success" (see docs/plans/URI_NATIVE_TOOL_AUDIT.md,
+        Root Cause A - the prior always-"success" contract is exactly
+        what let a placeholder draft be reported as a normal, successful
+        result)."""
 
         system_prompt = self._build_system_prompt(brief, soul_text)
         user_prompt = self._build_user_prompt(
@@ -129,7 +136,7 @@ class DocumentComposer:
                 }
 
             return {
-                "status": "success",
+                "status": "degraded",
                 "body": self._fallback_document(brief, request_text),
                 "composed_by": "fallback",
                 "detail": (
@@ -141,7 +148,7 @@ class DocumentComposer:
 
         except (ProviderError, UnknownModelProviderError) as error:
             return {
-                "status": "success",
+                "status": "degraded",
                 "body": self._fallback_document(brief, request_text),
                 "composed_by": "fallback",
                 "detail": (

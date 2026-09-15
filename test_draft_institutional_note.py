@@ -91,7 +91,7 @@ class MaterialInputDifferenceTests(unittest.TestCase):
 
         result = tool.generate(request_text="draft a note")
 
-        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["status"], "degraded")
         self.assertIn("note_sheet", result)
         self.assertNotIn("leave travel concession", result["note_sheet"].lower())
 
@@ -100,7 +100,7 @@ class MaterialInputDifferenceTests(unittest.TestCase):
 
         result = tool.generate(request_text="")
 
-        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["status"], "degraded")
         self.assertIn("Administrative Matter", result["note_sheet"])
 
 

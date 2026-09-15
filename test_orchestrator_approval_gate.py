@@ -121,7 +121,7 @@ class RealFourToolsRegressionTests(unittest.TestCase):
         )
 
         self.assertEqual(result["status"], "success")
-        self.assertEqual(result["execution"]["status"], "success")
+        self.assertEqual(result["execution"]["status"], "degraded")
         self.assertNotEqual(
             result["execution"]["status"], "awaiting_approval"
         )

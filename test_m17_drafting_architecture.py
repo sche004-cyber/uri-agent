@@ -318,7 +318,7 @@ class FallbackIsHonestNotATemplateTests(unittest.TestCase):
             document_type="office_order",
             composer=composer,
         )
-        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["status"], "degraded")
         self.assertEqual(result["composed_by"], "fallback")
         # The fallback is honest about being an unpolished draft and does
         # NOT fabricate an institutional banner/reference/signatory.
@@ -332,7 +332,7 @@ class FallbackIsHonestNotATemplateTests(unittest.TestCase):
         note_result = note.generate(request_text="draft a note about the seminar")
         order_result = order.generate(request_text="issue an order appointing a warden")
         for result in (note_result, order_result):
-            self.assertEqual(result["status"], "success")
+            self.assertEqual(result["status"], "degraded")
             self.assertIn("note_sheet", result)
             self.assertTrue(result["note_sheet"].strip())
 

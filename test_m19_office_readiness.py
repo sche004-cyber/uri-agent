@@ -153,7 +153,10 @@ class GenericDocumentGenerationTests(unittest.TestCase):
         result = tool.generate(
             request_text="write a short proposal", session_id="s-fallback"
         )
-        self.assertEqual(result["status"], "success")
+        # Native-tool audit (docs/plans/URI_NATIVE_TOOL_AUDIT.md, Root
+        # Cause A): a fallback-composed file is real output but must be
+        # reported as "degraded", not an ordinary full-quality "success".
+        self.assertEqual(result["status"], "degraded")
         self.assertEqual(result["composed_by"], "fallback")
 
 

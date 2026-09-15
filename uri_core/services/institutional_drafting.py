@@ -194,7 +194,11 @@ def draft_institutional_document(
     )
 
     return {
-        "status": "success",
+        # Propagates the composer's own honest status ("success" only
+        # when the Brain actually authored this, "degraded" when a
+        # plain fallback template was substituted) - never re-hardcoded,
+        # per docs/plans/URI_NATIVE_TOOL_AUDIT.md Root Cause A.
+        "status": result["status"],
         "note_sheet": result["body"],
         "composed_by": result["composed_by"],
         "detail": result.get("detail"),

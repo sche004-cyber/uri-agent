@@ -514,10 +514,21 @@ class WorkflowCapabilityRouter:
         # reported outcome, so a tool that could not draft (e.g.
         # returned "unavailable"/"input_required") is never reported
         # as a completed draft (audit finding #3).
-        if real_tool_status(result) == "success":
+        #
+        # "degraded" (native-tool audit, Root Cause A) is a THIRD real
+        # outcome, not a failure: the composer produced a real document
+        # (a file exists, the workflow step genuinely completed), but
+        # from a plain fallback template rather than the Brain - a
+        # quality signal, not an execution failure. Treating it as
+        # "failed" here would discard a real artifact the user can
+        # still open; treating it as bare "success" (the prior bug)
+        # would hide that it needs review. Propagating the tool's own
+        # status lets both realities reach the final response honestly.
+        step_status = real_tool_status(result)
+        if step_status in ("success", "degraded"):
 
             return {
-                "status": "success",
+                "status": step_status,
                 "data": result.get("data")
             }
 

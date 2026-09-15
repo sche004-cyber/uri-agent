@@ -310,7 +310,15 @@ class WorkflowExecutor:
                     "status"
                 )
 
-                if result_status == "success":
+                # "degraded" (native-tool audit, Root Cause A): a step
+                # handler (e.g. draft_output) produced a real artifact
+                # from a fallback rather than the Brain - the step
+                # genuinely completed (a file exists), it is not an
+                # execution failure. This is a brand-new status value no
+                # pre-existing step handler ever returns, so widening
+                # this check cannot change behavior for any other
+                # workflow step.
+                if result_status in ("success", "degraded"):
 
                     completed_at = self._now()
 
@@ -744,8 +752,27 @@ class WorkflowExecutor:
             completion_event
         )
 
+        # Native-tool audit, Root Cause A: every step reaching a
+        # terminal "completed" state does not mean every step's own
+        # OUTPUT was full quality - a step whose handler reported
+        # "degraded" (a real artifact from a fallback template, not the
+        # Brain) still lands here, since §313 above treats it as a real
+        # completion, not a failure. The overall workflow result must
+        # not silently round that back up to bare "success" - the
+        # caller (orchestrator.py's model-workflow response builder)
+        # needs to see it to avoid claiming full completion when a step
+        # actually degraded.
+        def _step_degraded(step: dict) -> bool:
+            output = step.get("output")
+            return isinstance(output, dict) and output.get("status") == "degraded"
+
+        overall_status = "degraded" if any(
+            isinstance(step, dict) and _step_degraded(step)
+            for step in workflow.get("steps", [])
+        ) else "success"
+
         return {
-            "status": "success",
+            "status": overall_status,
             "workflow": workflow,
             "execution_log": execution_log
         }
