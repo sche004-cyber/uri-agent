@@ -2285,45 +2285,115 @@ class UriOrchestrator:
         return None
 
     @staticmethod
+    def _render_evidence_markdown(item: Dict[str, Any]) -> str:
+        """One canonical, clean-prose rendering of a single evidence
+        item - structured fields only, never an instruction. Built
+        purely from fields the item itself already carries (title/
+        author/date/source_type/content/source_locator, all already
+        real and already capped) - this function invents no new
+        content and never reads anything Brain-authored."""
+        lines = [f"### {item.get('title') or '(untitled)'}"]
+
+        detail_bits = [f"Type: {item['source_type']}"]
+        if item.get("author"):
+            detail_bits.append(f"From: {item['author']}")
+        if item.get("date"):
+            detail_bits.append(f"Date: {item['date']}")
+        lines.append(" | ".join(detail_bits))
+
+        lines.append("")
+        lines.append(item.get("content") or "")
+
+        if item.get("source_locator"):
+            lines.append("")
+            lines.append(f"Link: {item['source_locator']}")
+
+        return "\n".join(lines).strip()
+
+    @classmethod
+    def _make_evidence_item(
+        cls,
+        *,
+        source_type: str,
+        source_id: Optional[str] = None,
+        title: Optional[str] = None,
+        content: str = "",
+        author: Optional[str] = None,
+        date: Optional[str] = None,
+        source_locator: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        max_content_chars: int,
+    ) -> Dict[str, Any]:
+        """The one canonical evidence-item shape every producer below
+        normalizes into - source_type/source_id/title/content/author/
+        date/source_locator/metadata/markdown/provenance/truncated,
+        stable regardless of which tool produced it. A field a tool's
+        real output does not carry stays None here - never guessed,
+        never fabricated (see each producer branch below for exactly
+        which fields each real tool shape is honestly missing today).
+        `provenance` is filled in by the caller (_resolve_step_decision_
+        context), which alone knows the source_step/source_capability
+        this item came from within THIS workflow run."""
+        content = str(content or "")
+        truncated = len(content) > max_content_chars
+        item = {
+            "source_type": source_type,
+            "source_id": source_id,
+            "title": title,
+            "content": content[:max_content_chars],
+            "author": author,
+            "date": date,
+            "source_locator": source_locator,
+            "metadata": metadata or {},
+            "truncated": truncated,
+            "provenance": None,
+        }
+        item["markdown"] = cls._render_evidence_markdown(item)
+        return item
+
+    @classmethod
     def _evidence_items_from_list(
+        cls,
         items: Any,
         *,
-        source_capability: str,
-        evidence_type: str,
-        summary_field: str,
+        source_type: str,
+        title_field: str,
         content_field: str,
-        metadata_fields: tuple,
+        id_field: Optional[str] = None,
+        author_field: Optional[str] = None,
+        date_field: Optional[str] = None,
+        locator_field: Optional[str] = None,
+        metadata_fields: tuple = (),
         max_items: int,
         max_content_chars: int,
     ) -> list:
         """Turns one real tool's own list-shaped output (web_search's/
-        gmail_search's "results", drive_search's "files") into typed
-        evidence items - metadata (summary_field + metadata_fields) kept
-        whole, content (content_field) capped so a rich result set can
-        never produce an unbounded drafting prompt. Never invents a
-        field: a missing one is simply omitted, never guessed."""
+        gmail_search's "results", drive_search's "files") into
+        canonical evidence items. Never invents a field: one a tool's
+        raw item doesn't carry is simply omitted/None, never guessed."""
         if not isinstance(items, list):
             return []
 
         out = []
-        for item in items:
-            if not isinstance(item, dict):
+        for raw in items:
+            if not isinstance(raw, dict):
                 continue
-            content = item.get(content_field) or ""
-            content = str(content)
-            truncated = len(content) > max_content_chars
-            out.append({
-                "source_capability": source_capability,
-                "evidence_type": evidence_type,
-                "summary": item.get(summary_field),
-                "content": content[:max_content_chars],
-                "truncated": truncated,
-                "metadata": {
-                    field: item.get(field)
+            promoted = {id_field, author_field, date_field, locator_field, title_field, content_field}
+            out.append(cls._make_evidence_item(
+                source_type=source_type,
+                source_id=raw.get(id_field) if id_field else None,
+                title=raw.get(title_field),
+                content=raw.get(content_field) or "",
+                author=raw.get(author_field) if author_field else None,
+                date=raw.get(date_field) if date_field else None,
+                source_locator=raw.get(locator_field) if locator_field else None,
+                metadata={
+                    field: raw.get(field)
                     for field in metadata_fields
-                    if item.get(field) is not None
+                    if field not in promoted and raw.get(field) is not None
                 },
-            })
+                max_content_chars=max_content_chars,
+            ))
             if len(out) >= max_items:
                 break
         return out
@@ -2335,45 +2405,56 @@ class UriOrchestrator:
         step's own tool output - never inside anything Brain-authored.
         Recognizes exactly the shapes the initial 5 evidence-producing
         capabilities are live-confirmed to return (web_search, gmail_
-        search, gmail_find_draft, drive_search, fetch_url). Returns []
-        (never guesses, never fabricates a placeholder) when the shape
-        isn't recognized or the tool reported no usable content -
-        distinct from the separate _URL_CONSUMING_CAPABILITIES path,
-        which this function does not touch or replace."""
+        search, gmail_find_draft, drive_search, fetch_url), normalized
+        into one stable canonical schema regardless of producer.
+        Returns [] (never guesses, never fabricates a placeholder) when
+        the shape isn't recognized or the tool reported no usable
+        content - distinct from the separate _URL_CONSUMING_CAPABILITIES
+        path, which this function does not touch or replace. No native
+        tool file is read or modified to build this - only each tool's
+        own already-returned output dict."""
         if not isinstance(output, dict):
             return []
 
         if capability_id == "web_search":
             return self._evidence_items_from_list(
                 output.get("results"),
-                source_capability=capability_id,
-                evidence_type="web_result",
-                summary_field="title",
+                source_type="web_result",
+                title_field="title",
                 content_field="content",
+                id_field="url",
+                locator_field="url",
                 metadata_fields=("url",),
                 max_items=self._MAX_EVIDENCE_ITEMS_PER_SOURCE,
                 max_content_chars=self._MAX_EVIDENCE_CONTENT_CHARS,
             )
 
         if capability_id == "gmail_search":
+            # gmail_search.py's own real output carries no message id
+            # and no sender - source_id/author stay honestly None
+            # rather than invented (see gmail_search_service.py, which
+            # extracts only Subject/Date, never From or the message id).
             return self._evidence_items_from_list(
                 output.get("results"),
-                source_capability=capability_id,
-                evidence_type="email_message",
-                summary_field="subject",
+                source_type="email_message",
+                title_field="subject",
                 content_field="snippet",
+                date_field="date",
                 metadata_fields=("date",),
                 max_items=self._MAX_EVIDENCE_ITEMS_PER_SOURCE,
                 max_content_chars=self._MAX_EVIDENCE_CONTENT_CHARS,
             )
 
         if capability_id == "drive_search":
+            # drive_search.py's own real output carries no shareable
+            # link (only id/name/mimeType) - source_locator stays
+            # honestly None rather than a constructed/guessed URL.
             return self._evidence_items_from_list(
                 output.get("files"),
-                source_capability=capability_id,
-                evidence_type="drive_file",
-                summary_field="name",
+                source_type="drive_file",
+                title_field="name",
                 content_field="name",
+                id_field="id",
                 metadata_fields=("id", "mimeType"),
                 max_items=self._MAX_EVIDENCE_ITEMS_PER_SOURCE,
                 max_content_chars=self._MAX_EVIDENCE_CONTENT_CHARS,
@@ -2383,40 +2464,48 @@ class UriOrchestrator:
             draft = output.get("draft")
             if not isinstance(draft, dict):
                 return []
-            body = str(draft.get("body") or "")
-            return [{
-                "source_capability": capability_id,
-                "evidence_type": "email_draft",
-                "summary": draft.get("subject"),
-                "content": body[: self._MAX_EVIDENCE_CONTENT_CHARS],
-                "truncated": len(body) > self._MAX_EVIDENCE_CONTENT_CHARS,
-                "metadata": {
+            date = None
+            internal_date = draft.get("internal_date")
+            if internal_date is not None:
+                try:
+                    date = (
+                        datetime.fromtimestamp(int(internal_date) / 1000, tz=timezone.utc)
+                        .isoformat()
+                    )
+                except (TypeError, ValueError, OSError):
+                    date = None
+            return [self._make_evidence_item(
+                source_type="email_draft",
+                source_id=draft.get("message_id"),
+                title=draft.get("subject"),
+                content=draft.get("body") or "",
+                date=date,
+                metadata={
                     k: draft.get(k)
-                    for k in ("message_id", "thread_id")
+                    for k in ("thread_id",)
                     if draft.get(k) is not None
                 },
-            }]
+                max_content_chars=self._MAX_EVIDENCE_CONTENT_CHARS,
+            )]
 
         if capability_id == "fetch_url":
             text = output.get("text")
             if not text:
                 return []
-            text = str(text)
-            return [{
-                "source_capability": capability_id,
-                "evidence_type": "fetched_page",
-                "summary": output.get("url"),
-                "content": text[: self._MAX_EVIDENCE_CONTENT_CHARS],
-                "truncated": (
-                    len(text) > self._MAX_EVIDENCE_CONTENT_CHARS
-                    or bool(output.get("truncated"))
-                ),
-                "metadata": {
+            url = output.get("url")
+            return [self._make_evidence_item(
+                source_type="fetched_page",
+                source_id=url,
+                title=url,
+                content=text,
+                source_locator=url,
+                metadata={
                     k: output.get(k)
-                    for k in ("url", "content_type")
+                    for k in ("content_type",)
                     if output.get(k) is not None
                 },
-            }]
+                max_content_chars=self._MAX_EVIDENCE_CONTENT_CHARS,
+            )]
 
         return []
 
@@ -2469,12 +2558,19 @@ class UriOrchestrator:
             for item in items:
                 if len(collected) >= self._MAX_EVIDENCE_ITEMS_TOTAL:
                     break
-                collected.append(item)
-                provenance.append({
+                item_provenance = {
                     "source_step": dep_id,
                     "source_capability": dep_capability,
-                    "evidence_type": item["evidence_type"],
                     "trust": "runtime_verified_same_workflow",
+                }
+                # Embedded directly on the item (self-describing, per the
+                # canonical schema) as well as collected into the
+                # step-level list below (unchanged, pre-existing shape).
+                item["provenance"] = item_provenance
+                collected.append(item)
+                provenance.append({
+                    **item_provenance,
+                    "source_type": item["source_type"],
                 })
             if len(collected) >= self._MAX_EVIDENCE_ITEMS_TOTAL:
                 break
