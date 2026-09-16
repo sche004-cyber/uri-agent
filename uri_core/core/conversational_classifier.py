@@ -118,10 +118,25 @@ def _matches_conversational_text(user_text: str) -> bool:
     return any(pattern.search(text) for pattern in _SUBSTRING_PATTERNS)
 
 
-def _passes_semantic_safety_gate(semantic_result: Dict[str, Any]) -> bool:
+def _passes_semantic_safety_gate(
+    semantic_result: Dict[str, Any], *, require_no_clarification: bool = True
+) -> bool:
     """Fails closed: a missing/None/non-boolean value is never treated
     as satisfying the gate. Only an explicit False from the semantic
-    interpreter's own 8-key contract counts."""
+    interpreter's own 8-key contract counts.
+
+    require_no_clarification is relaxed (see is_conversational_no_
+    capability_required) only for the strongest textual signal - a
+    WHOLE message that IS a bare greeting/farewell/thanks - because a
+    real model observed live (gemma4:12b) reports
+    requires_clarification=True for a bare "hello"/"hi" while
+    reporting False for "thanks!"/"what can you do?", an inconsistency
+    in the model's own judgement rather than a genuine signal that the
+    greeting itself is ambiguous: there is no concrete meaning left to
+    disambiguate in a bare greeting, so this field does not carry the
+    same information here that it does for a real request. entities
+    and requires_evidence are never relaxed - a concrete target or an
+    evidence need still blocks classification unconditionally."""
 
     entities = semantic_result.get("entities")
 
@@ -134,7 +149,9 @@ def _passes_semantic_safety_gate(semantic_result: Dict[str, Any]) -> bool:
     if semantic_result.get("requires_evidence") is not False:
         return False
 
-    if semantic_result.get("requires_clarification") is not False:
+    if require_no_clarification and semantic_result.get(
+        "requires_clarification"
+    ) is not False:
         return False
 
     return True
@@ -146,16 +163,26 @@ def is_conversational_no_capability_required(
     """True only when BOTH the raw user text clearly reads as a
     greeting/farewell/thanks/bare self-referential question AND the
     semantic interpreter's own structured result contains no concrete
-    entity and no evidence/clarification need. See module docstring for
+    entity and no evidence need (plus no clarification need, EXCEPT for
+    a whole-message bare greeting/farewell/thanks - see
+    _passes_semantic_safety_gate's docstring). See module docstring for
     why both conditions exist and why this stays conservative."""
 
     if not isinstance(semantic_result, dict):
         return False
 
-    if not _passes_semantic_safety_gate(semantic_result):
+    text = (user_text or "").strip()
+    whole_message = _TRAILING_PUNCTUATION.sub("", text).strip()
+    is_whole_message_match = any(
+        pattern.match(whole_message) for pattern in _WHOLE_MESSAGE_PATTERNS
+    )
+
+    if not _passes_semantic_safety_gate(
+        semantic_result, require_no_clarification=not is_whole_message_match
+    ):
         return False
 
-    return _matches_conversational_text(user_text)
+    return is_whole_message_match or _matches_conversational_text(user_text)
 
 
 # The single, fixed, honest reply used whenever the above returns True.

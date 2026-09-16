@@ -74,19 +74,25 @@ class UriColors extends ThemeExtension<UriColors> {
     dangerSoft: Color(0xFFFBE9E9),
   );
 
+  /// 2026-09-12: the User-accepted "premium dashboard" dark palette
+  /// (docs/plans/M26_DASHBOARD_DESIGN_SPECIFICATION.md /
+  /// docs/design_references/dashboard_preview.html) — a near-black
+  /// canvas with a turquoise accent, replacing the previous violet-blue
+  /// dark palette. Light mode is unchanged; the accepted direction is
+  /// this app's dark theme.
   static const dark = UriColors(
-    ink: Color(0xFFF2F1F5),
-    inkSoft: Color(0xFFB8B6C4),
-    inkFaint: Color(0xFF87859A),
-    canvas: Color(0xFF121116),
-    surface: Color(0xFF1C1B22),
-    surfaceSunken: Color(0xFF26242D),
-    border: Color(0xFF34323C),
-    accent: Color(0xFF8A7CFF),
-    accentSoft: Color(0xFF2A2450),
-    accentInk: Color(0xFFC5BCFF),
-    success: Color(0xFF4FD695),
-    successSoft: Color(0xFF163829),
+    ink: Color(0xFFEAF6F4),
+    inkSoft: Color(0xFFA9C2BE),
+    inkFaint: Color(0xFF6E8A86),
+    canvas: Color(0xFF020910),
+    surface: Color(0xFF050D12),
+    surfaceSunken: Color(0xFF0B171E),
+    border: Color(0xFF16262C),
+    accent: Color(0xFF2DD4BF),
+    accentSoft: Color(0xFF0F2B29),
+    accentInk: Color(0xFF6EE7B7),
+    success: Color(0xFF10B981),
+    successSoft: Color(0xFF102420),
     warning: Color(0xFFE3A93F),
     warningSoft: Color(0xFF3A2E12),
     danger: Color(0xFFFF8080),
@@ -187,6 +193,39 @@ class UriRadius {
   static const double lg = 22;
 }
 
+/// Semantic typography roles for the compact dashboard.  These derive from
+/// the active [TextTheme] so every surface shares the application font,
+/// weight, spacing, and brightness-aware colours rather than introducing
+/// local font families.
+extension UriDashboardTextTheme on TextTheme {
+  TextStyle get metricValue => headlineSmall!.copyWith(
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    height: 1.1,
+  );
+
+  TextStyle get cardHeader => titleMedium!.copyWith(
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.25,
+  );
+
+  TextStyle get metricCaption => labelSmall!.copyWith(
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.35,
+  );
+
+  TextStyle get keyValue => bodyMedium!.copyWith(fontSize: 11, height: 1.35);
+
+  TextStyle get footerCaption => labelSmall!.copyWith(
+    fontSize: 9,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.3,
+  );
+}
+
 /// Layout breakpoints shared by every screen that adapts between a
 /// compact phone layout and a wider tablet/desktop one (Settings'
 /// master-detail, Home's dashboard grid, the app shell's sidebar vs.
@@ -204,7 +243,9 @@ class UriBreakpoints {
 }
 
 ThemeData buildUriTheme(Brightness brightness) {
-  final palette = brightness == Brightness.dark ? UriColors.dark : UriColors.light;
+  final palette = brightness == Brightness.dark
+      ? UriColors.dark
+      : UriColors.light;
 
   final base = ThemeData(
     useMaterial3: true,
@@ -288,10 +329,14 @@ ThemeData buildUriTheme(Brightness brightness) {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: palette.accent,
-        foregroundColor: brightness == Brightness.dark ? palette.canvas : Colors.white,
+        foregroundColor: brightness == Brightness.dark
+            ? palette.canvas
+            : Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(UriRadius.sm)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(UriRadius.sm),
+        ),
         textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     ),
@@ -300,7 +345,9 @@ ThemeData buildUriTheme(Brightness brightness) {
         foregroundColor: palette.ink,
         side: BorderSide(color: palette.border),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(UriRadius.sm)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(UriRadius.sm),
+        ),
         textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     ),

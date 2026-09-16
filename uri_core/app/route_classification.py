@@ -91,6 +91,10 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("POST", "/cancel"): USER,
     ("GET", "/tasks"): USER,
     ("GET", "/system/performance"): USER,
+    # Dashboard-only, read-only Gmail metadata.  The handler retains the
+    # established optional authenticated-user dependency used by the other
+    # dashboard reports; this record grants no capability or approval power.
+    ("GET", "/gmail/unread-count"): USER,
     ("GET", "/profile"): USER,
     ("POST", "/profile"): USER,
     ("GET", "/memory"): USER,
@@ -120,6 +124,9 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("PUT", "/providers/config"): USER,
     ("GET", "/providers/active-brain"): USER,
     ("PUT", "/providers/active-brain"): USER,
+    ("POST", "/providers/{provider_id}/verify"): USER,
+    ("GET", "/providers/fallback-routing"): USER,
+    ("PUT", "/providers/fallback-routing"): USER,
     ("GET", "/usage"): USER,
     ("GET", "/usage/limits"): USER,
     ("PUT", "/usage/limits"): USER,
@@ -154,6 +161,6 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 63 application routes + 4 FastAPI routes.
+# 67 application routes + 4 FastAPI routes.
 # auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 67
+EXPECTED_ROUTE_COUNT = 71

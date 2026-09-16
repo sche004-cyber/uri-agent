@@ -25,7 +25,7 @@ creating a path back into execution or approval itself.
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 
 @dataclass(frozen=True)
@@ -44,3 +44,5 @@ class PrincipalContext:
     role: Optional[str]
     device_id: Optional[str]
     mode: Optional[str] = None
+    # Request-scoped preference, never persisted here and never authority.
+    model_override: Optional[Any] = None

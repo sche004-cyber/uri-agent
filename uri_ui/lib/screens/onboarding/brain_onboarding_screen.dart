@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../services/app_state_scope.dart';
 import '../../services/uri_client.dart';
 import '../../theme/uri_theme.dart';
-import '../../widgets/uri_wordmark.dart';
 
 /// First-run provider setup; separate from the preference-tour onboarding.
 class BrainOnboardingScreen extends StatefulWidget {
@@ -67,7 +66,27 @@ class _BrainOnboardingScreenState extends State<BrainOnboardingScreen> {
     if (local == null) {
       return;
     }
-    final model = local.models.firstOrNull?.modelId;
+    // Prefer a model Ollama's own server actually reports as installed
+    // (see GET /providers' installed_models) over the catalogue's default
+    // listing order - the daemon being reachable never proves any
+    // particular catalogue model was pulled, and picking one that wasn't
+    // would silently doom every later real request. Falls back to the
+    // catalogue default only when the installed list is unknown/empty,
+    // preserving prior behavior rather than blocking on it.
+    final installedModel = local.models
+        .map((m) => m.modelId)
+        .where(local.installedModelIds.contains)
+        .firstOrNull;
+    final model = installedModel ?? local.models.firstOrNull?.modelId;
+    if (installedModel == null && local.installedModelIds.isNotEmpty) {
+      setState(
+        () => _message =
+            'None of URI\'s known Ollama models are installed on this '
+            'machine - pull one (e.g. "ollama pull ${local.models.firstOrNull?.modelId ?? ''}") '
+            'or choose a Cloud Provider instead.',
+      );
+      return;
+    }
     final ok = await AppStateScope.of(context)
         .setActiveBrain(local.providerId, model: model);
     if (mounted && !ok) {
@@ -118,7 +137,22 @@ class _BrainOnboardingScreenState extends State<BrainOnboardingScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const UriWordmark(markSize: 40, showTagline: true),
+                    // Reuses the exact approved dashboard rail logo asset
+                    // and screen-blend treatment (see app_shell.dart's
+                    // _Sidebar) - never a separate onboarding-only mark.
+                    // The raster itself already carries the "Desktop
+                    // Companion" caption, so no separate subtitle text
+                    // competes with it here either.
+                    SizedBox(
+                      height: 96,
+                      child: Image.asset(
+                        'assets/uri_app_logo_refined_v2.png',
+                        color: const Color(0xff020910),
+                        colorBlendMode: BlendMode.screen,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.centerLeft,
+                      ),
+                    ),
                     const SizedBox(height: UriSpace.lg),
                     Text(
                       'Give URI a Brain',

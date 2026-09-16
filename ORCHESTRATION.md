@@ -11,6 +11,31 @@ competing workflow.
 
 ---
 
+## 0. UI-Initiative Phase Role Override (2026-09-16, explicit User instruction)
+
+For the URI Hybrid UI implementation initiative only, and until the User
+changes it again, the roles in §1 below are overridden as follows. This is
+recorded additively — §1 remains the authoritative record for prior and other
+milestones, per this document's own auditable-correction-history discipline.
+
+- **Claude (CLI) and Codex (CLI): planning and independent plan review only.**
+  Neither implements, bounded-fixes, audits for release, or releases for this
+  initiative.
+- **Antigravity (Gemini 3.8 Flash): primary implementer**, building directly
+  against the frozen blueprint (`docs/plans/UI_HYBRID_FROZEN_BLUEPRINT.md`),
+  in addition to its existing Loop Manager/Orchestrator duties.
+- **Qwen 3 14B (local Ollama): implementation review**, evaluating
+  Antigravity's implementation against the frozen blueprint and producing
+  concrete findings — superseding Qwen's normal reserve/fallback,
+  User-invoked-only status for this initiative specifically.
+- **Antigravity (Gemini 3.8 Flash): repair** of the concrete findings Qwen's
+  review produces.
+- The blueprint's own sequencing (mandatory completion of M31 first; see the
+  blueprint document) governs when this loop may start. Current authoritative
+  state lives in `docs/governance/URI_ACTIVE_MILESTONE.md`.
+
+---
+
 ## 1. Canonical Team Model
 
 The development operating model is a fixed, non-discretionary cycle: **Claude

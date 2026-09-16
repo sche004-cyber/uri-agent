@@ -226,6 +226,41 @@ void main() {
     );
 
     test(
+      'a failed request retains the selected model for its caption',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            return _json({'status': 'failed', 'error': 'model unavailable'});
+          }),
+        );
+
+        final turn = await client.ask(
+          'anything',
+          modelOverride: {'provider_id': 'groq', 'model': 'llama-3.3-70b'},
+        );
+
+        expect(turn.stage, TurnStage.failed);
+        expect(turn.servingModel, 'llama-3.3-70b');
+      },
+    );
+
+    test('an HTTP failure prefers backend serving-model metadata', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          return _json({'serving_model': 'qwen3.5:9b'}, statusCode: 500);
+        }),
+      );
+
+      final turn = await client.ask(
+        'anything',
+        modelOverride: {'provider_id': 'ollama', 'model': 'other-model'},
+      );
+
+      expect(turn.stage, TurnStage.failed);
+      expect(turn.servingModel, 'qwen3.5:9b');
+    });
+
+    test(
       'a network error sets a clear failureReason rather than throwing',
       () async {
         final client = HttpUriClient(

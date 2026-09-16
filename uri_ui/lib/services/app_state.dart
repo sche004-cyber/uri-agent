@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../models/activity_event.dart';
 import '../models/connection.dart';
 import '../models/memory_entry.dart';
+import '../models/system_performance.dart';
 import '../models/task_item.dart';
 import '../models/user_preferences.dart';
 import '../models/uri_turn.dart';
@@ -29,6 +30,7 @@ import 'uri_client.dart'
         ModeInfo,
         ProviderEntry,
         ProviderKeyResult,
+        ProviderVerificationResult,
         UriClient,
         UriIdentity,
         UsageLimitStatus,
@@ -72,7 +74,9 @@ class AppState extends ChangeNotifier {
   /// user picks otherwise; persisted on-device only (see [ThemeStore])
   /// — never sent to the backend, which has no concept of how any
   /// client renders itself.
-  ThemeMode themeMode = ThemeMode.system;
+  // New installations open in the approved obsidian companion theme. This is
+  // a presentation default only; Appearance may still select Light/System.
+  ThemeMode themeMode = ThemeMode.dark;
 
   Future<void> loadPersistedThemeMode() async {
     themeMode = await _themeStore.load();
@@ -176,6 +180,8 @@ class AppState extends ChangeNotifier {
     tasks.clear();
     homeSummary = null;
     hasLoadedActivity = false;
+    unreadEmailCount = null;
+    hasLoadedUnreadEmailCount = false;
     // M16: attachments are conversation state too - a different user
     // must never see the previous user's attached filenames.
     attachments = <Attachment>[];
@@ -308,6 +314,24 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  SystemPerformanceSnapshot? systemPerformance;
+  bool hasLoadedSystemPerformance = false;
+
+  Future<void> loadSystemPerformance() async {
+    systemPerformance = await _client.loadSystemPerformance();
+    hasLoadedSystemPerformance = true;
+    notifyListeners();
+  }
+
+  int? unreadEmailCount;
+  bool hasLoadedUnreadEmailCount = false;
+
+  Future<void> loadUnreadEmailCount() async {
+    unreadEmailCount = await _client.loadUnreadEmailCount();
+    hasLoadedUnreadEmailCount = true;
+    notifyListeners();
+  }
+
   /// Returns the backend's own explanation of what happened/what's
   /// needed, so the caller can show it to the user — tapping
   /// Connect/Reconnect must never be a silent no-op (see
@@ -344,6 +368,34 @@ class AppState extends ChangeNotifier {
   /// (success, capability gap, or failure), that same turn is updated
   /// in place - see [_replacePendingTurn] - never appended as a second,
   /// separate entry.
+  /// Conversation-only selection; it never changes [activeBrain].
+  Object? conversationModelOverride;
+  Map<String, dynamic>? fallbackRouting;
+
+  void setConversationModelOverride(Object? value) {
+    conversationModelOverride = value;
+    notifyListeners();
+  }
+
+  Future<void> loadFallbackRouting() async {
+    fallbackRouting = await _client.getFallbackRouting();
+    notifyListeners();
+  }
+
+  Future<bool> saveFallbackRouting(Map<String, dynamic> config) async {
+    final ok = await _client.updateFallbackRouting(config);
+    if (ok) {
+      fallbackRouting = config;
+      notifyListeners();
+    }
+    return ok;
+  }
+
+  /// Updates the verified routing configuration and notifies listeners.
+  /// Kept alongside the earlier save-named method for source compatibility.
+  Future<bool> updateFallbackRouting(Map<String, dynamic> config) =>
+      saveFallbackRouting(config);
+
   Future<UriTurn> ask(String text) async {
     final pendingId = _generateTurnId();
 
@@ -369,7 +421,11 @@ class AppState extends ChangeNotifier {
     isSendingAsk = true;
     notifyListeners();
 
-    final response = await _client.ask(text, turnId: pendingId);
+    final response = await _client.ask(
+      text,
+      turnId: pendingId,
+      modelOverride: conversationModelOverride,
+    );
     final turn = response.copyWith(attachments: sentAttachments);
     _replacePendingTurn(pendingId, turn);
     isSendingAsk = false;
@@ -550,6 +606,9 @@ class AppState extends ChangeNotifier {
     String apiKey,
   ) => _client.submitProviderKey(providerId, apiKey);
 
+  Future<ProviderVerificationResult?> verifyProvider(String providerId) =>
+      _client.verifyProvider(providerId);
+
   Future<bool> updateProviderConfig(
     String providerId, {
     String? baseUrl,
@@ -558,6 +617,13 @@ class AppState extends ChangeNotifier {
       _client.updateProviderConfig(providerId, baseUrl: baseUrl, model: model);
 
   ActiveBrainInfo? activeBrain;
+  List<ProviderEntry> providerInventory = <ProviderEntry>[];
+
+  Future<void> loadProviderInventory() async {
+    providerInventory = await _client.listProviders();
+    notifyListeners();
+  }
+
   ProviderEntry? activeBrainProvider;
   bool brainSetupChecked = false;
   bool needsBrainSetup = false;

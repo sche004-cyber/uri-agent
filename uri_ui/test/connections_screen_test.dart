@@ -37,7 +37,7 @@ void main() {
   ) async {
     await pumpPostOnboardingApp(tester);
 
-    await tester.tap(find.text('Connections'));
+    await tester.tap(find.text('Email'));
     await tester.pumpAndSettle();
 
     expect(find.text('Gmail'), findsOneWidget);
@@ -54,7 +54,7 @@ void main() {
   ) async {
     await pumpPostOnboardingApp(tester);
 
-    await tester.tap(find.text('Connections'));
+    await tester.tap(find.text('Email'));
     await tester.pumpAndSettle();
 
     expect(find.text('Not connected'), findsOneWidget);
@@ -71,7 +71,7 @@ void main() {
   ) async {
     await pumpPostOnboardingApp(tester);
 
-    await tester.tap(find.text('Connections'));
+    await tester.tap(find.text('Email'));
     await tester.pumpAndSettle();
 
     expect(find.text('Needs authorization'), findsOneWidget);

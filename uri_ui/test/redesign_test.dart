@@ -74,6 +74,11 @@ void main() {
     );
     await tester.pumpWidget(UriApp(appState: appState));
     await tester.pumpAndSettle();
+    // Home now requests independent dashboard reports after its first frame.
+    // Advance MockUriClient's latency before this helper returns so tests do
+    // not dispose a live request merely because they are testing navigation.
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
     return appState;
   }
 
@@ -87,18 +92,18 @@ void main() {
         // never a second, separate "Ask URI" destination.
         expect(find.text('Home'), findsWidgets);
         expect(find.text('Tasks'), findsWidgets);
-        expect(find.text('Connections'), findsWidgets);
-        expect(find.text('Activity'), findsWidgets);
+        expect(find.text('Email'), findsWidgets);
+        expect(find.text('Insights'), findsWidgets);
         expect(find.text('Settings'), findsWidgets);
         expect(find.text('Ask URI'), findsNothing);
 
         // Home shows real dashboard stats...
         expect(find.text('Pending approvals'), findsOneWidget);
-        expect(find.text('Connected services'), findsOneWidget);
+        expect(find.text('Active Connections'), findsOneWidget);
 
         // ...and the actual conversation composer, in the same screen.
         expect(find.byType(TextField), findsOneWidget);
-        expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.arrow_forward_rounded), findsOneWidget);
       },
     );
   });
@@ -151,7 +156,7 @@ void main() {
       (tester) async {
         await pumpPostOnboardingApp(tester, client: _GmailNeedsSetupClient());
 
-        await tester.tap(find.text('Connections'));
+        await tester.tap(find.text('Email'));
         await tester.pumpAndSettle();
 
         expect(find.text('Not connected'), findsOneWidget);

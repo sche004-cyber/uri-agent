@@ -1,4 +1,5 @@
 import '../models/activity_event.dart';
+import '../models/system_performance.dart';
 import '../models/attachment.dart';
 import '../models/connection.dart';
 import '../models/memory_entry.dart';
@@ -120,7 +121,7 @@ abstract class UriClient {
   /// conversation before this call resolves, then update that exact
   /// same turn in place once it does, rather than the pending turn and
   /// the final result ever being two separate list entries.
-  Future<UriTurn> ask(String text, {String? turnId});
+  Future<UriTurn> ask(String text, {String? turnId, Object? modelOverride});
 
   /// Approve a previously proposed action, moving it through execution.
   /// Returns the final turn once execution completes.
@@ -146,6 +147,16 @@ abstract class UriClient {
 
   /// Structured activity/audit history, most recent first.
   Future<List<ActivityEvent>> listActivity();
+
+  /// Real CPU/memory/disk snapshot (see GET /system/performance). Null
+  /// when the backend could not be reached or reported an error —
+  /// callers must render an honest "unavailable" state, never a
+  /// fabricated number.
+  Future<SystemPerformanceSnapshot?> loadSystemPerformance();
+
+  /// Real unread Gmail count from GET /gmail/unread-count. Null means the
+  /// backend could not report it; callers must render that state explicitly.
+  Future<int?> loadUnreadEmailCount();
 
   /// Every fact URI currently holds about the user (see GET /memory).
   Future<List<MemoryEntry>> listMemory();
@@ -370,6 +381,10 @@ abstract class UriClient {
     String? baseUrl,
     String? model,
   });
+
+  Future<ProviderVerificationResult?> verifyProvider(String providerId);
+  Future<Map<String, dynamic>?> getFallbackRouting();
+  Future<bool> updateFallbackRouting(Map<String, dynamic> config);
 
   Future<ActiveBrainInfo?> getActiveBrain();
   Future<bool> setActiveBrain(String providerId, {String? model});
@@ -679,14 +694,17 @@ class ModelInfo {
     required this.modelId,
     required this.displayName,
     this.contextTokens,
+    this.verified = false,
   });
   final String modelId;
   final String displayName;
   final double? contextTokens;
+  final bool verified;
   factory ModelInfo.fromJson(Map<String, dynamic> json) => ModelInfo(
     modelId: json['model_id'] as String? ?? '',
     displayName: json['display_name'] as String? ?? '',
     contextTokens: (json['context_tokens'] as num?)?.toDouble(),
+    verified: json['verified'] as bool? ?? false,
   );
 }
 
@@ -719,6 +737,7 @@ class ProviderEntry {
     required this.configured,
     this.lastFour,
     required this.available,
+    this.installedModelIds = const [],
     this.models = const [],
     this.activeBrain = false,
     this.activeModel,
@@ -731,6 +750,13 @@ class ProviderEntry {
   final bool configured;
   final String? lastFour;
   final bool available;
+
+  /// Real model names this provider's own server actually has installed
+  /// (currently populated for the "ollama" adapter only - see
+  /// GET /providers' `installed_models`). Empty when unknown/not
+  /// applicable - never a substitute for [available], which only proves
+  /// the server itself answers, not that any particular model is ready.
+  final List<String> installedModelIds;
   final List<ModelInfo> models;
   final bool activeBrain;
   final String? activeModel;
@@ -744,6 +770,9 @@ class ProviderEntry {
       configured: json['configured'] as bool? ?? false,
       lastFour: json['last_four'] as String?,
       available: json['available'] as bool? ?? false,
+      installedModelIds: (json['installed_models'] as List? ?? const [])
+          .whereType<String>()
+          .toList(growable: false),
       models: (json['models'] as List? ?? const [])
           .whereType<Map>()
           .map((model) => ModelInfo.fromJson(Map<String, dynamic>.from(model)))
@@ -759,17 +788,42 @@ class ProviderKeyResult {
     required this.providerId,
     required this.configured,
     required this.lastFour,
+    this.error,
   });
 
   final String providerId;
   final bool configured;
   final String lastFour;
+  final String? error;
 
   factory ProviderKeyResult.fromJson(Map<String, dynamic> json) {
     return ProviderKeyResult(
       providerId: json['provider_id'] as String? ?? '',
       configured: json['configured'] as bool? ?? false,
       lastFour: json['last_four'] as String? ?? '',
+      error: json['error'] as String?,
     );
   }
+}
+
+class ProviderVerificationResult {
+  const ProviderVerificationResult({
+    required this.providerId,
+    required this.verified,
+    required this.models,
+    this.error,
+  });
+  final String providerId;
+  final bool verified;
+  final List<String> models;
+  final String? error;
+  factory ProviderVerificationResult.fromJson(Map<String, dynamic> json) =>
+      ProviderVerificationResult(
+        providerId: json['provider_id'] as String? ?? '',
+        verified: json['verified'] as bool? ?? false,
+        models: (json['verified_models'] as List? ?? const [])
+            .whereType<String>()
+            .toList(),
+        error: json['error'] as String?,
+      );
 }

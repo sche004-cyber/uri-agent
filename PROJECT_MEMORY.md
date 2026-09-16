@@ -62,6 +62,17 @@
 - `URI_Model_Centric_Architecture_Docs/` for governing architecture, policy,
   and model/runtime contract.
 
+## UI-Initiative Role Override (2026-09-16)
+
+For the URI Hybrid UI implementation initiative only (until the User changes
+it again): Claude/Codex are planning and independent-plan-review only;
+Antigravity is primary implementer; Qwen 3 14B is implementation reviewer;
+Antigravity performs repair of Qwen's findings. The AO-4 model below remains
+the record for all other/prior milestones. See
+[ORCHESTRATION.md](ORCHESTRATION.md) §0, [AGENTS.md](AGENTS.md) item 7, and
+`docs/plans/UI_HYBRID_FROZEN_BLUEPRINT.md` for the full detail, including
+mandatory sequencing behind M31.
+
 ## Development Operating Model (AO-4: Claude-Planned / Codex-or-Gemma-Implemented / Claude-Verified-and-Released Cycle)
 
 - **Final Authority:** User — accepts/modifies every plan; non-delegable authority over architecture and security policy.

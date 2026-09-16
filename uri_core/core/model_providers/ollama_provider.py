@@ -297,3 +297,35 @@ class OllamaProvider(ModelProvider):
             available=available,
             detail=detail,
         )
+
+    def list_installed_models(self) -> list[str]:
+        """The real model names this Ollama server actually has pulled -
+        the same /api/tags endpoint describe() probes, parsed for its
+        models[].name field instead of just checking HTTP 200. This is
+        what lets a caller distinguish "the Ollama daemon is reachable"
+        (describe().available) from "this specific configured model is
+        one Ollama can actually serve" - the daemon can be reachable
+        while the configured/default model was never pulled, and until
+        this method existed nothing surfaced that distinction. Returns an
+        empty list on any failure (unreachable, malformed body) - never
+        raises, never guesses a name that might not be real."""
+
+        try:
+            response = requests.get(
+                f"{self.config.base_url.rstrip('/')}/api/tags",
+                timeout=min(self.config.timeout_seconds, DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS),
+            )
+            if response.status_code != 200:
+                return []
+            body = response.json()
+        except Exception:
+            return []
+
+        if not isinstance(body, dict):
+            return []
+
+        names = []
+        for entry in body.get("models", []):
+            if isinstance(entry, dict) and isinstance(entry.get("name"), str):
+                names.append(entry["name"])
+        return names

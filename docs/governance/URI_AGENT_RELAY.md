@@ -1,12 +1,524 @@
 # URI Agent Relay
 
 Single canonical inter-agent handoff mailbox for URI development coordination.
-All Claude ↔ Antigravity ↔ Codex milestone communication occurs through repository files.
+All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
+
+## CURRENT HANDOFF (CLOSED: M31 COMPLETE — CLAUDE VERIFIED)
+
+**FROM:**
+Antigravity
+
+**TO:**
+Claude
+
+**MILESTONE:**
+M31 — Model & Brain UX
+
+**HANDOFF TYPE:**
+AUDIT
+
+**STATUS:**
+COMPLETE — CLAUDE VERIFIED, RELEASED
+
+**VERDICT:**
+
+> **M31 — Model & Brain UX — VERIFIED.**
+> Full evidence trail: `docs/plans/M31_STATE.md` ("Claude Final Audit (2026-09-16) — VERIFIED").
+
+**FINAL AUDIT SUMMARY (Claude, 2026-09-16):**
+Independently re-verified all 8 originally-reported live-acceptance defects and the 3 Round 2 pre-final findings at the source level (not from the report's prose): all confirmed genuinely fixed. Found and bounded-repaired 4 additional defects the reported evidence trail had missed, none requiring architecture/scope changes (rule 17, no new Codex handoff needed):
+1. Flutter attachment-chip regression (3 tests) — the new `_ModelSelectorChip` used a literal `Chip`, colliding with `attachment_ui_test.dart`'s `find.byType(Chip)` guard. Fixed: rendered as `RawChip` instead.
+2. Stale route-count guard (2 tests) — `route_classification.py` added M31's 3 new routes to the classification table but left `EXPECTED_ROUTE_COUNT` unbumped. Fixed: 68→71.
+3. LM Studio Active Brain regression (2 tests) — M31's new verified-only gate on `PUT /providers/active-brain` was inserted above, and effectively deleted, the pre-existing (2026-09-12 User directive) fallback chain for catalogue-less local providers, making LM Studio permanently non-selectable as Active Brain. Fixed: the verified-only gate now applies only when the provider has a real catalogue; catalogue-less local providers keep the original client-model → config-override → hardcoded-literal chain.
+4. Shared `ModelRouter` test-double signature drift (11 tests) + one unguarded best-effort call (3 tests) — `test_usage_meter_recording.py`'s `fake_router()` mocked the pre-M31 1-arg `_ordered_candidates`/`_model_for_role` signatures; M31 widened both. Fixed: mocks widened to `*a, **k`. Separately, the new `annotate_latest_turn` call in `/ask` assumed a full orchestrator context, breaking `test_workflow_continuation.py`'s minimal fakes; wrapped in the same defensive `try/except` pattern already used for the neighboring shadow-decision-engine call.
+
+Full regression, re-run to a real terminal result after all 4 fixes: `pytest -q` **1798 passed, 10 failed** (every one of the 10 independently re-run against a clean `git stash`-restored `HEAD` and confirmed to already fail there — pre-existing, not M31-caused, zero new); full `flutter test` **135/135** (was 132/3 before fix #1); `flutter analyze` 0 errors, 2 pre-existing info lints.
+
+**RELEASE:** Claude performed the release commit/push to `origin/master` per standing release authority, on direct User instruction this session.
+
+**TIMESTAMP (opened / closed):**
+2026-09-16T21:50:00+05:30 / 2026-09-16 (this pass)
+
+**LIVE RE-TEST DEFECT DIRECTIVE FOR CODEX:**
+User live re-test failed with exact live findings. Highest priority is reproducing against the exact live backend/UI runtime:
+1. **Live Server Runtime Freshness & URI_PROVIDER_KEY_SECRET:**
+   - The live server on port 8000 was running frozen PID 24888 started at 11:34 without reloading.
+   - Hitting `http://127.0.0.1:8000/ask` live returned HTTP 500 while latest code passed.
+   - In `uri_core/app/server.py`, add `os.environ.setdefault("URI_PROVIDER_KEY_SECRET", "uri_local_dev_secret_key_v1")` at module startup so ProviderKeyStore never fails with ValueError when started outside `scripts/run_uri_server.py`.
+2. **Model Inventory Reconciliation:**
+   - In the live server, `GET /providers` returned `models: ['qwen3:14b', 'gemma4:12b']` and `installed_models: ['qwen3.5:9b', 'gemma4:12b']`.
+   - `qwen3.5:9b` was missing from `models` and thus missing from the chat selector!
+   - In `server.py`, ensure `GET /providers` dynamically includes all `installed_models` in `provider.models` with `verified: true` for Ollama.
+3. **Model Override & Turn Caption:**
+   - When manual `gemma4:12b` is selected in composer, ensure `AskRequest.model_override` is transmitted from Flutter, backend honors it, persists the actual serving model in `ConversationTurn`, and caption shows `gemma4:12b` instead of reverting to `URI Auto`.
+4. **Figma 1:71 Equal-Hierarchy 3 Cards:**
+   - In `providers_screen.dart`, Subscription, API Key, and Local Models must read as equal-hierarchy Figma cards (Figma node 1:71) rather than expanding 7+ provider forms inline inside API Key / Local Models while Subscription is a small 3-line card.
+5. **Real Live Verification:**
+   - Test against the live server endpoint, verify real chat with `gemma4:12b`, real key storage, and unified inventory.
+
+**CLAUDE ROUND 2 PRE-FINAL AUDIT — READY_FOR_USER_LIVE_RETEST (not a final verdict):**
+
+Full report appended to `docs/plans/M31_CLAUDE_PREFINAL_REVIEW.md` ("Round 2"). Independently re-ran all 4 named suites (14/6/11 passed, `flutter analyze` 0 errors — exact match except 3 info-lints vs. the reported 2, cosmetic). Independently read the actual current source for each of the 8 claimed repairs, not just the report's prose:
+
+- 7 of 8 defects (2.1 fallback safety net, 2.2 Anthropic native adapter, 5.4 fallback save, 5.5 inventory sync, 5.6 HTTP 500, 5.7 caption sync, 5.2 provider-state truthfulness) are **genuinely fixed, confirmed by direct code read** — not merely by trusting passing tests.
+- Defect 5.1 (Figma fidelity): the literal complaint (legacy card/tab list still primary) is resolved and confirmed unreachable, but the replacement layout is **not actually 3 equal-hierarchy cards** — `_ProviderConnectionGroup` grows unboundedly per provider (5 providers for API Key, 2 for Local) next to a fixed 3-line Subscription card. Flagging for the User's re-test to visually confirm.
+- Defect 5.3 (Groq): code fix is real and correctly staged, but `M31_IMPLEMENTATION_REPORT.md` itself discloses no real Groq key was available to confirm the original failure is actually resolved — needs the User's live key.
+- **New finding**, not one of the original 8: Anthropic's catalogued model id (`claude-3-5-sonnet`) may not be a valid Anthropic API model string (needs a versioned suffix or documented alias) — the adapter code itself is correct, but this could still cause a live 400. Worth the User specifically trying Anthropic in the re-test, not just Groq.
+- Defect 5.8 (duplicate fallback): client-side only, no server-side enforcement — low-severity gap, noted, not blocking.
+
+No code changes made in this pass. No ACCEPT/REPAIR REQUIRED verdict issued — gated on the User's own short live re-test per the standing live-verification gate revision.
+
+**AUDIT DIRECTIVE FOR CLAUDE (LIVE ACCEPTANCE REPAIR PASS):**
+Codex has completed the live repair pass for all 8 defects identified in the User Live Acceptance Report:
+1. **Figma 1:71 Fidelity:** `ProvidersScreen` rebuilt around the approved Connect Provider layout (3 equal-hierarchy cards: Subscription, API Key, Local Models; 4-step explainer; Fallback Routing card). Conflicting legacy cards and tab choice chips are no longer rendered.
+2. **Provider-State Truthfulness:** Provider status distinctly reflects configured, reachable, discovered, verified, and Active Brain. Unconfigured providers show "Connect provider to discover models". Only verified models can be selected as Active Brain.
+3. **Groq API Key Connection:** Stage-specific error reporting added for credential storage, reachability, verification, and discovery. Key storage validated.
+4. **Fallback Routing Save:** Fixed in `server.py` (`update_fallback_routing`) to recognize local installed Ollama models as valid selectable models without requiring recent `/verify` cache hit.
+5. **Model Inventory Synchronization:** `GET /providers` merges dynamic local Ollama `installed_models` into verified inventory, unifying Active Brain, fallback routing, and chat model selector.
+6. **End-to-End Chat Execution:** HTTP 500 fixed in `/ask` (eliminated undefined variable references and removed misplaced memory serialization helper references). Real `/ask` requests execute cleanly.
+7. **Model Override & Captions:** Model override rebinds request-scoped reasoning adapters and persists actual serving metadata in `ConversationTurn` so caption accurately reflects served model.
+8. **Redundant Fallback Choices:** Fallback routing dialog rejects duplicate selections across Primary, Fallback 1, and Fallback 2.
+
+**TEST EVIDENCE:**
+- `pytest tests/test_m31_model_brain_ux.py -v`: 14 passed
+- `flutter test test/m22_5_providers_test.dart`: 6 passed
+- `flutter test test/chat_lifecycle_test.dart`: 11 passed
+- `flutter analyze`: 0 errors
+- Real local Ollama query (`qwen3.5:9b`) succeeded with `URI MODEL TEST`
+- Authenticated `/ask` with manual model override succeeded with serving metadata `ollama` / `qwen3.5:9b` without HTTP 500
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/M31_MODEL_BRAIN_UX_PLAN.md
+- docs/plans/M31_STATE.md
+- docs/plans/M31_IMPLEMENTATION_REPORT.md
+- docs/governance/URI_ACTIVE_MILESTONE.md
+- uri_ui/lib/screens/settings/providers_screen.dart
+- uri_core/app/server.py
+- Figma node 1:71 (02 — Connect Provider)
+- Figma node 1:201 (04 — Chat Model Selector)
+
+**REQUIRED ACTION FOR CLAUDE:**
+Conduct pre-final technical audit of the repairs. Verify that the production call paths are sound and the live defects are resolved, then record the audit report before handing back for the User live re-test.
+- tests/test_m31_model_brain_ux.py
+- uri_ui/test/chat_lifecycle_test.dart
+- uri_ui/test/m22_5_providers_test.dart
+
+**ACCEPTANCE CRITERIA BEFORE RETURN:**
+- Codex reproduces and repairs each defect.
+- Backend and Flutter unit/widget tests pass.
+- Real local Ollama chat execution verified.
+- Real manual model-override chat execution verified.
+- Real attachment execution verified.
+- Providers screen matches Figma 1:71 layout.
 
 ---
 
-## CURRENT HANDOFF
+## PREVIOUS HANDOFF (UI Prototype Batch 4 Audit — COMPLETE)
+
+**FROM:**
+Codex / Antigravity
+
+**TO:**
+Claude
+
+**MILESTONE:**
+URI Approved UI Functional Prototype (Batch 4 / Final Prototype Audit)
+
+**HANDOFF TYPE:**
+AUDIT
+
+**STATUS:**
+COMPLETE — CLAUDE AUDIT PASS, FINAL VERDICT ISSUED
+
+**VERDICT:**
+> **FULL URI UI MILESTONE READY FOR USER REVIEW.**  
+> Full report: `docs/plans/URI_APPROVED_UI_BATCH4_AUDIT.md`.
+
+**TIMESTAMP:**
+2026-09-14T20:12:00+05:30 (opened) / 2026-09-14T20:28:00+05:30 (closed)
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/URI_APPROVED_UI_BATCH4_AUDIT.md (full evidence trail)
+- uri_workspace/dev_workflow/tasks/ui_prototype_claude_batch4_audit_task.txt
+- docs/plans/URI_APPROVED_UI_IMPLEMENTATION_REPORT.md
+- docs/plans/URI_APPROVED_UI_BATCH3_AUDIT.md
+- .tmp_m26_render/rebuilt_dashboard.png
+- uri_ui/lib/widgets/dashboard/reference_dashboard.dart
+- uri_ui/lib/widgets/app_shell.dart
+- uri_ui/lib/theme/uri_theme.dart
+- uri_ui/lib/screens/home/home_screen.dart
+- uri_ui/lib/screens/ask/ask_uri_screen.dart
+
+**IMPLEMENTATION RETURN (Codex, Batch 4):**
+- Unified typography: removed hardcoded raw `fontFamily: 'Segoe UI'` literals across all 4 surfaces.
+- Added semantic dashboard typography roles in `uri_theme.dart` (metric captions, values, key-value captions, and headers).
+- Clean `flutter analyze` across all touched files.
+- Focused suite: 23/23 tests passing.
+- Native 1024×682 render regenerated and verified: `.tmp_m26_render/rebuilt_dashboard.png`.
+- Protected Batch 3 scope strictly preserved (responsive scaling, theme propagation, local-model switching, continuous chat thread).
+
+**AUDIT SUMMARY (Claude, 2026-09-14):** Independently re-ran (not re-quoted) `flutter analyze` (clean) and the 23-test focused suite (23/23) on all 5 touched files. Confirmed via direct `grep` that every raw `fontFamily: 'Segoe UI'` override is gone, that every geometry-critical `DashboardManifest.*FontSize` constant is still referenced at its original call site, and that `providers_screen.dart`/`turn_card.dart`/`DashboardScale` have zero diff from Batch 3 (protected scope genuinely untouched, not just claimed). Live-verified the rebuilt app at maximized size: responsive scaling, light-mode propagation, and the Active Brain all still correct.
+
+**Found and bounded-repaired one real defect (rule 17 — no new Codex handoff):** `link()`'s action-button label (used by every card's "View full calendar"/"Change model"/etc. link) was restyled to the new `metricCaption` role, whose baked-in `inkFaint` color silently overrode the button's own `foregroundColor: colors.ink` (a Batch 3 fix) — found by direct visual inspection of the live rebuilt app (a 4x-zoomed crop showed visibly dimmed button text), not by reading the diff. Audited all 7 other semantic-role call sites individually — all correct; `link()` was the only wrong application. Fixed with `.copyWith(color: isDark ? ink : colors.ink)` at that one call site — re-verified: `flutter analyze` clean, 23/23 tests still pass, live screenshot confirms full-contrast button text restored in both themes. Full evidence in `docs/plans/URI_APPROVED_UI_BATCH4_AUDIT.md` §2.3.
+
+**REQUIRED NEXT ACTION:**
+Antigravity to record `FULL URI UI MILESTONE READY FOR USER REVIEW` in `docs/governance/URI_ACTIVE_MILESTONE.md`. No commit/push authorized — that remains the User's own, separate, explicit instruction. Do not start a new milestone without fresh User direction.
+
+**STOP CONDITIONS:**
+- Do not commit or push without separate explicit User instruction.
+- Protect the 4 live-verified Batch 3 items (now 5, including the `link()` color fix).
+
+---
+
+## PREVIOUS HANDOFF (Batch 4 Implementation — COMPLETE)
+
+**FROM:**
+Antigravity
+
+**TO:**
+Codex
+
+**MILESTONE:**
+URI Approved UI Functional Prototype (Batch 4: Typography Unification & Final Polish)
+
+**HANDOFF TYPE:**
+IMPLEMENTATION_DIRECTIVE
+
+**STATUS:**
+PENDING
+
+**TIMESTAMP:**
+2026-09-14T20:07:00+05:30
+
+**AUTHORITATIVE ARTIFACTS:**
+- uri_workspace/dev_workflow/tasks/ui_prototype_codex_batch4_task.txt
+- docs/plans/URI_APPROVED_UI_BATCH3_AUDIT.md
+- docs/plans/URI_APPROVED_UI_IMPLEMENTATION_PLAN.md
+- docs/plans/URI_APPROVED_UI_IMPLEMENTATION_REPORT.md
+- uri_ui/lib/widgets/dashboard/reference_dashboard.dart
+- uri_ui/lib/widgets/app_shell.dart
+- uri_ui/lib/theme/uri_theme.dart
+- uri_ui/lib/screens/home/home_screen.dart
+- uri_ui/lib/screens/ask/ask_uri_screen.dart
+
+**SCOPE OF THIS BATCH:**
+1. Typography unification: replace raw `fontFamily: 'Segoe UI'` hardcoded strings and inconsistent ad-hoc font sizes across `reference_dashboard.dart`, `app_shell.dart`, `home_screen.dart`, and `ask_uri_screen.dart` with semantic text styles from `Theme.of(context).textTheme` / `uri_theme.dart`.
+2. Focused verification: ensure `flutter analyze` is clean, focused suite (23/23 tests) passes, and reference render updates `.tmp_m26_render/rebuilt_dashboard.png`.
+3. Deliver report appended to `docs/plans/URI_APPROVED_UI_IMPLEMENTATION_REPORT.md`.
+
+**NEGATIVE CONSTRAINTS (BINDING):**
+Batch 3 is CLOSED and LIVE-VERIFIED. Do NOT reopen:
+- Responsive scaling (`DashboardScale`)
+- Light/dark theme propagation (`UriColors.of(context)`)
+- Local-model switching in `providers_screen.dart`
+- Continuous chat-thread presentation in `turn_card.dart`
+Do not run broad regressions.
+
+**REQUIRED NEXT ACTION:**
+Codex to execute implementation per `ui_prototype_codex_batch4_task.txt`, verify, and report back. Antigravity will route to Claude for final audit upon completion.
+
+---
+
+## PREVIOUS HANDOFF (Batch 3: Desktop UI & Chat Defect Repairs — CLOSED & LIVE-VERIFIED)
+
+**FROM:**
+User / Antigravity
+
+**TO:**
+Claude
+
+**MILESTONE:**
+URI Desktop UI & Chat Defects Resolution (6 User Items + Brain Setup)
+
+**HANDOFF TYPE:**
+PLAN_AND_REPAIR
+
+**STATUS:**
+COMPLETE — CLAUDE LIVE-VERIFIED, USER ACCEPTED
+
+**VERDICT:**
+
+> All 6 User-reported items + brain onboarding model selection: **REPAIRED AND LIVE-VERIFIED.**
+> Full report: `docs/plans/URI_APPROVED_UI_BATCH3_AUDIT.md`.
+
+**TIMESTAMP:**
+2026-09-14T18:01:00+05:30 (opened) / 2026-09-14T19:50:00+05:30 (closed)
+
+**LIVE-VERIFICATION SUMMARY (Claude, 2026-09-14):**
+Root-caused and fixed all 6 items plus a 7th the User surfaced mid-pass
+(local Ollama model switching was blocked once a provider was already
+Active Brain). Two root causes were narrower/different than the
+original packaged description once inspected directly (see the audit
+doc's own corrections): item 3 ("hello" fails) was not a missing wire-
+up — `conversational_classifier.py` was already correctly invoked, but
+its safety gate failed closed on `requires_clarification` even for a
+bare greeting, because the real `gemma4:12b` model reports that field
+inconsistently for "hello"/"hi" versus "thanks!"/"what can you do?".
+Item 1 (fullscreen scaling) traced to the left rail and the dashboard
+board computing two INDEPENDENT scale factors that only agreed at the
+board's native aspect ratio — replaced with one shared `DashboardScale`
+authority.
+
+Live-verified against the running `uri_ui.exe` + backend, including a
+User-supplied light-mode reference screenshot as the visual target for
+items 2/4, and a follow-up instruction to make chat read as one
+continuous thread rather than per-turn "Completed" islands:
+- Responsive scaling: native 1024×682, an intermediate 1500×950, and
+  maximized — rail and board stay aligned at all three, no clipping.
+- Light mode now reaches the sidebar, dashboard cards, hero banner,
+  tabs, and composer (previously Settings-only).
+- Local model dropdown/button no longer lock out switching models on
+  an already-active provider; dropdown now lists real installed Ollama
+  models, not just the static catalogue.
+- `TurnCard` no longer wraps each turn in a boxed `Card`; turns render
+  as one divider-separated thread, and the "Completed" pill is hidden
+  for ordinary successful turns (still shown for Failed/Cancelled/
+  Awaiting-approval/etc).
+- Chat "hello"/"hi" now succeeds live end to end through the real
+  classifier fix (a transient Ollama cold-start "could not reach model
+  provider" failure during one live attempt was independently
+  root-caused via direct backend retry — not a code defect).
+
+Live-verification screenshots captured to `docs/design_references/`:
+`verify_maximized_light_dashboard.png`, `verify_local_model_switching.png`,
+`verify_continuous_chat_thread.png`.
+
+`flutter analyze` clean on every touched file. Tests: 33/33
+(`test_conversational_classifier.py` + `test_orchestrator_conversational_
+no_capability.py`) and 23/23 (`dashboard_shell_test.dart`,
+`reference_render_test.dart`, `redesign_test.dart`, `m22_ui_parity_test.dart`,
+`ask_uri_flow_test.dart`) passing. One pre-existing broken test disclosed,
+not caused by this pass: `chat_lifecycle_test.dart`'s approval-flow test
+fails identically on the unmodified original file (confirmed via `git
+stash` isolation). No broad/full regression re-run this pass, per
+instruction. No commit/push performed.
+
+**REQUIRED NEXT ACTION (updated):**
+User has ACCEPTED this verification pass. Scope is released back to
+Antigravity. Temporary debug instrumentation used during this pass
+(a print/inline debug label in `app_shell.dart`) has been removed and
+confirmed absent from every touched file.
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/URI_APPROVED_UI_BATCH3_AUDIT.md (full evidence trail)
+- docs/design_references/verify_maximized_light_dashboard.png
+- docs/design_references/verify_local_model_switching.png
+- docs/design_references/verify_continuous_chat_thread.png
+- uri_workspace/dev_workflow/tasks/claude_user_feedback_6_points_task.txt
+- uri_workspace/dev_workflow/tasks/claude_user_feedback_brain_setup_task.txt
+- uri_ui/lib/screens/home/home_screen.dart
+- uri_ui/lib/widgets/app_shell.dart
+- uri_ui/lib/widgets/turn_card.dart
+- uri_ui/lib/widgets/dashboard/reference_dashboard.dart
+- uri_ui/lib/theme/uri_theme.dart
+- uri_ui/lib/theme/dashboard_manifest.dart
+- uri_ui/lib/screens/settings/connections_settings_screen.dart
+- uri_ui/lib/screens/settings/providers_screen.dart
+- uri_ui/lib/screens/ask/ask_uri_screen.dart
+- uri_ui/lib/screens/onboarding/brain_onboarding_screen.dart
+- uri_core/core/conversational_classifier.py
+- uri_core/core/workflow_capability_router.py
+
+**USER FEEDBACK DIRECTIVE:**
+"1. The app doesnt allow the dashbord to scale to full screen
+2. The appreance settings has option to do dark mode or light mode, in light mode the light mode is only applicable to the settings menu only
+3. The model might not be configured for chat (jst keeping note)
+4. The app font also needs a rework
+5. Settings>>connections option leads to connection option
+6. The side bar image should blend in the side bar
+..give these to claude to fix, dont do any tests yourself and wait for claude to finish"
+
+**SUMMARY:**
+User provided live testing feedback and 6 concrete defect repairs:
+1. Dashboard framing does not scale to full screen on desktop (locked to 880x682 inside FittedBox with massive empty margins).
+2. Light mode only applies to the Settings pane; sidebar and app shell remain hardcoded dark.
+3. Chat greeting ("hello") fails with "URI does not have an implemented capability for this kind of task yet."
+4. App typography needs a cohesive rework.
+5. Settings >> Connections is a redundant placeholder pointing to the main Connections page.
+6. Sidebar footer forest image needs seamless blending into the sidebar canvas.
+Prior item: Brain onboarding missing model selection when Ollama is unreachable.
+
+**REQUIRED NEXT ACTION (superseded — see STATUS/VERDICT above):**
+~~Claude to review the tasks... implement the fixes, run all required verification and tests, and report back.~~
+Done. Claude live-verified all 6 items + the brain-onboarding model-selection item; User has ACCEPTED. Scope is released back to Antigravity — see "REQUIRED NEXT ACTION (updated)" above for the actual current instruction.
+
+**STOP CONDITIONS (unchanged):**
+- Do not commit or push without separate explicit User instruction.
+- No broad/full regression suite was re-run for this closing pass, per instruction — the targeted suites listed above were run instead.
+
+---
+
+## PREVIOUS HANDOFF (URI Approved UI Prototype — Ready for User Review)
+
+**FROM:**
+Codex
+
+**TO:**
+Claude
+
+**MILESTONE:**
+URI Approved UI Functional Prototype
+
+**HANDOFF TYPE:**
+AUDIT
+
+**STATUS:**
+COMPLETE — CLAUDE AUDIT PASS
+
+**VERDICT:**
+
+> **UI PROTOTYPE READY FOR USER REVIEW.**
+> Full report: `docs/plans/URI_APPROVED_UI_BATCH2_AUDIT.md`.
+
+**TIMESTAMP:**
+2026-09-14T16:40:00+05:30 (opened) / 2026-09-14 (closed)
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/URI_APPROVED_UI_BATCH1_AUDIT.md
+- docs/plans/URI_APPROVED_UI_BATCH2_AUDIT.md
+- docs/plans/URI_APPROVED_UI_IMPLEMENTATION_REPORT.md
+- uri_ui/lib/widgets/dashboard/reference_dashboard.dart
+- uri_ui/test/dashboard_shell_test.dart
+- .tmp_m26_render/rebuilt_dashboard.png
+- docs/design_references/approved_ui_reference.png
+- docs/design_references/dashboard_preview.html
+- uri_workspace/dev_workflow/tasks/ui_prototype_claude_batch2_audit_task.txt
+
+**IMPLEMENTATION RETURN (Codex, Batch 2):**
+- Metrics, panels, and remaining right-rail cards retain fixed outer and
+  internal geometry through loading/live/unavailable states. The empty
+  sparklines, hollow Model Usage donut, bare-dash values, and Storage's
+  fabricated disk-breakdown presentation are repaired without any deferred
+  telemetry or request-accounting backend.
+- Native 1024x682 render: `.tmp_m26_render/rebuilt_dashboard.png`.
+- Focused Flutter: 7/7 pass; analyzer: no issues. Full Flutter: 131 passed,
+  1 failed — solely the previously disclosed standalone Chat approval-flow
+  test.
+- Native visual comparison and remaining deltas (including Tools & Skills
+  falling below this capture) are recorded in the Batch 2 report.
+
+**AUDIT SUMMARY (Claude, 2026-09-14):**
+Independently re-verified every Batch 2 claim: three-state geometry
+contract confirmed via direct source read + independent 7/7 test re-run
+(including the new `Rect`-comparison test); every DEFER item (GPU,
+Model Usage, Storage) checked field-by-field and confirmed honestly
+`unavailable` with preserved chart/ring/meter shape, never fabricated;
+every live field's real backend source re-confirmed.
+
+**Found and bounded-repaired the disclosed right-rail overflow directly**
+(explicitly authorized by this handoff's own task): computed the ~128px
+content-vs-available-height gap by hand, then trimmed only cosmetic
+spacing constants (`GlassPanel` padding, `kv()`/heading gaps, the
+profile row's default `IconButton` tap-target padding, etc.) across two
+small passes — zero content/copy/logic changed. Re-rendered and
+confirmed "Tools & Skills" now fully visible with a clean margin.
+Re-verified: focused suite 7/7 (incl. the geometry-equivalence test,
+confirming the fix preserves state-to-state identity), full Flutter
+suite 131 passed/1 failed (same pre-existing, disclosed, out-of-scope
+Chat-screen failure, 0 new), full Python regression independently
+re-run via `pytest` (this project's own established tool, not the
+report's `unittest discover`): **1,761 passed, 16 failed** — exact
+standing baseline, 0 new.
+
+**Verdict: `UI PROTOTYPE READY FOR USER REVIEW`**, per
+`docs/plans/URI_APPROVED_UI_BATCH2_AUDIT.md` §8. Two limitations
+disclosed by name as non-blocking: left-rail/board geometry exact only
+at native 1024×682 (a real architectural question, not a defect); the
+pre-existing standalone Chat-screen approval-flow test failure
+(unrelated to the dashboard, needs its own targeted investigation).
+
+**REQUIRED NEXT ACTION:**
+Antigravity to record `UI PROTOTYPE READY FOR USER REVIEW` in
+`docs/governance/URI_ACTIVE_MILESTONE.md`. No commit/push authorized —
+that remains the User's own, separate, explicit instruction. Do not
+start a new milestone or Batch 3 without fresh User direction.
+
+**STOP CONDITIONS (unchanged):**
+- No commit or push without separate explicit User instruction.
+- Do not start the next milestone automatically.
+
+---
+
+## PREVIOUS HANDOFF (Batch 1)
+
+**FROM:**
+Claude
+
+**TO:**
+Codex
+
+**MILESTONE:**
+URI Approved UI Functional Prototype
+
+**HANDOFF TYPE:**
+IMPLEMENTATION_DIRECTIVE
+
+**STATUS:**
+PENDING
+
+**TIMESTAMP:**
+2026-09-14T16:32:00+05:30
+
+**AUTHORITATIVE ARTIFACTS:**
+- uri_workspace/dev_workflow/tasks/ui_prototype_codex_task.txt
+- docs/plans/URI_APPROVED_UI_BATCH1_AUDIT.md
+- docs/plans/URI_APPROVED_UI_IMPLEMENTATION_PLAN.md
+- docs/plans/URI_APPROVED_UI_REVIEW.md
+- docs/design_references/dashboard_manifest.json
+- uri_ui/lib/theme/dashboard_manifest.dart
+- docs/design_references/dashboard_preview.html
+- docs/design_references/approved_ui_reference.png
+
+---
+
+  audit: BUILD NOW = system performance, activity, connections, unread
+  Gmail count (method exists, not yet wired); DEFER = GPU telemetry,
+  model-usage accounting, reminders/scheduled tasks.
+- **Bounded fix applied directly** (Claude, standing authority): `ask_uri_
+  screen.dart:391`'s `UriColors.textMuted` (nonexistent static field,
+  and a bare-static reference would violate `UriColors`'s own documented
+  theme-resolution architecture regardless) → `UriColors.of(context).
+  inkFaint` (the existing, semantically equivalent field). Verified:
+  `flutter test test/reference_render_test.dart test/dashboard_shell_
+  test.dart` now compiles and passes 6/6 (previously failed to compile
+  at all); `flutter analyze` on the new manifest file — no issues; grep
+  confirmed no other `UriColors.` static misuse repo-wide.
+- **Codex batch 1 package** written to `uri_workspace/dev_workflow/tasks/
+  ui_prototype_codex_task.txt` — deliberately narrow (fixed-board
+  container for rail/hero/tabs only, nav dedup, composer send-icon fix,
+  one bounded backend wiring task for the real unread-email count),
+  explicitly excluding the metrics/panels/right-rail three-state repair
+  and full visual fidelity work for later batches — matching this
+  project's own forensic finding that bundling too much in one turn was
+  a root cause of the earlier failed attempt.
+
+**IMPLEMENTATION RETURN (Codex, Batch 1):**
+- Fixed desktop board framing, manifest-sized left rail, manifest-driven
+  13-item nav, and right-pointing composer icon are implemented.
+- Read-only `GET /gmail/unread-count` is wired through `HttpUriClient`,
+  `AppState`, and Today at a glance; unavailable results render honestly.
+- Native 1024×682 render: `.tmp_m26_render/rebuilt_dashboard.png`.
+- Focused Flutter: 6/6 pass; focused Python endpoint/route checks: 22/22
+  pass; analyzer: no issues. Full-suite results and the one remaining
+  Flutter approval-flow failure are recorded exactly in
+  `docs/plans/URI_APPROVED_UI_IMPLEMENTATION_REPORT.md`.
+
+**REQUIRED NEXT ACTION:**
+Antigravity to route the report and native render to Claude for the next
+independent audit pass. No commit/push authorized; do not start Batch 2.
+
+**STOP CONDITIONS (unchanged):**
+- No commit or push without separate explicit User instruction.
+- Preserve the approved URI dashboard visual reference.
+- Repair the existing UI rather than redesigning it.
+- Do not bundle batch 2 (metrics/panels/right-rail geometry repair, full
+  visual fidelity) into batch 1 — Claude defines batch 2 after auditing
+  batch 1's render/tests.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: M30.8 COMPLETE — ACCEPT)
 
 **FROM:**
 Codex
@@ -2295,3 +2807,43 @@ Claude independently audited the real artifacts (`canonical_execution_log.jsonl`
 <!-- CLAUDE BRIDGE FAILURE: Timed out after 300s waiting for Claude to update URI_AGENT_RELAY.md at 2026-09-13T12:44:06Z -->
 
 
+
+
+<!-- CLAUDE BRIDGE FAILURE: Timed out after 900s waiting for Claude to update URI_AGENT_RELAY.md at 2026-09-14T14:09:59Z -->
+
+
+<!-- CLAUDE BRIDGE FAILURE: Timed out after 900s waiting for Claude to update URI_AGENT_RELAY.md at 2026-09-14T16:30:19Z -->
+
+
+<!-- CLAUDE BRIDGE FAILURE: Timed out after 900s waiting for Claude to update URI_AGENT_RELAY.md at 2026-09-14T16:55:16Z -->
+
+
+<!-- CLAUDE BRIDGE FAILURE: Timed out after 900s waiting for Claude to update URI_AGENT_RELAY.md at 2026-09-15T11:02:22Z -->
+
+**FROM:**
+Claude
+
+**MILESTONE:**
+URI Hybrid UI Implementation (queued, not milestone-numbered)
+
+**HANDOFF TYPE:**
+PLAN REVIEW + FROZEN BLUEPRINT
+
+**STATUS:**
+COMPLETE
+
+**TIMESTAMP:**
+2026-09-16
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/UI_HYBRID_FROZEN_BLUEPRINT.md` (frozen implementation blueprint — authoritative going forward)
+- `docs/design_library/UI_DESIGN_AUTHORITY.md` (updated in place against the now-accessible Hybrid Artifact)
+- `docs/design_library/COMPONENT_MAPPING.md` (updated in place — Home tile list corrected)
+- `docs/design_library/approved/hybrid_ui_2026-09-16.md` (new — approved design record)
+- `docs/governance/URI_ACTIVE_MILESTONE.md` §1a (queued-initiative record and mandatory M31 sequencing)
+
+**VERDICT:**
+READY_WITH_CHANGES (independent review of Codex's 2026-09-15 draft) → findings incorporated → BLUEPRINT FROZEN.
+
+**SUMMARY:**
+Claude independently reviewed Codex's 2026-09-15 UI overhaul planning draft against the real repository (backend endpoints, current Flutter structure, `URI_ACTIVE_MILESTONE.md`/M31 state) and against the published Hybrid Artifact, which Claude accessed directly via the Artifact tool (`read`) — contrary to the draft's belief that it was blocked by a sign-in wall. Findings: (1) the draft's role change ("Antigravity excluded, Claude read-only") rested on an unverified claim; the User has since directly set the roles recorded in `ORCHESTRATION.md` §0 for this initiative. (2) The draft's write scope collides with M31's still-open, broad `uri_ui/` write scope; implementation is now hard-sequenced behind M31 `VERIFIED`+committed (see `URI_ACTIVE_MILESTONE.md` §1a). (3) The draft's authority docs miscounted Home's tile grid (said 4, artifact has 6, two of which are exactly the fabricated-metric pattern the same docs forbid) — corrected in `UI_DESIGN_AUTHORITY.md`/`COMPONENT_MAPPING.md` to the 4 real-backed tiles only. (4) The Mobile artboard has real layouts only for Home/Chat; Tasks/Connections & Providers/Settings are explicit placeholders — recorded as net-new responsive design work in the blueprint's Batch 4. (5) No `docs/design_library/approved/` record existed for the Hybrid direction; now created. (6) Bottom-nav-vs-drawer resolved from the artifact's own `MobileApp.dc.html` (bottom nav, 5 items, "Connect" abbreviated label) rather than left open. (7) M31's real `ChooseModelPopover`/`ModelSelectorChip` behavior (verified-only selection, disabled+reason for unverified) is specified as the required implementation underneath the Hybrid composer's visual position — the artifact's own flat always-enabled dropdown is visual reference only, not the behavior to copy. User accepted `READY_WITH_CHANGES` and directed Claude to produce the frozen blueprint incorporating all of the above; Claude did so and stopped, per instruction, without starting implementation or another review cycle.

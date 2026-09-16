@@ -1,0 +1,153 @@
+{
+  "_generated_from": "docs/design_references/dashboard_preview.html",
+  "_native_size": {
+    "width": 1024,
+    "height": 682
+  },
+  "_unit_note": "1cqw = 1% of the 1024px-wide #board container = 10.24px at native size. All *_px fields below are that exact conversion, not estimates.",
+  "board": {
+    "nativeWidthPx": 1024,
+    "nativeHeightPx": 682,
+    "aspectRatio": 1.501466,
+    "columns": {
+      "left": 0.14,
+      "center": 0.66,
+      "right": 0.2
+    },
+    "columnsPx": {
+      "left": 143.4,
+      "center": 675.8,
+      "right": 204.8
+    }
+  },
+  "tokens": {
+    "bg": "#020910",
+    "panel": "rgba(6,20,33,.9)",
+    "line": "#15334a",
+    "text": "#eaf6ff",
+    "muted": "#9bb2c4",
+    "blue": "#27c9ff",
+    "green": "#25e5aa",
+    "pink": "#e15cf5",
+    "gold": "#ffc437"
+  },
+  "leftRail": {
+    "widthPx": 143.4,
+    "logoSizePx": 117.8,
+    "logoScalePercent": 108,
+    "logoBlendMode": "screen",
+    "navItems": [
+      "Home",
+      "Chat",
+      "Email",
+      "Drive",
+      "Files",
+      "Tasks",
+      "Calendar",
+      "Graph",
+      "Memory",
+      "Insights",
+      "Model",
+      "Tools & Skills",
+      "Settings"
+    ],
+    "navButtonPaddingPx": {
+      "vertical": 5.6,
+      "horizontal": 8.7
+    },
+    "navButtonFontSizePx": 9.5,
+    "navGapPx": 1.5,
+    "footMinHeightPx": 145.4
+  },
+  "hero": {
+    "heightPx": 84.0,
+    "greetingFontSizePx": 21.5,
+    "greetingNameFontSizePx": 27.6,
+    "subtitleFontSizePx": 11.1,
+    "quoteWidthPx": 97.3,
+    "quoteFontSizePx": 8.5
+  },
+  "tabs": {
+    "heightPx": 26.6,
+    "buttonHeightPx": 24.6,
+    "buttonFontSizePx": 8.6,
+    "buttonPaddingHorizontalPx": 10.8
+  },
+  "metrics": {
+    "heightPx": 145.4,
+    "columns": 5,
+    "gapPx": 6.7,
+    "cardPaddingPx": {
+      "top": 10.2,
+      "horizontal": 8.7,
+      "bottom": 7.2
+    },
+    "valueFontSizePx": 23.6,
+    "sparklineHeightPx": 53.2,
+    "cards": [
+      "cpu",
+      "gpu",
+      "ram",
+      "disk",
+      "health"
+    ],
+    "healthLineFontSizePx": 6.3,
+    "healthLineValueFontSizePx": 7.4
+  },
+  "panels": {
+    "heightPx": 176.1,
+    "columnFractions": [
+      1.12,
+      1.3,
+      1.12,
+      1.27
+    ],
+    "gapPx": 6.7,
+    "cardPaddingPx": 8.7,
+    "activityHeightPx": 108.5,
+    "donutRowHeightPx": 114.7,
+    "donutSizePx": 84.0,
+    "cards": [
+      "activity",
+      "modelUsage",
+      "storage",
+      "connections"
+    ]
+  },
+  "composer": {
+    "heightPx": 49.2,
+    "borderRadiusPx": 12.8,
+    "paddingHorizontalPx": 11.3,
+    "gapPx": 12.3,
+    "sendButtonSizePx": 35.3,
+    "sendIcon": "arrow-right",
+    "iconSizePx": 18.9
+  },
+  "tip": {
+    "heightPx": 21.5,
+    "fontSizePx": 6.6
+  },
+  "rightRail": {
+    "widthPx": 204.8,
+    "paddingPx": {
+      "top": 10.2,
+      "horizontal": 10.2,
+      "bottom": 6.1
+    },
+    "windowsRowHeightPx": 15.4,
+    "profileMarginPx": {
+      "top": 7.2,
+      "bottom": 10.2
+    },
+    "avatarSizePx": 28.7,
+    "dateMarginBottomPx": 8.2,
+    "sidecardMarginBottomPx": 5.6,
+    "sidecardPaddingPx": 7.7,
+    "cards": [
+      "glance",
+      "currentModel",
+      "sandbox",
+      "toolsSkills"
+    ]
+  }
+}

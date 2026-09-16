@@ -223,7 +223,7 @@ void main() {
       (tester) async {
         await _pumpPostOnboardingApp(tester, client: _NonAdminMockClient());
 
-        await tester.tap(find.text('Connections'));
+        await tester.tap(find.text('Email'));
         await tester.pumpAndSettle();
 
         expect(find.textContaining('ADMIN-only action'), findsNothing);
@@ -245,7 +245,7 @@ void main() {
       (tester) async {
         await _pumpPostOnboardingApp(tester);
 
-        await tester.tap(find.text('Connections'));
+        await tester.tap(find.text('Email'));
         await tester.pumpAndSettle();
 
         expect(find.textContaining('ADMIN-only action'), findsNothing);

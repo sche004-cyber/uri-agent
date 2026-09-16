@@ -44,7 +44,7 @@ void main() {
         find.byType(TextField),
         'Please draft a note about the insurance policy renewal',
       );
-      await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+      await tester.tap(find.byIcon(Icons.arrow_forward_rounded));
       await tester.pumpAndSettle();
 
       // Navigated to Ask URI, and a proposal — not yet a result — is shown.
@@ -77,7 +77,7 @@ void main() {
       find.byType(TextField),
       'Draft a reply to that email',
     );
-    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+    await tester.tap(find.byIcon(Icons.arrow_forward_rounded));
     await tester.pumpAndSettle();
 
     expect(find.text('Cancel'), findsOneWidget);
@@ -97,7 +97,7 @@ void main() {
         find.byType(TextField),
         'What is on my calendar today',
       );
-      await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+      await tester.tap(find.byIcon(Icons.arrow_forward_rounded));
       await tester.pumpAndSettle();
 
       expect(find.text('Proposed action'), findsNothing);
@@ -116,7 +116,7 @@ void main() {
         find.byType(TextField),
         'Schedule a meeting with the department',
       );
-      await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+      await tester.tap(find.byIcon(Icons.arrow_forward_rounded));
       await tester.pumpAndSettle();
 
       // URI does not pretend it can proceed: no proposal, no approval

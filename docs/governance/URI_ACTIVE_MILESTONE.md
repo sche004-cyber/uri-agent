@@ -44,182 +44,182 @@ Graphify Foundation (Plan A) — **CLOSED: ACCEPTED** (User approval +
 implementation + verification + Claude ACCEPT, 2026-09-14). See
 `docs/plans/M30_GRAPHIFY_FOUNDATION_STATE.md`.
 
+**PRIOR MILESTONE (CLOSED):**  
+M30.8 — Canonical Cutover + Legacy Retirement — **CLOSED: COMPLETE — CLAUDE ACCEPT**
+(User authorized 2026-09-14; Claude independent audit, bounded repair, Phase A live observation battery, and final ACCEPT recorded in `docs/plans/M30_8_CLAUDE_AUDIT.md` and `docs/plans/M30_8_PHASE_A_OBSERVATION_AND_PHASE_B_DISPOSITION.md`). Full regression 1,759 passed, 16 failed (exact standing baseline + Ollama environment change), 0 new.
+
+**PRIOR MILESTONE (CLOSED):**  
+URI Approved UI Functional Prototype — **CLOSED: ACCEPTED**  
+(User authorization 2026-09-14; all 4 batches completed, independently audited by Claude, live-verified against running app and approved reference: Batch 1 fixed board framing/13-item nav/unread Gmail; Batch 2 card geometry/honest charts/right-rail fit; Batch 3 responsive scaling/theme propagation/local switching/continuous chat; Batch 4 typography unification/link button contrast repair). Delivered with clean analysis and 23/23 passing tests. Prototype code preserved in working tree.
+
+**PRIOR MILESTONE (CLOSED):**  
+M31 — Model & Brain UX — **CLOSED: CLAUDE VERIFIED — COMPLETE**
+(Claude independent final audit, 2026-09-16). All 8 live-acceptance
+defects and the 3 Round 2 pre-final findings confirmed genuinely fixed
+at the source level; 4 additional defects found during this audit and
+bounded-fixed in-session (Flutter attachment-chip `Chip`/`RawChip`
+collision, stale route-count guard, an LM Studio Active-Brain
+regression, and a shared `ModelRouter` test-double signature drift
+plus one unguarded best-effort call). Full evidence, all fixes, and
+regression results in `docs/plans/M31_STATE.md` ("Claude Final Audit
+(2026-09-16) — VERIFIED"). Full `pytest`: 1798 passed, 10 failed (all
+10 independently confirmed pre-existing via clean-`HEAD` comparison,
+0 new). Full `flutter test`: 135/135. Committed and pushed to
+`origin/master` per Claude's standing release authority.
+
 **CURRENT MILESTONE:**  
-M30.8 — Canonical Cutover + Legacy Retirement — **CLAUDE ACCEPT (Phase A + Phase B items 1-3)**
-(User authorized 2026-09-14: "I explicitly authorize implementation of the
-revised: M30.8 — CANONICAL CUTOVER + LEGACY RETIREMENT").
-Plan: `docs/plans/M30_8_CANONICAL_CUTOVER_LEGACY_RETIREMENT_PLAN.md`.
-Implementer: Codex.
-Plan authority & independent auditor: Claude.
-Development loop coordinator: Antigravity.
+None active — M31 is CLOSED. Per §1a, this closure is what opens the
+Hybrid UI initiative's hard-dependency gate; see that section for the
+initiative's own separate role set and status before any implementation
+work begins on it.
 
 **CURRENT STATE:**  
-CLAUDE ACCEPT (Phase A + Phase B items 1-3) — Independently audited and verified by Claude (see `docs/plans/M30_8_CLAUDE_AUDIT.md`). Bounded repair in `workflow_planner.py` applied and verified. Zero code regressions. Awaiting Phase A live observation window before Phase B item 4.
+Awaiting the next milestone. No implementation authorized yet on any
+surface until a fresh milestone (or the already-frozen Hybrid UI
+initiative) is explicitly started per standing governance.
 
 **LOOP_STATE:**  
-WAITING_FOR_USER_DECISION (M30.8 cutover independently accepted; awaiting User direction)
+IDLE (M31 COMPLETE — awaiting next milestone initiation)
 
-**CURRENT OBJECTIVE:**  
-Implement the bounded repair exactly as specified in
-`docs/plans/M30_PROVIDER_FAILURE_FALSE_CONSENT_REPAIR_PLAN.md`
-(finalized, User-approved):
+**M31 OBJECTIVE (achieved, preserved for reference):**  
+Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).
 
-- **Primary:** gate `orchestrator.py`'s `elif learned_skill:` branch
-  (lines 4742-4762) so it fires only when the current turn is **not**
-  in a genuine model-failure state. Three-way distinction, exact
-  User terminology, must not be collapsed into two:
-  - `MODEL_NOT_ATTEMPTED` (reasoning disabled, or interpreter never
-    invoked) → gate does NOT fire; existing fast path unaffected.
-  - `MODEL_REACHED_BUT_INVALID` (a real response came back, just
-    malformed/unparseable) → gate does NOT fire; this is not the
-    failure class the User's invariant targets.
-  - `MODEL_TERMINALLY_UNAVAILABLE` (UNREACHABLE / TIMEOUT /
-    FALLBACK_EXHAUSTED - a required model path was attempted and
-    definitively failed) → gate FIRES: fail closed before
-    learned-skill execution or any persistent side effect; return a
-    deterministic model-unavailable response (reuse the existing
-    `drafting_provider_unreachable`-style honest-degradation pattern,
-    per plan §5 - no new mechanism).
-- **Defense-in-depth:** `SkillMemory.find_matching_skill()`
-  (`skill_memory.py` lines 129-177) must reject an empty-`task_type`-
-  and-empty-`domain` match - never a real signal.
-- **Explicitly out of scope - do not redesign:** `remember_fact.py`,
-  `MemoryStore`/`user_memory.py`, consent semantics, or learned-skill
-  architecture beyond this exact gate.
-- **Escape hatch, binding:** if the approved condition cannot be
-  represented cleanly without broader architectural changes, STOP and
-  return for scope approval rather than improvising a workaround.
-- **Required verification (all 7, per the User's own list):** all 9
-  new repair tests passing (9th added 2026-09-13 per product review §5:
-  no approval-gated/side-effecting capability executes either, during
-  model-failure state - see `M30_PROVIDER_FAILURE_FALSE_CONSENT_
-  REPAIR_PLAN.md` §6 item 9); the existing 6 `test_orchestrator_skill_
-  memory_execution.py` tests re-run unchanged and still passing; the
-  exact prior provider-unreachable/weather scenario reproduced live
-  against a real server, confirming a deterministic model-unavailable
-  response, no learned-skill execution, no `remember_fact` execution,
-  no persistent memory write, no false `user_provided` provenance;
-  healthy-path explicit memory disclosure re-confirmed working; full
-  regression run to a real terminal result (never an unobserved/killed
-  run treated as a result); Claude's own independent audit of all of
-  the above before this is treated as closed.
-- **M30.8 remains NOT AUTHORIZED until this repair receives Claude
-  ACCEPT** - independent of, and in addition to, M30.7C's own
-  separately-tracked evidence-closure gaps (below).
+**M31 Critical Invariants (held, now closed with the milestone):**
+- Direct-Model Brain Separation: confirmed — zero `subprocess`/`Popen` references to `claude`/`codex` anywhere in `uri_core`.
+- Subscription Transport Seam: `subscription_oauth` remains schema-only on `ProviderDescriptor.auth_transports`; Subscription card shows the honest, sourced unavailable state. Unchanged, not implemented in M31 (by design).
+- Roadmap Reservation: direct subscription-backed Brain access remains a deferred requirement; M32 stays reserved for external-skill qualification/integration.
 
-**M30.7C's own prior objective (Scenario 2/8/12 evidence-closure,
-best-effort Scenario 7, regression, full 12-scenario matrix) remains
-recorded and resumable separately - not reopened or subsumed by this
-milestone:**
-- MANDATORY: Scenario 2 (corrected DISCONNECTED fixture), Scenario 8
-  (approval content-envelope), Scenario 12 (visible fallback capture -
-  now additionally gated behind this repair being accepted first,
-  since Scenario 12 IS the defect this milestone fixes).
-- BEST EFFORT: Scenario 7. NOT REOPENED: Scenarios 4, 5, 9.
+---
 
-M30.7B itself remains CLOSED at `LIVE_VERIFIED + CLAUDE ACCEPT`
-(independently confirmed disposition: `M30.8 NOT READY`).
+## 1a. Queued Initiative (not milestone-numbered): URI Hybrid UI Implementation
+
+**Status:** FROZEN BLUEPRINT (2026-09-16) — planning/review complete;
+implementation **not yet started**. See
+`docs/plans/UI_HYBRID_FROZEN_BLUEPRINT.md` (the frozen implementation
+blueprint) and `docs/plans/UI_OVERHAUL_IMPLEMENTATION_PLAN.md` /
+`docs/design_library/UI_DESIGN_AUTHORITY.md` / `docs/design_library/
+COMPONENT_MAPPING.md` / `docs/design_library/UI_ACCEPTANCE_CHECKLIST.md`
+(inputs the blueprint incorporates and corrects).
+
+**Roles for this initiative (2026-09-16 explicit User instruction, overrides
+the CURRENT MILESTONE (M31) role table in §3 for this initiative only):**
+Claude/Codex — planning and independent plan review only; Antigravity —
+primary implementer; Qwen 3 14B (local) — implementation review; Antigravity
+— repair of Qwen's findings. See `ORCHESTRATION.md` §0 and `AGENTS.md` item 7.
+
+**Mandatory sequencing — hard dependency on M31: GATE OPEN (2026-09-16).**
+M31 — Model & Brain UX (§1 above) reached Claude `VERIFIED` and was
+committed/pushed to `origin/master` in this same audit pass — see
+`docs/plans/M31_STATE.md` ("Claude Final Audit (2026-09-16) — VERIFIED")
+for the full evidence trail. The hard dependency that previously blocked
+this initiative is satisfied: Antigravity may now initiate UI-initiative
+Batch 1 under the role set below. This gate note is preserved for its
+own auditable history — the dependency it recorded is resolved, not
+retroactively deleted.
+
+**Authorization basis for this queued-initiative record:** direct User
+instruction in a live session with Claude, 2026-09-16 ("Accept
+READY_WITH_CHANGES... Proceed directly to incorporate your findings and
+produce the Frozen UI Implementation Blueprint... Current User-confirmed
+development roles are: ..."). This records the frozen blueprint and role
+set; it does not advance M31's own state, and it does not authorize UI
+implementation to start ahead of the M31 dependency above.
 
 ---
 
 ## 2. Authoritative Files
-
-- `docs/plans/M30_PROVIDER_FAILURE_FALSE_CONSENT_REPAIR_PLAN.md`
-- `docs/plans/M30_PROVIDER_FAILURE_FALSE_CONSENT_STATE.md`
-- `docs/plans/M30_7C_READINESS_EVIDENCE_CLOSURE_PLAN.md`
-- `docs/plans/M30_7C_STATE.md`
-- `docs/plans/M30_7C_CLAUDE_AUDIT.md`
-- `docs/plans/M30_8_BLOCKER_DISPOSITION_PLAN.md`
-- `docs/plans/M30_7B_CLAUDE_AUDIT.md`
-- `docs/plans/M30_7B_CANONICAL_READINESS_CLOSURE_REPORT.md`
-- `docs/plans/M30_7B_CANONICAL_READINESS_CLOSURE_PLAN.md`
-- `docs/plans/M30_7B_STATE.md`
+- `docs/plans/M31_MODEL_BRAIN_UX_PLAN.md`
+- `docs/plans/M31_STATE.md`
 - `docs/governance/URI_AGENT_RELAY.md`
-- `docs/plans/M30_7A_CLAUDE_AUDIT.md`
-- `docs/plans/M30_7A_CANONICAL_LIVE_EVIDENCE_REPORT.md`
-- `docs/plans/M30_7A_CANONICAL_LIVE_EVIDENCE_PLAN.md`
-- `docs/plans/M30_7A_STATE.md`
-- `docs/plans/M30_7_CLAUDE_AUDIT.md`
-- `docs/plans/M30_7_WORKFLOW_CONTINUATION_REPORT.md`
-- `docs/plans/M30_7_WORKFLOW_CONTINUATION_PLAN.md`
-- `docs/plans/M30_7_STATE.md`
-
-- `docs/plans/M30_7_STATE.md`
-- `docs/plans/URI_CANONICAL_AGENT_LOOP_MIGRATION_PLAN.md`
-- `docs/architecture/URI_CANONICAL_AGENT_LOOP_ARCHITECTURE.md`
-- `docs/plans/M30_6A_FINAL_LIVE_VERIFICATION.md`
-- `docs/plans/M30_6A_CLAUDE_AUDIT.md`
+- `docs/governance/URI_ACTIVE_MILESTONE.md`
+- Figma nodes: `1:71` (02 — Connect Provider) and `1:201` (04 — Chat Model Selector)
 
 ---
 
-## 3. Authorized Agent Roles
+## 3. Authorized Agent Roles (M31 — CLOSED, preserved for reference)
 
 - **Claude:**  
-  Architecture, planning, audit, and read-only research unless separately authorized to implement.
+  Visual and architectural authority, plan author, and final architectural auditor / release authority.
 - **Antigravity:**  
-  Coordinator, task relay, evidence collection, and milestone-state maintenance.
+  Development loop manager / orchestrator, task relay, evidence collection, visual/UX compliance audit against Figma 1:71 and 1:201, and milestone-state maintenance. (Does not edit production code or perform final audit).
 - **Codex:**  
-  Implementation of the currently approved bounded milestone.
+  Primary implementer (Codex only) for backend contracts and Flutter UI implementation per accepted M31 plan.
 - **User:**  
-  Final live-verification and next-milestone approval authority.
+  Final authority. M31 approval granted, implemented, and Claude-verified/released — see §1.
+
+This role table stood for M31 specifically. §1a's own role table (Claude/Codex planning-and-review only, Antigravity primary implementer, Qwen implementation reviewer) governs the now-open Hybrid UI initiative instead; it does not reuse this table.
 
 ---
 
-## 4. Operational Scopes
-
-**CURRENT WRITE SCOPE (M30.8 Canonical Cutover + Legacy Retirement):**  
-- `uri_core/app/server.py` — canonical-first order inversion in `/ask`, reason-coded fallback logging.
-- `uri_core/core/canonical_execution.py` — unrestricted default authority (`CANONICAL_EXECUTION_ALLOWLIST=None`), terminal non-execution envelopes, emergency allowlist killswitch.
-- `uri_core/core/workflow_planner.py` — bounded repair: restore honest capability-gap failure reporting while removing duplicate branch conditions.
-- `test_canonical_execution.py` — test suite for canonical cutover, killswitch, and non-execution envelopes.
-- `docs/plans/M30_8_*` — plan, report, audit, state files.
+**WRITE SCOPE (M31 — CLOSED, preserved for reference, no longer an active grant):**  
+- `uri_ui/` — Flutter UI files (providers screen, ask_uri screen, composer, models, state, widgets, tests).
+- `uri_core/` — backend contracts for M31 (`core/model_router.py`, `core/provider_registry.py`, `app/server.py` for `/providers`, `/providers/{id}/verify`, `/providers/fallback-routing`, `AskRequest.model_override`, `core/fallback_routing_store.py`, `core/turn_state.py`, `core/conversation_history.py`) — strictly respecting that `orchestrator.py` must never grow.
+- `tests/` — backend pytest suites for M31.
+- `docs/plans/M31_*` — state, reports, verification files.
 - `docs/governance/URI_ACTIVE_MILESTONE.md`, `docs/governance/URI_AGENT_RELAY.md`, `PROJECT_MEMORY.md`.
-- **Protected boundaries preserved:** No modifications to `uri_ui/`, no security/permission/approval alterations, no git commit/push without explicit User instruction.
+- `uri_workspace/dev_workflow/tasks/` — task directives for Codex and Claude.
+- `scripts/run_codex_m31.py` — execution runner script.
 
-**M30.7C's own write scope (`docs/plans/M30_7C*` + governance files,
-no source unless separately re-approved) remains recorded but is not
-active for this milestone's own work.**
-
-**CURRENT READ SCOPE:**  
-- Full repository as needed to implement and verify this repair.
+No milestone write scope is currently active. The next milestone (or the Hybrid UI initiative, per its own §1a scope) must define its own before implementation starts.
 
 ---
 
-## 5. Stop Conditions & Invariants
+## 5. Stop Conditions & Invariants (M31 — CLOSED; invariants below remain standing project-wide, not milestone-scoped)
  
-- Do NOT make canonical execution global.
-- Do NOT start or implement M30.8 - remains NOT AUTHORIZED until this
-  repair receives Claude ACCEPT.
-- Do NOT retire legacy mechanisms.
-- Do NOT touch `uri_ui/`.
+- URI Brain providers are direct-model providers only. Claude Code, Codex, Antigravity, or other development harnesses must NEVER be introduced into the URI Brain runtime. (Confirmed holding by this audit — zero `subprocess`/`Popen` references to `claude`/`codex` anywhere in `uri_core`.)
+- `subscription_oauth` is an architectural schema-ready seam on `ProviderDescriptor.auth_transports` only; it remains unimplemented. The Subscription card in Design 02 shows an honest, sourced unavailable state.
+- M32 is reserved for external-skill qualification/integration. Direct subscription-backed Brain access is recorded as a deferred requirement for later roadmap reconciliation.
+- Only discovered AND verified-usable models are ever selectable anywhere in the product.
+- Composer model selector is the single interactive model selector in the product.
+- `orchestrator.py` must never grow; keep routing logic in `model_router.py`. (Note: `orchestrator.py` is already at 6153 lines, past the `test_usage_import_boundary.py` guard's 5460 threshold, as of commit `8fa9ac6` — pre-existing, standing architecture debt confirmed to pre-date M31, not a new violation; see `docs/plans/M31_STATE.md`'s final audit section.)
+- Preserve existing working code and tests; no regression in existing provider routing or `/ask` calls.
 - Do NOT commit or push without separate explicit User instruction.
-- Do NOT redesign `remember_fact`, `MemoryStore`, consent semantics, or
-  learned-skill architecture beyond the approved bounded repair.
-- Do NOT collapse the three-way model-failure distinction
-  (`MODEL_NOT_ATTEMPTED`/`MODEL_REACHED_BUT_INVALID`/`MODEL_
-  TERMINALLY_UNAVAILABLE`) into two - only the third gates the
-  learned-skill fast path.
-- **If the approved condition cannot be represented cleanly without
-  broader architectural changes, STOP and return for scope approval**
-  rather than improvising a workaround - binding, per the User's own
-  explicit instruction.
-- Scope strictly bounded to the M30-PFC repair as specified in
-  `docs/plans/M30_PROVIDER_FAILURE_FALSE_CONSENT_REPAIR_PLAN.md`.
 
 ---
 
 ## 6. Next Milestone Status
 
 **NEXT MILESTONE:**  
-M30.8 — Canonical Default Cutover
+Roadmap reconciliation required (M32 is reserved in the roadmap for external-skill qualification/integration; direct subscription-backed Brain access is recorded as a deferred requirement to be assigned to the next appropriate free milestone).
 
 **NEXT MILESTONE STATUS:**  
-NOT AUTHORIZED (readiness bar independently confirmed MET as of
-2026-09-14 - see "READINESS CONCLUSION" above: M30-PFC accepted,
-mandatory Scenarios 2/8/12 closed, regression clean. **Readiness is
-not authorization** - per this file's own "Do Not Self-Authorize"
-rule, §7, this status stays NOT AUTHORIZED until the User explicitly
-authorizes M30.8 through Claude.)
+NOT AUTHORIZED
+
+---
+
+## 6d. Closure Record (M31 — Claude VERIFIED, released)
+
+```markdown
+VERDICT: VERIFIED
+VERDICT AUTHORITY: CLAUDE (independent final audit, per standing AO-4 release authority)
+MILESTONE: M31 — Model & Brain UX
+BASIS: All 8 originally-reported live-acceptance defects and the 3 Round 2
+  pre-final findings independently confirmed fixed at the source level
+  (not merely re-quoted from Codex/Antigravity's evidence trail). 4
+  additional defects found during this audit, all bounded-fixed and
+  re-verified in-session (see docs/plans/M31_STATE.md "Claude Final
+  Audit (2026-09-16) — VERIFIED" for full detail). Full regression:
+  pytest 1798 passed / 10 failed (all 10 confirmed pre-existing via
+  clean-HEAD comparison, 0 new); flutter test 135/135; flutter analyze
+  0 errors.
+RELEASE ACTION: Claude performed the release commit/push to
+  origin/master per standing release authority, on direct User
+  instruction this session ("If VERIFIED, perform the authorized M31
+  release checkpoint... commit/push M31").
+TIMESTAMP: 2026-09-16
+```
+
+---
+
+## 6c. Approval Record (M31 Authorization)
+
+```markdown
+USER APPROVAL: APPROVED
+APPROVAL RELAY: USER DIRECT
+APPROVED MILESTONE: M31 — Model & Brain UX
+APPROVAL BASIS: Explicit User instruction: "M31 — Model & Brain UX is ACCEPTED and ready for execution. Please take ownership of URI_ACTIVE_MILESTONE.md as required by AO-4, set M31 as the active milestone, and initiate the established execution loop. Route implementation to Codex only."
+APPROVAL TIMESTAMP: 2026-09-15
+```
 
 ---
 
@@ -502,8 +502,6 @@ After EVERY agent handoff, Antigravity must automatically monitor the handoff to
 - Antigravity must not sit idle, wait for manual prompts, or create duplicate runner processes while a bridge is active.
 - Default loop behavior is always:
   `handoff sent → monitor → collect → continue`
-
-
 
 
 

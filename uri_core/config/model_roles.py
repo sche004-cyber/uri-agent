@@ -48,7 +48,7 @@ import json
 import os
 from typing import Any, Dict, Optional
 
-from uri_core.core.model_providers import ModelProvider, OllamaProvider, OpenAICompatibleProvider
+from uri_core.core.model_providers import AnthropicProvider, ModelProvider, OllamaProvider, OpenAICompatibleProvider
 from uri_core.core.model_providers.base import ModelProviderConfig
 
 # One role per real model-call site in this codebase today.
@@ -172,6 +172,14 @@ def apply_active_brain_override(
     turn blocked at the deployment-wide default (docs/plans/
     URI_APPROVED_UI_STARTUP_FLOW_AUDIT.md)."""
 
+    requested = getattr(principal, "model_override", None)
+    if isinstance(requested, dict) and isinstance(requested.get("provider_id"), str) and isinstance(requested.get("model"), str):
+        from uri_core.core.provider_registry import CATALOGUE_BY_ID
+        descriptor = CATALOGUE_BY_ID.get(requested["provider_id"])
+        if descriptor is not None:
+            role_config = dict(role_config)
+            role_config.update({"provider": descriptor.adapter, "provider_id": descriptor.provider_id, "model": requested["model"]})
+            return role_config
     if (
         role not in ACTIVE_BRAIN_OVERRIDE_ROLES
         or principal is None
@@ -321,9 +329,33 @@ def build_provider(
 
         return OpenAICompatibleProvider(config=config, api_key=api_key)
 
+    if provider_name == "anthropic":
+        if principal is None:
+            raise UnknownModelProviderError(
+                f"Role '{role}' is configured for 'anthropic' but no principal "
+                "was supplied - cannot look up per-user provider config or key."
+            )
+        from uri_core.core.provider_registry import ProviderConfigStore, CATALOGUE_BY_ID
+        from uri_core.core.provider_keys import ProviderKeyStore
+
+        user_id = principal.user_id
+        provider_id = provider_id_override or role_config.get("provider_id", "anthropic")
+        catalogue_entry = CATALOGUE_BY_ID.get(provider_id)
+        user_cfg = ProviderConfigStore(user_id).get_provider_config(provider_id)
+        config = ModelProviderConfig(
+            base_url=user_cfg.get("base_url", catalogue_entry.base_url if catalogue_entry else ""),
+            model=user_cfg.get("model", role_config.get("model", "")),
+            timeout_seconds=role_config.get("timeout_seconds", ModelProviderConfig().timeout_seconds),
+            context_tokens=role_config.get("context_tokens", ModelProviderConfig().context_tokens),
+        )
+        key_store = ProviderKeyStore(user_id)
+        api_key = key_store.get_key_for_use(provider_id)
+        del key_store
+        return AnthropicProvider(config=config, api_key=api_key)
+
     raise UnknownModelProviderError(
         f"Role '{role}' is configured for provider '{provider_name}', but "
-        "this codebase only implements 'ollama' and 'openai_compatible'. "
+        "this codebase only implements 'ollama', 'openai_compatible', and 'anthropic'. "
         "Add a new ModelProvider subclass (see model_providers/base.py) "
         "and wire it into build_provider() before configuring a role to "
         "use it."

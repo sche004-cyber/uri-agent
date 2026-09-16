@@ -107,6 +107,8 @@ class UriTurn {
     this.requiredConnectionId,
     this.requiredConnectionName,
     this.attachments = const <Attachment>[],
+    this.servingProvider,
+    this.servingModel,
   });
 
   final String id;
@@ -134,6 +136,8 @@ class UriTurn {
   /// anything for this request.
   String? requiredConnectionId;
   String? requiredConnectionName;
+  final String? servingProvider;
+  final String? servingModel;
 
   UriTurn copyWith({
     TurnStage? stage,
@@ -144,6 +148,8 @@ class UriTurn {
     String? requiredConnectionId,
     String? requiredConnectionName,
     List<Attachment>? attachments,
+    String? servingProvider,
+    String? servingModel,
   }) {
     return UriTurn(
       id: id,
@@ -155,8 +161,44 @@ class UriTurn {
       result: result ?? this.result,
       failureReason: failureReason ?? this.failureReason,
       requiredConnectionId: requiredConnectionId ?? this.requiredConnectionId,
-      requiredConnectionName: requiredConnectionName ?? this.requiredConnectionName,
+      requiredConnectionName:
+          requiredConnectionName ?? this.requiredConnectionName,
       attachments: attachments ?? this.attachments,
+      servingProvider: servingProvider ?? this.servingProvider,
+      servingModel: servingModel ?? this.servingModel,
+    );
+  }
+
+  /// Compact wire/history representation for turn metadata. Rich proposal and
+  /// result objects remain parsed by the URI client because their backend
+  /// shapes differ by execution stage.
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'user_text': userText,
+    'timestamp': timestamp.toIso8601String(),
+    'stage': stage.name,
+    'understanding': understanding,
+    'failure_reason': failureReason,
+    'serving_provider': servingProvider,
+    'serving_model': servingModel,
+  };
+
+  factory UriTurn.fromJson(Map<String, dynamic> json) {
+    final stageName = json['stage'] as String?;
+    final parsedStage = TurnStage.values.where(
+      (value) => value.name == stageName,
+    );
+    return UriTurn(
+      id: json['id'] as String? ?? json['turn_id'] as String? ?? '',
+      userText: json['user_text'] as String? ?? '',
+      timestamp:
+          DateTime.tryParse(json['timestamp'] as String? ?? '') ??
+          DateTime.now(),
+      stage: parsedStage.isEmpty ? TurnStage.completed : parsedStage.first,
+      understanding: json['understanding'] as String?,
+      failureReason: json['failure_reason'] as String?,
+      servingProvider: json['serving_provider'] as String?,
+      servingModel: json['serving_model'] as String?,
     );
   }
 }

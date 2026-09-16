@@ -28,7 +28,7 @@ class _ControllableUriClient extends MockUriClient {
   var _completer = Completer<UriTurn>();
 
   @override
-  Future<UriTurn> ask(String text, {String? turnId}) {
+  Future<UriTurn> ask(String text, {String? turnId, Object? modelOverride}) {
     _completer = Completer<UriTurn>();
     return _completer.future;
   }
@@ -335,7 +335,7 @@ void main() {
           find.byType(TextField),
           'What is on my calendar today',
         );
-        await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+        await tester.tap(find.byIcon(Icons.arrow_forward_rounded));
 
         // One frame: the request is in flight (MockUriClient's fixed
         // latency has not elapsed yet) - the message and a processing
@@ -365,7 +365,7 @@ void main() {
           find.byType(TextField),
           'Please draft a note about the insurance policy renewal',
         );
-        await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+        await tester.tap(find.byIcon(Icons.arrow_forward_rounded));
         await tester.pump();
 
         expect(find.text('URI is working on this…'), findsOneWidget);
@@ -380,7 +380,21 @@ void main() {
         expect(find.text('Approve'), findsOneWidget);
         expect(find.text('Cancel'), findsOneWidget);
 
-        await tester.tap(find.text('Approve'));
+        await tester.ensureVisible(find.text('Approve'));
+        await tester.scrollUntilVisible(
+          find.text('Approve'),
+          200,
+          scrollable: find.byType(Scrollable).last,
+        );
+        // AppShell's desktop fitted canvas can report a transformed text
+        // offset outside the test surface even after its enclosing button is
+        // visible. Invoke the real button callback rather than a coordinate
+        // tap so this lifecycle test remains about approval state, not that
+        // shell transform.
+        final approveButton = tester.widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, 'Approve'),
+        );
+        approveButton.onPressed!.call();
         await tester.pumpAndSettle();
 
         expect(

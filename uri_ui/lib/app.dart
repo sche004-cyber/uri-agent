@@ -187,6 +187,7 @@ class UriHome extends StatelessWidget {
         UriSection(
           label: 'Home',
           icon: Icons.auto_awesome_outlined,
+          group: 'Workspace',
           builder: (context) => HomeScreen(
             filePicker: filePicker,
             attachmentOpener: attachmentOpener,
@@ -195,16 +196,19 @@ class UriHome extends StatelessWidget {
         const UriSection(
           label: 'Tasks',
           icon: Icons.task_alt_outlined,
+          group: 'Work',
           builder: _buildTasks,
         ),
         const UriSection(
           label: 'Connections',
           icon: Icons.hub_outlined,
+          group: 'Work',
           builder: _buildConnections,
         ),
         const UriSection(
           label: 'Activity',
           icon: Icons.receipt_long_outlined,
+          group: 'Knowledge',
           builder: _buildActivity,
         ),
         // M19: promoted to a top-level destination (was nested inside
@@ -212,11 +216,13 @@ class UriHome extends StatelessWidget {
         const UriSection(
           label: 'History',
           icon: Icons.history_rounded,
+          group: 'Knowledge',
           builder: _buildHistory,
         ),
         const UriSection(
           label: 'Settings',
           icon: Icons.settings_outlined,
+          group: 'Runtime',
           builder: _buildSettings,
         ),
       ],

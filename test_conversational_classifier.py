@@ -80,6 +80,22 @@ class PositiveConversationalCasesTests(unittest.TestCase):
             )
         )
 
+    def test_bare_hello_succeeds_even_when_model_flags_clarification(self):
+        # Live-observed real gemma4:12b behaviour: a bare "hello"/"hi"
+        # comes back with requires_clarification=True (inconsistently
+        # with "thanks!"/"what can you do?", which the same model
+        # reports as False) - there is no concrete ambiguity left to
+        # clarify in a bare greeting, so this field must not block the
+        # single simplest, strongest-signal case (a whole-message
+        # greeting/farewell/thanks) this classifier exists for.
+        semantic_result = self._semantic(requires_clarification=True)
+        self.assertTrue(
+            is_conversational_no_capability_required("hello", semantic_result)
+        )
+        self.assertTrue(
+            is_conversational_no_capability_required("hi", semantic_result)
+        )
+
     def test_real_model_style_capability_inquiry_fixture(self):
         # The actual semantic_result shape observed from a real model
         # run for "what can you do?" (see the LAN/manual verification
@@ -263,14 +279,23 @@ class NegativeGenuineCapabilityGapTests(unittest.TestCase):
             is_conversational_no_capability_required("hello", semantic_result)
         )
 
-    def test_requires_clarification_true_blocks_classification(self):
+    def test_requires_clarification_true_blocks_substring_pattern_classification(
+        self,
+    ):
+        # The relaxation in _passes_semantic_safety_gate only applies to
+        # a WHOLE-message greeting/farewell/thanks match (see
+        # test_bare_hello_succeeds_even_when_model_flags_clarification).
+        # The riskier substring category ("what can you do?" appearing
+        # inside a longer message) keeps the full, unrelaxed gate.
         semantic_result = {
             "entities": [],
             "requires_evidence": False,
             "requires_clarification": True,
         }
         self.assertFalse(
-            is_conversational_no_capability_required("hello", semantic_result)
+            is_conversational_no_capability_required(
+                "what can you do?", semantic_result
+            )
         )
 
     def test_missing_requires_evidence_key_fails_closed(self):

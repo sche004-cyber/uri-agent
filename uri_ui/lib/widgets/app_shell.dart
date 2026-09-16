@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/dashboard_manifest.dart';
 import '../theme/uri_theme.dart';
 import '../services/app_state_scope.dart';
 import 'uri_wordmark.dart';
@@ -9,11 +10,18 @@ class UriSection {
     required this.label,
     required this.icon,
     required this.builder,
+    this.group,
   });
 
   final String label;
   final IconData icon;
   final WidgetBuilder builder;
+
+  /// Sidebar group heading (2026-09-12 accepted dashboard shell —
+  /// docs/plans/M26_DASHBOARD_DESIGN_SPECIFICATION.md §4). Null keeps a
+  /// section in a flat, ungrouped list, which is what every existing
+  /// test/screen not yet updated for grouping still gets.
+  final String? group;
 }
 
 /// Section indices in [AppShell] — kept in one place so any screen can
@@ -80,19 +88,27 @@ class AppShellState extends State<AppShell> {
     if (isWide) {
       return Scaffold(
         backgroundColor: colors.canvas,
-        body: Row(
-          children: [
-            _Sidebar(
-              sections: widget.sections,
-              index: _index,
-              onSelect: goTo,
-              onBrainTap: () => goTo(
-                ShellIndex.settings,
-                settingsCategory: 'Model Providers',
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final scale = DashboardScale.scaleFor(constraints.biggest);
+            return DashboardScale(
+              scale: scale,
+              child: Row(
+                children: [
+                  _Sidebar(
+                    sections: widget.sections,
+                    index: _index,
+                    onSelect: goTo,
+                    onBrainTap: () => goTo(
+                      ShellIndex.settings,
+                      settingsCategory: 'Model Providers',
+                    ),
+                  ),
+                  Expanded(child: SafeArea(child: content)),
+                ],
               ),
-            ),
-            Expanded(child: SafeArea(child: content)),
-          ],
+            );
+          },
         ),
       );
     }
@@ -108,9 +124,14 @@ class AppShellState extends State<AppShell> {
           children: [_Wordmark()],
         ),
         actions: [
-          _BrainStatusPill(
-            onTap: () =>
-                goTo(ShellIndex.settings, settingsCategory: 'Model Providers'),
+          SizedBox(
+            width: MediaQuery.sizeOf(context).width < 500 ? 170 : 280,
+            child: _BrainStatusPill(
+              onTap: () => goTo(
+                ShellIndex.settings,
+                settingsCategory: 'Model Providers',
+              ),
+            ),
           ),
           const SizedBox(width: UriSpace.sm),
         ],
@@ -139,50 +160,143 @@ class _Sidebar extends StatelessWidget {
     required this.onSelect,
     required this.onBrainTap,
   });
-
   final List<UriSection> sections;
   final int index;
   final ValueChanged<int> onSelect;
   final VoidCallback onBrainTap;
-
   @override
   Widget build(BuildContext context) {
+    // This is the left region of the same frozen desktop board rendered by
+    // HomeScreen. Reads the one shared scale AppShell computed for the
+    // whole board (see DashboardScale) so this rail always agrees with
+    // HomeScreen's own center/right columns - a fraction of the raw
+    // window width would drift from the board's actual scale at any
+    // window aspect ratio other than the board's native one.
+    final width = DashboardManifest.leftRailWidth * DashboardScale.of(context);
+    void navigate(int target, {String? category}) {
+      if (category != null) {
+        AppStateScope.of(context).openSettingsCategory(category);
+      }
+      onSelect(target);
+    }
+
+    final items = DashboardManifest.navItems.map((label) {
+      final detail = switch (label) {
+        'Home' => (Icons.auto_awesome_outlined, ShellIndex.home, null),
+        'Chat' => (Icons.chat_bubble_outline, ShellIndex.home, null),
+        // Email/Drive retain the Connections route; Files retains History;
+        // Insights retains Activity.  These are the surviving entry points
+        // for the duplicate labels removed from the visual nav.
+        'Email' => (Icons.mail_outline, ShellIndex.connections, null),
+        'Drive' => (Icons.link, ShellIndex.connections, null),
+        'Files' => (Icons.description_outlined, ShellIndex.history, null),
+        'Tasks' => (Icons.check, ShellIndex.tasks, null),
+        'Calendar' => (
+          Icons.calendar_month_outlined,
+          ShellIndex.connections,
+          null,
+        ),
+        'Graph' => (
+          Icons.hub_outlined,
+          ShellIndex.settings,
+          'Memory & Context',
+        ),
+        'Memory' => (Icons.memory, ShellIndex.settings, 'Memory'),
+        'Insights' => (Icons.insights, ShellIndex.activity, null),
+        'Model' => (
+          Icons.memory_outlined,
+          ShellIndex.settings,
+          'Model Providers',
+        ),
+        'Tools & Skills' => (
+          Icons.extension_outlined,
+          ShellIndex.settings,
+          'Capabilities',
+        ),
+        'Settings' => (Icons.settings_outlined, ShellIndex.settings, null),
+        _ => throw StateError('Unknown dashboard navigation item: $label'),
+      };
+      return (label, detail.$1, detail.$2, detail.$3);
+    }).toList();
     final colors = UriColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: 260,
+      width: width,
+      // The near-black gradient is the approved dark theme's own
+      // branded treatment (M26 dashboard spec) - kept verbatim for
+      // dark mode. Light mode reads the active theme's own surface/
+      // border tokens instead of staying on this hardcoded dark
+      // gradient regardless of the selected Appearance (User-reported:
+      // Appearance must visibly change the left navigation/shell).
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(right: BorderSide(color: colors.border)),
+        gradient: isDark
+            ? const LinearGradient(
+                colors: [Color(0xff020910), Color(0xff04121c)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: isDark ? null : colors.surface,
+        border: Border(
+          right: BorderSide(
+            color: isDark ? const Color(0xff15334a) : colors.border,
+          ),
+        ),
       ),
       child: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(
-                UriSpace.lg,
-                UriSpace.xl,
-                UriSpace.lg,
-                UriSpace.lg,
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height < 760 ? 125 : 180,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Image.asset(
+                        'assets/uri_app_logo_refined_v2.png',
+                        color: const Color(0xff020910),
+                        colorBlendMode: BlendMode.screen,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+                    child: Text(
+                      'INTELLIGENCE FOR A BETTER TOMORROW',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: colors.inkFaint,
+                        fontSize: 7,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: _Wordmark(),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: UriSpace.md),
-              child: _BrainStatusPill(onTap: onBrainTap),
-            ),
-            const SizedBox(height: UriSpace.sm),
-            for (var i = 0; i < sections.length; i++)
-              _SidebarItem(
-                section: sections[i],
-                selected: i == index,
-                onTap: () => onSelect(i),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  for (final item in items)
+                    _SidebarItem(
+                      section: UriSection(
+                        label: item.$1,
+                        icon: item.$2,
+                        builder: (_) => const SizedBox(),
+                      ),
+                      selected:
+                          (index == 0 && item.$1 == 'Home') ||
+                          (index == 1 && item.$1 == 'Tasks') ||
+                          (index == 5 && item.$1 == 'Settings'),
+                      onTap: () => navigate(item.$3, category: item.$4),
+                    ),
+                ],
               ),
-            const Spacer(),
-            const Padding(
-              padding: EdgeInsets.all(UriSpace.lg),
-              child: _SidebarFooter(),
             ),
+            const Padding(padding: EdgeInsets.all(12), child: _SidebarFooter()),
           ],
         ),
       ),
@@ -198,7 +312,7 @@ class _Wordmark extends StatelessWidget {
   const _Wordmark();
 
   @override
-  Widget build(BuildContext context) => const UriWordmark(markSize: 30);
+  Widget build(BuildContext context) => UriWordmark(markSize: 30);
 }
 
 class _SidebarItem extends StatelessWidget {
@@ -216,54 +330,84 @@ class _SidebarItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: UriSpace.sm, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       child: Material(
-        color: selected ? colors.accentSoft : Colors.transparent,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(UriRadius.sm),
         child: InkWell(
           borderRadius: BorderRadius.circular(UriRadius.sm),
           onTap: onTap,
-          child: Row(
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                width: 3,
-                height: 18,
-                margin: const EdgeInsets.only(left: 2),
-                decoration: BoxDecoration(
-                  color: selected ? colors.accent : Colors.transparent,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 13,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(7),
+              gradient: selected
+                  ? const LinearGradient(
+                      colors: [Color(0xff0875d7), Color(0xff06419d)],
+                    )
+                  : null,
+              border: selected
+                  ? Border.all(color: const Color(0xff178fe9))
+                  : null,
+              boxShadow: selected
+                  ? const [BoxShadow(color: Color(0x550f85ff), blurRadius: 12)]
+                  : null,
+            ),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  width: 3,
+                  height: 18,
+                  margin: const EdgeInsets.only(left: 2),
+                  decoration: BoxDecoration(
+                    color: selected ? colors.accent : Colors.transparent,
+                    borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        section.icon,
-                        size: 19,
-                        color: selected ? colors.accentInk : colors.inkFaint,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        section.label,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: selected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: selected ? colors.accentInk : colors.inkSoft,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: MediaQuery.sizeOf(context).height < 760 ? 2 : 5,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          section.icon,
+                          size: 17,
+                          // Selected text/icon sit on the fixed blue
+                          // accent gradient above (a brand highlight,
+                          // not the page background) and stay a light
+                          // color in both themes; unselected reads the
+                          // active theme so the shell responds to
+                          // Appearance like every other surface.
+                          color: selected
+                              ? const Color(0xffaac5d8)
+                              : colors.inkSoft,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            section.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: selected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: selected
+                                  ? const Color(0xffccdded)
+                                  : colors.ink,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -342,28 +486,50 @@ class _BrainStatusPill extends StatelessWidget {
 
 class _SidebarFooter extends StatelessWidget {
   const _SidebarFooter();
-
   @override
-  Widget build(BuildContext context) {
-    final colors = UriColors.of(context);
-    return Container(
-      padding: const EdgeInsets.all(UriSpace.md),
-      decoration: BoxDecoration(
-        color: colors.surfaceSunken,
-        borderRadius: BorderRadius.circular(UriRadius.sm),
+  Widget build(BuildContext context) => ShaderMask(
+    shaderCallback: (rect) => const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Colors.transparent, Colors.black],
+      stops: [0.0, 0.55],
+    ).createShader(rect),
+    blendMode: BlendMode.dstIn,
+    child: Container(
+      height: 150,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/misty_forest_sikkim.jpg'),
+          fit: BoxFit.cover,
+        ),
       ),
-      child: Row(
-        children: [
-          Icon(Icons.shield_outlined, size: 16, color: colors.inkFaint),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'URI never acts without your approval unless you\'ve allowed it.',
-              style: Theme.of(context).textTheme.labelSmall,
-            ),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.transparent, Color(0xff020910)],
+            stops: [0.0, 0.85],
           ),
-        ],
+        ),
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              '\u201cSmall steps.\nA more organized tomorrow.\u201d\n\u2014 URI',
+              style: TextStyle(color: Color(0xffccdded), fontSize: 9),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'NIT Sikkim  v0.1.0',
+              style: TextStyle(color: Color(0xffaac5d8), fontSize: 9),
+            ),
+          ],
+        ),
       ),
-    );
-  }
+    ),
+  );
 }

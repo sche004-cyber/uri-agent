@@ -25,8 +25,8 @@ def record(user_id=USER, prompt=10, output=20, role="reasoning", month=None):
 
 def fake_router(monkeypatch, response=None, error=None, candidates=None):
     router = routing.ModelRouter()
-    monkeypatch.setattr(router, "_ordered_candidates", lambda role: candidates or ["ollama"])
-    monkeypatch.setattr(router, "_model_for_role", lambda role: "configured-model")
+    monkeypatch.setattr(router, "_ordered_candidates", lambda *a, **k: candidates or ["ollama"])
+    monkeypatch.setattr(router, "_model_for_role", lambda *a, **k: "configured-model")
     provider = Mock()
     provider.complete.return_value = response or ModelResponse("SECRET_RESPONSE", "actual-model", "ollama", 10, 20, 1.5)
     provider.complete.side_effect = error

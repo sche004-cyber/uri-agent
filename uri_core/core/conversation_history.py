@@ -59,6 +59,12 @@ class ConversationTurn:
     status: Optional[str] = None
     capability: Optional[str] = None
     attachments: List[Dict[str, Any]] = field(default_factory=list)
+    provider_id: Optional[str] = None
+    model: Optional[str] = None
+    # The provider/model which actually served the turn.  These are
+    # informational transcript metadata, never routing authority.
+    serving_provider: Optional[str] = None
+    serving_model: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -168,6 +174,10 @@ class ConversationHistoryStore:
         status: Optional[str] = None,
         capability: Optional[str] = None,
         attachments: Optional[List[Dict[str, Any]]] = None,
+        provider_id: Optional[str] = None,
+        model: Optional[str] = None,
+        serving_provider: Optional[str] = None,
+        serving_model: Optional[str] = None,
     ) -> bool:
         """Append one exchange. Returns True on success, False on any
         failure (unusable id, write error) - a transcript write must
@@ -189,6 +199,10 @@ class ConversationHistoryStore:
             status=status,
             capability=capability,
             attachments=attachments or [],
+            provider_id=provider_id,
+            model=model,
+            serving_provider=serving_provider,
+            serving_model=serving_model,
         )
         turns.append(turn.to_dict())
 
@@ -200,6 +214,38 @@ class ConversationHistoryStore:
         data["session_id"] = session_id
         data["turns"] = turns
 
+        try:
+            self._ensure_dir()
+            with open(path, "w", encoding="utf-8") as handle:
+                json.dump(data, handle, indent=2)
+            return True
+        except OSError:
+            return False
+
+    def annotate_latest_turn(
+        self,
+        session_id: str,
+        *,
+        serving_provider: Optional[str],
+        serving_model: Optional[str],
+    ) -> bool:
+        """Attach observed serving metadata to the turn just completed.
+
+        The transcript is deliberately written independently of model routing;
+        this best-effort follow-up keeps that failure isolation while allowing
+        the HTTP boundary to record the actual router outcome.
+        """
+        if serving_provider is None and serving_model is None:
+            return False
+        path = self._path_for(session_id)
+        if path is None:
+            return False
+        data = self._load_raw(session_id)
+        turns = data.get("turns", [])
+        if not turns:
+            return False
+        turns[-1]["serving_provider"] = serving_provider
+        turns[-1]["serving_model"] = serving_model
         try:
             self._ensure_dir()
             with open(path, "w", encoding="utf-8") as handle:

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../models/activity_event.dart';
 import '../models/connection.dart';
 import '../models/memory_entry.dart';
+import '../models/system_performance.dart';
 import '../models/task_item.dart';
 import '../models/uri_turn.dart';
 import '../utils/capability_display.dart';
@@ -263,12 +264,31 @@ class HttpUriClient implements UriClient {
       return true;
     }
 
+    if (response.statusCode == 401) {
+      // _resolve_authenticated_user_id (server.py) - the same dependency
+      // every authenticated endpoint uses, including /auth/me itself -
+      // deliberately raises 401 for a malformed/unknown/expired token
+      // rather than silently downgrading to "not logged in" (its own
+      // docstring: "never silently falls back to the legacy ambient
+      // state"). A stale assumption here previously treated ANY non-200
+      // as "transient server problem, keep the session" - which meant an
+      // actually-expired token was never detected, so every later
+      // authenticated call (GET /providers, /providers/active-brain,
+      // /ask) kept silently failing/degrading instead. A definitive 401
+      // is exactly the token-rejected signal this method exists to
+      // detect - clear the stale session so the app returns to a real
+      // login screen instead of a permanently confusing logged-in-but-
+      // nothing-works state.
+      _token = null;
+      _username = null;
+      return false;
+    }
+
     if (response.statusCode != 200) {
-      // An unexpected non-200 (e.g. a transient 5xx) is a server
-      // problem, not proof the token itself was rejected - GET
-      // /auth/me itself never returns anything but 200, reporting
-      // rejection via {"authenticated": false} in the body instead
-      // (see server.py's auth_me), which is checked below.
+      // Any other non-200 (e.g. a transient 5xx) is a server problem,
+      // not proof the token itself was rejected - GET /auth/me's own
+      // 200 path reports rejection via {"authenticated": false} in the
+      // body instead (see server.py's auth_me), which is checked below.
       return true;
     }
 
@@ -287,13 +307,17 @@ class HttpUriClient implements UriClient {
   }
 
   @override
-  Future<UriTurn> ask(String text, {String? turnId}) async {
+  Future<UriTurn> ask(
+    String text, {
+    String? turnId,
+    Object? modelOverride,
+  }) async {
     final id = turnId ?? 'turn-${DateTime.now().microsecondsSinceEpoch}';
     final timestamp = DateTime.now();
 
     http.Response response;
     try {
-      response = await _askOnce(text);
+      response = await _askOnce(text, modelOverride);
     } on http.ClientException {
       // A pooled keep-alive connection that went idle (e.g. over a
       // Tailscale relay) dies with exactly this exception on its next
@@ -303,7 +327,7 @@ class HttpUriClient implements UriClient {
       // attempt provably never reached the server, this cannot result
       // in the same ask being processed twice.
       try {
-        response = await _askOnce(text);
+        response = await _askOnce(text, modelOverride);
       } catch (error) {
         return UriTurn(
           id: id,
@@ -323,6 +347,16 @@ class HttpUriClient implements UriClient {
       );
     }
 
+    Map<String, dynamic>? responseBody;
+    try {
+      responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      // The status branch below retains its useful HTTP failure message.
+    }
+    final requestedModel = _requestedModel(modelOverride);
+    final servingModel =
+        responseBody?['serving_model'] as String? ?? requestedModel;
+
     if (response.statusCode != 200) {
       return UriTurn(
         id: id,
@@ -330,13 +364,11 @@ class HttpUriClient implements UriClient {
         timestamp: timestamp,
         stage: TurnStage.failed,
         failureReason: 'URI backend returned HTTP ${response.statusCode}.',
+        servingModel: servingModel,
       );
     }
 
-    final Map<String, dynamic> body;
-    try {
-      body = jsonDecode(response.body) as Map<String, dynamic>;
-    } catch (error) {
+    if (responseBody == null) {
       return UriTurn(
         id: id,
         userText: text,
@@ -351,18 +383,23 @@ class HttpUriClient implements UriClient {
       id: id,
       text: text,
       timestamp: timestamp,
-      body: body,
+      body: responseBody,
+      requestedModel: requestedModel,
     );
     _turns[turn.id] = turn;
     return turn;
   }
 
-  Future<http.Response> _askOnce(String text) {
+  Future<http.Response> _askOnce(String text, Object? modelOverride) {
     return _http
         .post(
           Uri.parse('$baseUrl/ask'),
           headers: _jsonHeaders,
-          body: jsonEncode({'session_id': _sessionId, 'text': text}),
+          body: jsonEncode({
+            'session_id': _sessionId,
+            'text': text,
+            if (modelOverride != null) 'model_override': modelOverride,
+          }),
         )
         // The backend runs a multi-step reasoning chain against a
         // local LLM for every /ask (semantic analysis, planning,
@@ -383,6 +420,7 @@ class HttpUriClient implements UriClient {
     required String text,
     required DateTime timestamp,
     required Map<String, dynamic> body,
+    String? requestedModel,
   }) {
     if (body['status'] == 'failed' || body['status'] == 'unavailable') {
       return UriTurn(
@@ -392,6 +430,7 @@ class HttpUriClient implements UriClient {
         stage: TurnStage.failed,
         failureReason:
             body['error']?.toString() ?? 'URI could not process this request.',
+        servingModel: body['serving_model'] as String? ?? requestedModel,
       );
     }
 
@@ -404,6 +443,8 @@ class HttpUriClient implements UriClient {
     // available, since it's the more natural phrasing; the template
     // text remains the fallback exactly as it always has been.
     final narrative = body['narrative'] as String?;
+    final servingProvider = body['serving_provider'] as String?;
+    final servingModel = body['serving_model'] as String?;
 
     final understanding =
         narrative ??
@@ -453,6 +494,8 @@ class HttpUriClient implements UriClient {
           targetService: humanTitle,
           impact: impactFromRisk(riskValue),
         ),
+        servingProvider: servingProvider,
+        servingModel: servingModel,
       );
     }
 
@@ -476,6 +519,8 @@ class HttpUriClient implements UriClient {
         stage: TurnStage.failed,
         understanding: understanding,
         failureReason: reason.toString(),
+        servingProvider: servingProvider,
+        servingModel: servingModel,
       );
     }
 
@@ -510,6 +555,8 @@ class HttpUriClient implements UriClient {
       timestamp: timestamp,
       stage: TurnStage.completed,
       understanding: understanding,
+      servingProvider: servingProvider,
+      servingModel: servingModel,
       result: ActionResult(
         summary: summary,
         // Only ever shown when a real tool was actually involved (e.g.
@@ -525,6 +572,12 @@ class HttpUriClient implements UriClient {
         draftText: _draftTextFrom(responseData),
       ),
     );
+  }
+
+  String? _requestedModel(Object? modelOverride) {
+    if (modelOverride is! Map) return null;
+    final model = modelOverride['model'];
+    return model is String && model.isNotEmpty ? model : null;
   }
 
   /// The actual drafted document body, taken verbatim from the tool's
@@ -917,6 +970,52 @@ class HttpUriClient implements UriClient {
     );
   }
 
+  /// Real CPU/memory/disk snapshot from GET /system/performance. Null
+  /// on any unreachable/error backend response — an honest
+  /// "unavailable" state, never a fabricated number.
+  @override
+  Future<SystemPerformanceSnapshot?> loadSystemPerformance() async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(Uri.parse('$baseUrl/system/performance'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 10));
+    } catch (_) {
+      return null;
+    }
+
+    if (response.statusCode != 200) return null;
+
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return SystemPerformanceSnapshot.fromJson(body);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<int?> loadUnreadEmailCount() async {
+    http.Response response;
+    try {
+      response = await _http
+          .get(Uri.parse('$baseUrl/gmail/unread-count'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 10));
+    } catch (_) {
+      return null;
+    }
+
+    if (response.statusCode != 200) return null;
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      if (body['success'] != true) return null;
+      final count = body['unread_count'];
+      return count is num && count >= 0 ? count.toInt() : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Real audit-backed activity from GET /activity (see
   /// audit_trail.py). Previously served fabricated mock events.
   ///
@@ -1217,6 +1316,8 @@ class HttpUriClient implements UriClient {
               DateTime.now(),
           stage: failed ? TurnStage.failed : TurnStage.completed,
           failureReason: failed ? responseText : null,
+          servingProvider: turn['serving_provider'] as String?,
+          servingModel: turn['serving_model'] as String?,
           result: failed
               ? null
               : ActionResult(
@@ -1795,13 +1896,24 @@ class HttpUriClient implements UriClient {
       return null;
     }
 
-    if (response.statusCode != 200) return null;
-
     try {
       final body = jsonDecode(response.body) as Map<String, dynamic>;
-      return ProviderKeyResult.fromJson(body);
+      if (response.statusCode == 200) return ProviderKeyResult.fromJson(body);
+      return ProviderKeyResult(
+        providerId: providerId,
+        configured: false,
+        lastFour: '',
+        error:
+            body['detail']?.toString() ??
+            'Backend returned HTTP ${response.statusCode}.',
+      );
     } catch (_) {
-      return null;
+      return ProviderKeyResult(
+        providerId: providerId,
+        configured: false,
+        lastFour: '',
+        error: 'Backend returned HTTP ${response.statusCode}.',
+      );
     }
   }
 
@@ -1829,6 +1941,57 @@ class HttpUriClient implements UriClient {
     }
 
     return response.statusCode == 200;
+  }
+
+  @override
+  Future<ProviderVerificationResult?> verifyProvider(String providerId) async {
+    try {
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/providers/$providerId/verify'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      return ProviderVerificationResult.fromJson(
+        jsonDecode(response.body) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getFallbackRouting() async {
+    try {
+      final response = await _http
+          .get(
+            Uri.parse('$baseUrl/providers/fallback-routing'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+      return response.statusCode == 200
+          ? jsonDecode(response.body) as Map<String, dynamic>
+          : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> updateFallbackRouting(Map<String, dynamic> config) async {
+    try {
+      final response = await _http
+          .put(
+            Uri.parse('$baseUrl/providers/fallback-routing'),
+            headers: _jsonHeaders,
+            body: jsonEncode(config),
+          )
+          .timeout(const Duration(seconds: 30));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override

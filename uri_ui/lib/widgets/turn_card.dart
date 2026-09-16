@@ -39,116 +39,143 @@ class TurnCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = UriColors.of(context);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(UriSpace.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ---- the request itself ----
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    turn.userText,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
+    // A plain, ordinary successful reply reads as one continuous
+    // conversation rather than a sequence of separately-labelled
+    // "islands" - the status pill is reserved for states actually worth
+    // flagging (still processing, awaiting approval, executing,
+    // cancelled, blocked, failed). "Completed" on every routine turn
+    // added nothing a reader didn't already see from the reply itself
+    // (2026-09-14, User directive).
+    final showStatusPill = turn.stage != TurnStage.completed;
+
+    return Container(
+      padding: const EdgeInsets.all(UriSpace.lg),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: colors.border.withValues(alpha: .6)),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ---- the request itself ----
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(turn.userText, style: theme.textTheme.titleMedium),
+              ),
+              if (showStatusPill) ...[
                 const SizedBox(width: UriSpace.sm),
                 StatusPill.forStage(context, turn.stage),
               ],
+            ],
+          ),
+
+          // ---- attachments this turn was sent with ----
+          //
+          // Fixed to this turn (see UriTurn.attachments), never the
+          // whole conversation's staged list, so re-opening old
+          // history always shows the right file next to the right
+          // message - like a WhatsApp chat bubble's own attachment.
+          if (turn.attachments.isNotEmpty) ...[
+            const SizedBox(height: UriSpace.sm),
+            _TurnAttachments(
+              attachments: turn.attachments,
+              onOpen: onOpenAttachment,
             ),
-
-            // ---- attachments this turn was sent with ----
-            //
-            // Fixed to this turn (see UriTurn.attachments), never the
-            // whole conversation's staged list, so re-opening old
-            // history always shows the right file next to the right
-            // message - like a WhatsApp chat bubble's own attachment.
-            if (turn.attachments.isNotEmpty) ...[
-              const SizedBox(height: UriSpace.sm),
-              _TurnAttachments(
-                attachments: turn.attachments,
-                onOpen: onOpenAttachment,
-              ),
-            ],
-
-            if (turn.understanding != null) ...[
-              const SizedBox(height: UriSpace.sm),
-              LinkifiedText(turn.understanding!, style: theme.textTheme.bodyMedium),
-            ],
-
-            // ---- chat UX fix: persistent processing state ----
-            //
-            // TurnStage.understanding is set the instant a request is
-            // submitted (see AppState.ask) and nothing else on the turn
-            // is populated yet - proposedAction/result/failureReason
-            // are all still null. Without this block the card would
-            // show only the user's message and a bare status pill,
-            // which is easy to miss as "URI is working on this" rather
-            // than a stalled/empty card. Not a new stage or a fake
-            // progress step - existing TurnStage.understanding
-            // semantics, rendered.
-            if (turn.stage == TurnStage.understanding) ...[
-              const SizedBox(height: UriSpace.md),
-              const _ProcessingBlock(),
-            ],
-
-            // ---- failed: the technical detail, always shown ----
-            //
-            // Previously never rendered anywhere - a failed turn with
-            // no understanding text (e.g. the model backend itself
-            // was unreachable, so no narrative was ever attempted)
-            // showed only the red "Failed" pill above and nothing
-            // else. failureReason is shown regardless of whether
-            // understanding is also present, since it's the specific
-            // technical detail rather than a restatement of it.
-            if (turn.stage == TurnStage.failed && turn.failureReason != null) ...[
-              const SizedBox(height: UriSpace.sm),
-              _FailureBlock(reason: turn.failureReason!),
-            ],
-
-            // ---- blocked: needs a connection first ----
-            if (turn.stage == TurnStage.needsConnection) ...[
-              const SizedBox(height: UriSpace.md),
-              _ConnectionRequiredBlock(turn: turn, onConnectService: onConnectService),
-            ],
-
-            // ---- stage 1: proposal ----
-            if (turn.proposedAction != null) ...[
-              const SizedBox(height: UriSpace.md),
-              _ProposalBlock(
-                turn: turn,
-                onApprove: onApprove,
-                onCancel: onCancel,
-              ),
-            ],
-
-            // ---- stage 3: result ----
-            //
-            // The green "Result" treatment is reserved for what a real
-            // tool actually produced (detail carries "Tool: <name>"
-            // only then - see http_uri_client.dart), or anything a
-            // tool returned beyond plain text (sources/generatedFile/
-            // draftText). An ordinary conversational reply with none
-            // of that already appeared, verbatim, as turn.understanding
-            // above (2026-09-12, User directive) - showing it again
-            // here would only duplicate it inside a glaring highlight
-            // box that misrepresents a plain reply as a command-
-            // execution dump.
-            if (turn.result != null &&
-                (turn.result!.detail != null ||
-                    turn.result!.sources.isNotEmpty ||
-                    turn.result!.generatedFile != null ||
-                    turn.result!.draftText != null ||
-                    turn.understanding == null)) ...[
-              const SizedBox(height: UriSpace.md),
-              _ResultBlock(turn: turn, onOpenAttachment: onOpenAttachment),
-            ],
           ],
-        ),
+
+          if (turn.understanding != null) ...[
+            const SizedBox(height: UriSpace.sm),
+            LinkifiedText(
+              turn.understanding!,
+              style: theme.textTheme.bodyMedium,
+            ),
+          ],
+
+          // ---- chat UX fix: persistent processing state ----
+          //
+          // TurnStage.understanding is set the instant a request is
+          // submitted (see AppState.ask) and nothing else on the turn
+          // is populated yet - proposedAction/result/failureReason
+          // are all still null. Without this block the card would
+          // show only the user's message and a bare status pill,
+          // which is easy to miss as "URI is working on this" rather
+          // than a stalled/empty card. Not a new stage or a fake
+          // progress step - existing TurnStage.understanding
+          // semantics, rendered.
+          if (turn.stage == TurnStage.understanding) ...[
+            const SizedBox(height: UriSpace.md),
+            const _ProcessingBlock(),
+          ],
+
+          // ---- failed: the technical detail, always shown ----
+          //
+          // Previously never rendered anywhere - a failed turn with
+          // no understanding text (e.g. the model backend itself
+          // was unreachable, so no narrative was ever attempted)
+          // showed only the red "Failed" pill above and nothing
+          // else. failureReason is shown regardless of whether
+          // understanding is also present, since it's the specific
+          // technical detail rather than a restatement of it.
+          if (turn.stage == TurnStage.failed && turn.failureReason != null) ...[
+            const SizedBox(height: UriSpace.sm),
+            _FailureBlock(reason: turn.failureReason!),
+          ],
+
+          // ---- blocked: needs a connection first ----
+          if (turn.stage == TurnStage.needsConnection) ...[
+            const SizedBox(height: UriSpace.md),
+            _ConnectionRequiredBlock(
+              turn: turn,
+              onConnectService: onConnectService,
+            ),
+          ],
+
+          // ---- stage 1: proposal ----
+          if (turn.proposedAction != null) ...[
+            const SizedBox(height: UriSpace.md),
+            _ProposalBlock(
+              turn: turn,
+              onApprove: onApprove,
+              onCancel: onCancel,
+            ),
+          ],
+
+          // ---- stage 3: result ----
+          //
+          // The green "Result" treatment is reserved for what a real
+          // tool actually produced (detail carries "Tool: <name>"
+          // only then - see http_uri_client.dart), or anything a
+          // tool returned beyond plain text (sources/generatedFile/
+          // draftText). An ordinary conversational reply with none
+          // of that already appeared, verbatim, as turn.understanding
+          // above (2026-09-12, User directive) - showing it again
+          // here would only duplicate it inside a glaring highlight
+          // box that misrepresents a plain reply as a command-
+          // execution dump.
+          if (turn.result != null &&
+              (turn.result!.detail != null ||
+                  turn.result!.sources.isNotEmpty ||
+                  turn.result!.generatedFile != null ||
+                  turn.result!.draftText != null ||
+                  turn.understanding == null)) ...[
+            const SizedBox(height: UriSpace.md),
+            _ResultBlock(turn: turn, onOpenAttachment: onOpenAttachment),
+          ],
+          if (turn.stage != TurnStage.understanding) ...[
+            const SizedBox(height: UriSpace.xs),
+            Text(
+              'Conversation model: ${turn.servingModel ?? 'URI Auto'}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.inkFaint,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -179,13 +206,18 @@ class _ProcessingBlock extends StatelessWidget {
           SizedBox(
             height: 16,
             width: 16,
-            child: CircularProgressIndicator(strokeWidth: 2, color: colors.inkFaint),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: colors.inkFaint,
+            ),
           ),
           const SizedBox(width: UriSpace.sm),
           Expanded(
             child: Text(
               'URI is working on this…',
-              style: theme.textTheme.bodyMedium?.copyWith(color: colors.inkFaint),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.inkFaint,
+              ),
             ),
           ),
         ],
@@ -263,7 +295,10 @@ class _FailureBlock extends StatelessWidget {
 }
 
 class _ConnectionRequiredBlock extends StatelessWidget {
-  const _ConnectionRequiredBlock({required this.turn, required this.onConnectService});
+  const _ConnectionRequiredBlock({
+    required this.turn,
+    required this.onConnectService,
+  });
 
   final UriTurn turn;
   final ValueChanged<String> onConnectService;
@@ -292,7 +327,9 @@ class _ConnectionRequiredBlock extends StatelessWidget {
               const SizedBox(width: UriSpace.xs),
               Text(
                 'Connection needed',
-                style: theme.textTheme.labelLarge?.copyWith(color: colors.warning),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colors.warning,
+                ),
               ),
             ],
           ),
@@ -316,7 +353,11 @@ class _ConnectionRequiredBlock extends StatelessWidget {
 }
 
 class _ProposalBlock extends StatelessWidget {
-  const _ProposalBlock({required this.turn, required this.onApprove, required this.onCancel});
+  const _ProposalBlock({
+    required this.turn,
+    required this.onApprove,
+    required this.onCancel,
+  });
 
   final UriTurn turn;
   final VoidCallback onApprove;
@@ -327,7 +368,9 @@ class _ProposalBlock extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = UriColors.of(context);
     final action = turn.proposedAction!;
-    final isDecided = turn.stage != TurnStage.awaitingApproval && turn.stage != TurnStage.proposalReady;
+    final isDecided =
+        turn.stage != TurnStage.awaitingApproval &&
+        turn.stage != TurnStage.proposalReady;
 
     return Container(
       width: double.infinity,
@@ -346,7 +389,9 @@ class _ProposalBlock extends StatelessWidget {
               const SizedBox(width: UriSpace.xs),
               Text(
                 'Proposed action',
-                style: theme.textTheme.labelLarge?.copyWith(color: colors.accentInk),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colors.accentInk,
+                ),
               ),
               const Spacer(),
               StatusPill.forImpact(context, action.impact),
@@ -365,9 +410,15 @@ class _ProposalBlock extends StatelessWidget {
             const SizedBox(height: UriSpace.md),
             Row(
               children: [
-                ElevatedButton(onPressed: onApprove, child: const Text('Approve')),
+                ElevatedButton(
+                  onPressed: onApprove,
+                  child: const Text('Approve'),
+                ),
                 const SizedBox(width: UriSpace.sm),
-                OutlinedButton(onPressed: onCancel, child: const Text('Cancel')),
+                OutlinedButton(
+                  onPressed: onCancel,
+                  child: const Text('Cancel'),
+                ),
               ],
             ),
           ] else if (turn.stage == TurnStage.executing) ...[
@@ -377,10 +428,19 @@ class _ProposalBlock extends StatelessWidget {
                 SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: colors.accentInk),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colors.accentInk,
+                  ),
                 ),
                 const SizedBox(width: UriSpace.sm),
-                Text('Executing…', style: TextStyle(color: colors.accentInk, fontWeight: FontWeight.w600)),
+                Text(
+                  'Executing…',
+                  style: TextStyle(
+                    color: colors.accentInk,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ],
@@ -461,7 +521,9 @@ class _ResultBlock extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'Draft',
-                          style: theme.textTheme.labelLarge?.copyWith(color: colors.inkFaint),
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: colors.inkFaint,
+                          ),
                         ),
                       ),
                       IconButton(
@@ -476,7 +538,9 @@ class _ResultBlock extends StatelessWidget {
                   ),
                   SelectableText(
                     result.draftText!,
-                    style: theme.textTheme.bodyMedium?.copyWith(color: colors.ink),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colors.ink,
+                    ),
                   ),
                 ],
               ),

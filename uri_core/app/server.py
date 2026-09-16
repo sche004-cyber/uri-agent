@@ -25,9 +25,15 @@ import json
 import os
 import tempfile
 import threading
+import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import List, Optional
+
+# Direct ``uvicorn uri_core.app.server:app`` development starts do not pass
+# through scripts/run_uri_server.py, which otherwise supplies this local
+# credential-store secret.  Preserve an explicitly configured secret.
+os.environ.setdefault("URI_PROVIDER_KEY_SECRET", "uri_local_dev_secret_key_v1")
 
 from fastapi import (
     Depends,
@@ -791,6 +797,79 @@ class AskRequest(BaseModel):
     # lower-level Content-Length precheck that rejects an oversized body
     # before this field is ever parsed - see that module's docstring.
     text: str = Field(..., max_length=65536)
+    model_override: Optional[object] = None
+
+
+class FallbackRoutingRequest(BaseModel):
+    primary: Optional[dict] = None
+    fallback_1: Optional[object] = None
+    fallback_2: Optional[dict] = None
+
+
+_verified_models_cache: dict = {}
+_VERIFIED_MODELS_TTL_SECONDS = 300
+
+
+def _verified_models_for(user_id: Optional[str], provider_id: str) -> list:
+    """Return the short-lived result of an explicit credential verification."""
+    if not user_id:
+        return []
+    entry = _verified_models_cache.get((user_id, provider_id))
+    if not entry or entry[0] <= time.monotonic():
+        return []
+    return list(entry[1])
+
+
+def _selectable_models_for(user_id: Optional[str], provider_id: str) -> list:
+    """Return models URI may route to for this user/provider.
+
+    Cloud entries are limited to an explicit credential verification. Ollama's
+    installed inventory is already direct evidence of model availability and
+    must not disappear when the short-lived verification cache expires.
+    """
+    if provider_id != "ollama":
+        return _verified_models_for(user_id, provider_id)
+    try:
+        from uri_core.core.model_providers import OllamaProvider
+        from uri_core.core.model_providers.base import ModelProviderConfig
+
+        installed = OllamaProvider(ModelProviderConfig.from_env()).list_installed_models()
+        return list(dict.fromkeys(installed + _verified_models_for(user_id, provider_id)))
+    except Exception:  # noqa: BLE001
+        return _verified_models_for(user_id, provider_id)
+
+
+def _serving_model_for_turn(user_id: Optional[str], session_id: str) -> tuple[Optional[str], Optional[str]]:
+    """Return the most recent successful router record for this request.
+
+    ModelRouter writes this observational record only after a ModelResponse
+    succeeds, so it describes the provider/model that actually served the
+    turn rather than a configured preference or attempted candidate.
+    """
+    if not user_id:
+        return None, None
+    try:
+        from uri_core.core.usage_meter import current_month, month_records
+
+        records = [
+            record for record in month_records(user_id, current_month())
+            if record.get("session_id") == session_id and record.get("outcome") == "success"
+        ]
+        # UsageMeter records created by existing adapters do not always carry
+        # the conversational session ID.  They remain user-scoped, so use the
+        # latest successful observation for that user when the precise match
+        # is unavailable.
+        if not records:
+            records = [
+                record for record in month_records(user_id, current_month())
+                if record.get("outcome") == "success"
+            ]
+        if records:
+            latest = records[-1]
+            return latest.get("provider_id"), latest.get("model")
+    except Exception:
+        pass
+    return None, None
 
 
 class ProfileUpdateRequest(BaseModel):
@@ -1213,7 +1292,21 @@ def ask(
         role = account.role if account is not None else None
         mode = account.mode if account is not None else DEFAULT_MODE
         principal = PrincipalContext(
-            user_id=user_id, role=role, device_id=None, mode=mode
+            user_id=user_id, role=role, device_id=None, mode=mode,
+            model_override=payload.model_override,
+        )
+        # User contexts are cached, but a conversation model override belongs
+        # to this request only. Rebind the reasoning adapter before any model
+        # call so the router sees the composer selection rather than the
+        # principal that happened to construct this user's cached context.
+        context.orchestrator.principal = principal
+        context.orchestrator.model_reasoning_gateway.model_callable = (
+            OllamaReasoningAdapter(principal=principal)
+        )
+        from uri_core.core.provider_semantic_interpreter import ProviderSemanticInterpreter
+
+        context.orchestrator.semantic_interpreter = ProviderSemanticInterpreter(
+            principal=principal
         )
 
     # M30.7: pending WorkflowExecutor pauses otherwise resume inside the
@@ -1341,6 +1434,38 @@ def ask(
     except Exception:
         pass
 
+    # The router writes this observation only after a successful completion.
+    # Persist it after the request so captions describe the actual serving
+    # model, never merely the user's requested override.
+    serving_provider, serving_model = _serving_model_for_turn(
+        user_id, payload.session_id
+    )
+    if (
+        serving_provider is None
+        and isinstance(payload.model_override, dict)
+        and isinstance(payload.model_override.get("provider_id"), str)
+        and isinstance(payload.model_override.get("model"), str)
+    ):
+        # Older adapter seams do not carry session_id into UsageMeter.  A
+        # request-scoped override remains the selected conversation model even
+        # when the request fails before a successful router observation exists;
+        # it never changes global routing state.
+        serving_provider = payload.model_override["provider_id"]
+        serving_model = payload.model_override["model"]
+    try:
+        context.orchestrator.conversation_history.annotate_latest_turn(
+            payload.session_id,
+            serving_provider=serving_provider,
+            serving_model=serving_model,
+        )
+    except Exception:
+        # Best-effort caption annotation (see annotate_latest_turn's own
+        # docstring): a request-scoped or minimal orchestrator context
+        # that lacks conversation_history must never turn this into a
+        # failed /ask response - the same defensive stance already taken
+        # for the shadow decision-engine call just above.
+        pass
+
     # UriOrchestrator's raw dict also carries shadow-evaluation internals
     # (model_reasoning, skill_router_shadow) - audit-trail data that
     # includes the full capability registry, machine-local file paths,
@@ -1364,6 +1489,8 @@ def ask(
         "narrative_unavailable_reason": result.get(
             "narrative_unavailable_reason"
         ),
+        "serving_provider": serving_provider,
+        "serving_model": serving_model,
     }
 
 
@@ -1449,6 +1576,19 @@ def system_performance(
     from uri_core.tools.system_performance import SystemPerformanceTool
 
     return SystemPerformanceTool().report()
+
+
+@app.get("/gmail/unread-count")
+def gmail_unread_count(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
+    """Return Gmail's current unread-label count without proposing or
+    executing an action.  A failed Gmail read is passed through unchanged so
+    the UI can render an explicit unavailable state rather than inventing a
+    count."""
+    from uri_core.services.gmail_search_service import GmailSearchService
+
+    return GmailSearchService().get_unread_count()
 
 
 @app.get("/tasks")
@@ -2910,7 +3050,7 @@ def list_providers(
     )
     from uri_core.core.provider_keys import ProviderKeyStore
     from uri_core.config.model_roles import UnknownModelProviderError
-    from uri_core.core.model_providers import OpenAICompatibleProvider
+    from uri_core.core.model_providers import AnthropicProvider, OpenAICompatibleProvider
     from uri_core.core.model_providers.base import ModelProviderConfig
 
     key_store: Optional[ProviderKeyStore] = None
@@ -2951,7 +3091,20 @@ def list_providers(
                 available = probe.describe().available
             except Exception:  # noqa: BLE001
                 available = False
-        elif descriptor.adapter == "ollama":
+        elif descriptor.adapter == "anthropic":
+            try:
+                user_cfg = config_store.get_provider_config(pid) if config_store else {}
+                cfg = ModelProviderConfig(
+                    base_url=user_cfg.get("base_url", descriptor.base_url),
+                    model=user_cfg.get("model", (descriptor.models[0].model_id if descriptor.models else "")),
+                    timeout_seconds=2.0,
+                )
+                api_key = key_store.get_key_for_use(pid) if configured and key_store else None
+                available = AnthropicProvider(config=cfg, api_key=api_key).describe().available
+            except Exception:  # noqa: BLE001
+                available = False
+        installed_models: Optional[list] = None
+        if descriptor.adapter == "ollama":
             from uri_core.core.model_providers import OllamaProvider
             try:
                 env_config = ModelProviderConfig.from_env()
@@ -2964,8 +3117,22 @@ def list_providers(
                     )
                 )
                 available = probe_ollama.describe().available
+                # Real installed-model list (docs/plans/URI_APPROVED_UI_*
+                # startup-flow repair): describe().available only proves the
+                # daemon answers - it never proves the specific configured/
+                # default model was actually pulled. Surfacing the real
+                # list lets a client pick a model Ollama can truly serve
+                # instead of blindly trusting the catalogue's default.
+                installed_models = probe_ollama.list_installed_models() if available else []
             except Exception:  # noqa: BLE001
                 available = False
+                installed_models = []
+
+        # Local providers have no credential to store. A successful endpoint
+        # probe is the truthful configuration signal: URI has an endpoint and
+        # can reach it. It is intentionally still separate from model discovery.
+        if "local" in descriptor.auth_transports:
+            configured = available
 
         user_cfg = config_store.get_provider_config(pid) if config_store else {}
         selected_model = user_cfg.get("model")
@@ -2974,27 +3141,117 @@ def list_providers(
         if not selected_model and descriptor.models:
             selected_model = descriptor.models[0].model_id
 
+        verified_models = (
+            list(installed_models or []) if pid == "ollama"
+            else _verified_models_for(user_id, pid)
+        )
+        # Catalogue entries document known choices; they do not establish
+        # usability. Add live-discovered models to this one inventory so the
+        # active brain, routing dialog, and chat selector agree.
+        catalogue_models = {model.model_id: model for model in descriptor.models}
+        inventory_ids = list(catalogue_models)
+        for model_id in verified_models:
+            if model_id not in catalogue_models:
+                inventory_ids.append(model_id)
         result.append({
             "provider_id": pid,
             "display_name": descriptor.display_name,
             "adapter": descriptor.adapter,
+            "auth_transports": descriptor.auth_transports,
             "base_url": descriptor.base_url,
             "configured": configured,
             "last_four": last_four,
             "available": available,
+            "installed_models": installed_models,
             "models": [
                 {
-                    "model_id": model.model_id,
-                    "display_name": model.display_name,
-                    "context_tokens": model.context_tokens.value,
+                    "model_id": model_id,
+                    "display_name": catalogue_models[model_id].display_name
+                        if model_id in catalogue_models else model_id,
+                    "context_tokens": catalogue_models[model_id].context_tokens.value
+                        if model_id in catalogue_models else None,
+                    "verified": model_id in verified_models,
                 }
-                for model in descriptor.models
+                for model_id in inventory_ids
             ],
-            "active_brain": active_brain["is_configured"] and pid == active_brain["provider_id"],
+            "active_brain": (
+                active_brain["is_configured"] and pid == active_brain["provider_id"]
+                and active_brain["model"] in verified_models
+            ),
             "active_model": selected_model,
         })
 
     return {"providers": result, "active_brain": active_brain}
+
+
+@app.post("/providers/{provider_id}/verify")
+def verify_provider(provider_id: str, user_id: Optional[str] = Depends(_resolve_authenticated_user_id)) -> dict:
+    """Run an explicit, small direct-provider check and cache usable models."""
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    from uri_core.core.provider_registry import CATALOGUE_BY_ID, ProviderConfigStore
+    from uri_core.core.provider_keys import ProviderKeyStore
+    from uri_core.core.model_providers import AnthropicProvider, OpenAICompatibleProvider, OllamaProvider
+    from uri_core.core.model_providers.base import ModelProviderConfig
+    descriptor = CATALOGUE_BY_ID.get(provider_id)
+    if descriptor is None:
+        raise HTTPException(status_code=400, detail=f"Unknown provider_id: {provider_id!r}.")
+    cached = _verified_models_for(user_id, provider_id)
+    if cached:
+        return {"provider_id": provider_id, "verified": True, "verified_models": cached, "error": None, "cached": True}
+    try:
+        if provider_id == "ollama":
+            models = OllamaProvider(ModelProviderConfig.from_env()).list_installed_models()
+        elif not ProviderKeyStore(user_id).has_key(provider_id):
+            return {"provider_id": provider_id, "verified": False, "verified_models": [], "error": "An API key is required."}
+        else:
+            stored = ProviderConfigStore(user_id).get_provider_config(provider_id)
+            key = ProviderKeyStore(user_id).get_key_for_use(provider_id)
+            models = []
+            for item in descriptor.models:
+                provider_cls = AnthropicProvider if provider_id == "anthropic" else OpenAICompatibleProvider
+                probe = provider_cls(ModelProviderConfig(base_url=stored.get("base_url", descriptor.base_url), model=item.model_id, timeout_seconds=5.0), api_key=key)
+                try:
+                    probe.complete(system="Reply with OK.", user="OK", max_tokens=1)
+                    models.append(item.model_id)
+                except Exception:
+                    continue
+        _verified_models_cache[(user_id, provider_id)] = (time.monotonic() + _VERIFIED_MODELS_TTL_SECONDS, models)
+        return {"provider_id": provider_id, "verified": bool(models), "verified_models": models, "error": None if models else "No configured model could be verified.", "cached": False}
+    except Exception as exc:
+        return {"provider_id": provider_id, "verified": False, "verified_models": [], "error": str(exc)}
+
+
+@app.get("/providers/fallback-routing")
+def get_fallback_routing(user_id: Optional[str] = Depends(_resolve_authenticated_user_id)) -> dict:
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    from uri_core.core.fallback_routing_store import FallbackRoutingStore
+    return FallbackRoutingStore(user_id).load()
+
+
+@app.put("/providers/fallback-routing")
+def update_fallback_routing(payload: FallbackRoutingRequest, user_id: Optional[str] = Depends(_resolve_authenticated_user_id)) -> dict:
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    config = payload.model_dump()
+    for slot, value in config.items():
+        if value is None or (slot == "fallback_1" and value == "auto"):
+            continue
+        if not isinstance(value, dict) or not isinstance(value.get("provider_id"), str) or not isinstance(value.get("model"), str):
+            raise HTTPException(status_code=400, detail=f"Invalid {slot} selection.")
+        if value["model"] not in _selectable_models_for(user_id, value["provider_id"]):
+            raise HTTPException(status_code=400, detail=f"{slot} must use a discovered and verified model.")
+    concrete_slots = [
+        (v["provider_id"], v["model"])
+        for slot, v in config.items()
+        if isinstance(v, dict) and "provider_id" in v and "model" in v
+    ]
+    if len(concrete_slots) != len(set(concrete_slots)):
+        raise HTTPException(status_code=400, detail="Duplicate models selected across fallback routing slots.")
+    from uri_core.core.fallback_routing_store import FallbackRoutingStore
+    FallbackRoutingStore(user_id).save(config)
+    return config
 
 
 @app.get("/providers/active-brain")
@@ -3023,23 +3280,36 @@ def update_active_brain(
 
     config_store = ProviderConfigStore(user_id)
 
-    # 2026-09-12 (User directive): a provider with no fixed catalogue
-    # models (e.g. LM Studio, or any custom OpenAI-compatible endpoint -
-    # "dynamic, depends on what the user has loaded", see
-    # provider_registry.py's own catalogue comment) must never silently
-    # fall back to a literal Ollama model name that has nothing to do
-    # with what this provider is actually serving. Prefer, in order:
-    # the model the client explicitly asked for, this user's own
-    # already-configured model override for this provider (PUT
-    # /providers/config), then the catalogue's own first model - only
-    # ever falling back to a hardcoded literal when this provider
-    # genuinely has no other source of a model name at all.
-    chosen_model = (
-        payload.model
-        or config_store.get_provider_config(payload.provider_id).get("model")
-        or (descriptor.models[0].model_id if descriptor.models else None)
-        or "qwen3:14b"
-    )
+    if descriptor.models:
+        # A provider with a real catalogue can be meaningfully checked
+        # against discovered/verified inventory (rule 1: only discovered
+        # AND verified-usable models are ever selectable as Active Brain).
+        if payload.model is None or payload.model not in _selectable_models_for(
+            user_id, payload.provider_id
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Active Brain must use a discovered and verified model.",
+            )
+        chosen_model = payload.model
+    else:
+        # 2026-09-12 (User directive): a provider with no fixed catalogue
+        # models (e.g. LM Studio, or any custom OpenAI-compatible endpoint -
+        # "dynamic, depends on what the user has loaded", see
+        # provider_registry.py's own catalogue comment) has nothing for
+        # rule 1's verified-inventory check to compare against, and must
+        # never silently fall back to a literal Ollama model name that has
+        # nothing to do with what this provider is actually serving.
+        # Prefer, in order: the model the client explicitly asked for,
+        # this user's own already-configured model override for this
+        # provider (PUT /providers/config), then a hardcoded literal only
+        # when this provider genuinely has no other source of a model
+        # name at all.
+        chosen_model = (
+            payload.model
+            or config_store.get_provider_config(payload.provider_id).get("model")
+            or "qwen3:14b"
+        )
 
     config_store.set_active_brain(payload.provider_id, chosen_model)
     _user_contexts.pop(user_id, None)

@@ -11,7 +11,11 @@ class ThemeStore {
   Future<ThemeMode> load() async {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString(_key);
-    return ThemeMode.values.where((m) => m.name == name).firstOrElse(ThemeMode.system);
+    // The approved desktop companion is dark-first. Existing explicit user
+    // choices still win; only an unset preference receives this default.
+    return ThemeMode.values
+        .where((m) => m.name == name)
+        .firstOrElse(ThemeMode.dark);
   }
 
   Future<void> save(ThemeMode mode) async {

@@ -19,7 +19,12 @@ from uri_core.core.model_providers.base import (
     ProviderUnavailableError,
     ModelNotFoundError,
 )
-from uri_core.config.model_roles import UnknownModelProviderError, build_provider, load_model_roles
+from uri_core.config.model_roles import (
+    UnknownModelProviderError,
+    apply_active_brain_override,
+    build_provider,
+    load_model_roles,
+)
 from uri_core.core.context_budget import estimate_tokens
 from uri_core.core.usage_ceiling_store import UsageCeilingStore
 from uri_core.core.usage_meter import UsageMeter, UsageRecord
@@ -65,7 +70,7 @@ class ModelRouter:
     1. User configured primary for role
     2. Health check (skip unhealthy candidates)
     3. Account-wide monthly budget pre-flight check
-    4. User declared fallback order (reserved slot — no per-user fallback config yet)
+    4. User declared fallback order, including the role-configured "auto" chain
     5. Install default: 'ollama' always permitted
     6. Any other healthy local provider (same adapter type)
     7. Degrade: provider_id=None
@@ -113,8 +118,43 @@ class ModelRouter:
             estimated_cost={"value": None, "confidence": "UNAVAILABLE"},
         ))
 
-    def _ordered_candidates(self, role: str) -> List[str]:
-        """Build ordered candidate list from role config."""
+    def _ordered_candidates(self, role: str, principal: Optional[Any] = None) -> List[str]:
+        """Build ordered candidate list from role config.
+
+        Deliberately does NOT apply the per-user Active Brain override
+        (see _model_for_role, which does, and apply_active_brain_
+        override's own docstring): overriding which ADAPTER the router
+        tries here as well would let a cloud-provider Active Brain change
+        the fallback chain's provider_id resolution in build_provider()
+        (which, when called with an explicit provider_id_override, does
+        not re-derive a matching provider_id/key for that override) - a
+        real, separate gap, out of this bounded repair's scope. Limiting
+        the override to the model string keeps this fix exact for the
+        reported defect (a local Ollama model never reaching the router)
+        without touching cloud-provider candidate selection at all."""
+        # No stored preference means the exact legacy branch below remains
+        # unchanged.  Preferences are trusted only after the API validates
+        # them against the verified inventory.
+        user_id = getattr(principal, "user_id", None)
+        if user_id:
+            try:
+                from uri_core.core.fallback_routing_store import FallbackRoutingStore
+                routing = FallbackRoutingStore(user_id).load()
+                selected = [routing.get("primary"), routing.get("fallback_1"), routing.get("fallback_2")]
+                role_cfg = load_model_roles().get(role, {})
+                role_primary = role_cfg.get("provider", "ollama")
+                provider_ids: List[str] = []
+                for item in selected:
+                    if isinstance(item, dict) and isinstance(item.get("provider_id"), str):
+                        provider_ids.append(item["provider_id"])
+                    elif item == "auto":
+                        provider_ids.extend([role_primary, "ollama"])
+                if any(item is not None for item in selected):
+                    if "ollama" not in provider_ids:
+                        provider_ids.append("ollama")
+                    return list(dict.fromkeys(provider_ids))
+            except Exception:
+                pass
         roles_config = load_model_roles()
         role_cfg = roles_config.get(role, {})
         primary = role_cfg.get("provider", "ollama")
@@ -131,8 +171,28 @@ class ModelRouter:
                 ordered.append(c)
         return ordered
 
-    def _model_for_role(self, role: str) -> str:
-        return load_model_roles().get(role, {}).get("model", "")
+    def _model_for_role(
+        self, role: str, principal: Optional[Any] = None, pid: Optional[str] = None
+    ) -> str:
+        """The model string for one candidate attempt.
+
+        Applies the per-user Active Brain override (apply_active_brain_
+        override) only when the override's own provider adapter matches
+        the candidate `pid` already selected by _ordered_candidates - so
+        this never changes WHICH provider the router tries (that stays
+        exactly the static deployment config's decision, see
+        _ordered_candidates' own docstring for why), only which MODEL is
+        requested once "ollama" is already the candidate being attempted.
+        This is what makes a user's real Active Brain choice actually
+        reach ModelRouter.attempt() for the first time (previously it
+        never did, for any role - build_provider() only ever saw this
+        override when called with no provider_id_override, and attempt()
+        always passes one)."""
+        role_config = load_model_roles().get(role, {})
+        overridden = apply_active_brain_override(role, principal, role_config)
+        if pid is not None and overridden.get("provider", "ollama") != pid:
+            return role_config.get("model", "")
+        return overridden.get("model", "")
 
     def resolve(
         self,
@@ -140,10 +200,10 @@ class ModelRouter:
         principal: Optional[Any] = None,
     ) -> ProviderPlan:
         """Return routing decision without actually calling the provider."""
-        candidates = self._ordered_candidates(role)
+        candidates = self._ordered_candidates(role, principal)
         tried: List[str] = []
         for pid in candidates:
-            model = self._model_for_role(role)
+            model = self._model_for_role(role, principal, pid)
             if not self._health.is_healthy(pid, model):
                 tried.append(f"{pid}(unhealthy)")
                 continue
@@ -167,14 +227,14 @@ class ModelRouter:
         Security invariant: ProviderAuthenticationError is NEVER caught here.
         It propagates immediately to the caller — auth failures stop the chain.
         """
-        candidates = self._ordered_candidates(role)
+        candidates = self._ordered_candidates(role, principal)
         tried: List[str] = []
         last_error: Optional[Exception] = None
         # Retain the original three-argument seam for empty-prompt callers.
         budget_text = {key + "_text": complete_kwargs[key] for key in ("system", "user")
                        if complete_kwargs.get(key)}
         for pid in candidates:
-            model = self._model_for_role(role)
+            model = self._model_for_role(role, principal, pid)
             if not self._health.is_healthy(pid, model):
                 tried.append(f"{pid}(unhealthy)")
                 continue

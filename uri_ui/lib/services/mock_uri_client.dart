@@ -1,6 +1,7 @@
 import '../models/activity_event.dart';
 import '../models/connection.dart';
 import '../models/memory_entry.dart';
+import '../models/system_performance.dart';
 import '../models/task_item.dart';
 import '../models/uri_turn.dart';
 import 'uri_client.dart';
@@ -266,7 +267,11 @@ class MockUriClient implements UriClient {
   // ---------------------------------------------------------------
 
   @override
-  Future<UriTurn> ask(String text, {String? turnId}) async {
+  Future<UriTurn> ask(
+    String text, {
+    String? turnId,
+    Object? modelOverride,
+  }) async {
     await _latency();
     final id = turnId ?? _nextId('turn');
     final analysis = _analyze(text);
@@ -397,6 +402,31 @@ class MockUriClient implements UriClient {
   Future<List<ActivityEvent>> listActivity() async {
     await _latency();
     return List.unmodifiable(_activity);
+  }
+
+  @override
+  Future<SystemPerformanceSnapshot?> loadSystemPerformance() async {
+    await _latency();
+    return const SystemPerformanceSnapshot(
+      cpuPercent: 18,
+      logicalCores: 8,
+      physicalCores: 4,
+      memoryUsedPercent: 42,
+      memoryTotalBytes: 17179869184,
+      memoryAvailableBytes: 9965892813,
+      diskUsedPercent: 38,
+      diskFreeBytes: 300647710720,
+      diskTotalBytes: 512110190592,
+      swapAvailable: true,
+      swapUsedPercent: 5,
+    );
+  }
+
+  @override
+  Future<int?> loadUnreadEmailCount() async {
+    await _latency();
+    // The mock has no mailbox.  Keep the dashboard's unavailable state honest.
+    return null;
   }
 
   // ---------------------------------------------------------------
@@ -1104,6 +1134,37 @@ class MockUriClient implements UriClient {
     return true;
   }
 
+  final Map<String, dynamic> _fallbackRouting = {
+    'primary': null,
+    'fallback_1': 'auto',
+    'fallback_2': null,
+  };
+  @override
+  Future<ProviderVerificationResult?> verifyProvider(String providerId) async {
+    final provider = (await listProviders())
+        .where((item) => item.providerId == providerId)
+        .firstOrNull;
+    if (provider == null) return null;
+    return ProviderVerificationResult(
+      providerId: providerId,
+      verified: provider.configured || provider.available,
+      models: (provider.configured || provider.available)
+          ? provider.models.map((item) => item.modelId).toList()
+          : const [],
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getFallbackRouting() async =>
+      Map<String, dynamic>.from(_fallbackRouting);
+  @override
+  Future<bool> updateFallbackRouting(Map<String, dynamic> config) async {
+    _fallbackRouting
+      ..clear()
+      ..addAll(config);
+    return true;
+  }
+
   @override
   Future<ActiveBrainInfo?> getActiveBrain() async {
     await _latency();
@@ -1135,12 +1196,11 @@ class MockUriClient implements UriClient {
     String? clientSecret,
   }) async {
     await _latency();
-    final ok = (rawJson?.trim().isNotEmpty ?? false) ||
+    final ok =
+        (rawJson?.trim().isNotEmpty ?? false) ||
         ((clientId?.trim().isNotEmpty ?? false) &&
             (clientSecret?.trim().isNotEmpty ?? false));
-    return ok
-        ? null
-        : 'Provide raw_json or both client_id and client_secret.';
+    return ok ? null : 'Provide raw_json or both client_id and client_secret.';
   }
 }
 

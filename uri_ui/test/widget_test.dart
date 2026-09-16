@@ -41,7 +41,7 @@ void main() {
       find.text('What kind of work do you want help with?'),
       findsOneWidget,
     );
-    expect(find.text('Good to see you.'), findsNothing);
+    expect(find.text('Good evening,'), findsNothing);
   });
 
   testWidgets('completing onboarding arrives at Home with shell navigation', (
@@ -63,16 +63,18 @@ void main() {
     // Step 3: approval level (default already selected) -> Get started.
     await tester.tap(find.text('Get started'));
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
 
     expect(appState.preferences.completedOnboarding, isTrue);
-    expect(find.text('Good to see you.'), findsOneWidget);
+    expect(find.text('Good evening,'), findsOneWidget);
 
     // The persistent navigation shell is present. There is no separate
     // "Ask URI" destination — Home itself is the one canonical
     // conversation screen (see HomeScreen/AskUriScreen).
     expect(find.text('Home'), findsWidgets);
-    expect(find.text('Connections'), findsWidgets);
-    expect(find.text('Activity'), findsWidgets);
+    expect(find.text('Email'), findsWidgets);
+    expect(find.text('Insights'), findsWidgets);
     expect(find.text('Settings'), findsWidgets);
   });
 }

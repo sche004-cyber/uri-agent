@@ -25,6 +25,10 @@ class ProviderUnavailableError(ProviderError):
     """The provider's backend could not be reached (e.g. not running)."""
 
 
+class ProviderRateLimitError(ProviderUnavailableError):
+    """The provider temporarily rejected a request because of rate limiting."""
+
+
 class ProviderTimeoutError(ProviderError):
     """The provider's backend did not respond in time."""
 

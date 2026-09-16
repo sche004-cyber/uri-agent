@@ -117,8 +117,8 @@ void main() {
     final client = _M18Client();
     final appState = await _pump(tester, client);
 
-    // M19: History is a top-level destination (was nested in Settings).
-    await tester.tap(find.text('History'));
+    // Files is the approved sidebar's surviving History entry point.
+    await tester.tap(find.text('Files'));
     await tester.pumpAndSettle();
 
     expect(find.text('draft a note about the seminar'), findsWidgets);

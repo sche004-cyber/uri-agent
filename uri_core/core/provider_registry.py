@@ -82,6 +82,10 @@ class ProviderDescriptor:
     adapter: str              # "ollama" | "openai_compatible"
     base_url: str             # canonical default; user-overridable
     models: List[ModelDescriptor] = field(default_factory=list)
+    # Declares supported, direct connection mechanisms.  This is metadata,
+    # not an authorization grant; subscription_oauth intentionally has no
+    # runtime implementation until a vendor offers a supported direct flow.
+    auth_transports: List[str] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -107,6 +111,7 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
                 context_tokens=ConfidenceValue(value=None, confidence=UNAVAILABLE),
             ),
         ],
+        auth_transports=["local"],
     ),
     ProviderDescriptor(
         provider_id="openai",
@@ -127,6 +132,7 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
                 pricing_per_1k_tokens=ConfidenceValue(value=0.00015, confidence=KNOWN),
             ),
         ],
+        auth_transports=["api_key", "subscription_oauth"],
     ),
     ProviderDescriptor(
         provider_id="openrouter",
@@ -141,6 +147,7 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
                 pricing_per_1k_tokens=ConfidenceValue(value=None, confidence=UNAVAILABLE),
             ),
         ],
+        auth_transports=["api_key"],
     ),
     ProviderDescriptor(
         provider_id="groq",
@@ -155,6 +162,7 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
                 pricing_per_1k_tokens=ConfidenceValue(value=0.00059, confidence=KNOWN),
             ),
         ],
+        auth_transports=["api_key"],
     ),
     ProviderDescriptor(
         provider_id="lm_studio",
@@ -162,6 +170,19 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
         adapter="openai_compatible",
         base_url="http://localhost:1234/v1",
         models=[],  # dynamic - depends on what the user has loaded
+        auth_transports=["local"],
+    ),
+    ProviderDescriptor(
+        provider_id="anthropic", display_name="Anthropic", adapter="anthropic",
+        base_url="https://api.anthropic.com",
+        models=[ModelDescriptor("claude-3-5-sonnet", "Claude 3.5 Sonnet", ConfidenceValue(None, UNAVAILABLE))],
+        auth_transports=["api_key", "subscription_oauth"],
+    ),
+    ProviderDescriptor(
+        provider_id="gemini", display_name="Gemini", adapter="openai_compatible",
+        base_url="https://generativelanguage.googleapis.com/v1beta/openai",
+        models=[ModelDescriptor("gemini-2.0-flash", "Gemini 2.0 Flash", ConfidenceValue(None, UNAVAILABLE))],
+        auth_transports=["api_key", "subscription_oauth"],
     ),
 ]
 
