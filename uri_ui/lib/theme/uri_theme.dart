@@ -55,58 +55,101 @@ class UriColors extends ThemeExtension<UriColors> {
   final Color danger;
   final Color dangerSoft;
 
-  static const light = UriColors(
-    ink: Color(0xFF15151B),
-    inkSoft: Color(0xFF52525E),
-    inkFaint: Color(0xFF8C8C99),
-    canvas: Color(0xFFFAF9F6),
-    surface: Color(0xFFFFFFFF),
-    surfaceSunken: Color(0xFFF1F0EC),
-    border: Color(0xFFE7E5DF),
-    accent: Color(0xFF4A3AFF),
-    accentSoft: Color(0xFFEDEBFF),
-    accentInk: Color(0xFF2A1FB8),
-    success: Color(0xFF1C8A5A),
-    successSoft: Color(0xFFE3F5EC),
-    warning: Color(0xFFB6740A),
-    warningSoft: Color(0xFFFBF0DD),
-    danger: Color(0xFFC23B3B),
-    dangerSoft: Color(0xFFFBE9E9),
-  );
-
-  /// 2026-09-12: the User-accepted "premium dashboard" dark palette
-  /// (docs/plans/M26_DASHBOARD_DESIGN_SPECIFICATION.md /
-  /// docs/design_references/dashboard_preview.html) — a near-black
-  /// canvas with a turquoise accent, replacing the previous violet-blue
-  /// dark palette. Light mode is unchanged; the accepted direction is
-  /// this app's dark theme.
-  static const dark = UriColors(
-    ink: Color(0xFFEAF6F4),
-    inkSoft: Color(0xFFA9C2BE),
-    inkFaint: Color(0xFF6E8A86),
-    canvas: Color(0xFF020910),
-    surface: Color(0xFF050D12),
-    surfaceSunken: Color(0xFF0B171E),
-    border: Color(0xFF16262C),
-    accent: Color(0xFF2DD4BF),
-    accentSoft: Color(0xFF0F2B29),
-    accentInk: Color(0xFF6EE7B7),
-    success: Color(0xFF10B981),
-    successSoft: Color(0xFF102420),
-    warning: Color(0xFFE3A93F),
-    warningSoft: Color(0xFF3A2E12),
+  /// Hybrid UI Frozen Blueprint §4.1/§5 — one of the 4 real themes,
+  /// values transcribed from `Palettes.dc.html` (canvas/surface/elevated
+  /// swatches + accent, per-theme success/warning pill tones and border).
+  /// `inkSoft`/`inkFaint`/`accentSoft`/`accentInk`/`danger`/`dangerSoft`
+  /// are not given by that reference (a 4-swatch demo, not a full
+  /// per-theme token sheet) — these are derived here (ink/canvas blends
+  /// for the ink tiers, surface/accent blends for accentSoft, an
+  /// accent-lightened/darkened blend for accentInk) or reused from this
+  /// app's previously-accepted dark/light danger colors, since no
+  /// per-theme error tone exists in the reference either. Disclosed as a
+  /// judgment call, not literal artifact data, in the Batch 3 report.
+  static const graphite = UriColors(
+    ink: Color(0xFFEEF0F1),
+    inkSoft: Color(0xFFAAACAD),
+    inkFaint: Color(0xFF727375),
+    canvas: Color(0xFF0C0D0F),
+    surface: Color(0xFF17181B),
+    surfaceSunken: Color(0xFF1F2124),
+    border: Color(0xFF2A2C30),
+    accent: Color(0xFFC8A25A),
+    accentSoft: Color(0xFF373126),
+    accentInk: Color(0xFFDBC394),
+    success: Color(0xFF5FD6A0),
+    successSoft: Color(0xFF123524),
+    warning: Color(0xFFE3AB4F),
+    warningSoft: Color(0xFF3A2C12),
     danger: Color(0xFFFF8080),
     dangerSoft: Color(0xFF3B1E1E),
   );
 
+  static const deepNavy = UriColors(
+    ink: Color(0xFFE8EDF5),
+    inkSoft: Color(0xFFA5AAB3),
+    inkFaint: Color(0xFF6E737D),
+    canvas: Color(0xFF0A0F1A),
+    surface: Color(0xFF101828),
+    surfaceSunken: Color(0xFF182234),
+    border: Color(0xFF243349),
+    accent: Color(0xFF5B8FC7),
+    accentSoft: Color(0xFF1E2D45),
+    accentInk: Color(0xFF94B6DB),
+    success: Color(0xFF5CC7AB),
+    successSoft: Color(0xFF0F2E28),
+    warning: Color(0xFFDBA24D),
+    warningSoft: Color(0xFF332711),
+    danger: Color(0xFFFF8080),
+    dangerSoft: Color(0xFF3B1E1E),
+  );
+
+  static const slateTeal = UriColors(
+    ink: Color(0xFFE8EBED),
+    inkSoft: Color(0xFFA8ABAD),
+    inkFaint: Color(0xFF737678),
+    canvas: Color(0xFF131619),
+    surface: Color(0xFF1A1E22),
+    surfaceSunken: Color(0xFF20252A),
+    border: Color(0xFF2C3238),
+    accent: Color(0xFF4A9C92),
+    accentSoft: Color(0xFF233536),
+    accentInk: Color(0xFF89BFB8),
+    success: Color(0xFF5ECDB2),
+    successSoft: Color(0xFF123A30),
+    warning: Color(0xFFD9A552),
+    warningSoft: Color(0xFF332A13),
+    danger: Color(0xFFFF8080),
+    dangerSoft: Color(0xFF3B1E1E),
+  );
+
+  static const lightProfessional = UriColors(
+    ink: Color(0xFF1C2024),
+    inkSoft: Color(0xFF5D6064),
+    inkFaint: Color(0xFF949699),
+    canvas: Color(0xFFF6F7F8),
+    surface: Color(0xFFFFFFFF),
+    surfaceSunken: Color(0xFFEEF0F2),
+    border: Color(0xFFDDE1E5),
+    accent: Color(0xFF3B5A78),
+    accentSoft: Color(0xFFE7EBEF),
+    accentInk: Color(0xFF324C66),
+    success: Color(0xFF1C7A4C),
+    successSoft: Color(0xFFE2F3EA),
+    warning: Color(0xFF93650F),
+    warningSoft: Color(0xFFFBF0DC),
+    danger: Color(0xFFC23B3B),
+    dangerSoft: Color(0xFFFBE9E9),
+  );
+
   /// The active palette for [context], resolved through the current
   /// theme exactly like `Theme.of(context).textTheme` — never a bare
-  /// static field, so it always tracks light/dark/system correctly.
-  /// Falls back to [light] only when no [MaterialApp] has installed
-  /// the extension yet (e.g. a widget test that builds a bare widget
-  /// outside a themed app), never as a "usual" path.
+  /// static field, so it always tracks the selected theme correctly.
+  /// Falls back to [lightProfessional] only when no [MaterialApp] has
+  /// installed the extension yet (e.g. a widget test that builds a bare
+  /// widget outside a themed app), never as a "usual" path.
   static UriColors of(BuildContext context) {
-    return Theme.of(context).extension<UriColors>() ?? light;
+    return Theme.of(context).extension<UriColors>() ?? lightProfessional;
   }
 
   @override
@@ -242,16 +285,61 @@ class UriBreakpoints {
       MediaQuery.sizeOf(context).width >= wide;
 }
 
-ThemeData buildUriTheme(Brightness brightness) {
-  final palette = brightness == Brightness.dark
-      ? UriColors.dark
-      : UriColors.light;
+/// Hybrid UI Frozen Blueprint §4.1/§4.7 — the 4 real Appearance choices,
+/// plus `system` (follows the OS light/dark signal by resolving to
+/// [UriColors.graphite] or [UriColors.lightProfessional] — the same pair
+/// this app's old binary dark/light default mapped to — until the user
+/// makes an explicit 4-theme choice; see [ThemeStore]).
+enum UriThemeChoice { system, graphite, deepNavy, slateTeal, lightProfessional }
+
+extension UriThemeChoiceLabel on UriThemeChoice {
+  String get label => switch (this) {
+    UriThemeChoice.system => 'System',
+    UriThemeChoice.graphite => 'Graphite',
+    UriThemeChoice.deepNavy => 'Deep Navy',
+    UriThemeChoice.slateTeal => 'Slate + Teal',
+    UriThemeChoice.lightProfessional => 'Light Professional',
+  };
+
+  /// The circular swatch color shown for this choice in the topbar and
+  /// the Appearance picker — the same accent hex named in Blueprint
+  /// §4.1 for the 4 real themes; `system` has no swatch of its own.
+  Color? get swatch => switch (this) {
+    UriThemeChoice.system => null,
+    UriThemeChoice.graphite => UriColors.graphite.accent,
+    UriThemeChoice.deepNavy => UriColors.deepNavy.accent,
+    UriThemeChoice.slateTeal => UriColors.slateTeal.accent,
+    UriThemeChoice.lightProfessional => UriColors.lightProfessional.accent,
+  };
+}
+
+/// Resolves a [UriThemeChoice] to the actual palette to render.
+/// [platformBrightness] only matters for [UriThemeChoice.system].
+UriColors resolveUriColors(UriThemeChoice choice, Brightness platformBrightness) {
+  switch (choice) {
+    case UriThemeChoice.system:
+      return platformBrightness == Brightness.dark
+          ? UriColors.graphite
+          : UriColors.lightProfessional;
+    case UriThemeChoice.graphite:
+      return UriColors.graphite;
+    case UriThemeChoice.deepNavy:
+      return UriColors.deepNavy;
+    case UriThemeChoice.slateTeal:
+      return UriColors.slateTeal;
+    case UriThemeChoice.lightProfessional:
+      return UriColors.lightProfessional;
+  }
+}
+
+ThemeData buildUriTheme(UriColors palette) {
+  final brightness = ThemeData.estimateBrightnessForColor(palette.canvas);
 
   final base = ThemeData(
     useMaterial3: true,
     brightness: brightness,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: UriColors.light.accent,
+      seedColor: palette.accent,
       brightness: brightness,
       surface: palette.surface,
     ),

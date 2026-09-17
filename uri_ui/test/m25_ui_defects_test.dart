@@ -47,7 +47,7 @@ void main() {
   ) async {
     final client = _ProviderSpy();
     await tester.pumpWidget(
-      _scoped(AppState(client), const BrainOnboardingScreen()),
+      _scoped(AppState(client), BrainOnboardingScreen(onSkip: () {})),
     );
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
@@ -64,7 +64,15 @@ void main() {
     expect(client.activeProvider, 'openai');
   });
 
-  testWidgets('brain status pill shows active reachable brain', (tester) async {
+  // Hybrid Blueprint §4.1's topbar is breadcrumb + theme swatches +
+  // Compact toggle only — no brain status pill. That surface moved to
+  // Home's "BRAIN / PROVIDER" tile (§4.2, built in Batch 1 and covered
+  // by dashboard_shell_test.dart's tile assertions). This case now
+  // proves the retirement is real rather than accidental: the old
+  // pill text must not reappear in the shell chrome.
+  testWidgets('topbar no longer shows a brain status pill (moved to Home tile)', (
+    tester,
+  ) async {
     final state = AppState(MockUriClient());
     state.activeBrain = const ActiveBrainInfo(
       providerId: 'ollama',
@@ -100,7 +108,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('Brain: ollama (qwen3:14b)'), findsOneWidget);
+    expect(find.text('Brain: ollama (qwen3:14b)'), findsNothing);
   });
 
   testWidgets(

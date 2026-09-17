@@ -10,11 +10,10 @@ library;
 
 import 'package:flutter/material.dart';
 
-import 'screens/activity/activity_screen.dart';
+import 'screens/ask/ask_uri_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/bootstrap/bootstrap_screen.dart';
-import 'screens/connections/connections_screen.dart';
-import 'screens/history/history_screen.dart';
+import 'screens/connections/connections_providers_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/onboarding/brain_onboarding_screen.dart';
@@ -26,6 +25,12 @@ import 'services/attachment_opener_service.dart';
 import 'services/file_picker_service.dart';
 import 'theme/uri_theme.dart';
 import 'widgets/app_shell.dart';
+import 'widgets/compact_overlay.dart';
+
+/// Real native-window resize hook for a Compact/Workspace transition.
+/// Defined here (not in a plugin file) so this plugin-free file can
+/// still declare the parameter type it threads down to [UriHome].
+typedef CompactWindowModeFn = Future<void> Function(bool isCompact);
 
 /// Root widget. Decides between the first-run onboarding flow and the
 /// main application shell based on [AppState.preferences]. Everything
@@ -36,6 +41,7 @@ class UriApp extends StatefulWidget {
     required this.appState,
     this.filePicker,
     this.attachmentOpener,
+    this.onCompactModeChanged,
   });
 
   final AppState appState;
@@ -49,6 +55,13 @@ class UriApp extends StatefulWidget {
   /// Supplied by main.dart in the real app; null in tests, where
   /// tapping one just reports that this build can't open it.
   final AttachmentOpenerFn? attachmentOpener;
+
+  /// Compact mode's real native-window resize hook (see
+  /// services/platform_window_controller.dart). Supplied by main.dart
+  /// in the real app; null in tests and on platforms without a native
+  /// implementation, where Compact still switches correctly as a pure
+  /// state/UI change, just without the OS window itself resizing.
+  final CompactWindowModeFn? onCompactModeChanged;
 
   @override
   State<UriApp> createState() => _UriAppState();
@@ -78,6 +91,17 @@ class _UriAppState extends State<UriApp> with WidgetsBindingObserver {
     }
   }
 
+  /// Hybrid UI Frozen Blueprint §4.7 "system" Appearance choice: the OS
+  /// brightness signal can change without this app being backgrounded
+  /// (e.g. a scheduled OS dark-mode switch) — this is the one place
+  /// that needs to notice and re-resolve the active palette.
+  @override
+  void didChangePlatformBrightness() {
+    if (widget.appState.themeChoice == UriThemeChoice.system) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = widget.appState;
@@ -86,21 +110,29 @@ class _UriAppState extends State<UriApp> with WidgetsBindingObserver {
       child: ListenableBuilder(
         listenable: appState,
         builder: (context, _) {
+          final platformBrightness =
+              WidgetsBinding.instance.platformDispatcher.platformBrightness;
+          final activeColors = resolveUriColors(
+            appState.themeChoice,
+            platformBrightness,
+          );
           return MaterialApp(
             title: 'URI',
             debugShowCheckedModeBanner: false,
-            theme: buildUriTheme(Brightness.light),
-            darkTheme: buildUriTheme(Brightness.dark),
-            // Appearance → Light/Dark/System (Settings). Persisted via
-            // AppState.setThemeMode/ThemeStore; MaterialApp itself is
-            // what actually applies "system" by comparing against the
-            // platform brightness, so this is the one place that needs
-            // to know the user's choice at all.
-            themeMode: appState.themeMode,
+            // Appearance → one of the 4 real Hybrid themes, or `system`
+            // (Settings → Appearance). Persisted via
+            // AppState.setThemeChoice/ThemeStore. The active palette is
+            // resolved above (accounting for `system`) and forced via
+            // `theme` alone — MaterialApp's own light/dark switching
+            // isn't used, since these are 4 distinct named palettes, not
+            // a light/dark pair.
+            theme: buildUriTheme(activeColors),
+            themeMode: ThemeMode.light,
             home: _RootGate(
               appState: appState,
               filePicker: widget.filePicker,
               attachmentOpener: widget.attachmentOpener,
+              onCompactModeChanged: widget.onCompactModeChanged,
             ),
           );
         },
@@ -114,11 +146,13 @@ class _RootGate extends StatefulWidget {
     required this.appState,
     required this.filePicker,
     required this.attachmentOpener,
+    required this.onCompactModeChanged,
   });
 
   final AppState appState;
   final FilePickerFn? filePicker;
   final AttachmentOpenerFn? attachmentOpener;
+  final CompactWindowModeFn? onCompactModeChanged;
 
   @override
   State<_RootGate> createState() => _RootGateState();
@@ -160,79 +194,155 @@ class _RootGateState extends State<_RootGate> {
       );
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (appState.needsBrainSetup) return const BrainOnboardingScreen();
+    // Optional, not a hard gate: offered once per login while no Brain is
+    // configured, but "Skip for now" (brainSetupDismissed) takes the user
+    // into URI normally for the rest of this session rather than being
+    // re-shown on every subsequent rebuild - see AppState.dismissBrainSetup.
+    if (appState.needsBrainSetup && !appState.brainSetupDismissed) {
+      return BrainOnboardingScreen(onSkip: appState.dismissBrainSetup);
+    }
     return UriHome(
       filePicker: widget.filePicker,
       attachmentOpener: widget.attachmentOpener,
+      onCompactModeChanged: widget.onCompactModeChanged,
     );
   }
 }
 
-/// The main, post-onboarding application: Home (dashboard + the one
-/// canonical Ask URI conversation), Tasks, Connections, Activity, and
-/// Settings behind one persistent navigation shell. There is no
-/// separate "Ask URI" destination - Home's own composer and turn
-/// history ARE the conversation, so it is never duplicated anywhere
-/// else in the shell (see HomeScreen).
-class UriHome extends StatelessWidget {
-  const UriHome({super.key, this.filePicker, this.attachmentOpener});
+/// The main, post-onboarding application: 5 primary destinations
+/// (Home, Chat, Tasks, Connections & Providers, Settings) behind one
+/// persistent navigation shell, plus the Compact overlay (§4.4) — a
+/// presentation switch over the same shell, never a separate route.
+///
+/// Compact-window correction (post Live UX Repair): the Live UX Repair
+/// above deliberately made Compact fill the entire window rather than
+/// float a small fixed-size card, on the User's direct live-testing
+/// instruction. A later direct instruction reversed this: Compact must
+/// again be a genuinely small, fixed-size companion window - but unlike
+/// the original Frozen Blueprint §4.4 text (a floating card *inside* the
+/// still full-size window, with a dimming scrim), this now resizes the
+/// real OS window itself down to a small fixed size (see
+/// services/platform_window_controller.dart), then restores it on
+/// Expand. [CompactOverlay] itself is unchanged - it still fills
+/// whatever the actual window is, which is now correct precisely
+/// because the real window becomes small.
+class UriHome extends StatefulWidget {
+  const UriHome({
+    super.key,
+    this.filePicker,
+    this.attachmentOpener,
+    this.onCompactModeChanged,
+  });
 
   final FilePickerFn? filePicker;
   final AttachmentOpenerFn? attachmentOpener;
+  final CompactWindowModeFn? onCompactModeChanged;
+
+  @override
+  State<UriHome> createState() => _UriHomeState();
+}
+
+class _UriHomeState extends State<UriHome> {
+  AppState? _appState;
+  bool _lastIsCompact = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final appState = AppStateScope.of(context);
+    if (!identical(_appState, appState)) {
+      _appState?.removeListener(_handleCompactEdge);
+      _appState = appState;
+      _lastIsCompact = appState.isCompact;
+      appState.addListener(_handleCompactEdge);
+    }
+  }
+
+  @override
+  void dispose() {
+    _appState?.removeListener(_handleCompactEdge);
+    super.dispose();
+  }
+
+  /// AppState.notifyListeners() fires on every state change, not just
+  /// Compact toggles (a keystroke in the draft, a loaded task list, ...)
+  /// - the real native-window resize must fire exactly once per actual
+  /// Compact/Workspace transition, so this only calls out on the edge,
+  /// never on every notification.
+  void _handleCompactEdge() {
+    final isCompact = _appState!.isCompact;
+    if (isCompact != _lastIsCompact) {
+      _lastIsCompact = isCompact;
+      widget.onCompactModeChanged?.call(isCompact);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: AppStateScope.of(context),
+      builder: (context, _) {
+        final isCompact = AppStateScope.of(context).isCompact;
+        return Stack(
+          children: [
+            // The Workspace shell stays mounted via Offstage rather than
+            // IgnorePointer, so no state is lost and switching back is
+            // instant - it is simply not painted or hit-tested while
+            // Compact has the (now genuinely small) window instead.
+            Offstage(
+              offstage: isCompact,
+              child: _buildShell(),
+            ),
+            if (isCompact)
+              CompactOverlay(
+                filePicker: widget.filePicker,
+                attachmentOpener: widget.attachmentOpener,
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildShell() {
     return AppShell(
       sections: [
-        UriSection(
+        const UriSection(
           label: 'Home',
           icon: Icons.auto_awesome_outlined,
-          group: 'Workspace',
-          builder: (context) => HomeScreen(
-            filePicker: filePicker,
-            attachmentOpener: attachmentOpener,
+          builder: _buildHome,
+        ),
+        UriSection(
+          label: 'Chat',
+          icon: Icons.chat_bubble_outline,
+          builder: (context) => AskUriScreen(
+            filePicker: widget.filePicker,
+            attachmentOpener: widget.attachmentOpener,
           ),
         ),
         const UriSection(
           label: 'Tasks',
-          icon: Icons.task_alt_outlined,
-          group: 'Work',
+          icon: Icons.check_box_outlined,
           builder: _buildTasks,
         ),
         const UriSection(
-          label: 'Connections',
+          label: 'Connections & Providers',
+          mobileLabel: 'Connect',
           icon: Icons.hub_outlined,
-          group: 'Work',
           builder: _buildConnections,
-        ),
-        const UriSection(
-          label: 'Activity',
-          icon: Icons.receipt_long_outlined,
-          group: 'Knowledge',
-          builder: _buildActivity,
-        ),
-        // M19: promoted to a top-level destination (was nested inside
-        // Settings) so past conversations are genuinely visible.
-        const UriSection(
-          label: 'History',
-          icon: Icons.history_rounded,
-          group: 'Knowledge',
-          builder: _buildHistory,
         ),
         const UriSection(
           label: 'Settings',
           icon: Icons.settings_outlined,
-          group: 'Runtime',
           builder: _buildSettings,
         ),
       ],
     );
   }
 
+  static Widget _buildHome(BuildContext context) => const HomeScreen();
   static Widget _buildTasks(BuildContext context) => const TasksScreen();
   static Widget _buildConnections(BuildContext context) =>
-      const ConnectionsScreen();
-  static Widget _buildActivity(BuildContext context) => const ActivityScreen();
-  static Widget _buildHistory(BuildContext context) => const HistoryScreen();
+      const ConnectionsProvidersScreen();
   static Widget _buildSettings(BuildContext context) => const SettingsShell();
 }

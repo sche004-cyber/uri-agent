@@ -650,19 +650,37 @@ class ConnectionCheckResult {
   final String? detail;
 }
 
+class TasksFetchException implements Exception {
+  const TasksFetchException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
+class ConnectionsFetchException implements Exception {
+  const ConnectionsFetchException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
 /// Aggregate data the Home screen needs in one call.
 class HomeSummary {
   const HomeSummary({
     required this.recentTurns,
-    required this.pendingApprovalCount,
-    required this.connectedServiceCount,
-    required this.totalServiceCount,
+    this.pendingApprovalCount,
+    this.connectedServiceCount,
+    this.totalServiceCount,
+    this.tasksFailed = false,
+    this.connectionsFailed = false,
   });
 
   final List<UriTurn> recentTurns;
-  final int pendingApprovalCount;
-  final int connectedServiceCount;
-  final int totalServiceCount;
+  final int? pendingApprovalCount;
+  final int? connectedServiceCount;
+  final int? totalServiceCount;
+  final bool tasksFailed;
+  final bool connectionsFailed;
 }
 
 class AdminUserEntry {

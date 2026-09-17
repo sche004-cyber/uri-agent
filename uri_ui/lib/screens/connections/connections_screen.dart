@@ -113,6 +113,11 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
     rawJson.dispose(); clientId.dispose(); clientSecret.dispose();
   }
 
+  /// Deliberately no outer `SingleChildScrollView`/padding of its own:
+  /// this screen is only ever embedded inside
+  /// `ConnectionsProvidersScreen` now (Frozen Blueprint §4.6), which
+  /// owns the page-level scroll/padding for both of its sections so
+  /// they scroll together, not as two independent scroll regions.
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -120,55 +125,52 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
       builder: (context, _) {
         final state = AppStateScope.of(context);
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(UriSpace.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const ScreenHeader(
-                title: 'Connections',
-                subtitle:
-                    'Services URI can use on your behalf. Nothing here is used '
-                    'without your say — connecting only grants access; it doesn\'t '
-                    'authorize any specific action.',
-              ),
-              if (state.connections.isEmpty)
-                const LoadingState(message: 'Checking connection status…')
-              else
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final columns = constraints.maxWidth >= UriBreakpoints.wide ? 2 : 1;
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: state.connections.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: columns,
-                        mainAxisExtent: 216,
-                        crossAxisSpacing: UriSpace.md,
-                        mainAxisSpacing: UriSpace.md,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScreenHeader(
+              title: 'Connections',
+              subtitle:
+                  'Services URI can use on your behalf. Nothing here is used '
+                  'without your say — connecting only grants access; it doesn\'t '
+                  'authorize any specific action.',
+            ),
+            if (state.connections.isEmpty)
+              const LoadingState(message: 'Checking connection status…')
+            else
+              // Frozen Blueprint §4.6: one `.card` containing
+              // `.list-row` entries (avatar, name, status line,
+              // trailing action) rather than a grid of separate cards.
+              Card(
+                margin: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    for (var i = 0; i < state.connections.length; i++) ...[
+                      if (i > 0) const Divider(height: 1),
+                      _ConnectionListRow(
+                        connection: state.connections[i],
+                        onAuthorize: () =>
+                            _authorize(state, state.connections[i].id),
+                        onDisconnect: () => state.disconnectConnection(
+                          state.connections[i].id,
+                        ),
                       ),
-                      itemBuilder: (context, index) {
-                        final connection = state.connections[index];
-                        return _ConnectionCard(
-                          connection: connection,
-                          onAuthorize: () => _authorize(state, connection.id),
-                          onDisconnect: () => state.disconnectConnection(connection.id),
-                        );
-                      },
-                    );
-                  },
+                    ],
+                  ],
                 ),
-            ],
-          ),
+              ),
+          ],
         );
       },
     );
   }
 }
 
-class _ConnectionCard extends StatelessWidget {
-  const _ConnectionCard({
+/// Frozen Blueprint §4.6 `.list-row`: avatar icon, name + status line,
+/// trailing action — one row per real connection, inside the section's
+/// single `.card` (see [ConnectionsScreen.build]).
+class _ConnectionListRow extends StatelessWidget {
+  const _ConnectionListRow({
     required this.connection,
     required this.onAuthorize,
     required this.onDisconnect,
@@ -198,62 +200,66 @@ class _ConnectionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = UriColors.of(context);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(UriSpace.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: UriSpace.md,
+        vertical: UriSpace.sm,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: colors.surfaceSunken,
+              borderRadius: BorderRadius.circular(UriRadius.sm),
+            ),
+            alignment: Alignment.center,
+            child: Icon(_icon, size: 18, color: colors.ink),
+          ),
+          const SizedBox(width: UriSpace.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: colors.surfaceSunken,
-                    borderRadius: BorderRadius.circular(UriRadius.sm),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(_icon, size: 18, color: colors.ink),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        connection.name,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
+                    StatusPill.forConnection(context, connection.status),
+                  ],
                 ),
-                const SizedBox(width: UriSpace.sm),
-                Expanded(child: Text(connection.name, style: theme.textTheme.titleMedium)),
-                StatusPill.forConnection(context, connection.status),
-              ],
-            ),
-            const SizedBox(height: UriSpace.sm),
-            Expanded(
-              child: Text(
-                connection.description,
-                style: theme.textTheme.bodyMedium,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(height: 4),
-            // Always reserve this line's height (even with no detail
-            // text) so the action button sits at the same position on
-            // every card, regardless of which connections have a detail
-            // string — otherwise a card without one visibly floats its
-            // button lower than its neighbours.
-            Text(connection.detail ?? '', style: theme.textTheme.labelSmall),
-            const SizedBox(height: UriSpace.sm),
-            Row(
-              children: [
+                const SizedBox(height: 2),
+                Text(
+                  connection.description,
+                  style: theme.textTheme.bodyMedium,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (connection.detail != null) ...[
+                  const SizedBox(height: 2),
+                  Text(connection.detail!, style: theme.textTheme.labelSmall),
+                ],
+                const SizedBox(height: UriSpace.sm),
                 _actionFor(connection.status),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   // TextButton/OutlinedButton/ElevatedButton carry different default
   // padding and minimum tap-target sizes, which otherwise makes the
-  // button sit at a different height on the card depending purely on
-  // connection state. Forcing identical padding/minimumSize on all
-  // three keeps every card's button aligned to the same position.
+  // button sit at a different height depending purely on connection
+  // state. Forcing identical padding/minimumSize on all three keeps
+  // every row's button visually aligned.
   static const _actionButtonPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
   static const _actionButtonMinSize = Size(0, 36);
 

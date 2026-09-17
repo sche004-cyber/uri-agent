@@ -121,26 +121,33 @@ class ModelRouter:
     def _ordered_candidates(self, role: str, principal: Optional[Any] = None) -> List[str]:
         """Build ordered candidate list from role config.
 
-        Deliberately does NOT apply the per-user Active Brain override
-        (see _model_for_role, which does, and apply_active_brain_
-        override's own docstring): overriding which ADAPTER the router
-        tries here as well would let a cloud-provider Active Brain change
-        the fallback chain's provider_id resolution in build_provider()
-        (which, when called with an explicit provider_id_override, does
-        not re-derive a matching provider_id/key for that override) - a
-        real, separate gap, out of this bounded repair's scope. Limiting
-        the override to the model string keeps this fix exact for the
-        reported defect (a local Ollama model never reaching the router)
-        without touching cloud-provider candidate selection at all."""
-        # No stored preference means the exact legacy branch below remains
-        # unchanged.  Preferences are trusted only after the API validates
-        # them against the verified inventory.
+        Live UX Repair (post-launch): now DOES apply the user's real
+        Active Brain as the implicit "primary" candidate when Fallback
+        Routing's own primary slot is unset - the previous version
+        deliberately excluded this (see the old comment this replaced)
+        because build_provider() could not correctly re-derive a
+        provider_id/key for a candidate passed as provider_id_override
+        for any adapter-family provider (openai_compatible/anthropic);
+        that dispatch bug is now fixed (see build_provider's own
+        provider_id_override handling), so "URI Auto" trying a
+        cloud-provider Active Brain first is now correct rather than
+        silently broken. An explicit Fallback Routing "primary" (the
+        advanced per-role override) still always wins over the Active
+        Brain when both are set - the Active Brain is only the fallback
+        default for "primary", never a hidden override of an explicit
+        choice."""
         user_id = getattr(principal, "user_id", None)
         if user_id:
             try:
                 from uri_core.core.fallback_routing_store import FallbackRoutingStore
+                from uri_core.core.provider_registry import ProviderConfigStore
                 routing = FallbackRoutingStore(user_id).load()
-                selected = [routing.get("primary"), routing.get("fallback_1"), routing.get("fallback_2")]
+                primary = routing.get("primary")
+                if primary is None:
+                    active_brain = ProviderConfigStore(user_id).get_active_brain()
+                    if active_brain is not None:
+                        primary = dict(active_brain)
+                selected = [primary, routing.get("fallback_1"), routing.get("fallback_2")]
                 role_cfg = load_model_roles().get(role, {})
                 role_primary = role_cfg.get("provider", "ollama")
                 provider_ids: List[str] = []
@@ -177,20 +184,27 @@ class ModelRouter:
         """The model string for one candidate attempt.
 
         Applies the per-user Active Brain override (apply_active_brain_
-        override) only when the override's own provider adapter matches
+        override) only when the override's own REAL provider_id matches
         the candidate `pid` already selected by _ordered_candidates - so
-        this never changes WHICH provider the router tries (that stays
-        exactly the static deployment config's decision, see
-        _ordered_candidates' own docstring for why), only which MODEL is
-        requested once "ollama" is already the candidate being attempted.
-        This is what makes a user's real Active Brain choice actually
-        reach ModelRouter.attempt() for the first time (previously it
-        never did, for any role - build_provider() only ever saw this
-        override when called with no provider_id_override, and attempt()
-        always passes one)."""
+        this never changes WHICH provider the router tries, only which
+        MODEL is requested for that already-chosen candidate.
+
+        Live UX Repair (post-launch): compares against
+        `overridden.get("provider_id")` (falling back to "provider" only
+        when apply_active_brain_override left the config unchanged, i.e.
+        no override applies at all) rather than `overridden.get(
+        "provider")` alone. The old comparison used the ADAPTER family
+        name ("openai_compatible") for every cloud provider, which can
+        never equal a real provider_id candidate like "groq" - matching
+        by adapter only ever worked for "ollama" and "anthropic", whose
+        provider_id happens to equal their own adapter name. That silently
+        discarded a cloud Active Brain's real model choice for every
+        other provider, falling back to the static deployment default
+        model instead."""
         role_config = load_model_roles().get(role, {})
         overridden = apply_active_brain_override(role, principal, role_config)
-        if pid is not None and overridden.get("provider", "ollama") != pid:
+        overridden_id = overridden.get("provider_id") or overridden.get("provider", "ollama")
+        if pid is not None and overridden_id != pid:
             return role_config.get("model", "")
         return overridden.get("model", "")
 

@@ -97,13 +97,22 @@ class GmailServiceConnectionTruthTests(unittest.TestCase):
 
 class ConnectionStatusDelegationTests(unittest.TestCase):
     @patch("uri_core.core.connection_status.load_usable_credentials")
-    def test_token_check_delegates_without_refresh(self, mock_load):
+    def test_token_check_delegates_with_refresh(self, mock_load):
+        """Live UX Repair §10: previously delegated with allow_refresh=
+        False, contradicting _token_is_usable's own docstring and
+        disagreeing with GmailSearchService (allow_refresh=True) about
+        whether the exact same token.json was usable - a real,
+        live-reproduced inconsistency between the Connections screen
+        and Home's real Gmail data. A refresh is non-interactive (a
+        server-to-Google token-endpoint call, never a consent screen),
+        so there is no reason this status check should refuse to make
+        it."""
         mock_load.return_value = MagicMock()
         scopes = ["scope"]
 
         self.assertTrue(connection_status._token_is_usable("token.json", scopes))
         mock_load.assert_called_once_with(
-            token_path="token.json", scopes=scopes, allow_refresh=False
+            token_path="token.json", scopes=scopes, allow_refresh=True
         )
 
 

@@ -839,15 +839,34 @@ def _selectable_models_for(user_id: Optional[str], provider_id: str) -> list:
         return _verified_models_for(user_id, provider_id)
 
 
-def _serving_model_for_turn(user_id: Optional[str], session_id: str) -> tuple[Optional[str], Optional[str]]:
-    """Return the most recent successful router record for this request.
+def _measured(record: dict, field: str) -> Optional[float]:
+    """Unwrap a UsageRecord {"value", "confidence"} field to its plain
+    numeric value only when actually measured - never guesses or
+    substitutes 0/None-as-zero for a genuinely unavailable measurement
+    (Live UX Repair §8: never fabricate an unavailable token count)."""
+    entry = record.get(field)
+    if not isinstance(entry, dict) or entry.get("confidence") != "KNOWN":
+        return None
+    value = entry.get("value")
+    return value if isinstance(value, (int, float)) else None
+
+
+def _serving_model_for_turn(user_id: Optional[str], session_id: str) -> dict:
+    """Return the most recent successful router record for this request:
+    provider_id, model, and (Live UX Repair §8) whichever of
+    prompt_tokens/eval_tokens/duration_seconds were actually measured -
+    never a fabricated number for a field the provider never reported.
 
     ModelRouter writes this observational record only after a ModelResponse
     succeeds, so it describes the provider/model that actually served the
     turn rather than a configured preference or attempted candidate.
     """
+    empty = {
+        "provider_id": None, "model": None,
+        "prompt_tokens": None, "eval_tokens": None, "duration_seconds": None,
+    }
     if not user_id:
-        return None, None
+        return dict(empty)
     try:
         from uri_core.core.usage_meter import current_month, month_records
 
@@ -866,10 +885,16 @@ def _serving_model_for_turn(user_id: Optional[str], session_id: str) -> tuple[Op
             ]
         if records:
             latest = records[-1]
-            return latest.get("provider_id"), latest.get("model")
+            return {
+                "provider_id": latest.get("provider_id"),
+                "model": latest.get("model"),
+                "prompt_tokens": _measured(latest, "prompt_tokens"),
+                "eval_tokens": _measured(latest, "eval_tokens"),
+                "duration_seconds": _measured(latest, "duration_seconds"),
+            }
     except Exception:
         pass
-    return None, None
+    return dict(empty)
 
 
 class ProfileUpdateRequest(BaseModel):
@@ -1437,9 +1462,12 @@ def ask(
     # The router writes this observation only after a successful completion.
     # Persist it after the request so captions describe the actual serving
     # model, never merely the user's requested override.
-    serving_provider, serving_model = _serving_model_for_turn(
-        user_id, payload.session_id
-    )
+    _serving = _serving_model_for_turn(user_id, payload.session_id)
+    serving_provider = _serving["provider_id"]
+    serving_model = _serving["model"]
+    serving_prompt_tokens = _serving["prompt_tokens"]
+    serving_eval_tokens = _serving["eval_tokens"]
+    serving_duration_seconds = _serving["duration_seconds"]
     if (
         serving_provider is None
         and isinstance(payload.model_override, dict)
@@ -1449,7 +1477,9 @@ def ask(
         # Older adapter seams do not carry session_id into UsageMeter.  A
         # request-scoped override remains the selected conversation model even
         # when the request fails before a successful router observation exists;
-        # it never changes global routing state.
+        # it never changes global routing state. No token/duration
+        # measurement exists for this fallback path - it stays None
+        # (Live UX Repair §8: never fabricate an unavailable measurement).
         serving_provider = payload.model_override["provider_id"]
         serving_model = payload.model_override["model"]
     try:
@@ -1491,6 +1521,9 @@ def ask(
         ),
         "serving_provider": serving_provider,
         "serving_model": serving_model,
+        "serving_prompt_tokens": serving_prompt_tokens,
+        "serving_eval_tokens": serving_eval_tokens,
+        "serving_duration_seconds": serving_duration_seconds,
     }
 
 

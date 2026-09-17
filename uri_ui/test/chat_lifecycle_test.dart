@@ -268,6 +268,71 @@ void main() {
     );
 
     testWidgets(
+      'Live UX Repair §8: shows model, response time, and tokens when actually available',
+      (tester) async {
+        final turn = UriTurn(
+          id: 't1',
+          userText: 'hello URI',
+          timestamp: DateTime.now(),
+          stage: TurnStage.completed,
+          servingModel: 'gemma4:12b',
+          promptTokens: 120,
+          evalTokens: 40,
+          durationSeconds: 2.5,
+          result: const ActionResult(summary: 'Hi there.'),
+        );
+
+        await tester.pumpWidget(
+          wrap(
+            TurnCard(
+              turn: turn,
+              onApprove: () {},
+              onCancel: () {},
+              onConnectService: (_) {},
+              onOpenAttachment: (_) {},
+            ),
+          ),
+        );
+
+        expect(
+          find.text(
+            'Conversation model: gemma4:12b · 2.5s · 120 in / 40 out (160 total tokens)',
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'Live UX Repair §8: never fabricates a token count the provider did not report',
+      (tester) async {
+        final turn = UriTurn(
+          id: 't1',
+          userText: 'hello URI',
+          timestamp: DateTime.now(),
+          stage: TurnStage.completed,
+          servingModel: 'gpt-4o',
+          result: const ActionResult(summary: 'Hi there.'),
+        );
+
+        await tester.pumpWidget(
+          wrap(
+            TurnCard(
+              turn: turn,
+              onApprove: () {},
+              onCancel: () {},
+              onConnectService: (_) {},
+              onOpenAttachment: (_) {},
+            ),
+          ),
+        );
+
+        expect(find.text('Conversation model: gpt-4o'), findsOneWidget);
+        expect(find.textContaining('tokens'), findsNothing);
+      },
+    );
+
+    testWidgets(
       'the processing state does not overflow a narrow Android phone width',
       (tester) async {
         // A common small-phone logical width (e.g. a compact Android
@@ -317,10 +382,8 @@ void main() {
       await tester.pumpWidget(UriApp(appState: appState));
       await tester.pumpAndSettle();
 
-      // Not find.text('Ask URI') - Home's own submit button is also
-      // labelled exactly "Ask URI" and would ambiguously match too.
-      // The sidebar nav icon is unique to navigation.
-      await tester.tap(find.byIcon(Icons.auto_awesome_outlined));
+      // Navigate to Chat destination in the Hybrid shell
+      await tester.tap(find.text('Chat'));
       await tester.pumpAndSettle();
 
       return appState;

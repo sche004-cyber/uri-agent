@@ -154,12 +154,28 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
         display_name="Groq",
         adapter="openai_compatible",
         base_url="https://api.groq.com/openai/v1",
+        # Live UX Repair §5: "llama-3.3-70b-versatile" (the previous
+        # entry) has been decommissioned by Groq - a real, valid,
+        # working API key still failed verification for every account
+        # because the ONE catalogue model URI ever tried no longer
+        # exists there (confirmed live: a real completion attempt
+        # against it raised ModelNotFoundError, not an auth error).
+        # Replaced with a model confirmed live, with this key, against
+        # Groq's own GET /v1/models and a real chat completion that
+        # returned a real, correct answer - context_tokens/
+        # pricing_per_1k_tokens below are Groq's own reported values for
+        # it (context_window/pricing.prompt from that same response),
+        # not estimates. (Two Groq "openai/gpt-oss-*" models were also
+        # tested and rejected: they returned HTTP 200 with an empty
+        # message.content for this adapter's plain OpenAI-compatible
+        # parsing, which would have looked "verified" while silently
+        # never producing visible output.)
         models=[
             ModelDescriptor(
-                model_id="llama-3.3-70b-versatile",
-                display_name="Llama 3.3 70B",
-                context_tokens=ConfidenceValue(value=128000, confidence=KNOWN),
-                pricing_per_1k_tokens=ConfidenceValue(value=0.00059, confidence=KNOWN),
+                model_id="qwen/qwen3.8-27b",
+                display_name="Qwen3.8 27B (Groq)",
+                context_tokens=ConfidenceValue(value=131042, confidence=KNOWN),
+                pricing_per_1k_tokens=ConfidenceValue(value=0.0008, confidence=KNOWN),
             ),
         ],
         auth_transports=["api_key"],

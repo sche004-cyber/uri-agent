@@ -7,6 +7,33 @@ import '../theme/uri_theme.dart';
 import 'linkified_text.dart';
 import 'status_pill.dart';
 
+/// Live UX Repair §8: compact, per-reply metadata - model, response
+/// time, and input/output/total tokens whenever the serving provider
+/// actually reported them (see UriTurn.promptTokens/evalTokens/
+/// durationSeconds and server.py's _measured). Any field the provider
+/// didn't report is simply omitted from the caption, never shown as a
+/// fabricated 0 or guess.
+String _metadataCaption(UriTurn turn) {
+  final parts = <String>['Conversation model: ${turn.servingModel ?? 'URI Auto'}'];
+  final duration = turn.durationSeconds;
+  if (duration != null) {
+    parts.add('${duration.toStringAsFixed(1)}s');
+  }
+  final promptTokens = turn.promptTokens;
+  final evalTokens = turn.evalTokens;
+  if (promptTokens != null && evalTokens != null) {
+    parts.add(
+      '$promptTokens in / $evalTokens out '
+      '(${promptTokens + evalTokens} total tokens)',
+    );
+  } else if (promptTokens != null) {
+    parts.add('$promptTokens input tokens');
+  } else if (evalTokens != null) {
+    parts.add('$evalTokens output tokens');
+  }
+  return parts.join(' · ');
+}
+
 /// Renders one Ask-URI turn end to end, keeping three stages visually
 /// distinct at all times rather than collapsing them into one blob:
 ///   1. Understanding / proposal — what URI read from the request and,
@@ -22,11 +49,17 @@ class TurnCard extends StatelessWidget {
     required this.onCancel,
     required this.onConnectService,
     required this.onOpenAttachment,
+    this.compact = false,
   });
 
   final UriTurn turn;
   final VoidCallback onApprove;
   final VoidCallback onCancel;
+
+  /// Hybrid UI Frozen Blueprint §4.4: denser bubble padding in the
+  /// Compact feed. Purely cosmetic - never changes what a turn shows,
+  /// only how much padding surrounds it.
+  final bool compact;
 
   /// Invoked with the blocked connection's id when the user taps
   /// "Connect [service]" from a [TurnStage.needsConnection] turn.
@@ -51,7 +84,7 @@ class TurnCard extends StatelessWidget {
     final showStatusPill = turn.stage != TurnStage.completed;
 
     return Container(
-      padding: const EdgeInsets.all(UriSpace.lg),
+      padding: EdgeInsets.all(compact ? UriSpace.md : UriSpace.lg),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(color: colors.border.withValues(alpha: .6)),
@@ -69,8 +102,16 @@ class TurnCard extends StatelessWidget {
               ),
               if (showStatusPill) ...[
                 const SizedBox(width: UriSpace.sm),
-                StatusPill.forStage(context, turn.stage),
+                // Flexible: some stage labels ("Awaiting your
+                // approval") are long enough that, combined with the
+                // copy button, this row can no longer fit both at
+                // their natural size on a narrow/mobile width (never
+                // exercised until Batch 4) - ellipsize rather than
+                // overflow.
+                Flexible(child: StatusPill.forStage(context, turn.stage)),
               ],
+              const SizedBox(width: UriSpace.xs),
+              _CopyMessageAction(turn: turn),
             ],
           ),
 
@@ -169,7 +210,7 @@ class TurnCard extends StatelessWidget {
           if (turn.stage != TurnStage.understanding) ...[
             const SizedBox(height: UriSpace.xs),
             Text(
-              'Conversation model: ${turn.servingModel ?? 'URI Auto'}',
+              _metadataCaption(turn),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.inkFaint,
               ),
@@ -387,10 +428,18 @@ class _ProposalBlock extends StatelessWidget {
             children: [
               Icon(Icons.bolt_rounded, size: 16, color: colors.accentInk),
               const SizedBox(width: UriSpace.xs),
-              Text(
-                'Proposed action',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: colors.accentInk,
+              // Flexible: at the Compact window's narrower width (§4.4,
+              // 420px, never exercised until this row was actually
+              // measured there) this label plus the impact pill no
+              // longer both fit at their natural size - shrink/ellipsize
+              // the label rather than overflow the row.
+              Flexible(
+                child: Text(
+                  'Proposed action',
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colors.accentInk,
+                  ),
                 ),
               ),
               const Spacer(),
@@ -408,13 +457,20 @@ class _ProposalBlock extends StatelessWidget {
           ),
           if (!isDecided) ...[
             const SizedBox(height: UriSpace.md),
-            Row(
+            // Wrap, not Row: at the Compact window's/mobile's narrower
+            // card widths (never exercised until Batch 4) two full-size
+            // buttons side by side can overflow a plain Row - wrapping
+            // to a second line keeps both fully visible, same fix
+            // already established for this exact problem elsewhere
+            // (see providers_screen.dart's own action-button rows).
+            Wrap(
+              spacing: UriSpace.sm,
+              runSpacing: UriSpace.xs,
               children: [
                 ElevatedButton(
                   onPressed: onApprove,
                   child: const Text('Approve'),
                 ),
-                const SizedBox(width: UriSpace.sm),
                 OutlinedButton(
                   onPressed: onCancel,
                   child: const Text('Cancel'),
@@ -589,5 +645,69 @@ class _ResultBlock extends StatelessWidget {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).round()} KB';
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+}
+
+/// Per-message Copy action (Hybrid Blueprint §4.3's `.msg-actions`/
+/// `.msg-action` pattern). Copies the user's prompt plus whatever
+/// reply text the turn actually has — understanding, result summary/
+/// detail, or draft — never a placeholder. The transient "Copied"
+/// label flips only after [Clipboard.setData] genuinely succeeds; a
+/// failure leaves the icon unchanged rather than lying about it.
+class _CopyMessageAction extends StatefulWidget {
+  const _CopyMessageAction({required this.turn});
+
+  final UriTurn turn;
+
+  @override
+  State<_CopyMessageAction> createState() => _CopyMessageActionState();
+}
+
+class _CopyMessageActionState extends State<_CopyMessageAction> {
+  bool _copied = false;
+
+  String get _copyText {
+    final turn = widget.turn;
+    final parts = <String>[turn.userText];
+    if (turn.understanding != null && turn.understanding!.isNotEmpty) {
+      parts.add(turn.understanding!);
+    }
+    final result = turn.result;
+    if (result != null) {
+      parts.add(result.summary);
+      if (result.detail != null) parts.add(result.detail!);
+      if (result.draftText != null) parts.add(result.draftText!);
+    }
+    return parts.join('\n\n');
+  }
+
+  Future<void> _copy() async {
+    try {
+      await Clipboard.setData(ClipboardData(text: _copyText));
+    } catch (_) {
+      return; // Clipboard-failure-safe: never claim success that didn't happen.
+    }
+    if (!mounted) return;
+    setState(() => _copied = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _copied = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
+    return Tooltip(
+      message: _copied ? 'Copied' : 'Copy message',
+      child: IconButton(
+        visualDensity: VisualDensity.compact,
+        icon: Icon(
+          _copied ? Icons.check_rounded : Icons.copy_outlined,
+          size: 16,
+          color: _copied ? colors.success : colors.inkFaint,
+        ),
+        onPressed: _copy,
+      ),
+    );
   }
 }

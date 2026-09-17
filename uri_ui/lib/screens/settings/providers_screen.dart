@@ -25,6 +25,25 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
   UsageLimitStatus? _usageLimits;
   AppState? _state;
 
+  // Live UX Repair: the "Connect Provider" method cards' "Continue"
+  // buttons previously did nothing at all (`onPressed: () {}`) - a
+  // reproduced, confirmed defect. Continue now takes the User to the
+  // real next step: the matching provider group already rendered below,
+  // scrolled into view via the enclosing page's Scrollable.
+  final _apiKeyGroupKey = GlobalKey();
+  final _localGroupKey = GlobalKey();
+
+  Future<void> _scrollToGroup(GlobalKey key) async {
+    final target = key.currentContext;
+    if (target == null) return;
+    await Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      alignment: 0.05,
+    );
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -143,6 +162,8 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
             providers: _providers,
             routing: _state?.fallbackRouting,
             onEditRouting: _showFallbackRoutingDialog,
+            onContinueApiKey: () => _scrollToGroup(_apiKeyGroupKey),
+            onContinueLocal: () => _scrollToGroup(_localGroupKey),
           ),
           /* Legacy provider-card/tabs layout retained only as a source
              reference during this repair; it is intentionally not rendered.
@@ -231,21 +252,27 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
               spacing: UriSpace.md,
               runSpacing: UriSpace.md,
               children: [
-                _ProviderConnectionGroup(
-                  title: 'API Key Providers',
-                  tag: 'OpenAI, Anthropic, Gemini, Groq, OpenRouter',
-                  providers: apiProviders,
-                  onConfigureKey: _showKeyDialog,
-                  onEditConfig: _showConfigDialog,
-                  onSetActiveBrain: _confirmActiveBrain,
+                KeyedSubtree(
+                  key: _apiKeyGroupKey,
+                  child: _ProviderConnectionGroup(
+                    title: 'API Key Providers',
+                    tag: 'OpenAI, Anthropic, Gemini, Groq, OpenRouter',
+                    providers: apiProviders,
+                    onConfigureKey: _showKeyDialog,
+                    onEditConfig: _showConfigDialog,
+                    onSetActiveBrain: _confirmActiveBrain,
+                  ),
                 ),
-                _ProviderConnectionGroup(
-                  title: 'Local Model Providers',
-                  tag: 'Ollama, LM Studio',
-                  providers: localProviders,
-                  onConfigureKey: _showKeyDialog,
-                  onEditConfig: _showConfigDialog,
-                  onSetActiveBrain: _confirmActiveBrain,
+                KeyedSubtree(
+                  key: _localGroupKey,
+                  child: _ProviderConnectionGroup(
+                    title: 'Local Model Providers',
+                    tag: 'Ollama, LM Studio',
+                    providers: localProviders,
+                    onConfigureKey: _showKeyDialog,
+                    onEditConfig: _showConfigDialog,
+                    onSetActiveBrain: _confirmActiveBrain,
+                  ),
                 ),
               ],
             ),
@@ -327,11 +354,15 @@ class _ConnectProviderOverview extends StatelessWidget {
     required this.providers,
     required this.routing,
     required this.onEditRouting,
+    required this.onContinueApiKey,
+    required this.onContinueLocal,
   });
 
   final List<ProviderEntry> providers;
   final Map<String, dynamic>? routing;
   final VoidCallback onEditRouting;
+  final VoidCallback onContinueApiKey;
+  final VoidCallback onContinueLocal;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -358,18 +389,20 @@ class _ConnectProviderOverview extends StatelessWidget {
                 'OpenAI, Claude, Gemini\nNot currently available — no officially supported direct connection exists yet.',
             enabled: false,
           ),
-          const _ConnectionMethodCard(
+          _ConnectionMethodCard(
             title: 'API Key',
             tag: 'Encrypted credential',
             detail:
                 'Groq, OpenAI API, Anthropic API, Gemini API, OpenRouter',
             enabled: true,
+            onContinue: onContinueApiKey,
           ),
-          const _ConnectionMethodCard(
+          _ConnectionMethodCard(
             title: 'Local Models',
             tag: 'Local endpoint',
             detail: 'Ollama, LM Studio',
             enabled: true,
+            onContinue: onContinueLocal,
           ),
         ],
       ),
@@ -728,11 +761,19 @@ class _ConnectionMethodCard extends StatelessWidget {
     required this.tag,
     required this.detail,
     this.enabled = true,
+    this.onContinue,
   });
   final String title;
   final String tag;
   final String detail;
   final bool enabled;
+
+  /// Live UX Repair: previously always `() {}` regardless of [enabled] -
+  /// an enabled button that visibly did nothing when pressed. Null here
+  /// means "disabled and explained" (the [detail] text already covers
+  /// why); a real, non-null callback is the "real next step" a working
+  /// enabled control must lead to.
+  final VoidCallback? onContinue;
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 290,
@@ -752,7 +793,7 @@ class _ConnectionMethodCard extends StatelessWidget {
             ),
             const SizedBox(height: UriSpace.md),
             FilledButton(
-              onPressed: enabled ? () {} : null,
+              onPressed: enabled ? onContinue : null,
               child: const Text('Continue'),
             ),
           ],

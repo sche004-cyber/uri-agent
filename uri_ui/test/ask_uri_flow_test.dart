@@ -1,10 +1,14 @@
 // Covers the core required flow:
-//   Home -> Ask URI -> see a proposed action -> approve/cancel -> see result
+//   Chat -> ask URI -> see a proposed action -> approve/cancel -> see result
 //
 // Also exercises the cancel path, and the direct-answer path (a question
 // that never produces a proposal at all) to confirm the UI keeps
 // understanding/proposal, approval, and execution/result visually
 // distinct rather than collapsing them.
+//
+// Post-Hybrid-Blueprint (Batch 1): Home no longer hosts a composer —
+// Chat is its own destination (index 1) — so every case here reaches
+// Chat first before typing, per pumpPostOnboardingApp below.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,6 +36,12 @@ void main() {
     );
     await tester.pumpWidget(UriApp(appState: appState));
     await tester.pumpAndSettle();
+
+    // Home has no composer since Batch 1 — reach Chat's Conversation
+    // tab (the default tab) before any test types into it.
+    await tester.tap(find.text('Chat'));
+    await tester.pumpAndSettle();
+
     return appState;
   }
 

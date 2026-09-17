@@ -398,7 +398,7 @@ class HttpUriClient implements UriClient {
           body: jsonEncode({
             'session_id': _sessionId,
             'text': text,
-            if (modelOverride != null) 'model_override': modelOverride,
+            'model_override': ?modelOverride,
           }),
         )
         // The backend runs a multi-step reasoning chain against a
@@ -422,15 +422,40 @@ class HttpUriClient implements UriClient {
     required Map<String, dynamic> body,
     String? requestedModel,
   }) {
+    // Live UX Repair §8: real, measured metadata only - each stays null
+    // (never a fabricated 0) unless the backend actually reported it
+    // (see server.py's _measured/_serving_model_for_turn).
+    final promptTokens = body['serving_prompt_tokens'] as int?;
+    final evalTokens = body['serving_eval_tokens'] as int?;
+    final durationSeconds = (body['serving_duration_seconds'] as num?)
+        ?.toDouble();
+
     if (body['status'] == 'failed' || body['status'] == 'unavailable') {
+      // Post-Launch Brain Setup Repair: with onboarding now skippable, a
+      // user can genuinely reach chat with no Active Brain configured -
+      // this must read as a clear prompt to configure one, not the
+      // generic "URI could not process this request." that this branch
+      // fell back to before (body['error'] is null for this backend
+      // response shape, so the fallback was always the one shown). See
+      // response_drafting.mark_narrative_unavailable for the reason
+      // values this checks.
+      final unavailableReason = body['narrative_unavailable_reason']
+          ?.toString();
+      final failureReason = body['error']?.toString() ??
+          (const {'no_brain_configured', 'drafting_provider_unreachable'}
+                  .contains(unavailableReason)
+              ? "URI's Brain isn't configured or is unreachable — set an Active Brain in Model Providers."
+              : 'URI could not process this request.');
       return UriTurn(
         id: id,
         userText: text,
         timestamp: timestamp,
         stage: TurnStage.failed,
-        failureReason:
-            body['error']?.toString() ?? 'URI could not process this request.',
+        failureReason: failureReason,
         servingModel: body['serving_model'] as String? ?? requestedModel,
+        promptTokens: promptTokens,
+        evalTokens: evalTokens,
+        durationSeconds: durationSeconds,
       );
     }
 
@@ -496,6 +521,9 @@ class HttpUriClient implements UriClient {
         ),
         servingProvider: servingProvider,
         servingModel: servingModel,
+        promptTokens: promptTokens,
+        evalTokens: evalTokens,
+        durationSeconds: durationSeconds,
       );
     }
 
@@ -521,6 +549,9 @@ class HttpUriClient implements UriClient {
         failureReason: reason.toString(),
         servingProvider: servingProvider,
         servingModel: servingModel,
+        promptTokens: promptTokens,
+        evalTokens: evalTokens,
+        durationSeconds: durationSeconds,
       );
     }
 
@@ -557,6 +588,9 @@ class HttpUriClient implements UriClient {
       understanding: understanding,
       servingProvider: servingProvider,
       servingModel: servingModel,
+      promptTokens: promptTokens,
+      evalTokens: evalTokens,
+      durationSeconds: durationSeconds,
       result: ActionResult(
         summary: summary,
         // Only ever shown when a real tool was actually involved (e.g.
@@ -768,17 +802,19 @@ class HttpUriClient implements UriClient {
       response = await _http
           .get(Uri.parse('$baseUrl/tasks'), headers: _jsonHeaders)
           .timeout(const Duration(seconds: 30));
-    } catch (_) {
-      return const [];
+    } catch (e) {
+      throw TasksFetchException('Failed to connect to tasks service: $e');
     }
 
-    if (response.statusCode != 200) return const [];
+    if (response.statusCode != 200) {
+      throw TasksFetchException('Server returned ${response.statusCode} fetching tasks');
+    }
 
     final Map<String, dynamic> body;
     try {
       body = jsonDecode(response.body) as Map<String, dynamic>;
-    } catch (_) {
-      return const [];
+    } catch (e) {
+      throw TasksFetchException('Malformed JSON in tasks response: $e');
     }
 
     final rawTasks = body['tasks'];
@@ -802,15 +838,7 @@ class HttpUriClient implements UriClient {
   }
 
   /// Real authorization state from the backend's GET /connections
-  /// (see uri_core/core/connection_status.py). Previously this
-  /// delegated to [_fallback], whose seeded mock data always claimed
-  /// Gmail was "Connected" whether or not any credential existed —
-  /// a badge the backend could not back with anything real.
-  ///
-  /// An unreachable backend or unreadable body degrades to an empty
-  /// list (the Connections screen then simply shows nothing) rather
-  /// than falling back to mock data, because a fabricated
-  /// "Connected" is worse than showing no state at all.
+  /// (see uri_core/core/connection_status.py).
   @override
   Future<List<ServiceConnection>> listConnections() async {
     http.Response response;
@@ -818,17 +846,19 @@ class HttpUriClient implements UriClient {
       response = await _http
           .get(Uri.parse('$baseUrl/connections'), headers: _jsonHeaders)
           .timeout(const Duration(seconds: 30));
-    } catch (_) {
-      return const [];
+    } catch (e) {
+      throw ConnectionsFetchException('Failed to connect to connections service: $e');
     }
 
-    if (response.statusCode != 200) return const [];
+    if (response.statusCode != 200) {
+      throw ConnectionsFetchException('Server returned ${response.statusCode} fetching connections');
+    }
 
     final Map<String, dynamic> body;
     try {
       body = jsonDecode(response.body) as Map<String, dynamic>;
-    } catch (_) {
-      return const [];
+    } catch (e) {
+      throw ConnectionsFetchException('Malformed JSON in connections response: $e');
     }
 
     return _connectionsFrom(body['connections']);
@@ -1739,16 +1769,31 @@ class HttpUriClient implements UriClient {
   /// backend can already evidence.
   @override
   Future<HomeSummary> loadHomeSummary() async {
-    final tasks = await listTasks();
-    final connections = await listConnections();
+    List<TaskItem>? tasks;
+    bool tasksFailed = false;
+    try {
+      tasks = await listTasks();
+    } catch (_) {
+      tasksFailed = true;
+    }
+
+    List<ServiceConnection>? connections;
+    bool connectionsFailed = false;
+    try {
+      connections = await listConnections();
+    } catch (_) {
+      connectionsFailed = true;
+    }
 
     return HomeSummary(
       recentTurns: const [],
-      pendingApprovalCount: tasks.length,
+      pendingApprovalCount: tasks?.length,
       connectedServiceCount: connections
-          .where((c) => c.status == ConnectionStatus.connected)
+          ?.where((c) => c.status == ConnectionStatus.connected)
           .length,
-      totalServiceCount: connections.length,
+      totalServiceCount: connections?.length,
+      tasksFailed: tasksFailed,
+      connectionsFailed: connectionsFailed,
     );
   }
 

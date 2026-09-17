@@ -52,17 +52,29 @@ def _repo_root() -> str:
 
 
 def _token_is_usable(token_path: str, scopes: List[str]) -> bool:
-    """True only when a stored token file exists AND still loads as
-    credentials. Never refreshes, never prompts - a token that needs a
+    """True when a stored token file exists AND still loads as
+    credentials - refreshing it first if needed. A token that needs a
     network refresh to be usable is still reported as usable here,
-    because the refresh itself is non-interactive and happens later at
-    real call time; a token file that cannot even be parsed is not.
-    Never raises."""
+    because the refresh itself is non-interactive (a server-to-Google
+    token-endpoint call using the stored refresh_token - never a
+    browser consent screen) and happens later at real call time
+    anyway; a token file that cannot even be parsed, or has no usable
+    refresh_token, is not.
+
+    Live UX Repair §10 (grounded-data-path consistency): this
+    previously passed allow_refresh=False, contradicting this exact
+    docstring - live-reproduced showing the real defect it caused: with
+    a genuinely valid but access-token-expired token.json, this
+    reported "needs_authorization" (Connections screen) while
+    GmailSearchService.authenticate() (allow_refresh=True) refreshed
+    successfully and returned a real unread count on Home - two
+    surfaces disagreeing about the exact same underlying fact. Never
+    raises."""
 
     return load_usable_credentials(
         token_path=token_path,
         scopes=scopes,
-        allow_refresh=False,
+        allow_refresh=True,
     ) is not None
 
 

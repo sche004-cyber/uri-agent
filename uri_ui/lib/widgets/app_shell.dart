@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../theme/dashboard_manifest.dart';
-import '../theme/uri_theme.dart';
 import '../services/app_state_scope.dart';
+import '../theme/uri_theme.dart';
 import 'uri_wordmark.dart';
 
 class UriSection {
@@ -10,43 +10,32 @@ class UriSection {
     required this.label,
     required this.icon,
     required this.builder,
-    this.group,
+    this.mobileLabel,
   });
 
   final String label;
+  final String? mobileLabel;
   final IconData icon;
   final WidgetBuilder builder;
-
-  /// Sidebar group heading (2026-09-12 accepted dashboard shell —
-  /// docs/plans/M26_DASHBOARD_DESIGN_SPECIFICATION.md §4). Null keeps a
-  /// section in a flat, ungrouped list, which is what every existing
-  /// test/screen not yet updated for grouping still gets.
-  final String? group;
 }
 
-/// Section indices in [AppShell] — kept in one place so any screen can
-/// jump to another tab (e.g. a blocked Ask URI turn pointing at
-/// Connections) without depending on the sections list. There is no
-/// "ask" index: Home itself holds the one canonical conversation, so
-/// nothing ever needs to navigate to a separate Ask URI destination.
+/// 5 primary destination indices in [AppShell] per Hybrid UI Frozen Blueprint §4.1:
+/// Home, Chat, Tasks, Connections & Providers, Settings.
 class ShellIndex {
   ShellIndex._();
   static const home = 0;
-  static const tasks = 1;
-  static const connections = 2;
-  static const activity = 3;
-  // M19: promoted to a top-level destination (was previously nested
-  // inside Settings, per user request to see conversation history
-  // directly rather than three taps deep) - not duplicated in
-  // Settings' own category list.
-  static const history = 4;
-  static const settings = 5;
+  static const chat = 1;
+  static const tasks = 2;
+  static const connections = 3;
+  static const settings = 4;
+
+  // Compatibility aliases for legacy references (activity and history now live under Chat)
+  static const activity = 1;
+  static const history = 1;
 }
 
-/// The persistent application shell: a sidebar on wide (desktop-first)
-/// layouts, collapsing to a bottom navigation bar on narrow/mobile
-/// widths. Screens are swapped in place — this is what makes
-/// Home -> Tasks -> Connections navigable within one running app.
+/// The persistent application shell: a collapsible sidebar on wide (desktop-first)
+/// layouts, and a 5-item bottom navigation bar on narrow/mobile widths.
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.sections, this.initialIndex = 0});
 
@@ -59,13 +48,31 @@ class AppShell extends StatefulWidget {
 
 class AppShellState extends State<AppShell> {
   late int _index = widget.initialIndex;
+  bool _sidebarCollapsed = false;
+
+  static const String _sidebarCollapsedPrefKey = 'uri_sidebar_collapsed_v1';
 
   @override
   void initState() {
     super.initState();
+    _loadSidebarPreference();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) AppStateScope.of(context).loadActiveBrain();
     });
+  }
+
+  Future<void> _loadSidebarPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getBool(_sidebarCollapsedPrefKey);
+    if (saved != null && mounted) {
+      setState(() => _sidebarCollapsed = saved);
+    }
+  }
+
+  Future<void> _toggleSidebar() async {
+    setState(() => _sidebarCollapsed = !_sidebarCollapsed);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_sidebarCollapsedPrefKey, _sidebarCollapsed);
   }
 
   void goTo(int index, {String? settingsCategory}) {
@@ -88,27 +95,39 @@ class AppShellState extends State<AppShell> {
     if (isWide) {
       return Scaffold(
         backgroundColor: colors.canvas,
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final scale = DashboardScale.scaleFor(constraints.biggest);
-            return DashboardScale(
-              scale: scale,
-              child: Row(
+        body: Row(
+          children: [
+            _Sidebar(
+              sections: widget.sections,
+              index: _index,
+              collapsed: _sidebarCollapsed,
+              onToggleCollapse: _toggleSidebar,
+              onSelect: goTo,
+            ),
+            Expanded(
+              child: Column(
                 children: [
-                  _Sidebar(
-                    sections: widget.sections,
-                    index: _index,
-                    onSelect: goTo,
-                    onBrainTap: () => goTo(
-                      ShellIndex.settings,
-                      settingsCategory: 'Model Providers',
+                  _ShellTopbar(
+                    title: widget.sections[_index].label,
+                    // Frozen Blueprint §4.4: Compact is a Workspace
+                    // (desktop-width) presentation only — the reference's
+                    // MobileApp.dc.html has no equivalent toggle, and a
+                    // fixed 420x580 floating window has nowhere to fit
+                    // on a narrow layout, so this button only exists in
+                    // the wide topbar built here.
+                    onCompactToggle: () =>
+                        AppStateScope.of(context).setCompact(true),
+                  ),
+                  Expanded(
+                    child: SafeArea(
+                      top: false,
+                      child: content,
                     ),
                   ),
-                  Expanded(child: SafeArea(child: content)),
                 ],
               ),
-            );
-          },
+            ),
+          ],
         ),
       );
     }
@@ -116,25 +135,24 @@ class AppShellState extends State<AppShell> {
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
-        backgroundColor: colors.canvas,
+        backgroundColor: colors.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        title: const Row(
+        title: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [_Wordmark()],
-        ),
-        actions: [
-          SizedBox(
-            width: MediaQuery.sizeOf(context).width < 500 ? 170 : 280,
-            child: _BrainStatusPill(
-              onTap: () => goTo(
-                ShellIndex.settings,
-                settingsCategory: 'Model Providers',
+          children: [
+            const _Wordmark(),
+            const SizedBox(width: UriSpace.xs),
+            Text(
+              '/ ${widget.sections[_index].label}',
+              style: TextStyle(
+                fontSize: 14,
+                color: colors.inkSoft,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ),
-          const SizedBox(width: UriSpace.sm),
-        ],
+          ],
+        ),
       ),
       body: SafeArea(child: content),
       bottomNavigationBar: NavigationBar(
@@ -145,8 +163,62 @@ class AppShellState extends State<AppShell> {
           for (final section in widget.sections)
             NavigationDestination(
               icon: Icon(section.icon),
-              label: section.label,
+              label: section.mobileLabel ?? section.label,
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Topbar across wide layouts: breadcrumb page title on the left;
+/// compact mode button on the right.
+///
+/// Live UX Repair §1: the 4 circular theme swatches (Frozen Blueprint
+/// §4.1 / Palettes.dc.html) were removed from here on the User's direct
+/// instruction - theme selection lives only under Settings > Appearance
+/// now (already implemented, see appearance_settings_screen.dart),
+/// which was always the second, redundant place this same choice lived.
+class _ShellTopbar extends StatelessWidget {
+  const _ShellTopbar({
+    required this.title,
+    required this.onCompactToggle,
+  });
+
+  final String title;
+  final VoidCallback onCompactToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
+
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: UriSpace.md),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(
+          bottom: BorderSide(color: colors.border),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: colors.ink,
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.picture_in_picture_alt_outlined, size: 18),
+            tooltip: 'Compact mode',
+            onPressed: onCompactToggle,
+            color: colors.inkSoft,
+            splashRadius: 18,
+          ),
         ],
       ),
     );
@@ -157,324 +229,187 @@ class _Sidebar extends StatelessWidget {
   const _Sidebar({
     required this.sections,
     required this.index,
+    required this.collapsed,
+    required this.onToggleCollapse,
     required this.onSelect,
-    required this.onBrainTap,
   });
+
   final List<UriSection> sections;
   final int index;
+  final bool collapsed;
+  final VoidCallback onToggleCollapse;
   final ValueChanged<int> onSelect;
-  final VoidCallback onBrainTap;
+
   @override
   Widget build(BuildContext context) {
-    // This is the left region of the same frozen desktop board rendered by
-    // HomeScreen. Reads the one shared scale AppShell computed for the
-    // whole board (see DashboardScale) so this rail always agrees with
-    // HomeScreen's own center/right columns - a fraction of the raw
-    // window width would drift from the board's actual scale at any
-    // window aspect ratio other than the board's native one.
-    final width = DashboardManifest.leftRailWidth * DashboardScale.of(context);
-    void navigate(int target, {String? category}) {
-      if (category != null) {
-        AppStateScope.of(context).openSettingsCategory(category);
-      }
-      onSelect(target);
-    }
-
-    final items = DashboardManifest.navItems.map((label) {
-      final detail = switch (label) {
-        'Home' => (Icons.auto_awesome_outlined, ShellIndex.home, null),
-        'Chat' => (Icons.chat_bubble_outline, ShellIndex.home, null),
-        // Email/Drive retain the Connections route; Files retains History;
-        // Insights retains Activity.  These are the surviving entry points
-        // for the duplicate labels removed from the visual nav.
-        'Email' => (Icons.mail_outline, ShellIndex.connections, null),
-        'Drive' => (Icons.link, ShellIndex.connections, null),
-        'Files' => (Icons.description_outlined, ShellIndex.history, null),
-        'Tasks' => (Icons.check, ShellIndex.tasks, null),
-        'Calendar' => (
-          Icons.calendar_month_outlined,
-          ShellIndex.connections,
-          null,
-        ),
-        'Graph' => (
-          Icons.hub_outlined,
-          ShellIndex.settings,
-          'Memory & Context',
-        ),
-        'Memory' => (Icons.memory, ShellIndex.settings, 'Memory'),
-        'Insights' => (Icons.insights, ShellIndex.activity, null),
-        'Model' => (
-          Icons.memory_outlined,
-          ShellIndex.settings,
-          'Model Providers',
-        ),
-        'Tools & Skills' => (
-          Icons.extension_outlined,
-          ShellIndex.settings,
-          'Capabilities',
-        ),
-        'Settings' => (Icons.settings_outlined, ShellIndex.settings, null),
-        _ => throw StateError('Unknown dashboard navigation item: $label'),
-      };
-      return (label, detail.$1, detail.$2, detail.$3);
-    }).toList();
     final colors = UriColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    final width = collapsed ? 64.0 : 240.0;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
       width: width,
-      // The near-black gradient is the approved dark theme's own
-      // branded treatment (M26 dashboard spec) - kept verbatim for
-      // dark mode. Light mode reads the active theme's own surface/
-      // border tokens instead of staying on this hardcoded dark
-      // gradient regardless of the selected Appearance (User-reported:
-      // Appearance must visibly change the left navigation/shell).
       decoration: BoxDecoration(
-        gradient: isDark
-            ? const LinearGradient(
-                colors: [Color(0xff020910), Color(0xff04121c)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
-        color: isDark ? null : colors.surface,
+        color: colors.surface,
         border: Border(
-          right: BorderSide(
-            color: isDark ? const Color(0xff15334a) : colors.border,
-          ),
+          right: BorderSide(color: colors.border),
         ),
       ),
       child: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height < 760 ? 125 : 180,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: Image.asset(
-                        'assets/uri_app_logo_refined_v2.png',
-                        color: const Color(0xff020910),
-                        colorBlendMode: BlendMode.screen,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
-                    child: Text(
-                      'INTELLIGENCE FOR A BETTER TOMORROW',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: colors.inkFaint,
-                        fontSize: 7,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  for (final item in items)
-                    _SidebarItem(
-                      section: UriSection(
-                        label: item.$1,
-                        icon: item.$2,
-                        builder: (_) => const SizedBox(),
-                      ),
-                      selected:
-                          (index == 0 && item.$1 == 'Home') ||
-                          (index == 1 && item.$1 == 'Tasks') ||
-                          (index == 5 && item.$1 == 'Settings'),
-                      onTap: () => navigate(item.$3, category: item.$4),
-                    ),
-                ],
-              ),
-            ),
-            const Padding(padding: EdgeInsets.all(12), child: _SidebarFooter()),
-          ],
-        ),
-      ),
-    );
-  }
-}
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isRail = collapsed || constraints.maxWidth < 180;
 
-/// Thin wrapper kept only so the many `_Wordmark()` call sites in this
-/// file don't all need renaming - the actual mark is the single
-/// canonical [UriWordmark] (see widgets/uri_wordmark.dart), previously
-/// duplicated here as its own copy.
-class _Wordmark extends StatelessWidget {
-  const _Wordmark();
-
-  @override
-  Widget build(BuildContext context) => UriWordmark(markSize: 30);
-}
-
-class _SidebarItem extends StatelessWidget {
-  const _SidebarItem({
-    required this.section,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final UriSection section;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = UriColors.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(UriRadius.sm),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(UriRadius.sm),
-          onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7),
-              gradient: selected
-                  ? const LinearGradient(
-                      colors: [Color(0xff0875d7), Color(0xff06419d)],
-                    )
-                  : null,
-              border: selected
-                  ? Border.all(color: const Color(0xff178fe9))
-                  : null,
-              boxShadow: selected
-                  ? const [BoxShadow(color: Color(0x550f85ff), blurRadius: 12)]
-                  : null,
-            ),
-            child: Row(
+            return Column(
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 160),
-                  width: 3,
-                  height: 18,
-                  margin: const EdgeInsets.only(left: 2),
-                  decoration: BoxDecoration(
-                    color: selected ? colors.accent : Colors.transparent,
-                    borderRadius: BorderRadius.circular(999),
+                // Brand Row
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isRail ? 8 : 12,
+                    vertical: 12,
+                  ),
+                  child: SizedBox(
+                    height: 36,
+                    child: isRail
+                        ? Center(
+                            child: IconButton(
+                              key: const ValueKey('expand_btn'),
+                              icon: const Icon(Icons.menu, size: 20),
+                              tooltip: 'Expand sidebar',
+                              onPressed: onToggleCollapse,
+                              color: colors.inkSoft,
+                              splashRadius: 18,
+                              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                              padding: EdgeInsets.zero,
+                            ),
+                          )
+                        : Row(
+                            key: const ValueKey('expanded_brand_row'),
+                            children: [
+                              const Expanded(
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: UriWordmark(markSize: 24),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                key: const ValueKey('collapse_btn'),
+                                icon: const Icon(Icons.menu_open, size: 20),
+                                tooltip: 'Collapse sidebar',
+                                onPressed: onToggleCollapse,
+                                color: colors.inkSoft,
+                                splashRadius: 18,
+                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                padding: EdgeInsets.zero,
+                              ),
+                            ],
+                          ),
                   ),
                 ),
+                Divider(height: 1, color: colors.border),
+                const SizedBox(height: 8),
+                // Nav Items
                 Expanded(
-                  child: Padding(
+                  child: ListView.separated(
                     padding: EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: MediaQuery.sizeOf(context).height < 760 ? 2 : 5,
+                      horizontal: isRail ? 10 : 8,
                     ),
+                    itemCount: sections.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 4),
+                    itemBuilder: (context, i) {
+                      final section = sections[i];
+                      final isSelected = index == i;
+
+                      if (isRail) {
+                        return _CollapsedRailItem(
+                          icon: section.icon,
+                          label: section.label,
+                          selected: isSelected,
+                          onTap: () => onSelect(i),
+                        );
+                      }
+
+                      return _ExpandedNavItem(
+                        icon: section.icon,
+                        label: section.label,
+                        selected: isSelected,
+                        onTap: () => onSelect(i),
+                      );
+                    },
+                  ),
+                ),
+                // Footer
+                if (!isRail)
+                  Padding(
+                    padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        Icon(
-                          section.icon,
-                          size: 17,
-                          // Selected text/icon sit on the fixed blue
-                          // accent gradient above (a brand highlight,
-                          // not the page background) and stay a light
-                          // color in both themes; unselected reads the
-                          // active theme so the shell responds to
-                          // Appearance like every other surface.
-                          color: selected
-                              ? const Color(0xffaac5d8)
-                              : colors.inkSoft,
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.green,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            section.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            'URI System Active',
                             style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: selected
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                              color: selected
-                                  ? const Color(0xffccdded)
-                                  : colors.ink,
+                              fontSize: 11,
+                              color: colors.inkFaint,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
               ],
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class _BrainStatusPill extends StatelessWidget {
-  const _BrainStatusPill({required this.onTap});
+class _CollapsedRailItem extends StatelessWidget {
+  const _CollapsedRailItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
+  final IconData icon;
+  final String label;
+  final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
-    final state = AppStateScope.of(context);
-    final brain = state.activeBrain;
-    final configured = brain?.isConfigured ?? false;
-    final reachable =
-        configured && (state.activeBrainProvider?.available ?? false);
-    final label = !configured
-        ? 'Brain: None (click to configure)'
-        : 'Brain: ${brain!.providerId} (${brain.model})';
-    final statusColor = reachable ? Colors.green : Colors.orange;
-    return Semantics(
-      button: true,
-      label:
-          '$label${configured ? (reachable ? ', reachable' : ', unreachable') : ''}',
-      child: Tooltip(
-        message: configured
-            ? '${reachable ? 'Reachable' : 'Unreachable'} — open Model Providers'
-            : 'Open Model Providers',
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(999),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: UriSpace.sm,
-                vertical: UriSpace.xs,
-              ),
-              decoration: BoxDecoration(
-                color: colors.surfaceSunken,
-                border: Border.all(color: colors.border),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: statusColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      label,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelSmall,
-                    ),
-                  ),
-                ],
+
+    return Tooltip(
+      message: label,
+      preferBelow: false,
+      child: Material(
+        color: selected ? colors.accentSoft : Colors.transparent,
+        borderRadius: BorderRadius.circular(UriRadius.sm),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(UriRadius.sm),
+          onTap: onTap,
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+              child: Icon(
+                icon,
+                size: 20,
+                color: selected ? colors.accent : colors.inkSoft,
               ),
             ),
           ),
@@ -484,52 +419,62 @@ class _BrainStatusPill extends StatelessWidget {
   }
 }
 
-class _SidebarFooter extends StatelessWidget {
-  const _SidebarFooter();
+class _ExpandedNavItem extends StatelessWidget {
+  const _ExpandedNavItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
   @override
-  Widget build(BuildContext context) => ShaderMask(
-    shaderCallback: (rect) => const LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Colors.transparent, Colors.black],
-      stops: [0.0, 0.55],
-    ).createShader(rect),
-    blendMode: BlendMode.dstIn,
-    child: Container(
-      height: 150,
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/misty_forest_sikkim.jpg'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.transparent, Color(0xff020910)],
-            stops: [0.0, 0.85],
+  Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
+
+    return Material(
+      color: selected ? colors.accentSoft : Colors.transparent,
+      borderRadius: BorderRadius.circular(UriRadius.sm),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(UriRadius.sm),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: selected ? colors.accent : colors.inkSoft,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    color: selected ? colors.accent : colors.ink,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              '\u201cSmall steps.\nA more organized tomorrow.\u201d\n\u2014 URI',
-              style: TextStyle(color: Color(0xffccdded), fontSize: 9),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'NIT Sikkim  v0.1.0',
-              style: TextStyle(color: Color(0xffaac5d8), fontSize: 9),
-            ),
-          ],
-        ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+class _Wordmark extends StatelessWidget {
+  const _Wordmark();
+
+  @override
+  Widget build(BuildContext context) => const UriWordmark(markSize: 24);
 }

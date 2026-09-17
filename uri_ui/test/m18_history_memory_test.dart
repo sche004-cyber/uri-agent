@@ -117,8 +117,12 @@ void main() {
     final client = _M18Client();
     final appState = await _pump(tester, client);
 
-    // Files is the approved sidebar's surviving History entry point.
-    await tester.tap(find.text('Files'));
+    // Post-Hybrid-Blueprint (Batch 2, §4.3): History is a tab inside
+    // Chat, not a separate sidebar destination. Chat is index 1 and
+    // reachable directly.
+    await tester.tap(find.text('Chat'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('History'));
     await tester.pumpAndSettle();
 
     expect(find.text('draft a note about the seminar'), findsWidgets);
@@ -136,9 +140,12 @@ void main() {
     );
     expect(client.sessionId, 'past-1');
 
-    // Resuming navigates to Home, whose initState fires several mock
-    // loads (each with a simulated latency Timer). Drain them so no
-    // Timer outlives the disposed widget tree.
+    // Resume switches back to the Conversation tab in place (no shell
+    // navigation — see HistoryScreen.onResumed) and shows the resumed
+    // turn there.
+    expect(find.text('Conversation'), findsOneWidget);
+    expect(find.text('Here is the note.'), findsOneWidget);
+
     await tester.pumpAndSettle(const Duration(seconds: 2));
   });
 }

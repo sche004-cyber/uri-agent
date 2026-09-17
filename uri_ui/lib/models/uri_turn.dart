@@ -109,6 +109,9 @@ class UriTurn {
     this.attachments = const <Attachment>[],
     this.servingProvider,
     this.servingModel,
+    this.promptTokens,
+    this.evalTokens,
+    this.durationSeconds,
   });
 
   final String id;
@@ -139,6 +142,15 @@ class UriTurn {
   final String? servingProvider;
   final String? servingModel;
 
+  /// Live UX Repair §8: real, measured per-turn metadata only - each is
+  /// null (never a fabricated 0 or guess) whenever the serving provider
+  /// did not actually report that field (see server.py's `_measured`,
+  /// which only unwraps a UsageRecord field when its own recorded
+  /// confidence is "KNOWN").
+  final int? promptTokens;
+  final int? evalTokens;
+  final double? durationSeconds;
+
   UriTurn copyWith({
     TurnStage? stage,
     String? understanding,
@@ -150,6 +162,9 @@ class UriTurn {
     List<Attachment>? attachments,
     String? servingProvider,
     String? servingModel,
+    int? promptTokens,
+    int? evalTokens,
+    double? durationSeconds,
   }) {
     return UriTurn(
       id: id,
@@ -166,6 +181,9 @@ class UriTurn {
       attachments: attachments ?? this.attachments,
       servingProvider: servingProvider ?? this.servingProvider,
       servingModel: servingModel ?? this.servingModel,
+      promptTokens: promptTokens ?? this.promptTokens,
+      evalTokens: evalTokens ?? this.evalTokens,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
     );
   }
 
@@ -181,6 +199,9 @@ class UriTurn {
     'failure_reason': failureReason,
     'serving_provider': servingProvider,
     'serving_model': servingModel,
+    'serving_prompt_tokens': promptTokens,
+    'serving_eval_tokens': evalTokens,
+    'serving_duration_seconds': durationSeconds,
   };
 
   factory UriTurn.fromJson(Map<String, dynamic> json) {
@@ -199,6 +220,9 @@ class UriTurn {
       failureReason: json['failure_reason'] as String?,
       servingProvider: json['serving_provider'] as String?,
       servingModel: json['serving_model'] as String?,
+      promptTokens: json['serving_prompt_tokens'] as int?,
+      evalTokens: json['serving_eval_tokens'] as int?,
+      durationSeconds: (json['serving_duration_seconds'] as num?)?.toDouble(),
     );
   }
 }

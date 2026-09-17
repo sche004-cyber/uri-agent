@@ -28,6 +28,9 @@ class MockUriClient implements UriClient {
   final List<ActivityEvent> _activity = <ActivityEvent>[];
   int _idCounter = 0;
 
+  bool shouldFailTasks = false;
+  bool shouldFailConnections = false;
+
   String _nextId(String prefix) => '$prefix-${++_idCounter}';
 
   // ---------------------------------------------------------------
@@ -206,6 +209,9 @@ class MockUriClient implements UriClient {
   @override
   Future<List<ServiceConnection>> listConnections() async {
     await _latency();
+    if (shouldFailConnections) {
+      throw const ConnectionsFetchException('Mock injected connections failure');
+    }
     return List.unmodifiable(_connections);
   }
 
@@ -614,12 +620,16 @@ class MockUriClient implements UriClient {
   @override
   Future<HomeSummary> loadHomeSummary() async {
     await _latency();
-    final pending = _turns.values
-        .where((t) => t.stage == TurnStage.awaitingApproval)
-        .length;
-    final connected = _connections
-        .where((c) => c.status == ConnectionStatus.connected)
-        .length;
+    final pending = shouldFailTasks
+        ? null
+        : _turns.values
+            .where((t) => t.stage == TurnStage.awaitingApproval)
+            .length;
+    final connected = shouldFailConnections
+        ? null
+        : _connections
+            .where((c) => c.status == ConnectionStatus.connected)
+            .length;
     final recent = _turns.values.toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
@@ -627,7 +637,9 @@ class MockUriClient implements UriClient {
       recentTurns: recent.take(3).toList(),
       pendingApprovalCount: pending,
       connectedServiceCount: connected,
-      totalServiceCount: _connections.length,
+      totalServiceCount: shouldFailConnections ? null : _connections.length,
+      tasksFailed: shouldFailTasks,
+      connectionsFailed: shouldFailConnections,
     );
   }
 
@@ -638,6 +650,9 @@ class MockUriClient implements UriClient {
   @override
   Future<List<TaskItem>> listTasks() async {
     await _latency();
+    if (shouldFailTasks) {
+      throw const TasksFetchException('Mock injected tasks failure');
+    }
 
     return _turns.values
         .where((turn) => turn.stage == TurnStage.awaitingApproval)
@@ -1072,8 +1087,8 @@ class MockUriClient implements UriClient {
         available: true,
         models: const [
           ModelInfo(
-            modelId: 'llama-3.3-70b-versatile',
-            displayName: 'Llama 3.3 70B',
+            modelId: 'qwen/qwen3.8-27b',
+            displayName: 'Qwen3.8 27B (Groq)',
           ),
         ],
         activeBrain: _activeBrainProviderId == 'groq',

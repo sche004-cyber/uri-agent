@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/foundation.dart';
 
 import '../models/activity_event.dart';
@@ -8,6 +7,7 @@ import '../models/system_performance.dart';
 import '../models/task_item.dart';
 import '../models/user_preferences.dart';
 import '../models/uri_turn.dart';
+import '../theme/uri_theme.dart' show UriThemeChoice;
 import 'preferences_store.dart';
 import 'server_address_store.dart';
 import 'session_store.dart';
@@ -70,24 +70,39 @@ class AppState extends ChangeNotifier {
 
   UserPreferences preferences;
 
-  /// Settings → Appearance. Defaults to following the OS until the
-  /// user picks otherwise; persisted on-device only (see [ThemeStore])
-  /// — never sent to the backend, which has no concept of how any
-  /// client renders itself.
-  // New installations open in the approved obsidian companion theme. This is
-  // a presentation default only; Appearance may still select Light/System.
-  ThemeMode themeMode = ThemeMode.dark;
+  /// Settings → Appearance, one of the 4 real Hybrid themes (or
+  /// `system`, which follows the OS). Persisted on-device only (see
+  /// [ThemeStore]) — never sent to the backend, which has no concept of
+  /// how any client renders itself. New installations open in Graphite
+  /// (this store's recorded default; see [ThemeStore]).
+  UriThemeChoice themeChoice = UriThemeChoice.graphite;
 
   Future<void> loadPersistedThemeMode() async {
-    themeMode = await _themeStore.load();
+    themeChoice = await _themeStore.load();
     notifyListeners();
   }
 
-  Future<void> setThemeMode(ThemeMode mode) async {
-    if (themeMode == mode) return;
-    themeMode = mode;
+  Future<void> setThemeChoice(UriThemeChoice choice) async {
+    if (themeChoice == choice) return;
+    themeChoice = choice;
     notifyListeners();
-    await _themeStore.save(mode);
+    await _themeStore.save(choice);
+  }
+
+  /// Hybrid UI Frozen Blueprint §4.4: a pure presentation-mode switch,
+  /// never a new session. Not persisted across launches — the reference
+  /// treats Compact as an in-session view toggle (`presentationToggle`),
+  /// not a durable device preference like [themeChoice]. Everything
+  /// Compact renders ([conversation], [composerDraft], [attachments],
+  /// [conversationModelOverride], any in-flight [isSendingAsk] request)
+  /// already lives on this same [AppState], so toggling this flag alone
+  /// is sufficient to guarantee no new session/duplicate request.
+  bool isCompact = false;
+
+  void setCompact(bool value) {
+    if (isCompact == value) return;
+    isCompact = value;
+    notifyListeners();
   }
 
   final List<UriTurn> conversation = <UriTurn>[];
@@ -99,6 +114,30 @@ class AppState extends ChangeNotifier {
   bool isLoadingHome = false;
   bool isSendingAsk = false;
   bool isLoadingTasks = false;
+  bool tasksFetchFailed = false;
+  String? tasksError;
+  bool isLoadingConnections = false;
+  bool connectionsFetchFailed = false;
+  String? connectionsError;
+
+  /// Hoisted composer draft state (R2).
+  /// Preserves draft text across navigation (Chat <-> Home <-> Tasks)
+  /// and sidebar toggles.
+  String composerDraft = '';
+
+  void setComposerDraft(String text) {
+    if (composerDraft != text) {
+      composerDraft = text;
+      notifyListeners();
+    }
+  }
+
+  void clearComposerDraft() {
+    if (composerDraft.isNotEmpty) {
+      composerDraft = '';
+      notifyListeners();
+    }
+  }
 
   // ---------------------------------------------------------------
   // Prototype 1 — multi-user identity + login foundation.
@@ -182,6 +221,27 @@ class AppState extends ChangeNotifier {
     hasLoadedActivity = false;
     unreadEmailCount = null;
     hasLoadedUnreadEmailCount = false;
+    unreadEmailFailed = false;
+    tasksFetchFailed = false;
+    tasksError = null;
+    connectionsFetchFailed = false;
+    connectionsError = null;
+    // Live verification (Post-Launch Brain Setup Repair) caught this:
+    // a fresh account, switched to in the same browser session, briefly
+    // showed the PREVIOUS account's real Active Brain on Home - Home
+    // only reloads activeBrain when it is null, and this field survived
+    // logout untouched, so a genuinely unconfigured new account looked
+    // like it had inherited someone else's Brain. activeBrain/
+    // activeBrainProvider/providerInventory must never outlive the
+    // session that fetched them.
+    activeBrain = null;
+    activeBrainProvider = null;
+    activeBrainFailed = false;
+    providerInventory = <ProviderEntry>[];
+    brainSetupChecked = false;
+    needsBrainSetup = false;
+    brainSetupDismissed = false;
+    composerDraft = '';
     // M16: attachments are conversation state too - a different user
     // must never see the previous user's attached filenames.
     attachments = <Attachment>[];
@@ -296,16 +356,32 @@ class AppState extends ChangeNotifier {
   Future<void> loadHome() async {
     isLoadingHome = true;
     notifyListeners();
-    homeSummary = await _client.loadHomeSummary();
-    isLoadingHome = false;
-    notifyListeners();
+    try {
+      homeSummary = await _client.loadHomeSummary();
+    } catch (_) {
+      // loadHomeSummary already produces tri-state HomeSummary safely
+    } finally {
+      isLoadingHome = false;
+      notifyListeners();
+    }
   }
 
   bool hasLoadedActivity = false;
 
   Future<void> loadConnections() async {
-    connections = await _client.listConnections();
+    isLoadingConnections = true;
+    connectionsFetchFailed = false;
+    connectionsError = null;
     notifyListeners();
+    try {
+      connections = await _client.listConnections();
+    } catch (e) {
+      connectionsFetchFailed = true;
+      connectionsError = e.toString();
+    } finally {
+      isLoadingConnections = false;
+      notifyListeners();
+    }
   }
 
   Future<void> loadActivity() async {
@@ -325,11 +401,19 @@ class AppState extends ChangeNotifier {
 
   int? unreadEmailCount;
   bool hasLoadedUnreadEmailCount = false;
+  bool unreadEmailFailed = false;
 
   Future<void> loadUnreadEmailCount() async {
-    unreadEmailCount = await _client.loadUnreadEmailCount();
-    hasLoadedUnreadEmailCount = true;
-    notifyListeners();
+    unreadEmailFailed = false;
+    try {
+      unreadEmailCount = await _client.loadUnreadEmailCount();
+    } catch (_) {
+      unreadEmailCount = null;
+      unreadEmailFailed = true;
+    } finally {
+      hasLoadedUnreadEmailCount = true;
+      notifyListeners();
+    }
   }
 
   /// Returns the backend's own explanation of what happened/what's
@@ -398,6 +482,7 @@ class AppState extends ChangeNotifier {
 
   Future<UriTurn> ask(String text) async {
     final pendingId = _generateTurnId();
+    clearComposerDraft();
 
     // Attachments stick to the turn they were sent with - like a chat
     // bubble's own attachment, not a standing part of the composer -
@@ -628,6 +713,21 @@ class AppState extends ChangeNotifier {
   bool brainSetupChecked = false;
   bool needsBrainSetup = false;
 
+  /// Post-Launch Brain Setup Repair: onboarding is optional, not a hard
+  /// gate. Set once the user taps "Skip for now" on [BrainOnboardingScreen]
+  /// so the root gate stops sending them back there on every rebuild
+  /// (previously it re-evaluated [needsBrainSetup] - which stays true
+  /// until a Brain is actually configured - on every notifyListeners()
+  /// anywhere in the app, trapping a user who skipped mid-session).
+  /// Reset on logout ([_clearSessionState]) so a fresh login is offered
+  /// onboarding again rather than inheriting a prior user's dismissal.
+  bool brainSetupDismissed = false;
+
+  void dismissBrainSetup() {
+    brainSetupDismissed = true;
+    notifyListeners();
+  }
+
   Future<void> refreshBrainSetupState() async {
     if (!isAuthenticated) {
       brainSetupChecked = false;
@@ -645,21 +745,31 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool activeBrainFailed = false;
+
   Future<void> loadActiveBrain() async {
-    final results = await Future.wait<dynamic>([
-      _client.getActiveBrain(),
-      _client.listProviders(),
-    ]);
-    activeBrain = results[0] as ActiveBrainInfo?;
-    final providers = results[1] as List<ProviderEntry>;
-    activeBrainProvider = null;
-    for (final provider in providers) {
-      if (provider.providerId == activeBrain?.providerId) {
-        activeBrainProvider = provider;
-        break;
+    activeBrainFailed = false;
+    try {
+      final results = await Future.wait<dynamic>([
+        _client.getActiveBrain(),
+        _client.listProviders(),
+      ]);
+      activeBrain = results[0] as ActiveBrainInfo?;
+      final providers = results[1] as List<ProviderEntry>;
+      activeBrainProvider = null;
+      for (final provider in providers) {
+        if (provider.providerId == activeBrain?.providerId) {
+          activeBrainProvider = provider;
+          break;
+        }
       }
+    } catch (_) {
+      activeBrain = null;
+      activeBrainProvider = null;
+      activeBrainFailed = true;
+    } finally {
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   Future<bool> setActiveBrain(String providerId, {String? model}) async {
@@ -949,10 +1059,18 @@ class AppState extends ChangeNotifier {
 
   Future<void> loadTasks() async {
     isLoadingTasks = true;
+    tasksFetchFailed = false;
+    tasksError = null;
     notifyListeners();
-    tasks = await _client.listTasks();
-    isLoadingTasks = false;
-    notifyListeners();
+    try {
+      tasks = await _client.listTasks();
+    } catch (e) {
+      tasksFetchFailed = true;
+      tasksError = e.toString();
+    } finally {
+      isLoadingTasks = false;
+      notifyListeners();
+    }
   }
 
   /// Approves a task by id (see [TaskItem.id]) — a separate flow from

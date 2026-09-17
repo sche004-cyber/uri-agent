@@ -13,10 +13,19 @@ import '../../widgets/screen_header.dart';
 /// per-user transcript (GET /history) — a top-level destination (not
 /// nested inside Settings) so it is genuinely visible, not three taps
 /// deep. Each conversation can be resumed (its turns load into the
-/// Home conversation and the next message continues that session) or
-/// deleted. Read-only reconstruction — nothing is re-run.
+/// canonical conversation and the next message continues that session)
+/// or deleted. Read-only reconstruction — nothing is re-run.
+///
+/// Hosted two ways: as the Chat destination's History tab (the normal
+/// case since Batch 2 — [onResumed] switches the host back to the
+/// Conversation tab, no shell navigation), or standalone, in which case
+/// the default [onResumed] falls back to navigating to Chat itself.
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
+  const HistoryScreen({super.key, this.onResumed});
+
+  /// Called after a resume completes. When null (standalone use),
+  /// defaults to navigating to the Chat destination.
+  final VoidCallback? onResumed;
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -35,8 +44,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _resume(AppState state, String sessionId) async {
     await state.resumeSession(sessionId);
     if (!mounted) return;
-    // Jump to Home, which holds the one canonical conversation.
-    context.findAncestorStateOfType<AppShellState>()?.goTo(ShellIndex.home);
+    if (widget.onResumed != null) {
+      widget.onResumed!();
+    } else {
+      context.findAncestorStateOfType<AppShellState>()?.goTo(ShellIndex.chat);
+    }
   }
 
   @override

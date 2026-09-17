@@ -17,7 +17,8 @@ import 'package:uri_ui/models/activity_event.dart';
 import 'package:uri_ui/models/connection.dart';
 import 'package:uri_ui/models/uri_turn.dart';
 import 'package:uri_ui/services/http_uri_client.dart';
-import 'package:uri_ui/services/uri_client.dart' show AttachmentException;
+import 'package:uri_ui/services/uri_client.dart'
+    show AttachmentException, TasksFetchException, ConnectionsFetchException;
 
 http.Response _json(Map<String, dynamic> body, {int statusCode = 200}) {
   return http.Response(jsonEncode(body), statusCode);
@@ -52,6 +53,65 @@ void main() {
       // The raw tool output must never leak into the summary text.
       expect(turn.result!.summary, isNot(contains('RAW DOCUMENT TEXT')));
     });
+
+    test(
+      'Live UX Repair §8: real serving metadata (model, duration, tokens) reaches the turn',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            return _json({
+              'status': 'success',
+              'session_id': 's1',
+              'semantic_analysis': {'goal': 'say hello'},
+              'execution': {'status': 'success'},
+              'response': {'message': 'Hello there.'},
+              'narrative': 'Hello there.',
+              'serving_provider': 'ollama',
+              'serving_model': 'gemma4:12b',
+              'serving_prompt_tokens': 120,
+              'serving_eval_tokens': 40,
+              'serving_duration_seconds': 2.5,
+            });
+          }),
+        );
+
+        final turn = await client.ask('say hello');
+
+        expect(turn.servingModel, 'gemma4:12b');
+        expect(turn.promptTokens, 120);
+        expect(turn.evalTokens, 40);
+        expect(turn.durationSeconds, 2.5);
+      },
+    );
+
+    test(
+      'Live UX Repair §8: an unmeasured field stays null - never a fabricated 0',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            return _json({
+              'status': 'success',
+              'session_id': 's1',
+              'semantic_analysis': {'goal': 'say hello'},
+              'execution': {'status': 'success'},
+              'response': {'message': 'Hello there.'},
+              'narrative': 'Hello there.',
+              'serving_provider': 'openai',
+              'serving_model': 'gpt-4o',
+              // No token/duration keys at all - the real shape returned
+              // when UsageMeter never measured this turn.
+            });
+          }),
+        );
+
+        final turn = await client.ask('say hello');
+
+        expect(turn.servingModel, 'gpt-4o');
+        expect(turn.promptTokens, isNull);
+        expect(turn.evalTokens, isNull);
+        expect(turn.durationSeconds, isNull);
+      },
+    );
 
     test('a successful execution with no narrative and no message never dumps raw JSON', () async {
       final client = HttpUriClient(
@@ -222,6 +282,27 @@ void main() {
 
         expect(turn.stage, TurnStage.failed);
         expect(turn.failureReason, 'simulated backend error');
+      },
+    );
+
+    test(
+      'an "unavailable" status with no Active Brain prompts to configure one, '
+      'rather than a generic failure message (Post-Launch Brain Setup Repair)',
+      () async {
+        final client = HttpUriClient(
+          httpClient: MockClient((request) async {
+            return _json({
+              'status': 'unavailable',
+              'error': null,
+              'narrative_unavailable_reason': 'drafting_provider_unreachable',
+            });
+          }),
+        );
+
+        final turn = await client.ask('summarize my day');
+
+        expect(turn.stage, TurnStage.failed);
+        expect(turn.failureReason, contains('set an Active Brain'));
       },
     );
 
@@ -471,7 +552,7 @@ void main() {
     });
 
     test(
-      'a network error returns an empty list rather than throwing',
+      'a network error throws TasksFetchException rather than returning empty',
       () async {
         final client = HttpUriClient(
           httpClient: MockClient((request) async {
@@ -479,9 +560,7 @@ void main() {
           }),
         );
 
-        final tasks = await client.listTasks();
-
-        expect(tasks, isEmpty);
+        expect(() => client.listTasks(), throwsA(isA<TasksFetchException>()));
       },
     );
   });
@@ -562,7 +641,7 @@ void main() {
     });
 
     test(
-      'a network error returns empty rather than falling back to mock data',
+      'a network error throws ConnectionsFetchException rather than falling back to mock data',
       () async {
         final client = HttpUriClient(
           httpClient: MockClient((request) async {
@@ -570,10 +649,10 @@ void main() {
           }),
         );
 
-        final connections = await client.listConnections();
-
-        // Crucially empty, NOT the mock's seeded "Gmail connected".
-        expect(connections, isEmpty);
+        expect(
+          () => client.listConnections(),
+          throwsA(isA<ConnectionsFetchException>()),
+        );
       },
     );
   });

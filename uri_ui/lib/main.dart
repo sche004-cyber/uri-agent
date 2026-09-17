@@ -14,9 +14,11 @@ import 'services/device_identity.dart';
 import 'services/http_uri_client.dart';
 import 'services/platform_attachment_opener.dart';
 import 'services/platform_file_picker.dart';
+import 'services/platform_window_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ensurePlatformWindowManagerInitialized();
 
   // Prototype 2 (multi-client + runtime awareness): this install's own
   // durable device_id (see device_identity.dart), generated once and
@@ -51,6 +53,7 @@ void main() async {
       appState: appState,
       filePicker: pickPlatformFile,
       attachmentOpener: openPlatformAttachment,
+      onCompactModeChanged: setCompactWindowMode,
     ),
   );
 }

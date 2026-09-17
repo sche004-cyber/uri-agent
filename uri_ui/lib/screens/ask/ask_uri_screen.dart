@@ -10,23 +10,82 @@ import '../../theme/uri_theme.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/turn_card.dart';
+import '../activity/activity_screen.dart';
+import '../history/history_screen.dart';
 
-/// The canonical Ask URI surface. Home composes [UriConversationPane] and
-/// [UriCommandDock] directly for the dashboard, while this wrapper retains
-/// the focused conversation view. Both paths use the same [AppState].
-class AskUriScreen extends StatelessWidget {
+/// The canonical Chat destination (§4.3). Hosts the live conversation
+/// (Conversation tab) plus two internal, non-navigational tabs —
+/// History and Activity — reusing [HistoryScreen]/[ActivityScreen] as
+/// they are, per COMPONENT_MAPPING.md's "Internal history/activity
+/// views" row: neither is a separate top-level destination.
+class AskUriScreen extends StatefulWidget {
   const AskUriScreen({super.key, this.filePicker, this.attachmentOpener});
 
   final FilePickerFn? filePicker;
   final AttachmentOpenerFn? attachmentOpener;
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Expanded(child: UriConversationPane(attachmentOpener: attachmentOpener)),
-      UriCommandDock(filePicker: filePicker),
-    ],
-  );
+  State<AskUriScreen> createState() => _AskUriScreenState();
+}
+
+class _AskUriScreenState extends State<AskUriScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _backToConversation() => _tabController.animateTo(0);
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
+    return Column(
+      children: [
+        Material(
+          color: colors.surface,
+          child: TabBar(
+            controller: _tabController,
+            tabAlignment: TabAlignment.start,
+            isScrollable: true,
+            tabs: const [
+              Tab(text: 'Conversation'),
+              Tab(text: 'History'),
+              Tab(text: 'Activity'),
+            ],
+          ),
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              Column(
+                children: [
+                  Expanded(
+                    child: UriConversationPane(
+                      attachmentOpener: widget.attachmentOpener,
+                    ),
+                  ),
+                  UriCommandDock(filePicker: widget.filePicker),
+                ],
+              ),
+              HistoryScreen(onResumed: _backToConversation),
+              const ActivityScreen(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// The one persisted transcript. This has no composer: [UriCommandDock] is
@@ -137,8 +196,8 @@ class _UriConversationPaneState extends State<UriConversationPane> {
                 constraints: const BoxConstraints(maxWidth: 460),
                 child: const EmptyState(
                   icon: Icons.forum_outlined,
-                  title: 'Start a conversation',
-                  message: 'Ask URI about an email, document, schedule, or record. URI will use the capabilities the runtime makes available.',
+                  title: 'New conversation',
+                  message: 'Ask URI anything to begin.',
                 ),
               ),
             ),
@@ -174,6 +233,7 @@ class _UriConversationPaneState extends State<UriConversationPane> {
                     onConnectService: (_) => _openConnections(),
                     onOpenAttachment: (attachment) =>
                         _openAttachment(state, attachment),
+                    compact: widget.compact,
                   );
                 },
               ),
@@ -203,18 +263,41 @@ class UriCommandDock extends StatefulWidget {
 }
 
 class _UriCommandDockState extends State<UriCommandDock> {
-  final _controller = TextEditingController();
+  late final TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => AppStateScope.of(context).loadProviderInventory(),
-    );
+    _controller = TextEditingController();
+    _controller.addListener(_onTextChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final state = AppStateScope.of(context);
+      if (state.composerDraft.isNotEmpty &&
+          _controller.text != state.composerDraft) {
+        _controller.text = state.composerDraft;
+      }
+      state.loadProviderInventory();
+    });
+  }
+
+  void _onTextChanged() {
+    if (!mounted) return;
+    AppStateScope.of(context).setComposerDraft(_controller.text);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = AppStateScope.of(context);
+    if (state.composerDraft != _controller.text) {
+      _controller.text = state.composerDraft;
+    }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onTextChanged);
     _controller.dispose();
     super.dispose();
   }
@@ -300,7 +383,12 @@ class _ComposerBody extends StatelessWidget {
     final colors = UriColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+      margin: EdgeInsets.fromLTRB(
+        compact ? 10 : 20,
+        compact ? 4 : 8,
+        compact ? 10 : 20,
+        compact ? 6 : 12,
+      ),
       padding: EdgeInsets.fromLTRB(
         compact ? UriSpace.md : UriSpace.lg,
         UriSpace.sm,
@@ -372,16 +460,35 @@ class _ComposerBody extends StatelessWidget {
                     textInputAction: TextInputAction.newline,
                     enabled: !sending,
                     decoration: const InputDecoration(
-                      hintText: 'Ask URI anything…',
+                      hintText: 'Message URI…',
                     ),
                   ),
                 ),
               ),
-              _ModelSelectorChip(
-                value: modelOverride,
-                providers: providers,
-                onChanged: onChooseModel,
+              // Compact-window fix: the message field and the model
+              // selector chip used to sit flush against each other with
+              // no gap at all, reading as an overlap/crowded cluster
+              // once Compact became a genuinely narrow window - this
+              // SizedBox (and the matching one below, before the mic
+              // icon) gives every composer control the same breathing
+              // room it already had elsewhere in the row.
+              const SizedBox(width: UriSpace.sm),
+              // Batch 4: bounded so the composer's icon row never
+              // overflows in the Compact window (§4.4, a real fixed
+              // 420px width, denser than the Workspace composer this
+              // chip was originally only ever measured against) - a
+              // long provider/model label now ellipsizes instead of
+              // demanding its full natural width.
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: compact ? 96 : 160),
+                child: _ModelSelectorChip(
+                  value: modelOverride,
+                  providers: providers,
+                  onChanged: onChooseModel,
+                  onOpen: () => AppStateScope.of(context).loadProviderInventory(),
+                ),
               ),
+              const SizedBox(width: UriSpace.sm),
               Tooltip(
                 message: 'Voice input is not available yet',
                 child: Icon(
@@ -472,17 +579,30 @@ class _ModelSelectorChip extends StatelessWidget {
     required this.value,
     required this.providers,
     required this.onChanged,
+    required this.onOpen,
   });
   final Object? value;
   final List<ProviderEntry> providers;
   final ValueChanged<Object?> onChanged;
+
+  /// Live UX Repair: providerInventory was previously fetched exactly
+  /// once, in the composer's initState - configuring or verifying a
+  /// provider afterward (e.g. from Connections & Providers, in the same
+  /// session) never reached this selector, which kept showing whatever
+  /// inventory happened to exist at that first mount. Firing on the raw
+  /// pointer-down (via [Listener], so it never competes with
+  /// PopupMenuButton's own tap handling in the gesture arena) means the
+  /// next time this menu opens it reflects the real, current inventory.
+  final VoidCallback onOpen;
 
   String get _label => value is Map
       ? ((value as Map)['model'] as String? ?? 'URI Auto')
       : 'URI Auto';
 
   @override
-  Widget build(BuildContext context) => PopupMenuButton<Object?>(
+  Widget build(BuildContext context) => Listener(
+    onPointerDown: (_) => onOpen(),
+    child: PopupMenuButton<Object?>(
     tooltip: 'Choose conversation model',
     onSelected: onChanged,
     itemBuilder: (context) => [
@@ -519,9 +639,27 @@ class _ModelSelectorChip extends StatelessWidget {
     // the attachment strip's Chip widgets below — attachment_ui_test.dart
     // asserts on find.byType(Chip) as a regression guard for the attach
     // flow, and this selector must never be counted as an attachment chip.
+    // Hybrid composer spec (§4.3): "label + chevron, opens a dropdown
+    // menu" — RawChip (not Chip) so attachment_ui_test.dart's
+    // find.byType(Chip) regression guard for the attach strip still
+    // counts only attachment chips, never this selector.
     child: RawChip(
-      avatar: const Icon(Icons.tune_rounded, size: 16),
-      label: Text(_label, overflow: TextOverflow.ellipsis),
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Flexible, not a bare Text: an unbounded-width Row gives its
+          // children their full natural size regardless of `overflow`,
+          // so without this the ellipsis above never actually had
+          // anything to clip against - the label just kept demanding
+          // its full width and overflowed once this chip was measured
+          // inside the Compact window's narrower composer (§4.4).
+          Flexible(
+            child: Text(_label, overflow: TextOverflow.ellipsis),
+          ),
+          const Icon(Icons.expand_more_rounded, size: 16),
+        ],
+      ),
+    ),
     ),
   );
 }

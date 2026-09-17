@@ -7,7 +7,7 @@
 //     backend's real explanation, never a faked "Connected"
 //   - the composer accepts a long prompt with no truncation or
 //     character-limit error
-//   - Appearance actually changes the active ThemeMode
+//   - Settings -> Appearance actually changes the active theme
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +19,7 @@ import 'package:uri_ui/models/user_preferences.dart';
 import 'package:uri_ui/services/app_state.dart';
 import 'package:uri_ui/services/mock_uri_client.dart';
 import 'package:uri_ui/services/uri_client.dart';
+import 'package:uri_ui/theme/uri_theme.dart';
 
 /// Gmail seeded as not-yet-authorized, with the exact honest detail
 /// the real backend reports when no credentials.json exists (see
@@ -84,24 +85,29 @@ void main() {
 
   group('navigation', () {
     testWidgets(
-      'Home is the only conversation surface: dashboard and composer together, no Ask URI tab',
+      'Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer',
       (tester) async {
         await pumpPostOnboardingApp(tester);
 
-        // The shell has Home, Tasks, Connections, Activity, Settings -
-        // never a second, separate "Ask URI" destination.
+        // The shell has Home, Chat, Tasks, Connections & Providers, Settings
         expect(find.text('Home'), findsWidgets);
+        expect(find.text('Chat'), findsWidgets);
         expect(find.text('Tasks'), findsWidgets);
-        expect(find.text('Email'), findsWidgets);
-        expect(find.text('Insights'), findsWidgets);
+        expect(find.text('Connections & Providers'), findsWidgets);
         expect(find.text('Settings'), findsWidgets);
-        expect(find.text('Ask URI'), findsNothing);
 
-        // Home shows real dashboard stats...
-        expect(find.text('Pending approvals'), findsOneWidget);
-        expect(find.text('Active Connections'), findsOneWidget);
+        // Home shows 4 real dashboard metric tiles
+        expect(find.text('PENDING APPROVALS'), findsOneWidget);
+        expect(find.text('UNREAD EMAIL'), findsOneWidget);
+        expect(find.text('CONNECTED SERVICES'), findsOneWidget);
+        expect(find.text('BRAIN / PROVIDER'), findsOneWidget);
 
-        // ...and the actual conversation composer, in the same screen.
+        // No composer on Home (lives on standalone Chat route)
+        expect(find.byType(TextField), findsNothing);
+
+        // Navigate to Chat and verify composer is present
+        await tester.tap(find.text('Chat'));
+        await tester.pumpAndSettle();
         expect(find.byType(TextField), findsOneWidget);
         expect(find.byIcon(Icons.arrow_forward_rounded), findsOneWidget);
       },
@@ -119,13 +125,13 @@ void main() {
 
         for (final label in [
           'Profile',
-          'URI',
           'Preferences',
-          'Connections',
           'Memory',
+          'URI',
           'Capabilities',
           'Diagnostics',
           'About',
+          'Appearance',
         ]) {
           expect(
             find.widgetWithText(ListTile, label),
@@ -133,6 +139,15 @@ void main() {
             reason: '$label category missing',
           );
         }
+
+        // Connections and Model Providers moved to the top-level
+        // Connections & Providers destination (§4.6) and must not
+        // remain as separate Settings categories.
+        expect(find.widgetWithText(ListTile, 'Connections'), findsNothing);
+        expect(find.widgetWithText(ListTile, 'Model Providers'), findsNothing);
+        // The reference's illustrative "Tools & Skills" label has no
+        // real URI screen and must never be built.
+        expect(find.widgetWithText(ListTile, 'Tools & Skills'), findsNothing);
 
         // Defaults to Profile.
         expect(find.text('Signed in as demo-user'), findsOneWidget);
@@ -156,7 +171,7 @@ void main() {
       (tester) async {
         await pumpPostOnboardingApp(tester, client: _GmailNeedsSetupClient());
 
-        await tester.tap(find.text('Email'));
+        await tester.tap(find.text('Connections & Providers'));
         await tester.pumpAndSettle();
 
         expect(find.text('Not connected'), findsOneWidget);
@@ -180,6 +195,10 @@ void main() {
       (tester) async {
         await pumpPostOnboardingApp(tester);
 
+        // Navigate to standalone Chat where composer lives
+        await tester.tap(find.text('Chat'));
+        await tester.pumpAndSettle();
+
         final longPrompt =
             'Please help me draft a detailed institutional note. ' *
             40; // ~2100 chars
@@ -198,21 +217,26 @@ void main() {
   });
 
   group('appearance', () {
-    testWidgets('choosing Dark actually changes the active ThemeMode', (
-      tester,
-    ) async {
-      await pumpPostOnboardingApp(tester);
+    testWidgets(
+      'choosing Deep Navy in Settings actually changes the active theme',
+      (tester) async {
+        final appState = await pumpPostOnboardingApp(tester);
 
-      await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ListTile, 'Preferences'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Settings'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(ListTile, 'Appearance'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Dark'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Deep Navy'));
+        await tester.pumpAndSettle();
 
-      final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
-      expect(app.themeMode, ThemeMode.dark);
-    });
+        expect(appState.themeChoice, UriThemeChoice.deepNavy);
+        final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+        expect(
+          (app.theme!.extension<UriColors>())!.canvas,
+          UriColors.deepNavy.canvas,
+        );
+      },
+    );
   });
 }

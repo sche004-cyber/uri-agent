@@ -5,24 +5,40 @@ import '../../theme/uri_theme.dart';
 import '../../widgets/screen_header.dart';
 import 'about_settings_screen.dart';
 import 'admin_grants_screen.dart';
+import 'appearance_settings_screen.dart';
 import 'capabilities_settings_screen.dart';
-import 'connections_settings_screen.dart';
 import 'diagnostics_settings_screen.dart';
 import 'memory_context_settings_screen.dart';
 import 'memory_settings_screen.dart';
 import 'preferences_settings_screen.dart';
 import 'profile_settings_screen.dart';
-import 'providers_screen.dart';
 import 'uri_server_settings_screen.dart';
+
+/// Hybrid UI Frozen Blueprint §4.7's two named groups. Connections and
+/// Model Providers are deliberately absent here — both moved to the new
+/// top-level Connections & Providers screen (§4.6); "Tools & Skills" is
+/// the reference's own illustrative label with no real URI screen and
+/// is never built (per the uri-ux-design skill's "map only real,
+/// verified backend capability" rule).
+enum _SettingsGroup { account, system }
+
+extension on _SettingsGroup {
+  String get label => switch (this) {
+    _SettingsGroup.account => 'Account',
+    _SettingsGroup.system => 'System',
+  };
+}
 
 class _SettingsCategory {
   const _SettingsCategory({
+    required this.group,
     required this.label,
     required this.subtitle,
     required this.icon,
     required this.builder,
   });
 
+  final _SettingsGroup group;
   final String label;
   final String subtitle;
   final IconData icon;
@@ -31,36 +47,28 @@ class _SettingsCategory {
 
 final _categories = <_SettingsCategory>[
   _SettingsCategory(
+    group: _SettingsGroup.account,
     label: 'Profile',
     subtitle: 'Who is signed in on this device, and this install\'s identity.',
     icon: Icons.person_outline_rounded,
     builder: (_) => const ProfileSettingsScreen(),
   ),
   _SettingsCategory(
-    label: 'URI',
-    subtitle: 'Which backend this device talks to.',
-    icon: Icons.dns_outlined,
-    builder: (_) => const UriServerSettingsScreen(),
-  ),
-  _SettingsCategory(
+    group: _SettingsGroup.account,
     label: 'Preferences',
-    subtitle: 'How much URI does on its own, its tone, and how the app looks.',
+    subtitle: 'How much URI does on its own, and its tone.',
     icon: Icons.tune_rounded,
     builder: (_) => const PreferencesSettingsScreen(),
   ),
   _SettingsCategory(
-    label: 'Connections',
-    subtitle: 'Services URI can use on your behalf.',
-    icon: Icons.hub_outlined,
-    builder: (_) => const ConnectionsSettingsScreen(),
-  ),
-  _SettingsCategory(
+    group: _SettingsGroup.account,
     label: 'Memory',
     subtitle: 'Facts URI holds about you, and what it remembers between conversations.',
     icon: Icons.psychology_outlined,
     builder: (_) => const MemorySettingsScreen(),
   ),
   _SettingsCategory(
+    group: _SettingsGroup.account,
     label: 'Memory & Context',
     subtitle:
         'Memory budgets, provider settings, and conversation compression.',
@@ -68,28 +76,39 @@ final _categories = <_SettingsCategory>[
     builder: (_) => const MemoryContextSettingsScreen(),
   ),
   _SettingsCategory(
+    group: _SettingsGroup.system,
+    label: 'URI',
+    subtitle: 'Which backend this device talks to.',
+    icon: Icons.dns_outlined,
+    builder: (_) => const UriServerSettingsScreen(),
+  ),
+  _SettingsCategory(
+    group: _SettingsGroup.system,
     label: 'Capabilities',
     subtitle: 'What URI can actually do right now, reported by the server.',
     icon: Icons.checklist_rounded,
     builder: (_) => const CapabilitiesSettingsScreen(),
   ),
   _SettingsCategory(
-    label: 'Model Providers',
-    subtitle: 'Configure LLM provider endpoints and API keys.',
-    icon: Icons.hub_outlined,
-    builder: (_) => const ProvidersScreen(),
-  ),
-  _SettingsCategory(
+    group: _SettingsGroup.system,
     label: 'Diagnostics',
     subtitle: 'Connection health and this device\'s identifiers.',
     icon: Icons.monitor_heart_outlined,
     builder: (_) => const DiagnosticsSettingsScreen(),
   ),
   _SettingsCategory(
+    group: _SettingsGroup.system,
     label: 'About',
     subtitle: 'App and backend information.',
     icon: Icons.info_outline_rounded,
     builder: (_) => const AboutSettingsScreen(),
+  ),
+  _SettingsCategory(
+    group: _SettingsGroup.system,
+    label: 'Appearance',
+    subtitle: 'The 4 URI themes, or follow your device.',
+    icon: Icons.palette_outlined,
+    builder: (_) => const AppearanceSettingsScreen(),
   ),
 ];
 
@@ -99,6 +118,7 @@ List<_SettingsCategory> _getCategories(BuildContext context) {
     ..._categories,
     if (isAdmin)
       _SettingsCategory(
+        group: _SettingsGroup.system,
         label: 'Capability Grants',
         subtitle:
             'Per-user capability authorization and grants administration.',
@@ -115,10 +135,11 @@ List<_SettingsCategory> _getCategories(BuildContext context) {
 /// beside it (master-detail) — matching the same wide-layout
 /// threshold [AppShell] itself uses.
 ///
-/// Deliberately never uses [Navigator.push] for this: every category
-/// screen (see ConnectionsSettingsScreen) needs to reach
-/// [AppShellState] via [BuildContext.findAncestorStateOfType] to jump
-/// to another shell tab, and a pushed route would sit in the
+/// Deliberately never uses [Navigator.push] for this: a category
+/// screen may need to reach [AppShellState] via
+/// [BuildContext.findAncestorStateOfType] to jump to another shell tab
+/// (see `ask_uri_screen.dart`/`history_screen.dart`'s own uses of the
+/// same lookup), and a pushed route would sit in the
 /// Navigator's stack as a sibling of the shell rather than a
 /// descendant of it — breaking that lookup. An in-place selection
 /// (same mechanism the wide layout already uses) keeps every category
@@ -234,12 +255,16 @@ class _WideSettings extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: UriSpace.md),
               children: [
-                for (var i = 0; i < categories.length; i++)
-                  _CategoryListTile(
-                    category: categories[i],
-                    selected: i == selected,
-                    onTap: () => onSelect(i),
-                  ),
+                for (final group in _SettingsGroup.values) ...[
+                  _GroupHeader(label: group.label),
+                  for (var i = 0; i < categories.length; i++)
+                    if (categories[i].group == group)
+                      _CategoryListTile(
+                        category: categories[i],
+                        selected: i == selected,
+                        onTap: () => onSelect(i),
+                      ),
+                ],
               ],
             ),
           ),
@@ -263,6 +288,29 @@ class _WideSettings extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _GroupHeader extends StatelessWidget {
+  const _GroupHeader({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      child: Text(
+        label.toUpperCase(),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.6,
+          color: colors.inkFaint,
+        ),
+      ),
     );
   }
 }
@@ -322,20 +370,29 @@ class _CompactSettingsList extends StatelessWidget {
             title: 'Settings',
             subtitle: 'Account, connections, preferences, and how URI behaves.',
           ),
-          Card(
-            child: Column(
-              children: [
-                for (var i = 0; i < categories.length; i++) ...[
-                  if (i > 0) const Divider(height: 1),
-                  _CategoryListTile(
-                    category: categories[i],
-                    selected: false,
-                    onTap: () => onSelect(i),
-                  ),
-                ],
-              ],
+          for (final group in _SettingsGroup.values) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: UriSpace.xs),
+              child: _GroupHeader(label: group.label),
             ),
-          ),
+            Card(
+              margin: const EdgeInsets.only(bottom: UriSpace.md),
+              child: Column(
+                children: [
+                  for (var i = 0; i < categories.length; i++)
+                    if (categories[i].group == group) ...[
+                      if (categories.sublist(0, i).any((c) => c.group == group))
+                        const Divider(height: 1),
+                      _CategoryListTile(
+                        category: categories[i],
+                        selected: false,
+                        onTap: () => onSelect(i),
+                      ),
+                    ],
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

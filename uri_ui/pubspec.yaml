@@ -43,6 +43,7 @@ dependencies:
   file_picker: ^12.2.0
   open_filex: ^4.7.0
   url_launcher: ^6.3.1
+  window_manager: ^0.5.2
 
 dev_dependencies:
   flutter_test:

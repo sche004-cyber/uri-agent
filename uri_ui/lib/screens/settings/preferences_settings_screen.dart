@@ -4,9 +4,9 @@ import '../../models/user_preferences.dart';
 import '../../services/app_state_scope.dart';
 import '../../theme/uri_theme.dart';
 
-/// How URI behaves for this user (approval level, tone) and how this
-/// app itself looks (Appearance) — grouped together because both are
-/// "how it feels to use URI" rather than app configuration.
+/// How URI behaves for this user: approval level and tone. Appearance
+/// (how this app itself looks) moved to Settings → Appearance per
+/// Hybrid UI Frozen Blueprint §4.7.
 class PreferencesSettingsScreen extends StatelessWidget {
   const PreferencesSettingsScreen({super.key});
 
@@ -62,19 +62,6 @@ class PreferencesSettingsScreen extends StatelessWidget {
                       ),
                     ),
                 ],
-              ),
-            ),
-            _Section(
-              title: 'Appearance',
-              description: 'Light, dark, or match your device.',
-              child: SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(value: ThemeMode.light, label: Text('Light'), icon: Icon(Icons.light_mode_outlined)),
-                  ButtonSegment(value: ThemeMode.dark, label: Text('Dark'), icon: Icon(Icons.dark_mode_outlined)),
-                  ButtonSegment(value: ThemeMode.system, label: Text('System'), icon: Icon(Icons.brightness_auto_outlined)),
-                ],
-                selected: {state.themeMode},
-                onSelectionChanged: (selection) => state.setThemeMode(selection.first),
               ),
             ),
           ],

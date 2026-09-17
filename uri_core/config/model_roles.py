@@ -241,25 +241,59 @@ def build_provider(
         see zero-behaviour-change.
     """
     role_config = load_model_roles(roles_path).get(role, {})
+    overridden_role_config = apply_active_brain_override(role, principal, role_config)
 
     # provider_id_override is set only by ModelRouter.attempt(), which has
-    # already decided WHICH provider/adapter to try (see model_router.py's
-    # own _ordered_candidates - deliberately not active-brain-aware, to
-    # avoid a cloud-provider Active Brain silently redirecting the router's
-    # own fallback-chain provider selection). Applying the model override
-    # here too - but ONLY when it agrees with the provider already chosen
-    # - is what actually lets a user's Active Brain model reach the real
-    # provider.complete() call for a router-mediated role (previously it
-    # never did, for any role - see apply_active_brain_override's own
-    # docstring). Direct callers (provider_id_override is None) get the
-    # full override, unchanged from before this repair.
-    overridden_role_config = apply_active_brain_override(role, principal, role_config)
+    # already decided WHICH candidate to try - either a real catalogue
+    # provider_id (e.g. "groq", from _ordered_candidates' per-user
+    # fallback-routing/Active-Brain path) or, for a static
+    # uri_workspace/model_roles.json deployment override, the literal
+    # ADAPTER family name ("openai_compatible") that override's own
+    # "provider" field already uses (see test_model_router_degraded_
+    # mode.py's "openai_compatible" literal) - two different shapes for
+    # the same parameter, resolved together here.
+    #
+    # Live UX Repair (post-launch): resolving a real provider_id through
+    # the catalogue first (rather than comparing it directly against the
+    # three literal adapter names) fixes two things that were previously
+    # both broken for every cloud provider except "anthropic" (whose
+    # provider_id happens to equal its own adapter name):
+    #   1. dispatch below always raised UnknownModelProviderError for a
+    #      real provider_id override, so a valid, verified Groq/OpenAI/
+    #      OpenRouter/Gemini key could never actually be reached through
+    #      ModelRouter at all;
+    #   2. even once (1) was first fixed, the override's role_config
+    #      (carrying the Active Brain's real MODEL) was still never
+    #      adopted here either, for the identical adapter-vs-provider_id
+    #      reason - so build_provider() silently fell back to this
+    #      role's hardcoded default model ("gpt-4o" for openai_compatible)
+    #      instead of the real active model, which the real provider then
+    #      genuinely rejected with ModelNotFoundError.
+    # The legacy adapter-literal override path (static deployment
+    # config) is unaffected either way - it never has a "provider_id" of
+    # its own to resolve, so it always falls through to the previous,
+    # unchanged comparison.
+    _KNOWN_ADAPTER_LITERALS = ("ollama", "openai_compatible", "anthropic")
+    resolved_provider_id: Optional[str] = None
+    if provider_id_override is not None and provider_id_override not in _KNOWN_ADAPTER_LITERALS:
+        from uri_core.core.provider_registry import CATALOGUE_BY_ID as _CATALOGUE_BY_ID
+        _descriptor = _CATALOGUE_BY_ID.get(provider_id_override)
+        if _descriptor is None:
+            raise UnknownModelProviderError(
+                f"Unknown provider_id override: {provider_id_override!r}."
+            )
+        provider_name = _descriptor.adapter
+        resolved_provider_id = provider_id_override
+    else:
+        provider_name = provider_id_override or role_config.get("provider", "ollama")
+
     if provider_id_override is None:
         role_config = overridden_role_config
+    elif resolved_provider_id is not None:
+        if overridden_role_config.get("provider_id") == resolved_provider_id:
+            role_config = overridden_role_config
     elif overridden_role_config.get("provider", "ollama") == provider_id_override:
         role_config = overridden_role_config
-
-    provider_name = provider_id_override or role_config.get("provider", "ollama")
 
     # -------------------------------------------------------------------
     # "ollama" - unchanged M21 behaviour
@@ -294,7 +328,7 @@ def build_provider(
         from uri_core.core.provider_keys import ProviderKeyStore
 
         user_id = principal.user_id
-        provider_id = role_config.get("provider_id", "openai")
+        provider_id = resolved_provider_id or role_config.get("provider_id", "openai")
 
         # Per-user config: base_url and model overrides.
         pcs = ProviderConfigStore(user_id)
@@ -339,7 +373,7 @@ def build_provider(
         from uri_core.core.provider_keys import ProviderKeyStore
 
         user_id = principal.user_id
-        provider_id = provider_id_override or role_config.get("provider_id", "anthropic")
+        provider_id = resolved_provider_id or role_config.get("provider_id", "anthropic")
         catalogue_entry = CATALOGUE_BY_ID.get(provider_id)
         user_cfg = ProviderConfigStore(user_id).get_provider_config(provider_id)
         config = ModelProviderConfig(

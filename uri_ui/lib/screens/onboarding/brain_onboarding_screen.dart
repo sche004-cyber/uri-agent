@@ -3,10 +3,20 @@ import 'package:flutter/material.dart';
 import '../../services/app_state_scope.dart';
 import '../../services/uri_client.dart';
 import '../../theme/uri_theme.dart';
+import '../../widgets/uri_wordmark.dart';
 
 /// First-run provider setup; separate from the preference-tour onboarding.
+///
+/// Optional, not a hard gate (Post-Launch Brain Setup Repair): [onSkip]
+/// lets the user proceed into URI with no Active Brain configured. URI
+/// never fabricates a provider/model to fill that gap - Home surfaces a
+/// non-blocking "Needs Setup" state instead, and this screen remains
+/// reachable later from Connections & Providers.
 class BrainOnboardingScreen extends StatefulWidget {
-  const BrainOnboardingScreen({super.key});
+  const BrainOnboardingScreen({super.key, required this.onSkip});
+
+  final VoidCallback onSkip;
+
   @override
   State<BrainOnboardingScreen> createState() => _BrainOnboardingScreenState();
 }
@@ -110,13 +120,38 @@ class _BrainOnboardingScreenState extends State<BrainOnboardingScreen> {
     });
     final state = AppStateScope.of(context);
     final saved = await state.submitProviderKey(providerId, key);
-    final activated = saved != null && await state.setActiveBrain(providerId);
+    if (saved?.configured != true) {
+      if (!mounted) return;
+      setState(() {
+        _savingKey = false;
+        _message =
+            'URI could not save this key: '
+            '${saved?.error ?? 'check the key and try again.'}';
+      });
+      return;
+    }
+
+    // Match the same submit -> verify -> activate sequence Connections &
+    // Providers uses (see providers_screen.dart's _KeyDialogState): a
+    // stored key alone never proves a model can actually be served, and
+    // Active Brain must always be a discovered-and-verified model - the
+    // backend rejects any other selection. The previous version of this
+    // screen skipped verification and called setActiveBrain with no
+    // model at all, which the real backend always refused - this is the
+    // root cause of the reported "cloud-provider path unusable" defect.
+    final verification = await state.verifyProvider(providerId);
+    final verifiedModel = verification?.models.firstOrNull;
+    final activated = verification?.verified == true && verifiedModel != null
+        ? await state.setActiveBrain(providerId, model: verifiedModel)
+        : false;
     if (!mounted) return;
     setState(() {
       _savingKey = false;
       _message = activated
-          ? 'Your API key was saved and this provider is now your Active Brain.'
-          : 'URI could not save and activate this provider. Check the key and try again.';
+          ? 'Your API key was saved, verified, and this provider is now your Active Brain.'
+          : 'Key stored, but model verification failed: '
+                '${verification?.error ?? 'URI could not reach a usable model.'} '
+                'Open Model Providers to retry.';
     });
   }
 
@@ -137,21 +172,36 @@ class _BrainOnboardingScreenState extends State<BrainOnboardingScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Reuses the exact approved dashboard rail logo asset
-                    // and screen-blend treatment (see app_shell.dart's
-                    // _Sidebar) - never a separate onboarding-only mark.
-                    // The raster itself already carries the "Desktop
-                    // Companion" caption, so no separate subtitle text
-                    // competes with it here either.
-                    SizedBox(
-                      height: 96,
-                      child: Image.asset(
-                        'assets/uri_app_logo_refined_v2.png',
-                        color: const Color(0xff020910),
-                        colorBlendMode: BlendMode.screen,
-                        fit: BoxFit.contain,
-                        alignment: Alignment.centerLeft,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Live UX Repair §12 (branding consistency): this
+                        // screen previously used a standalone raster
+                        // asset (assets/uri_app_logo_refined_v2.png) with
+                        // a comment claiming it matched the sidebar's
+                        // logo - it did not; the sidebar (app_shell.dart's
+                        // _Sidebar) already uses the canonical
+                        // UriWordmark, the same theme-aware vector mark
+                        // Login and preference-onboarding use. Reusing it
+                        // here (rather than a fixed-color PNG that can't
+                        // adapt to all 4 themes) is what actually makes
+                        // the mark consistent across every screen.
+                        const Expanded(
+                          child: UriWordmark(
+                            markSize: 40,
+                            showDesktopCompanion: true,
+                          ),
+                        ),
+                        // Brain setup is optional, not a hard gate - a
+                        // clear escape hatch on every step, never buried
+                        // below the fold. Never fabricates a provider,
+                        // model, or Active Brain: it simply proceeds with
+                        // none configured, which Home surfaces honestly.
+                        TextButton(
+                          onPressed: widget.onSkip,
+                          child: const Text('Skip for now'),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: UriSpace.lg),
                     Text(

@@ -36,15 +36,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_step < _totalSteps - 1) {
       setState(() => _step++);
     } else {
-      widget.onComplete(
-        UserPreferences(
-          focusAreas: _focusAreas.toList(),
-          communicationStyle: _style,
-          autonomyLevel: _autonomy,
-          completedOnboarding: true,
-        ),
-      );
+      _finish();
     }
+  }
+
+  // Post-Launch Brain Setup Repair: onboarding must be skippable at any
+  // step, not only completable - whatever was picked so far (possibly
+  // nothing) becomes the saved preferences, same as reaching the last
+  // step normally.
+  void _finish() {
+    widget.onComplete(
+      UserPreferences(
+        focusAreas: _focusAreas.toList(),
+        communicationStyle: _style,
+        autonomyLevel: _autonomy,
+        completedOnboarding: true,
+      ),
+    );
   }
 
   void _back() => setState(() => _step = (_step - 1).clamp(0, _totalSteps - 1));
@@ -89,6 +97,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     children: [
                       if (_step > 0)
                         TextButton(onPressed: _back, child: const Text('Back')),
+                      TextButton(
+                        onPressed: _finish,
+                        child: const Text('Skip for now'),
+                      ),
                       const Spacer(),
                       ElevatedButton(
                         onPressed: _next,

@@ -37,7 +37,7 @@ void main() {
   ) async {
     await pumpPostOnboardingApp(tester);
 
-    await tester.tap(find.text('Email'));
+    await tester.tap(find.text('Connections & Providers'));
     await tester.pumpAndSettle();
 
     expect(find.text('Gmail'), findsOneWidget);
@@ -47,6 +47,11 @@ void main() {
 
     expect(find.widgetWithText(OutlinedButton, 'Reconnect'), findsOneWidget);
     expect(find.widgetWithText(ElevatedButton, 'Connect'), findsOneWidget);
+
+    // Frozen Blueprint §4.6: Connections & Providers is one destination
+    // with both real sections present together on a wide layout, not
+    // two separate screens.
+    expect(find.text('Ollama (Local)'), findsOneWidget);
   });
 
   testWidgets('authorizing a not-connected service updates its state', (
@@ -54,11 +59,15 @@ void main() {
   ) async {
     await pumpPostOnboardingApp(tester);
 
-    await tester.tap(find.text('Email'));
+    await tester.tap(find.text('Connections & Providers'));
     await tester.pumpAndSettle();
 
     expect(find.text('Not connected'), findsOneWidget);
 
+    // The combined Connections & Providers screen (§4.6) is taller than
+    // the viewport at this width - scroll the Connect button into view
+    // before tapping it, same as any real scrollable page.
+    await tester.ensureVisible(find.widgetWithText(ElevatedButton, 'Connect'));
     await tester.tap(find.widgetWithText(ElevatedButton, 'Connect'));
     await tester.pumpAndSettle();
 
@@ -71,7 +80,7 @@ void main() {
   ) async {
     await pumpPostOnboardingApp(tester);
 
-    await tester.tap(find.text('Email'));
+    await tester.tap(find.text('Connections & Providers'));
     await tester.pumpAndSettle();
 
     expect(find.text('Needs authorization'), findsOneWidget);

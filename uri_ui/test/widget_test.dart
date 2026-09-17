@@ -41,7 +41,7 @@ void main() {
       find.text('What kind of work do you want help with?'),
       findsOneWidget,
     );
-    expect(find.text('Good evening,'), findsNothing);
+    expect(find.textContaining('Welcome back'), findsNothing);
   });
 
   testWidgets('completing onboarding arrives at Home with shell navigation', (
@@ -67,14 +67,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(appState.preferences.completedOnboarding, isTrue);
-    expect(find.text('Good evening,'), findsOneWidget);
+    expect(find.textContaining('Welcome back'), findsOneWidget);
 
-    // The persistent navigation shell is present. There is no separate
-    // "Ask URI" destination — Home itself is the one canonical
-    // conversation screen (see HomeScreen/AskUriScreen).
+    // The persistent 5-destination Hybrid shell is present
     expect(find.text('Home'), findsWidgets);
-    expect(find.text('Email'), findsWidgets);
-    expect(find.text('Insights'), findsWidgets);
+    expect(find.text('Chat'), findsWidgets);
+    expect(find.text('Tasks'), findsWidgets);
+    expect(find.text('Connections & Providers'), findsWidgets);
     expect(find.text('Settings'), findsWidgets);
   });
 }
