@@ -116,6 +116,36 @@ class ModelResponse:
     tool_calls: Optional[Tuple[ToolCall, ...]] = None
 
 
+@dataclass(frozen=True)
+class StreamChunk:
+    """One increment of a streamed completion (M32 D5).
+
+    ``content`` is this chunk's own incremental text delta (empty string
+    when this chunk carries none). ``is_tool_call`` is True the moment
+    the underlying provider signals this response is going to invoke a
+    tool rather than answer in prose - once True on ANY chunk in a
+    stream, a caller must treat every ``content`` delta already seen
+    (this chunk's and every earlier one) as provisional only: never
+    persisted as a completed narrative, never treated as authoritative
+    turn completion. The real, complete decision is always
+    ``final_response`` on the terminal chunk (``done=True``) - built
+    identically to what ``complete()`` would have returned for the same
+    request, so a caller already written against ``complete()`` can
+    consume it unchanged.
+
+    ``ttft_seconds`` (time to first token) is populated only on the
+    terminal chunk, and only when genuinely measured - ``None`` rather
+    than a fabricated number for a provider/path that could not measure
+    it (matches ``ModelResponse``'s own "unknown, never guessed"
+    discipline for prompt_tokens/eval_tokens/duration_seconds)."""
+
+    content: str = ""
+    is_tool_call: bool = False
+    done: bool = False
+    final_response: Optional["ModelResponse"] = None
+    ttft_seconds: Optional[float] = None
+
+
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "qwen3:14b"
 DEFAULT_TIMEOUT_SECONDS = 60.0
@@ -253,6 +283,41 @@ class ModelProvider(ABC):
         accept and ignore it as a no-op if it cannot honour tool calling
         (never raise merely because tools= was supplied)."""
         raise NotImplementedError
+
+    def complete_stream(
+        self,
+        *,
+        system: str,
+        user: str,
+        temperature: float = 0.0,
+        max_tokens: Optional[int] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+    ):
+        """M32 D5: streaming variant of ``complete()``. Deliberately
+        **not abstract** - this default implementation calls the
+        provider's own ``complete()`` and yields the whole result as one
+        terminal ``StreamChunk``, so every adapter that has not been
+        individually upgraded to real token-by-token streaming (see
+        ``OllamaProvider.complete_stream`` for the first real
+        implementation) still behaves correctly through this same
+        interface, with zero code change required in that adapter. A
+        caller that always consumes ``complete_stream()`` therefore never
+        needs to know whether the underlying provider genuinely streams -
+        this is what keeps streaming provider/model-agnostic. TTFT for
+        this fallback equals total duration by construction - it must
+        never be reported as an improvement, since none occurred."""
+        response = self.complete(
+            system=system, user=user, temperature=temperature,
+            max_tokens=max_tokens, tools=tools,
+        )
+        is_tool_call = bool(response.tool_calls)
+        yield StreamChunk(
+            content="" if is_tool_call else response.content,
+            is_tool_call=is_tool_call,
+            done=True,
+            final_response=response,
+            ttft_seconds=response.duration_seconds,
+        )
 
     @abstractmethod
     def describe(self) -> ModelProviderStatus:

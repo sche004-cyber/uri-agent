@@ -21,6 +21,7 @@ access, when the insecure override is used - no TLS, no reverse proxy,
 no authentication beyond this file's own login endpoints.
 """
 
+import asyncio
 import json
 import os
 import tempfile
@@ -46,7 +47,7 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field, StrictInt
 
 from uri_core.app.edge import (
@@ -1283,27 +1284,28 @@ def revoke_my_device(
     return {"device_id": device_id, "revoked_sessions": revoked_count}
 
 
-@app.post("/ask")
-def ask(
-    payload: AskRequest,
-    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
-    _size_check: None = Depends(enforce_ask_content_length),
-) -> dict:
-    # Bounded personalization (Milestone 8A): only the confirmed
-    # profile and consent-eligible memory (never pending_confirmation,
-    # never growth/XP - see personalization_context.py) is assembled
-    # here, at the HTTP boundary, using the same user-scoped stores
-    # every other endpoint already reads - never inside
-    # UriOrchestrator itself, preserving its existing zero-coupling to
-    # profile/memory (see Milestone 5-7's structural boundary tests).
-    # This can only ever influence how a response is *phrased* (see
-    # _draft_narrative_safely) - it is never read by capability
-    # selection, approval, or execution.
-    #
-    # Prototype 1 (multi-user identity): context resolves to the
-    # logged-in user_id's own isolated profile/memory/orchestrator
-    # when an Authorization header is present, and to the pre-existing
-    # legacy ambient globals otherwise - see _resolve_context.
+def _resolve_ask_context(payload: "AskRequest", user_id: Optional[str]):
+    """Shared context/principal resolution for POST /ask and POST
+    /ask/stream (M32 D5) - extracted verbatim from /ask's own opening
+    so the two endpoints can never independently drift on identity,
+    personalization, or per-request model-override rebinding. Returns
+    ``(context, principal, personalization_context)``.
+
+    Bounded personalization (Milestone 8A): only the confirmed profile
+    and consent-eligible memory (never pending_confirmation, never
+    growth/XP - see personalization_context.py) is assembled here, at
+    the HTTP boundary, using the same user-scoped stores every other
+    endpoint already reads - never inside UriOrchestrator itself,
+    preserving its existing zero-coupling to profile/memory (see
+    Milestone 5-7's structural boundary tests). This can only ever
+    influence how a response is *phrased* (see _draft_narrative_safely)
+    - it is never read by capability selection, approval, or execution.
+
+    Prototype 1 (multi-user identity): context resolves to the
+    logged-in user_id's own isolated profile/memory/orchestrator when
+    an Authorization header is present, and to the pre-existing legacy
+    ambient globals otherwise - see _resolve_context.
+    """
     context = _resolve_context(user_id)
 
     personalization_context = build_personalization_context(
@@ -1333,6 +1335,17 @@ def ask(
         context.orchestrator.semantic_interpreter = ProviderSemanticInterpreter(
             principal=principal
         )
+
+    return context, principal, personalization_context
+
+
+@app.post("/ask")
+def ask(
+    payload: AskRequest,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+    _size_check: None = Depends(enforce_ask_content_length),
+) -> dict:
+    context, principal, personalization_context = _resolve_ask_context(payload, user_id)
 
     # M30.7: pending WorkflowExecutor pauses otherwise resume inside the
     # legacy orchestrator before the Decision Contract can judge whether this
@@ -1493,9 +1506,22 @@ def ask(
     except Exception:
         pass
 
-    # The router writes this observation only after a successful completion.
-    # Persist it after the request so captions describe the actual serving
-    # model, never merely the user's requested override.
+    return _finalize_ask_response(context, user_id, payload, result)
+
+
+def _finalize_ask_response(
+    context, user_id: Optional[str], payload: "AskRequest", result: dict
+) -> dict:
+    """Shared tail for POST /ask and POST /ask/stream's "done" event
+    (M32 D5) - extracted verbatim from /ask's own tail so the two
+    endpoints can never independently drift on serving-model annotation
+    or on which fields of the orchestrator's raw result cross the wire.
+
+    The router writes the serving-model observation only after a
+    successful completion. It is read here, after the request, so
+    captions describe the actual serving model, never merely the user's
+    requested override.
+    """
     _serving = _serving_model_for_turn(user_id, payload.session_id)
     serving_provider = _serving["provider_id"]
     serving_model = _serving["model"]
@@ -1559,6 +1585,150 @@ def ask(
         "serving_eval_tokens": serving_eval_tokens,
         "serving_duration_seconds": serving_duration_seconds,
     }
+
+
+def _sse_event(event: str, data: dict) -> str:
+    """Formats one Server-Sent Event (M32 D5). Every event this endpoint
+    emits carries a JSON object payload, never raw text, so a client can
+    parse every event the same way regardless of kind."""
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False, default=str)}\n\n"
+
+
+def _ask_stream_eligible(context, payload: "AskRequest") -> bool:
+    """M32 D5: true only for the one case this design targets - native
+    tool loop enabled, and no workflow_continuation pause pending for
+    this session (§13.1/§13.6: a resumed workflow's turn is always a
+    structured, non-prose decision, never streamed prose). Anything
+    else (native_tool_loop off, or a genuine pending pause) delegates
+    to the existing, completely unmodified ask() rather than being
+    re-routed here - this function only ever decides whether to TRY the
+    fast path, never re-implements what ask() itself would decide."""
+    try:
+        from uri_core.core.canonical_execution import workflow_continuation_mode_enabled
+        from uri_core.core.native_tool_loop import native_tool_loop_enabled
+
+        if not native_tool_loop_enabled():
+            return False
+        if workflow_continuation_mode_enabled():
+            session = context.orchestrator.session_manager.get_session(payload.session_id)
+            if (
+                session.active_workflow is not None
+                and session.active_workflow_status == "waiting_for_input"
+            ):
+                return False
+        return True
+    except Exception:
+        return False
+
+
+@app.post("/ask/stream")
+async def ask_stream(
+    payload: AskRequest,
+    request: Request,
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+    _size_check: None = Depends(enforce_ask_content_length),
+) -> StreamingResponse:
+    """M32 D5: streaming counterpart to POST /ask.
+
+    Streams live content ONLY for the one case this design targets -
+    native tool loop enabled, Tier 0 (no tool call), no pending
+    workflow_continuation (see _ask_stream_eligible,
+    docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md §13). Every
+    other case - native_tool_loop off, a pending approval/workflow pause,
+    the stream-capacity cap already at limit, or the fast path declining
+    to produce a result at all (turn-state assembly failure - the SAME
+    "None means fall back" convention /ask's own native_tool_loop branch
+    already follows) - delegates to the existing, completely unmodified
+    ask() function and re-emits its single dict as one terminal "message"
+    SSE event. This endpoint never re-implements /ask's own 4-tier
+    routing logic (workflow_continuation / native_tool_loop / canonical /
+    legacy) - it only ever decides whether to TRY the streaming fast
+    path first, and always falls back to calling ask() itself, verbatim,
+    for everything else.
+
+    Per the User's frozen design and its clarification: a first content
+    chunk never proves a turn is terminal. Every "content" SSE event is
+    provisional until "done" arrives; if a "tool_call_detected" event
+    appears, every prior "content" event for this turn must be treated
+    as discarded by the client - the eventual "done" event's `envelope`
+    (or the fallback "message" event) is always the single source of
+    truth for what actually happened and what was persisted.
+    """
+    context, principal, personalization_context = _resolve_ask_context(payload, user_id)
+
+    async def _fallback_to_ask():
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None, lambda: ask(payload, user_id=user_id, _size_check=None)
+        )
+        yield _sse_event("message", result)
+        yield _sse_event("done", {"narrative_interrupted": False})
+
+    async def _generate():
+        if not _ask_stream_eligible(context, payload):
+            async for chunk in _fallback_to_ask():
+                yield chunk
+            return
+
+        from uri_core.core.stream_tool_loop import (
+            StreamCapacityExceededError,
+            stream_first_turn,
+        )
+
+        cancel_event = threading.Event()
+        loop = asyncio.get_event_loop()
+        stream_iter = iter(stream_first_turn(
+            orchestrator=context.orchestrator, session_id=payload.session_id,
+            user_text=payload.text, principal=principal, cancel_event=cancel_event,
+        ))
+        _STREAM_EXHAUSTED = object()
+
+        def _next_or_sentinel():
+            # A bare `next()` raising StopIteration cannot be awaited
+            # through run_in_executor (PEP 479: StopIteration may never
+            # propagate out of a coroutine/Future) - a sentinel return
+            # value sidesteps that cleanly instead of catching
+            # StopIteration around the await itself.
+            return next(stream_iter, _STREAM_EXHAUSTED)
+
+        try:
+            while True:
+                if await request.is_disconnected():
+                    cancel_event.set()
+                    break
+                try:
+                    # Blocking next() runs off the event loop thread so
+                    # `await request.is_disconnected()` can still be
+                    # polled between items, without blocking the server.
+                    event = await loop.run_in_executor(None, _next_or_sentinel)
+                except StreamCapacityExceededError:
+                    async for chunk in _fallback_to_ask():
+                        yield chunk
+                    return
+                if event is _STREAM_EXHAUSTED:
+                    break
+
+                if event.kind == "content":
+                    yield _sse_event("content", {"text": event.content})
+                elif event.kind == "tool_call_detected":
+                    yield _sse_event("tool_call_detected", {})
+                elif event.kind == "error":
+                    yield _sse_event("error", {"error": event.error})
+                elif event.kind == "done":
+                    if event.envelope is None:
+                        async for chunk in _fallback_to_ask():
+                            yield chunk
+                        return
+                    finalized = _finalize_ask_response(context, user_id, payload, event.envelope)
+                    yield _sse_event("done", {
+                        "response": finalized,
+                        "ttft_seconds": event.ttft_seconds,
+                        "narrative_interrupted": event.narrative_interrupted,
+                    })
+        finally:
+            cancel_event.set()
+
+    return StreamingResponse(_generate(), media_type="text/event-stream")
 
 
 @app.post("/approve")

@@ -5,6 +5,7 @@ Talks to Ollama's /api/chat endpoint directly - no shelling out to the
 so nothing here is hardcoded beyond that config's own defaults.
 """
 
+import json
 import logging
 import time
 import uuid
@@ -28,6 +29,7 @@ from .base import (
     ProviderResponseError,
     ProviderTimeoutError,
     ProviderUnavailableError,
+    StreamChunk,
     ToolCall,
     _location_from_base_url,
 )
@@ -108,27 +110,61 @@ def resolve_model_context_tokens(
     return default
 
 
+def _parse_ollama_tool_calls(raw_tool_calls: Any) -> tuple:
+    """Normalises Ollama's raw ``message.tool_calls`` list (dict entries
+    with a nested ``"function": {"name", "arguments"}``) into a tuple of
+    ``ToolCall``. Shared by ``complete()`` and ``complete_stream()`` (M32
+    D5) so the two can never independently drift on this parsing.
+    Returns an empty tuple for anything not shaped as a list."""
+    if not isinstance(raw_tool_calls, list):
+        return ()
+    collected = []
+    for entry in raw_tool_calls:
+        if not isinstance(entry, dict):
+            continue
+        function = entry.get("function")
+        if not isinstance(function, dict):
+            continue
+        name = function.get("name")
+        if not isinstance(name, str) or not name:
+            continue
+        arguments = function.get("arguments")
+        if not isinstance(arguments, dict):
+            arguments = {}
+        collected.append(
+            ToolCall(
+                id=str(entry.get("id") or uuid.uuid4()),
+                name=name,
+                arguments=arguments,
+            )
+        )
+    return tuple(collected)
+
+
 class OllamaProvider(ModelProvider):
     def __init__(self, config: Optional[ModelProviderConfig] = None):
         self.config = config or ModelProviderConfig.from_env()
 
-    def complete(
+    def _build_chat_payload(
         self,
         *,
         system: str,
         user: str,
-        temperature: float = 0.0,
-        max_tokens: Optional[int] = None,
-        tools: Optional[List[Dict[str, Any]]] = None,
-    ) -> ModelResponse:
-
+        temperature: float,
+        max_tokens: Optional[int],
+        tools: Optional[List[Dict[str, Any]]],
+        stream: bool,
+    ) -> Dict[str, Any]:
+        """Shared request-payload construction for both ``complete()``
+        and ``complete_stream()`` (M32 D5) - identical in every field
+        except ``stream``, so the two can never independently drift."""
         payload = {
             "model": self.config.model,
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            "stream": False,
+            "stream": stream,
             # 2026-09-12 (User directive): without this, Ollama evicts an
             # idle model from memory on its own short default timeout,
             # so the next turn pays a real 10-20s reload cost before any
@@ -175,6 +211,14 @@ class OllamaProvider(ModelProvider):
         if tools:
             payload["tools"] = tools
 
+        return payload
+
+    def _check_context_window(
+        self, *, system: str, user: str, max_tokens: Optional[int]
+    ) -> None:
+        """Shared pre-flight context-window guard for both ``complete()``
+        and ``complete_stream()`` - raises ``ContextWindowExceededError``
+        identically for either, never silently truncating a prompt."""
         estimated_prompt_tokens = estimate_tokens(system) + estimate_tokens(user)
         headroom = max_tokens or 0
         total_required_tokens = estimated_prompt_tokens + headroom
@@ -194,6 +238,22 @@ class OllamaProvider(ModelProvider):
                 max_tokens=headroom,
                 context_tokens=self.config.context_tokens,
             )
+
+    def complete(
+        self,
+        *,
+        system: str,
+        user: str,
+        temperature: float = 0.0,
+        max_tokens: Optional[int] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+    ) -> ModelResponse:
+
+        payload = self._build_chat_payload(
+            system=system, user=user, temperature=temperature,
+            max_tokens=max_tokens, tools=tools, stream=False,
+        )
+        self._check_context_window(system=system, user=user, max_tokens=max_tokens)
 
         url = f"{self.config.base_url.rstrip('/')}/api/chat"
 
@@ -258,31 +318,9 @@ class OllamaProvider(ModelProvider):
         # one is generated here so every ToolCall always has a real,
         # non-empty id a continuation message can reference.
         raw_tool_calls = message.get("tool_calls")
-        parsed_tool_calls: Optional[tuple] = None
-        if tools:
-            parsed_tool_calls = ()
-            if isinstance(raw_tool_calls, list):
-                collected = []
-                for entry in raw_tool_calls:
-                    if not isinstance(entry, dict):
-                        continue
-                    function = entry.get("function")
-                    if not isinstance(function, dict):
-                        continue
-                    name = function.get("name")
-                    if not isinstance(name, str) or not name:
-                        continue
-                    arguments = function.get("arguments")
-                    if not isinstance(arguments, dict):
-                        arguments = {}
-                    collected.append(
-                        ToolCall(
-                            id=str(entry.get("id") or uuid.uuid4()),
-                            name=name,
-                            arguments=arguments,
-                        )
-                    )
-                parsed_tool_calls = tuple(collected)
+        parsed_tool_calls: Optional[tuple] = (
+            _parse_ollama_tool_calls(raw_tool_calls) if tools else None
+        )
 
         if isinstance(prompt_tokens, int):
             _LOG.info(
@@ -294,6 +332,7 @@ class OllamaProvider(ModelProvider):
                 duration_seconds,
                 self.config.context_tokens,
             )
+            estimated_prompt_tokens = estimate_tokens(system) + estimate_tokens(user)
             if prompt_tokens < estimated_prompt_tokens * 0.7:
                 _LOG.warning(
                     "Ollama reported prompt_tokens=%d for a prompt "
@@ -313,6 +352,153 @@ class OllamaProvider(ModelProvider):
             duration_seconds=duration_seconds,
             tool_calls=parsed_tool_calls,
         )
+
+    def complete_stream(
+        self,
+        *,
+        system: str,
+        user: str,
+        temperature: float = 0.0,
+        max_tokens: Optional[int] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+    ):
+        """M32 D5: real token-by-token streaming, against Ollama's own
+        `/api/chat` with `"stream": true` - real NDJSON lines, one
+        `{"message": {"content": <delta>[, "tool_calls": [...]]}, "done":
+        bool, ...}` object per line, confirmed live against this
+        deployment's own Ollama server before this was written (see
+        M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md §13/§14).
+
+        Live-confirmed tool-calling behaviour this depends on: when the
+        model calls a tool, Ollama's FIRST streamed line already carries
+        the full `message.tool_calls` array with `content: ""` - no
+        prose precedes it. This still yields every chunk (content or
+        tool-call) as it arrives rather than assuming that ordering
+        internally; a caller must still treat `is_tool_call=True` on
+        ANY chunk (not just the first) as reason to discard every prior
+        `content` delta as provisional (see `StreamChunk`'s own
+        docstring) - this method never makes that judgement call itself.
+
+        Yields one `StreamChunk` per NDJSON line, plus a final
+        `done=True` chunk carrying the complete, real `ModelResponse` -
+        constructed identically in shape to what `complete()` returns
+        for the same request, so a caller already written against
+        `complete()`'s result can consume `final_response` unchanged.
+        """
+        payload = self._build_chat_payload(
+            system=system, user=user, temperature=temperature,
+            max_tokens=max_tokens, tools=tools, stream=True,
+        )
+        self._check_context_window(system=system, user=user, max_tokens=max_tokens)
+
+        url = f"{self.config.base_url.rstrip('/')}/api/chat"
+        start = time.monotonic()
+        ttft: Optional[float] = None
+        accumulated_content: List[str] = []
+        tool_calls_final: Optional[tuple] = None
+
+        try:
+            response = requests.post(
+                url, json=payload, timeout=self.config.timeout_seconds, stream=True,
+            )
+        except requests.exceptions.Timeout as exc:
+            raise ProviderTimeoutError(
+                f"Ollama did not respond within {self.config.timeout_seconds}s."
+            ) from exc
+        except requests.exceptions.ConnectionError as exc:
+            raise ProviderUnavailableError(
+                f"Could not reach Ollama at {self.config.base_url}. "
+                "Is it running?"
+            ) from exc
+        except requests.exceptions.RequestException as exc:
+            raise ProviderUnavailableError(
+                f"Request to Ollama failed: {exc}"
+            ) from exc
+
+        if response.status_code == 404:
+            response.close()
+            raise ModelNotFoundError(
+                f"Model '{self.config.model}' was not found on this Ollama "
+                f"server ({self.config.base_url}). Pull it first."
+            )
+
+        if response.status_code != 200:
+            body = response.text[:200]
+            response.close()
+            raise ProviderResponseError(
+                f"Ollama returned HTTP {response.status_code}: {body}"
+            )
+
+        try:
+            for line in response.iter_lines():
+                if not line:
+                    continue
+                try:
+                    data = json.loads(line)
+                except ValueError as exc:
+                    raise ProviderResponseError(
+                        "Ollama streamed a line that was not valid JSON."
+                    ) from exc
+
+                if not isinstance(data, dict):
+                    raise ProviderResponseError(
+                        "Ollama streamed a line that was not a JSON object."
+                    )
+
+                message = data.get("message")
+                delta_content = ""
+                if isinstance(message, dict) and isinstance(message.get("content"), str):
+                    delta_content = message["content"]
+
+                raw_tool_calls = message.get("tool_calls") if isinstance(message, dict) else None
+                is_tool_call = bool(raw_tool_calls)
+                if is_tool_call and tools:
+                    tool_calls_final = _parse_ollama_tool_calls(raw_tool_calls)
+
+                if delta_content:
+                    if ttft is None:
+                        ttft = time.monotonic() - start
+                    accumulated_content.append(delta_content)
+
+                done = bool(data.get("done"))
+                if not done:
+                    yield StreamChunk(content=delta_content, is_tool_call=is_tool_call, done=False)
+                    continue
+
+                duration_seconds = time.monotonic() - start
+                prompt_tokens = data.get("prompt_eval_count")
+                eval_tokens = data.get("eval_count")
+                final_response = ModelResponse(
+                    content="".join(accumulated_content),
+                    model=data.get("model", self.config.model),
+                    provider="ollama",
+                    prompt_tokens=prompt_tokens if isinstance(prompt_tokens, int) else None,
+                    eval_tokens=eval_tokens if isinstance(eval_tokens, int) else None,
+                    duration_seconds=duration_seconds,
+                    tool_calls=(tool_calls_final if tools else None),
+                )
+                yield StreamChunk(
+                    content=delta_content,
+                    is_tool_call=bool(tool_calls_final),
+                    done=True,
+                    final_response=final_response,
+                    ttft_seconds=ttft,
+                )
+                return
+
+            # M32 D5: the connection closed (or Ollama stopped sending
+            # lines) without ever sending a "done": true line - never
+            # silently treat this as a normal, complete response (which
+            # would hand a caller an incomplete `final_response=None`
+            # via no terminal chunk at all). An explicit, honest failure
+            # here matches this provider's own non-streaming complete()
+            # discipline - see its own "no message.content" check.
+            raise ProviderResponseError(
+                "Ollama's stream ended without a final done=true line - "
+                "the response is incomplete."
+            )
+        finally:
+            response.close()
 
     def _model_max_context(self, response) -> Optional[int]:
         """M21: the model's own trained/supported context length, parsed

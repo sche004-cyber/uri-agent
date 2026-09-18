@@ -35,6 +35,17 @@ def _fake_ok_response(content="{}", model="qwen3:14b"):
     return response
 
 
+def _fake_stream_response(lines, status_code=200):
+    """M32 D5: a fake `requests.post(..., stream=True)` response whose
+    `.iter_lines()` yields the given NDJSON strings (as bytes, matching
+    the real `requests` library's own default) - one JSON object per
+    Ollama streaming convention line."""
+    response = MagicMock()
+    response.status_code = status_code
+    response.iter_lines.return_value = [line.encode("utf-8") for line in lines]
+    return response
+
+
 class ModelProviderConfigTests(unittest.TestCase):
 
     def test_defaults_when_env_unset(self):
@@ -538,6 +549,153 @@ class OllamaProviderDescribeTests(unittest.TestCase):
             status = provider.describe()
 
         self.assertIsNone(status.detail)
+
+
+class OllamaProviderCompleteStreamTests(unittest.TestCase):
+    """M32 D5: OllamaProvider.complete_stream() - no real network access
+    (mocked NDJSON lines, mirroring OllamaProviderMockedTests' own
+    convention). Real, live-Ollama evidence for this same method is
+    reported separately (M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md
+    §14) rather than duplicated as an offline test."""
+
+    def test_content_only_stream_yields_deltas_and_final_response(self):
+        provider = OllamaProvider(config=_config())
+        lines = [
+            '{"model":"qwen3:14b","message":{"role":"assistant","content":"Hel"},"done":false}',
+            '{"model":"qwen3:14b","message":{"role":"assistant","content":"lo"},"done":false}',
+            '{"model":"qwen3:14b","message":{"role":"assistant","content":""},"done":true,'
+            '"prompt_eval_count":5,"eval_count":2}',
+        ]
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=_fake_stream_response(lines),
+        ) as mock_post:
+            chunks = list(provider.complete_stream(system="sys", user="hello"))
+
+        self.assertEqual([c.content for c in chunks], ["Hel", "lo", ""])
+        self.assertFalse(any(c.is_tool_call for c in chunks))
+        self.assertTrue(chunks[-1].done)
+        self.assertEqual(chunks[-1].final_response.content, "Hello")
+        self.assertEqual(chunks[-1].final_response.prompt_tokens, 5)
+        self.assertEqual(chunks[-1].final_response.eval_tokens, 2)
+        self.assertIsNone(chunks[-1].final_response.tool_calls)
+
+        _, kwargs = mock_post.call_args
+        self.assertEqual(kwargs["json"]["stream"], True)
+        self.assertTrue(kwargs.get("stream"))
+
+    def test_ttft_measured_on_first_content_chunk_only(self):
+        provider = OllamaProvider(config=_config())
+        lines = [
+            '{"model":"m","message":{"role":"assistant","content":"A"},"done":false}',
+            '{"model":"m","message":{"role":"assistant","content":"B"},"done":false}',
+            '{"model":"m","message":{"role":"assistant","content":""},"done":true}',
+        ]
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=_fake_stream_response(lines),
+        ):
+            chunks = list(provider.complete_stream(system="sys", user="hello"))
+
+        self.assertIsNotNone(chunks[-1].ttft_seconds)
+        self.assertGreaterEqual(chunks[-1].final_response.duration_seconds, chunks[-1].ttft_seconds)
+
+    def test_tool_call_stream_yields_zero_content_and_parses_final_tool_calls(self):
+        provider = OllamaProvider(config=_config())
+        lines = [
+            '{"model":"m","message":{"role":"assistant","content":"",'
+            '"tool_calls":[{"id":"call_1","function":{"name":"get_weather",'
+            '"arguments":{"city":"Paris"}}}]},"done":false}',
+            '{"model":"m","message":{"role":"assistant","content":""},"done":true}',
+        ]
+        tools = [{"type": "function", "function": {"name": "get_weather", "parameters": {}}}]
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=_fake_stream_response(lines),
+        ):
+            chunks = list(provider.complete_stream(system="sys", user="hi", tools=tools))
+
+        self.assertTrue(all(c.content == "" for c in chunks))
+        self.assertTrue(chunks[0].is_tool_call)
+        final = chunks[-1].final_response
+        self.assertEqual(final.content, "")
+        self.assertEqual(len(final.tool_calls), 1)
+        self.assertEqual(final.tool_calls[0].name, "get_weather")
+        self.assertEqual(final.tool_calls[0].arguments, {"city": "Paris"})
+
+    def test_404_raises_model_not_found_error(self):
+        provider = OllamaProvider(config=_config())
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=_fake_stream_response([], status_code=404),
+        ):
+            with self.assertRaises(ModelNotFoundError):
+                list(provider.complete_stream(system="sys", user="hello"))
+
+    def test_timeout_raises_provider_timeout_error(self):
+        provider = OllamaProvider(config=_config())
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            side_effect=requests.exceptions.Timeout(),
+        ):
+            with self.assertRaises(ProviderTimeoutError):
+                list(provider.complete_stream(system="sys", user="hello"))
+
+    def test_connection_error_raises_provider_unavailable_error(self):
+        provider = OllamaProvider(config=_config())
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            side_effect=requests.exceptions.ConnectionError(),
+        ):
+            with self.assertRaises(ProviderUnavailableError):
+                list(provider.complete_stream(system="sys", user="hello"))
+
+    def test_malformed_json_line_raises_provider_response_error(self):
+        provider = OllamaProvider(config=_config())
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=_fake_stream_response(["not valid json"]),
+        ):
+            with self.assertRaises(ProviderResponseError):
+                list(provider.complete_stream(system="sys", user="hello"))
+
+    def test_context_window_exceeded_raised_before_any_request(self):
+        provider = OllamaProvider(config=ModelProviderConfig(
+            base_url="http://localhost:11434", model="qwen3:14b",
+            timeout_seconds=5.0, context_tokens=10,
+        ))
+        with patch("uri_core.core.model_providers.ollama_provider.requests.post") as mock_post:
+            with self.assertRaises(ContextWindowExceededError):
+                list(provider.complete_stream(
+                    system="a long system prompt that exceeds the tiny window",
+                    user="and more user text on top of it",
+                ))
+        mock_post.assert_not_called()
+
+    def test_response_is_closed_after_stream_completes(self):
+        provider = OllamaProvider(config=_config())
+        response = _fake_stream_response([
+            '{"model":"m","message":{"role":"assistant","content":"ok"},"done":true}',
+        ])
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=response,
+        ):
+            list(provider.complete_stream(system="sys", user="hello"))
+
+        response.close.assert_called_once()
+
+    def test_response_is_closed_even_on_404(self):
+        provider = OllamaProvider(config=_config())
+        response = _fake_stream_response([], status_code=404)
+        with patch(
+            "uri_core.core.model_providers.ollama_provider.requests.post",
+            return_value=response,
+        ):
+            with self.assertRaises(ModelNotFoundError):
+                list(provider.complete_stream(system="sys", user="hello"))
+
+        response.close.assert_called_once()
 
 
 if __name__ == "__main__":

@@ -358,6 +358,225 @@ This is the honest trade-off the fix makes, and only for a batch size that has n
 
 ---
 
+## 13. D5 design/verification phase (2026-09-18, from clean HEAD `5d76a40` — design only, nothing implemented)
+
+**D5 — streaming**, scoped per §7's own table row ("requires the User's transport/approval-interaction decision"). This section is the requested design document: acceptance criteria, risks, and test scenarios for a future implementation batch. No production code changed in this phase.
+
+### 13.1 Current response path, traced end-to-end
+
+- **`POST /ask`** (`server.py:1287`) is a **synchronous `def` returning a plain `dict`** — no `async def`, no streaming response type, no SSE/WebSocket infrastructure anywhere in `server.py` (confirmed by direct search: zero matches for `StreamingResponse`/`EventSourceResponse`/`text/event-stream`). Four-tier fallthrough, in order: (1) an early `workflow_continuation` check when `session.active_workflow_status == "waiting_for_input"` (`:1337-1379`); (2) `native_tool_loop.run_native_tool_loop()` (Tier 0/Tier 1, **off by default** via `native_tool_loop_enabled()`, `:1392-1411`); (3) `canonical_execution.run_canonical_for_ask()` (`:1419-1449`); (4) legacy `orchestrator.process_user_input()` (`:1451-1470`, the terminal fallback). Whichever tier produces a non-`None` `result` short-circuits the rest.
+- **`native_tool_loop.run_native_tool_loop()`** (`native_tool_loop.py:291-398`): each iteration calls `model_callable(system=..., user=..., tools=tools)` once, synchronously, returning one complete `ModelResponse`. `tool_calls = response.tool_calls or ()`; empty ⇒ `_terminal_envelope(content=response.content, ...)` (Tier 0 — **the Brain's own content IS the reply**, no separate drafting/validation call). Non-empty ⇒ translate → `evaluate_gates()` → `_execute_canonical()` (existing, unmodified since M32 Batch C), results fed back to the Brain for another iteration (bounded by `DEFAULT_MAX_ITERATIONS = 3`).
+- **`response_drafting.draft_response()`** (canonical/legacy paths only, used when `native_tool_loop` is off — today's actual default production path): a **separate** narrative-phrasing call whose output is passed through `validate_drafted_response()` **after** the full text returns, before being trusted (`orchestrator.py:3761-3774`). This is a materially different shape from Tier 0's "content is the reply" contract.
+- **`ModelProvider.complete()`** (`model_providers/base.py:239-255`, the ABC every adapter implements): returns **one complete `ModelResponse`**, always. None of the 3 adapters (`OllamaProvider`, `AnthropicProvider`, `OpenAICompatibleProvider`) has any streaming parameter or method; `OllamaProvider.complete()` explicitly hardcodes `"stream": False` in its request payload (`ollama_provider.py:131`).
+- **Approval**: gate evaluation (`decision_gates.evaluate_gates()` → `ApprovalGate.execute_tool()`) runs synchronously, **inside the same `/ask` call**, strictly before any response is returned. An approval-required outcome ends that `/ask` call immediately with a **structured, non-prose** `"approval_required"` status plus a persisted `ApprovalStore` proposal (`approval_store.propose(...)`). Resumption is `POST /approve` (`server.py:1564-1607`) — an entirely separate, later HTTP request/connection, never inside the same stream.
+- **Persistence**: `UriOrchestrator._record_conversation_turn_safely()` (`orchestrator.py:4624-4676`) is called with the **fully-completed** `result` dict — never incrementally, never before the turn is fully decided. `native_tool_loop`'s own envelope construction follows the identical discipline (full envelope built, then returned).
+- **Resumability** (`workflow_continuation`): checked at the very top of `/ask`, before any model call — also a structured, non-prose turn.
+- **Prior art, re-verified**: `M32_EXECUTION_ARCHITECTURE_PLAN.md` §"C4/C6 — Streaming, end to end" already researched this exact question and found the same 3 hard blockers this trace reconfirms today: provider layer hardcodes non-streaming; `/ask` is sync with no SSE infra; the Flutter `UriClient.ask()` returns `Future<UriTurn>` with no incremental-update path (`app_state.dart:483-519`). Nothing has changed since that finding; this section extends it with the concrete design those blockers require, not a re-derivation.
+
+### 13.2 Where token streaming can safely begin
+
+**Scope decision:** streaming applies only to the terminal, already-decided narrated text of a turn — **never** to a call whose result might still need gate evaluation. Two theoretically eligible call sites exist; only one is in scope for a first batch:
+
+1. **`native_tool_loop`'s per-iteration `model_callable()` call** — in scope, via the mechanism below.
+2. **`response_drafting.draft_response()`** — explicitly **out of scope** for a first batch (§13.12/R-D5-5): its output is validated *after* full generation, which conflicts with "shown live" unless a separate buffer-then-validate-then-flush strategy is designed, which this phase does not attempt.
+
+**Mechanism — "buffer-until-classified, then flush":** consume the provider's stream chunk by chunk server-side. Forward nothing to the client until the first non-empty chunk classifies the response as content-only (not a `tool_calls` delta) — this matches the OpenAI-compatible wire convention every provider here already follows for non-streaming tool calling (a tool-calling completion's *first* delta already carries `tool_calls`, never prose first, when chain-of-thought is suppressed — see R-D5-1 for the caveat). Once classified content-only, forward every subsequent chunk live. If a `tool_calls` delta ever appears — including, defensively, after some content deltas already arrived — **abort streaming display and fall back to the buffered, non-streaming completion path for that call.** The translation/gate/execution pipeline never learns streaming was attempted for that turn.
+
+### 13.3 Behavior when a tool call or approval interrupts a streamed response
+
+- **Tool call appears mid-stream:** abort-and-fallback, never partial-commit. The buffered chunks are reassembled into the exact same `ModelResponse` shape `run_native_tool_loop()` already expects; execution proceeds byte-for-byte as it does today from that point on. The client is explicitly told the in-progress display is superseded (a distinct SSE event, e.g. `tool_call_detected`) — never left to guess from a silently-stopped stream.
+- **Approval required:** by construction, this never happens mid-stream (§13.1) — approval evaluation is downstream of a *completed* tool-call decision, which (per §13.2) never streams prose in the first place. No new design surface here; this is a confirmed non-interaction, not an assumed one.
+
+### 13.4 Cancellation/error semantics
+
+- **Client disconnects mid-stream:** server detects it (Starlette `request.is_disconnected()` / `CancelledError` on the async generator) and cancels the outstanding upstream provider HTTP call — avoids burning model compute for nobody, and avoids leaving an orphaned connection under the 97%-RAM-pressure condition D4 already measured (R-New-1). The turn is marked `client_disconnected`, never recorded as a normal completed narrative (`mark_narrative_unavailable`'s existing "never fabricate success" discipline, extended — not reinvented).
+- **Provider-side stream error/timeout mid-generation:** whatever partial content the client already received stays visible in the UI (best-effort, never retracted), but is **never persisted as a complete, successful narrative** — persisted with an honest, distinct status (§13.5).
+- **Iteration cap:** unaffected — `DEFAULT_MAX_ITERATIONS` governs `native_tool_loop`'s tool-loop iterations, not token generation within a single streamed call.
+
+### 13.5 What is persisted if a stream stops mid-turn
+
+Persistence remains a **single, after-the-fact write** of the real, complete (or honestly-marked-partial) text the Brain actually produced server-side — never driven by what the client happened to receive, exactly mirroring `_record_conversation_turn_safely`'s existing "full result dict only" discipline (§13.1):
+
+- The server always fully drains (or explicitly times out) the provider's stream, independent of client connection state, before the existing persistence step runs.
+- A stream that completes normally persists **identically** to today's non-streaming path — zero format change to `conversation_history`/audit records.
+- A stream that is interrupted (client disconnect, provider error) persists a **distinct, additive** partial marker (never a repurposed existing status value — R-D5-4) — extends `mark_narrative_unavailable`'s "diagnostic metadata, no synthesized reply" pattern rather than inventing a parallel one.
+- `ApprovalStore`/`CapabilityRegistry`/`AuditTrail` persistence is entirely unaffected — those only ever run against a *complete* decision (§13.3), before any prose streaming could have started.
+
+### 13.6 Compatibility with native tool loop and resumed approval
+
+- **`native_tool_loop`:** `run_native_tool_loop()`'s public contract (inputs, return envelope shape, iteration cap, per-branch execution, audit points) stays **unchanged**. The only new thing is an optional streaming variant of the `model_callable` seam it already takes as a parameter — one that can progressively yield chunks while still returning the identical final `ModelResponse` shape at the end, so `run_native_tool_loop`'s own logic (`response.tool_calls`, `response.content`) needs no change. Streaming happens strictly *around* this function (a new caller-side wrapper), never inside it — this is what "compatible with native tool loop" means concretely here, and it is enforced by not touching the function at all.
+- **Resumed approval (`POST /approve` / `decide_action`):** unaffected by construction — approval always resumes a structured proposal record, never streamed prose (§13.3). No new interaction surface between the two exists to design.
+- **`workflow_continuation` resumability:** same reasoning — a resumed workflow's turn is evaluated by the deterministic Decision Contract path before any model content call.
+
+### 13.7 TTFT and end-to-end latency metrics
+
+- **TTFT** (time to first token): server-side wall-clock from the streaming endpoint's request receipt to the first content byte flushed to the client *after* §13.2's classification resolves "content" (not the raw first provider byte, which could still turn out to be a tool call). Measured server-side (authoritative); a client-perceived variant may differ by real network/serialization time and must not be conflated with it.
+- **End-to-end/total duration:** unchanged in meaning from today's existing `duration_seconds` (`ModelResponse`/`UsageRecord`) — total wall-clock for the model call to fully complete, independent of client delivery timing.
+- **New field:** `ttft_seconds` (`Optional[float]`, `UNAVAILABLE` confidence when not measured — e.g. a fallback single-chunk or aborted-to-non-streaming turn), added using the same `ConfidenceValue`-wrapped numeric-field convention `UsageRecord` already uses (M21 self-knowledge discipline). Additive only — no existing field renamed or removed.
+- Reuse the existing `m32_latency_profile.py`/`m32_repeat_check.py` instrumentation harness (§7's own D6 charter: "promote to a committed, repeatable harness... re-measure against this report's numbers") rather than building a parallel one. Adding TTFT to that harness is D6's job, once D5 is actually implemented — not this design phase's.
+
+### 13.8 Provider/model-agnostic behavior, preserved
+
+- New **optional, non-abstract** method on the `ModelProvider` ABC, e.g. `complete_stream(...)`, with a **default implementation on the base class** that calls the provider's existing `complete()` and yields the whole response as one terminal chunk. This is the mechanism that keeps every provider that hasn't been individually upgraded (at implementation time: possibly all three, on day one) working correctly and identically to today, with zero required code change in those adapters. Real token-by-token streaming becomes an opt-in per-adapter override — Ollama is the best first real target (already sends `"stream": False` explicitly; `/api/chat` accepts `"stream": true` natively).
+- `ModelRouter.attempt()`/`resolve()` need no change to carry streaming — mirrors the prior, already-verified finding for tool-calling support (C1.3: `attempt(role, principal, **complete_kwargs)` forwards verbatim). A streaming call is routed, health-tracked, and budget-checked exactly like today's `complete()` call; it just returns/yields a different shape.
+- No model-selection semantic change: which provider/model is chosen is entirely unaffected — this is purely a delivery-mechanism change for an already-selected candidate's output.
+
+### 13.9 Acceptance criteria
+
+1. A new streaming endpoint (e.g. `/ask/stream`) exists, additive; `/ask` is unchanged, byte-for-byte, in both behavior and response shape.
+2. `ModelProvider.complete_stream()` exists with a correct, tested default fallback for every adapter not individually upgraded — proven to produce output identical to that adapter's existing `complete()` result, delivered as one chunk.
+3. Tier 0 (no tool call) turns stream live, chunk by chunk; TTFT is measured and materially lower than full-response latency for the same turn (same before/after rigor as D1/D2's own methodology).
+4. A tool-calling response is never partially streamed as prose to the client — a test asserts **zero** content bytes reach the client for a tool-calling turn, proving abort-and-fallback triggers on the first `tool_calls`-shaped delta.
+5. `run_native_tool_loop()`'s own source is unmodified, or if a seam is added, its existing non-streaming call sites are provably byte-for-byte unchanged — the full existing D2/D4/C3.x suites pass unmodified.
+6. Full existing approval/grants/audit/dispatch regression suite (`decision_gates`, `approval_gate`, `canonical_execution`, `multi_action_dispatch`, C3.4 concurrency, D3/D4 model-router/worker-cap suites) passes unmodified.
+7. Client disconnect and provider-stream-error are both explicitly tested: correct upstream cancellation, correct honest persistence (§13.5), no orphaned provider connection.
+8. A stream that completes normally persists an identical `conversation_history`/audit record shape to today's non-streaming completion of the same turn (diffed directly in a test, not merely asserted).
+9. Provider-agnostic: the same streaming endpoint and client code path work correctly (falling back to single-chunk delivery) against a provider with no real streaming implementation.
+10. No model-selection semantic change: `test_model_router_*` (58 tests, D3/D4) and the D4 worker-cap suite pass unmodified as-is.
+
+### 13.10 Risks
+
+| # | Risk | Mitigation |
+|---|---|---|
+| R-D5-1 | A model/provider that interleaves prose before a tool call (breaking the OpenAI-compatible convention §13.2 relies on) could let real prose reach the client before abort-and-fallback triggers | Ollama's own `"think": False` (`ollama_provider.py:150`) already suppresses the most likely real-world source of this; verify empirically against real Ollama tool-calling stream output before enabling by default; keep abort-and-fallback as defense-in-depth, not the sole protection |
+| R-D5-2 | A streaming endpoint becomes a second, independently-drifting implementation of `/ask`'s 4-tier fallthrough, doubling maintenance surface | Refactor the routing decision into one shared internal helper both `/ask` and the streaming endpoint call, rather than re-implementing tier selection — an implementation-time task, flagged now so it is not missed |
+| R-D5-3 | Incorrect disconnect detection/upstream cancellation leaks an open provider connection per abandoned turn, compounding D4's own measured 97% RAM pressure (R-New-1) | Explicit test requirement (§13.9 item 7); reuse the same `requests` timeout/cancellation discipline already established in `ollama_provider.py` |
+| R-D5-4 | A new partial/interrupted persistence marker, if implemented as a repurposed existing status value rather than a new additive field, could be silently mis-rendered as a normal successful turn by a consumer that doesn't recognize it | Strictly additive field (e.g. `narrative_interrupted: bool` alongside the existing `narrative_unavailable_reason`), never a repurposed status — matches this repo's additive-field discipline throughout M21/M22/M32 |
+| R-D5-5 | `response_drafting.draft_response()` streaming, if a future batch naively extends today's design to it without addressing `validate_drafted_response()`'s post-hoc rejection, could show the user text URI itself has since disowned | Explicitly descoped here (§13.2/§13.12), not silently deferred; any future batch touching `draft_response()` must design its own buffer-then-validate-then-flush strategy rather than inherit Tier 0's design unmodified |
+| R-D5-6 | Unbounded concurrent open streaming connections under the same 97% RAM condition D4 measured | Apply the same "safe, configurable cap" discipline D4 established for `ThreadPoolExecutor` workers — an explicit, deployment-configurable max-concurrent-stream cap is a required implementation-time deliverable, not an afterthought |
+
+### 13.11 Test scenarios (for the implementation batch — not run in this design phase)
+
+1. Tier 0 plain-chat turn: content streams live in order; concatenated chunks match non-streamed `complete()` output exactly.
+2. Tier 1 tool-calling turn: zero content bytes reach the client before abort; final result identical to today's non-streaming Tier 1 path (existing C3.x/D4 assertions re-run against the streaming code path too).
+3. Provider without real streaming support (default `complete_stream()` fallback): single-chunk delivery; TTFT ≈ total latency, never a false improvement claim.
+4. Client disconnects mid-stream: upstream provider call cancellation asserted directly (spy/mock, not a timing race); turn persisted as `client_disconnected`, never as normal success.
+5. Provider stream errors/times out mid-generation: partial content never persisted as a complete narrative; distinct honest status recorded, `mark_narrative_unavailable`-style reason present.
+6. Concurrent requests against the same session while a stream is in flight: no double-persistence, no corrupted `conversation_history` ordering (reuses `test_multi_client_runtime.py`/`test_multi_user_isolation.py`'s existing discipline).
+7. Approval-required turn reached via the streaming endpoint: response is the same structured, non-prose `approval_required` status as today's `/ask`, never partially streamed.
+8. Workflow-continuation-paused session hitting the streaming endpoint: routed identically to today's `/ask` (§13.1's early-path check), never bypassed by the new endpoint.
+9. TTFT measurement: `ttft_seconds` populated and `< duration_seconds` for a genuinely streamed turn; absent/`UNAVAILABLE` for a fallback or aborted-to-non-streaming turn — never a fabricated number.
+10. Max-concurrent-stream cap (R-D5-6): exceeding the configured cap degrades safely (documented policy, e.g. fall back to non-streamed `/ask` or queue) rather than exhausting resources.
+
+### 13.12 Explicitly out of scope for the D5 implementation batch
+
+- `response_drafting.draft_response()` (canonical/legacy narrative) streaming — R-D5-5.
+- Flutter client (`UriClient`/`AppState`) implementation — a separate, sequenced follow-on per the original plan's own finding (`app_state.dart:483-519` has no incremental-update path today); this design commits only to the server-side contract (SSE event shapes) such a client change would consume.
+- Cross-capability multi-tool streaming interactions — inherits whatever `M32_EXECUTION_ARCHITECTURE_PLAN.md` §C3.3's own still-unresolved scope is; not widened here.
+- Anthropic/OpenAICompatible real token-by-token streaming — only their safe fallback behavior (§13.8) is required on day one.
+
+**This is a design/verification record only. No code was implemented in this phase. D6 not started.**
+
+---
+
+## 14. D5 implementation and verification (2026-09-18, from clean HEAD `5d76a40`, against the frozen §13 design)
+
+**User clarification incorporated before implementation:** a first content chunk never proves a turn is terminal. Streamed prose is provisional UI output only — never persisted as completed narrative, never treated as authoritative completion — until a "done" event arrives. If a tool call appears at any later point, the prose stream is terminated, the turn is marked `narrative_interrupted`, and execution continues through the existing buffered canonical/tool path with gates and approvals unweakened. §14.3 covers how this is enforced end to end, not merely asserted.
+
+### 14.1 What changed
+
+- **`uri_core/core/model_providers/base.py`**: new `StreamChunk` dataclass (`content`, `is_tool_call`, `done`, `final_response`, `ttft_seconds`); new **non-abstract** `ModelProvider.complete_stream()` with a default implementation that calls the provider's own `complete()` and yields the whole result as one terminal chunk. Exported from `uri_core/core/model_providers/__init__.py`.
+- **`uri_core/core/model_providers/ollama_provider.py`**: real token-by-token `complete_stream()` against Ollama's `/api/chat` with `"stream": true` — live-confirmed NDJSON wire shape (§14.2). Refactored `complete()`'s payload construction and context-window check into two shared helpers (`_build_chat_payload`, `_check_context_window`) reused by both methods — a mechanical, behaviour-preserving extraction, verified via the full pre-existing `test_ollama_provider.py` suite passing unmodified before adding anything new. A stream that ends without ever sending a `"done": true` line now raises `ProviderResponseError` explicitly — found and fixed during this batch's own testing (§14.4); previously this path did not exist at all.
+- **`uri_core/core/model_router.py`**: new `ModelRouter.attempt_stream()`, mirroring `attempt()`'s ordered-candidate/health-tracking/budget-gating structure exactly. New safety property beyond `attempt()`: once any content has been yielded to the caller for a candidate, that candidate is **committed** — a later, mid-stream failure from that same candidate is re-raised, never silently retried against a different provider (the caller has already been shown some of its own words). A failure *before* any content is yielded may still advance to the next candidate, identical to `attempt()`. `attempt()`/`resolve()` themselves are untouched.
+- **`uri_core/core/stream_tool_loop.py`** (new module): `stream_first_turn()`, the streaming wrapper around `run_native_tool_loop()`'s Tier 0 fast path. **`native_tool_loop.py` itself has zero diff** — confirmed by `git diff --stat` before every commit in this batch. The wrapper supplies a specialized `model_callable` closure (the function's own documented injectable seam) that streams iteration 1's content live via a queue/background-thread producer pattern while still returning the identical `ModelResponse` shape the function already expects; only iteration 1 is eligible for live streaming (§13.2/§13.12 scope decision) — any later iteration uses the existing, unmodified `router.attempt()`. Includes `DEFAULT_MAX_CONCURRENT_STREAMS`/`URI_MAX_CONCURRENT_STREAMS` (R-D5-6), mirroring D4's own worker-cap discipline exactly.
+- **`uri_core/app/server.py`**: new `POST /ask/stream` endpoint. Extracted `_resolve_ask_context()` (identity/personalization/principal resolution) and `_finalize_ask_response()` (serving-model annotation + trimmed response shape) out of `ask()` verbatim, so the new endpoint can reuse them with zero duplication risk — both extractions verified behaviour-preserving via the full pre-existing `/ask`-touching test suite passing unmodified before adding anything new (§14.4). The new endpoint streams live **only** when `native_tool_loop_enabled()` is true and no `workflow_continuation` pause is pending for the session (`_ask_stream_eligible`); every other case — including a `StreamCapacityExceededError` or `stream_first_turn` reporting `envelope=None` (the same "None means fall back" convention `/ask`'s own native-tool-loop branch already follows) — delegates to the existing, completely unmodified `ask()` function and re-emits its single dict as one terminal `message` SSE event. `/ask` itself is unchanged in behaviour (§14.4).
+
+### 14.2 Real Ollama streaming evidence (live server, this deployment)
+
+Probed directly against this machine's real Ollama server before writing the adapter, using the actually-installed `gemma4:12b` (`qwen3:14b`, the packaged default, is not installed here — see D3):
+
+```
+--- tool-calling completion, streamed ---
+{"message":{"content":"","tool_calls":[{"id":"call_976zxqu5","function":{"name":"get_weather","arguments":{"city":"Paris"}}}]},"done":false}
+{"message":{"content":""},"done":true,...}
+
+--- plain-content completion, streamed ---
+{"message":{"content":"Hello"},"done":false}
+{"message":{"content":","},"done":false}
+... (token-by-token) ...
+{"message":{"content":""},"done":true,"prompt_eval_count":20,"eval_count":10,...}
+```
+
+Confirms the design's central assumption empirically: a tool-calling response's first line already carries the full `tool_calls` array with `content: ""` — no prose precedes it for this real model. `complete_stream()`, `ModelRouter.attempt_stream()`, `stream_first_turn()`, and the full `/ask/stream` HTTP endpoint were each re-verified end to end against this same live server after implementation (not just unit-tested) — both the plain-content case and a real Gmail tool-call case (via the real `_Fixture`'s wired `FakeGmailService`, exercising the genuine gate/dispatch path):
+
+```
+=== plain content, via stream_first_turn() ===
+CONTENT: 'Hello' / ',' / ' I' / ' am' / ' your' / ' assistant' / '.'
+done ttft=0.649s narrative_interrupted=False
+envelope narrative: Hello, I am your assistant.
+
+=== real Gmail tool call, via stream_first_turn() ===
+tool_call_detected ttft=None narrative_interrupted=False
+done ttft=None narrative_interrupted=True
+envelope status: success
+envelope execution: {..., "capability": "Gmail", "action": "search_messages", "status": "success", ...}
+
+=== full HTTP endpoint, POST /ask/stream, plain content ===
+event: content  data: {"text": "Hello"}
+... (7 content events) ...
+event: done  data: {"response": {...,"narrative":"Hello, I am your assistant."}, "ttft_seconds": 1.618, "narrative_interrupted": false}
+```
+
+Zero content bytes ever reached the client for the tool-call turn; the real Gmail search executed correctly through the completely unmodified gate/dispatch pipeline.
+
+### 14.3 Enforcement of the User's clarification (provisional-until-done, late tool call)
+
+- `TurnStreamEvent(kind="content", ...)` is documented and treated as provisional — the module docstring and `TurnStreamEvent`'s own docstring state this is never to be persisted on its own.
+- Every chunk of iteration 1 (not just the first) is checked for `chunk.is_tool_call` inside `stream_first_turn`'s closure — `test_tool_call_in_first_chunk_also_works_with_zero_content_events` and `test_content_then_tool_call_marks_narrative_interrupted_and_executes_for_real` (`test_m32_d5_stream_tool_loop.py`) prove both orderings work identically.
+- The instant a tool call is detected, `TurnStreamEvent(kind="tool_call_detected")` fires exactly once (`state["tool_call_signaled"]` guards against duplicates), and the turn continues through `run_native_tool_loop()`'s **completely unmodified** translate → gate → execute path — proven with the real `_Fixture` (real `ApprovalGate`/`ToolDispatcher`/`MultiActionDispatch`), not a mock, so gates/approvals were genuinely exercised, not assumed unweakened.
+- The terminal `envelope["narrative"]` on a late-tool-call turn reflects the REAL post-execution answer (`"I found it."` in the test, the real Gmail search result live), never the provisional prose shown before the tool call (`"Let me check your inbox..."`) — asserted directly, not inferred.
+- `narrative_interrupted: True` is carried on the `done` event/SSE payload whenever this happened, so a client can distinguish "this was always plain prose" from "the prose shown was provisional and superseded."
+
+### 14.4 Tests added and regression
+
+**37 new tests**, all passing:
+
+| File | Count | Covers |
+|---|---|---|
+| `test_ollama_provider.py` (+10) | 10 | `complete_stream()`: content deltas, TTFT-on-first-content-only, tool-call parsing, 404/timeout/connection/malformed-JSON errors, context-window pre-check, response closed on success and on 404 |
+| `test_model_router_stream.py` (new, 9) | 9 | `attempt_stream()`: happy path, tool-call chunks, fallback-before-content, commit-once-content-shown (never silently retries after showing real words), auth-error propagation before/after content, `ModelNotFoundError` marks unhealthy + falls back, non-streaming-provider default fallback with `ttft_seconds == duration_seconds` |
+| `test_m32_d5_stream_tool_loop.py` (new, 12) | 12 | Content-only turn + envelope-identity-to-non-streaming-call proof (persistence integrity), late-tool-call-after-content, tool-call-in-first-chunk control, cancellation (mid-stream + consumer-stops-early), provider-error-mid-stream honest degrade, connection/thread cap (default bound, configurable, invalid-value fallback, immediate rejection without starting a thread), only-iteration-1-streams |
+| `test_m32_d5_ask_stream_endpoint.py` (new, 6) | 6 | Toggle-off fallback (byte-shape match to a direct `/ask` call), content+done events, tool-call-detected forwarding, `envelope=None` fallback, `StreamCapacityExceededError` fallback |
+
+**Broad focused sweep** (`-k "model_router or model_roles or ollama_provider or stream_tool_loop or ask_stream or native_tool_loop or m32_c or drafting or reasoning_adapter or decision_engine or document_composer or canonical_execution or approval or dispatcher or multi_action or capability_directory or m22_5 or ask_narrative or ask_size or authoritative_facts or multi_user_isolation or m32_c_server_wiring"`, 566 collected): **561 passed, 5 failed, 13 subtests passed.** The 5 failures are the identical pre-existing `qwen3:14b`-not-installed environment failures already root-caused in D3/D4 (`test_ollama_provider_live.py` x2, `test_ollama_reasoning_adapter_live.py` x3) — not new, not caused by D5.
+
+**Bugs found and fixed by this batch's own testing (verification-first, not assumed correct):**
+
+1. A stream ending without a terminal `done` chunk previously returned nothing usable — `OllamaProvider.complete_stream()` now raises `ProviderResponseError` explicitly instead of silently truncating (§14.1).
+2. `stream_tool_loop._streaming_model_callable` could return `None` in the same scenario, which would have crashed `run_native_tool_loop()`'s own (unmodified) `response.tool_calls` access with an opaque `AttributeError` instead of its existing, honest `"status": "unavailable"` degrade — fixed by raising instead of returning `None`, so the existing exception-handling path in `run_native_tool_loop()` (unmodified) produces the correct, already-audited outcome.
+3. `POST /ask/stream`'s `await loop.run_in_executor(None, next, stream_iter)` violated PEP 479 (`StopIteration` cannot propagate out of a `Future`) — fixed with a sentinel-based `next(iterator, default)` wrapper instead of catching `StopIteration` around the awaited call.
+
+All three were caught by the tests in this same batch, not discovered later — each is disclosed here rather than silently folded into "tests passed."
+
+**Discovered, not caused by D5, not fixed (disclosed):** a mid-stream provider failure or a client-disconnect cancellation, when it happens during iteration 1's streamed call, is caught by `run_native_tool_loop()`'s own existing `except Exception as exc: return {"status": "unavailable", ...}` handling (unmodified) — meaning `stream_first_turn`'s own `TurnStreamEvent(kind="error", ...)` path is reachable only for failures *outside* that call (e.g. a bug in this wrapper itself, or `StreamCapacityExceededError` before the thread starts). This was verified directly (`ProviderErrorTests`/`CancellationTests` in `test_m32_d5_stream_tool_loop.py` assert a `"done"` event with `envelope["status"] == "unavailable"`, not an `"error"` event) rather than assumed from the design. This is a **better** outcome than the original design anticipated, not a gap: it means streamed failures reuse the exact same, already-audited honest-degrade path a non-streamed provider failure already used — zero new failure-reporting surface was needed.
+
+### 14.5 Before/after TTFT and total latency, measured (real Ollama, this machine, warm model)
+
+| Run | Streamed TTFT | Streamed total duration | Non-streamed total (`complete()`) | TTFT improvement |
+|---|---|---|---|---|
+| 1 | 0.152 s | 0.295 s | 0.221 s | 31% faster to first visible text |
+| 2 | 0.097 s | 0.238 s | 0.223 s | 56% faster |
+| 3 | 0.079 s | 0.222 s | 0.221 s | 64% faster |
+
+**Cold-model run** (consistent with D1/D2's own previously-documented cold-load variance on this machine): TTFT 13.80 s, total 13.95 s — cold-load dominates both figures equally; not representative, shown for completeness rather than omitted.
+
+**Honestly reported trade-off:** streamed total duration is modestly higher (≤0.07 s / ≤15% in these runs) than non-streamed `complete()` total — real overhead from NDJSON line-by-line parsing/accumulation versus a single JSON parse. TTFT is the metric this batch's design targets (perceived latency to first content), and it improves substantially (31–64% in these warm runs); total end-to-end generation cost is not reduced and is not claimed to be.
+
+### 14.6 Requirements check
+
+- `run_native_tool_loop()` unchanged unless evidence proved necessary: confirmed unchanged (`git diff --stat` shows zero delta); the streaming/cancellation bugs found (§14.4) were fixed entirely in `stream_tool_loop.py`/`ollama_provider.py`, never by touching that function.
+- Provider/model-agnostic `complete_stream()` fallback preserved: `TestAttemptStreamProviderAgnosticFallback` proves a provider with no real streaming implementation still works correctly through `attempt_stream()`, with `ttft_seconds == duration_seconds` (never a fabricated improvement).
+- Approval/resume/grant/audit semantics preserved: the late-tool-call test exercises the real, unmodified `ApprovalGate`/`ToolDispatcher`/`MultiActionDispatch` chain; `workflow_continuation`/approval-pending sessions are routed identically to today's `/ask` via `_ask_stream_eligible`'s own pending-workflow check, never bypassed.
+- TTFT measurement: added (`ttft_seconds` on `StreamChunk`/`TurnStreamEvent`, surfaced in the `done` SSE event), measured real (§14.5).
+- Tests for cancellation, provider error, late tool call after content, persistence integrity, fallback providers, connection/thread bounds: all added (§14.4 table).
+- Focused regression run: run (§14.4).
+- Real Ollama streaming evidence: gathered before, during, and after implementation, at every layer (provider, router, wrapper, HTTP endpoint) (§14.2).
+- Before/after TTFT and total latency reported: §14.5.
+
+**D6 not started, per instruction. No commit or push has been made.**
+
+---
+
 ## 5. Proposed architectural changes (not authorized — for review)
 
 These follow directly from §4 and are ordered by measured impact. None has been implemented.

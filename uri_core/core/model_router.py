@@ -297,6 +297,93 @@ class ModelRouter:
             f"Chain attempted: {tried}. Last error: {last_error!r}"
         )
 
+    def attempt_stream(
+        self,
+        role: str,
+        principal: Optional[Any] = None,
+        session_id: Optional[str] = None,
+        **complete_kwargs: Any,
+    ):
+        """M32 D5: streaming counterpart to attempt(). Walks the SAME
+        ordered candidate chain with the SAME health-tracking/budget
+        gating (§13.8: "no change to carry streaming" — this mirrors
+        attempt()'s own fallback structure exactly, applied to
+        provider.complete_stream() instead of provider.complete()).
+
+        Once ANY content has been yielded to the caller for a candidate,
+        that candidate is committed: the caller has already been shown
+        some of its own words, so a later, mid-stream failure from that
+        SAME candidate can no longer silently fall back to a different
+        provider — it is re-raised instead, honestly, matching a
+        mid-generation provider failure's real severity (never a silent
+        substitution the User did not choose). Only a failure BEFORE any
+        content has been yielded (a connection failure, an immediate
+        HTTP error, or a tool-call-only first chunk with zero content)
+        may still advance to the next candidate — identical to attempt()'s
+        own fallback behaviour.
+
+        Security invariant unchanged: ProviderAuthenticationError is
+        NEVER caught here, at any point in the stream.
+        """
+        candidates = self._ordered_candidates(role, principal)
+        tried: List[str] = []
+        last_error: Optional[Exception] = None
+        budget_text = {key + "_text": complete_kwargs[key] for key in ("system", "user")
+                       if complete_kwargs.get(key)}
+
+        for pid in candidates:
+            model = self._model_for_role(role, principal, pid)
+            if not self._health.is_healthy(pid, model):
+                tried.append(f"{pid}(unhealthy)")
+                continue
+            if not self._budget_ok(pid, role, principal, **budget_text):
+                tried.append(f"{pid}(over_budget)")
+                continue
+
+            try:
+                provider = build_provider(role, principal, provider_id_override=pid)
+            except ProviderAuthenticationError:
+                raise
+            except (ProviderUnavailableError, ProviderTimeoutError, ModelNotFoundError, UnknownModelProviderError) as exc:
+                if not isinstance(exc, UnknownModelProviderError):
+                    self._health.mark_unhealthy(pid, model)
+                tried.append(f"{pid}(failed:{type(exc).__name__})")
+                last_error = exc
+                continue
+
+            yielded_any_content = False
+            try:
+                for chunk in provider.complete_stream(**complete_kwargs):
+                    if chunk.content:
+                        yielded_any_content = True
+                    yield chunk
+                    if chunk.done:
+                        self._record_usage(
+                            role, principal, session_id, pid,
+                            getattr(chunk.final_response, "model", model), tried, chunk.final_response,
+                        )
+                        tried.append(pid)
+                        return
+            except ProviderAuthenticationError:
+                raise
+            except (ProviderUnavailableError, ProviderTimeoutError, ModelNotFoundError, UnknownModelProviderError) as exc:
+                if yielded_any_content:
+                    # Committed to this candidate — never silently retry
+                    # a different provider after the caller has already
+                    # seen some of this one's own words.
+                    raise
+                if not isinstance(exc, UnknownModelProviderError):
+                    self._health.mark_unhealthy(pid, model)
+                tried.append(f"{pid}(failed:{type(exc).__name__})")
+                last_error = exc
+                continue
+
+        self._record_usage(role, principal, session_id, None, None, tried)
+        raise AllProvidersUnreachableError(
+            f"All providers exhausted for role {role!r} (stream). "
+            f"Chain attempted: {tried}. Last error: {last_error!r}"
+        )
+
 # Module-level singleton — process-wide health tracking
 _router = ModelRouter()
 
