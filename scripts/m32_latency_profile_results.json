@@ -1,0 +1,145 @@
+{
+  "structural": {
+    "tier0_no_tool": {
+      "model_calls": 1,
+      "capability_directory_constructions": 1,
+      "tier": "tier0",
+      "status": "success"
+    },
+    "tier1_legacy_remember_fact": {
+      "model_calls": 2,
+      "capability_directory_constructions": 1,
+      "tier": "tier1_continuation",
+      "status": "success"
+    },
+    "tier1_native_single_gmail": {
+      "model_calls": 2,
+      "capability_directory_constructions": 1,
+      "tier": "tier1_continuation",
+      "status": "success"
+    },
+    "multi_tool_two_branch": {
+      "model_calls": 2,
+      "capability_directory_constructions": 1,
+      "tier": "tier1_continuation",
+      "status": "success"
+    }
+  },
+  "real_model": {
+    "cold_tier0": {
+      "total_seconds": 15.066307900000538,
+      "model_seconds": 15.064987899997504,
+      "uri_overhead_seconds": 0.0013200000030337833,
+      "model_calls": 1,
+      "tier": "tier0",
+      "status": "success"
+    },
+    "tier0_no_tool": {
+      "total_seconds": {
+        "median": 0.3553,
+        "min": 0.3326,
+        "max": 0.4002,
+        "n": 10
+      },
+      "model_seconds": {
+        "median": 0.354,
+        "min": 0.3314,
+        "max": 0.3989,
+        "n": 10
+      },
+      "uri_overhead_seconds": {
+        "median": 0.0013,
+        "min": 0.0012,
+        "max": 0.0014,
+        "n": 10
+      }
+    },
+    "tier1_legacy_remember_fact": {
+      "total_seconds": {
+        "median": 1.4765,
+        "min": 1.4429,
+        "max": 1.6364,
+        "n": 10
+      },
+      "model_seconds": {
+        "median": 1.4616,
+        "min": 1.4277,
+        "max": 1.6032,
+        "n": 10
+      },
+      "uri_overhead_seconds": {
+        "median": 0.0147,
+        "min": 0.014,
+        "max": 0.0333,
+        "n": 10
+      }
+    },
+    "tier1_native_single_gmail": {
+      "total_seconds": {
+        "median": 2.2599,
+        "min": 2.2486,
+        "max": 2.2825,
+        "n": 10
+      },
+      "model_seconds": {
+        "median": 2.258,
+        "min": 2.2468,
+        "max": 2.2807,
+        "n": 10
+      },
+      "uri_overhead_seconds": {
+        "median": 0.0019,
+        "min": 0.0018,
+        "max": 0.0019,
+        "n": 10
+      }
+    },
+    "multi_tool_two_branch": {
+      "total_seconds": {
+        "median": 2.6897,
+        "min": 2.6326,
+        "max": 2.7394,
+        "n": 10
+      },
+      "model_seconds": {
+        "median": 2.6872,
+        "min": 2.63,
+        "max": 2.7369,
+        "n": 10
+      },
+      "uri_overhead_seconds": {
+        "median": 0.0025,
+        "min": 0.0025,
+        "max": 0.0026,
+        "n": 10
+      }
+    },
+    "streaming_ttft": {
+      "ttft_seconds": {
+        "median": 0.1479,
+        "min": 0.135,
+        "max": 0.3263,
+        "n": 10
+      },
+      "total_seconds": {
+        "median": 0.3022,
+        "min": 0.2953,
+        "max": 0.4841,
+        "n": 10
+      }
+    },
+    "approval_dispatch_overhead": {
+      "median": 0.2237,
+      "min": 0.2227,
+      "max": 0.4616,
+      "n": 10
+    }
+  },
+  "notes": {
+    "approval_dispatch_overhead_caveat": "'system_performance' (the probe tool used above) deliberately blocks for ~0.2s per call in its OWN business logic (psutil.cpu_percent(interval=0.2), uri_core/tools/system_performance.py) - a real CPU-sampling window, not ApprovalGate/ToolDispatcher/AuditTrail overhead. The pure gate/dispatch/audit cost is therefore closer to (median - 0.2s), not the raw median above. Disclosed here rather than silently attributing a tool's own sampling delay to framework overhead.",
+    "approval_resume": "The dispatch/grants/audit overhead for a zero-approval-required tool is measured above. A genuine approval-REQUIRED round trip (propose -> ApprovalStore persist -> separate later POST /approve -> ApprovalGate.decide()) spans two separate HTTP requests with a real human decision in between; the human-decision interval is not a system latency and is not measured. The system-side halves (the initial dispatch that reaches 'requires approval', and decide()'s own post-approval execute) are the same ApprovalGate/ToolDispatcher/AuditTrail code path measured here for the zero-approval case - no separate code path exists for the approval-required case that this harness has not already exercised.",
+    "parallel_tool_worker_cap": "Bounded since D4: default 4, env-configurable via URI_MAX_PARALLEL_TOOL_WORKERS (currently unset -> default). Before D4 this was unbounded (max_workers=len(eligible)).",
+    "concurrent_stream_cap": "Bounded since D5: default 8, env-configurable via URI_MAX_CONCURRENT_STREAMS (currently unset -> default).",
+    "oauth_refresh": "Not measurable in this environment - no real Google OAuth credential is configured here (Gmail is exercised via FakeGmailService in this harness, as in the committed test suite). D1's persist-after-refresh fix is unit-tested (test_gmail_connection_truth.py::LoadUsableCredentialsTests) and unchanged since D1 - nothing in D2-D5 touched google_auth_common.py. See M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md \u00a710.4 for D1's own real before/after (.refresh() call count 1 -> still 1 on a persisted-valid token)."
+  }
+}

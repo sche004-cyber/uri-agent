@@ -1,5 +1,7 @@
 # M32 state — External Capability Bridge
 
+**SUPERSEDED, 2026-09-18 (preserved in place, not renamed or deleted, per this repository's auditable-correction-history convention).** External Capability Bridge is now tracked under **M33**, not M32 — see `docs/governance/URI_ACTIVE_MILESTONE.md` §1b for the roadmap reconciliation record and `docs/plans/M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md` (frozen 2026-09-17) for the current authoritative plan, which already explicitly supersedes this file and the other M32-numbered External Capability Bridge drafts. "M32" itself now refers to a different, closed initiative — Brain Latency / Core Execution Architecture (`docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md`). This file's own content below is historical and untouched from 2026-09-15.
+
 Date: 2026-09-15.
 
 - **STATE:** DRAFT — PLAN READY FOR REVIEW.

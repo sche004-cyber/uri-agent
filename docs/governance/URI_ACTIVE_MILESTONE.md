@@ -67,19 +67,68 @@ regression results in `docs/plans/M31_STATE.md` ("Claude Final Audit
 0 new). Full `flutter test`: 135/135. Committed and pushed to
 `origin/master` per Claude's standing release authority.
 
+**PRIOR MILESTONE (CLOSED):**  
+M32 — Brain Latency / Core Execution Architecture — **CLOSED: CLAUDE
+VERIFIED — COMPLETE** (User closure instruction, 2026-09-18: "Final
+M32 closure approved"). Batches A–C (canonical cutover, fast/native
+tiered path) plus D1–D6 (OAuth refresh persistence, single shared
+`CapabilityDirectory` per turn, default-model-resolution correctness
+fix, bounded context-probe skip + parallel-tool-worker cap, streaming
+`POST /ask/stream`, and a committed/reproducible benchmark harness).
+Two headline latency findings (redundant `CapabilityDirectory`
+construction; un-persisted OAuth refresh) fixed and re-confirmed fresh
+with a 10-iteration real-model measurement; one correctness defect
+(default-model resolution) fixed with dedicated regression (58
+`test_model_router_*` tests); two resource-exhaustion risks (unbounded
+parallel-tool-dispatch threads; unbounded streaming connections) now
+bounded and deployment-configurable. Zero regression: 561 passed / 5
+failed (all 5 independently confirmed pre-existing, environment-only —
+`qwen3:14b` not installed on the dev machine — via clean-HEAD
+comparison, 0 new) across the full focused sweep, re-confirmed in this
+same closure session. Full evidence, before/after metrics, the final
+deferred/residual register, and the milestone-number reconciliation
+record are in `docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_
+PLAN.md` §10–§15 (§15.10 for the register, §15.11 for the
+reconciliation, §15.12 for the CLOSE recommendation this closure
+adopts). **Two items explicitly carried forward, NOT resolved by this
+closure** — see "M32 residual items, carried forward" below.
+
 **CURRENT MILESTONE:**  
-None active — M31 is CLOSED. Per §1a, this closure is what opens the
-Hybrid UI initiative's hard-dependency gate; see that section for the
-initiative's own separate role set and status before any implementation
-work begins on it.
+None active — M32 is CLOSED (M31 was closed earlier, 2026-09-16; see
+the M31 entry above). Per §1a, the Hybrid UI initiative's own
+hard-dependency gate was already opened by M31's own earlier closure,
+independently of M32 — see that section for the initiative's own
+separate role set and status before any implementation work begins on
+it. M32's closure does not itself open or affect that gate.
+
+**M32 residual items, carried forward (NOT resolved by this closure):**
+1. **Resumed approval across turns** (durable cross-turn pending-
+   approval state + natural-language resumption recognition) —
+   real, live-demonstrated (Batch B), confirmed still untouched through
+   Batch C and D1–D6 (re-checked directly against source in this
+   closure session, not merely re-quoted from earlier reports). A
+   genuine functional/product gap, out of scope for a latency work
+   stream, requiring its own design/implementation.
+2. **Attachment-turn Brain tool-selection reliability** (chose `Gmail`
+   over `read_attached_file`) — a model/prompt-reliability finding
+   (Batch B), explicitly not independently re-tested since (Batch C's
+   own disclosure), out of scope for D1–D6.
+
+Neither item may be treated as resolved, implicitly or explicitly, by
+this milestone's CLOSED status. Full detail: `docs/plans/M32_POST_
+BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10.
 
 **CURRENT STATE:**  
 Awaiting the next milestone. No implementation authorized yet on any
 surface until a fresh milestone (or the already-frozen Hybrid UI
-initiative) is explicitly started per standing governance.
+initiative) is explicitly started per standing governance. **M33 —
+External Capability Bridge is explicitly NOT started** (roadmap-
+reconciled into this number per the User's 2026-09-18 instruction; see
+"Roadmap Reservation" below and §1b) — do not begin it without a
+separate, explicit User instruction.
 
 **LOOP_STATE:**  
-IDLE (M31 COMPLETE — awaiting next milestone initiation)
+IDLE (M32 COMPLETE — awaiting next milestone initiation; M33 not started)
 
 **M31 OBJECTIVE (achieved, preserved for reference):**  
 Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).
@@ -87,7 +136,14 @@ Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Conne
 **M31 Critical Invariants (held, now closed with the milestone):**
 - Direct-Model Brain Separation: confirmed — zero `subprocess`/`Popen` references to `claude`/`codex` anywhere in `uri_core`.
 - Subscription Transport Seam: `subscription_oauth` remains schema-only on `ProviderDescriptor.auth_transports`; Subscription card shows the honest, sourced unavailable state. Unchanged, not implemented in M31 (by design).
-- Roadmap Reservation: direct subscription-backed Brain access remains a deferred requirement; M32 stays reserved for external-skill qualification/integration.
+- Roadmap Reservation: direct subscription-backed Brain access remains a deferred requirement; M32 stays reserved for external-skill qualification/integration. **[Superseded, 2026-09-18 — preserved verbatim above as the historical M31-era record, not silently edited: M32 was subsequently assigned to Brain Latency / Core Execution Architecture (see the PRIOR MILESTONE entry above) and is now CLOSED. The external-skill-qualification/integration reservation this bullet originally named has been roadmap-reconciled to M33 — see §1b below.]**
+
+**M32 Critical Invariants (held, now closed with the milestone):**
+- `run_native_tool_loop()` (`uri_core/core/native_tool_loop.py`) — the central Tier-0/Tier-1 fast-path function this entire work stream builds around — remained completely unmodified throughout D1–D6, confirmed by `git diff --stat` before every commit; every extension (streaming, worker cap) went through its own existing seams (the injectable `model_callable` parameter) rather than editing it.
+- No silent model substitution: default-model-resolution failures (D3) fail clearly and never silently pick a different, arbitrary installed model.
+- Approvals/grants/audit/dispatch: unweakened throughout, confirmed by full regression after every batch and by the streaming work (D5) specifically proving a late tool call correctly aborts provisional prose and continues through the real, unmodified gate chain (verified against the real `ApprovalGate`/`ToolDispatcher`/`MultiActionDispatch` fixture, not a mock).
+- Provider/model-agnostic architecture preserved throughout (D3's default-model fallback logic, D5's `complete_stream()` default fallback for unupgraded providers).
+- Roadmap Reservation (current, supersedes the M31-era bullet above): **M33 is reserved for external-skill qualification/integration** — see §1b.
 
 ---
 
@@ -124,6 +180,52 @@ produce the Frozen UI Implementation Blueprint... Current User-confirmed
 development roles are: ..."). This records the frozen blueprint and role
 set; it does not advance M31's own state, and it does not authorize UI
 implementation to start ahead of the M31 dependency above.
+
+---
+
+## 1b. Roadmap Reservation: M33 — External Capability Bridge (renumbered from M32, 2026-09-18)
+
+**Decision:** on M32 (Brain Latency / Core Execution Architecture)'s
+closure, the User directly instructed: "Keep M32 = Brain Latency /
+Core Execution Architecture. Renumber the unimplemented External
+Capability Bridge to M33. Update governance/planning references
+consistently." This section records that decision as the current,
+authoritative roadmap-numbering state.
+
+**Why this was the cleaner direction (Claude's recommendation, adopted
+by the User):** External Capability Bridge has produced planning
+documents only and was never authorized to implement — its own state
+file, `docs/plans/M32_STATE.md`, records "Implementation: NOT
+AUTHORIZED; NOT STARTED." M32 (Brain Latency), by contrast, closes
+with substantial shipped, tested, committed work across six D-batches.
+Renumbering unimplemented planning work is lower-cost and lower-risk
+than renaming a completed work stream's own history.
+
+**A prior session had already partially converged on this same
+number, independently.** `docs/plans/M33_EXTERNAL_CAPABILITY_BRIDGE_
+BLUEPRINT.md` (dated 2026-09-17, status: FROZEN — planning finality,
+implementation NOT AUTHORIZED/NOT STARTED) already exists and already
+explicitly supersedes the earlier M32-numbered External Capability
+Bridge drafts (`M32_EXTERNAL_CAPABILITY_BRIDGE_PLAN.md`, `../
+architecture/EXTERNAL_CAPABILITY_CONTRACT.md`, `../architecture/
+M32_CANONICAL_ARCHITECTURE.md`, `../research/M32_ROOT_CAUSE_AUDIT.md`,
+`M32_MIGRATION_PLAN.md` — "all Codex drafts, 2026-09-15"). That
+blueprint's own §10 states plainly: "Those files remain in place" —
+i.e. the established convention in this repository is to supersede a
+superseded planning document in place, recording the correction,
+never to rename or delete it. This governance update follows that
+same convention: **no `docs/plans/M32_*` External Capability Bridge
+file has been renamed or deleted.** They remain exactly where they
+are, as historical/superseded drafts, exactly as the M33 blueprint
+itself already established one day before this reconciliation. This
+governance file is simply the first place to formally record that the
+number these drafts describe is now M33, matching the already-frozen
+blueprint, not a new decision invented here.
+
+**Current authoritative state:**
+- **M32 = Brain Latency / Core Execution Architecture — CLOSED.** See the PRIOR MILESTONE entry in §1.
+- **M33 = External Capability Bridge — NOT STARTED.** Authoritative planning document: `docs/plans/M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md` (frozen 2026-09-17; implementation not authorized). Earlier `M32_EXTERNAL_CAPABILITY_BRIDGE_PLAN.md`/`M32_STATE.md`/`M32_CANONICAL_ARCHITECTURE.md`/`M32_ROOT_CAUSE_AUDIT.md`/`M32_MIGRATION_PLAN.md` remain in place as superseded historical drafts, per that blueprint's own §10 and this repository's standing auditable-correction-history convention — not renamed, not deleted.
+- **Do NOT begin M33 implementation** without a separate, explicit User instruction — explicitly not authorized by this reconciliation record.
 
 ---
 
@@ -168,7 +270,7 @@ No milestone write scope is currently active. The next milestone (or the Hybrid 
  
 - URI Brain providers are direct-model providers only. Claude Code, Codex, Antigravity, or other development harnesses must NEVER be introduced into the URI Brain runtime. (Confirmed holding by this audit — zero `subprocess`/`Popen` references to `claude`/`codex` anywhere in `uri_core`.)
 - `subscription_oauth` is an architectural schema-ready seam on `ProviderDescriptor.auth_transports` only; it remains unimplemented. The Subscription card in Design 02 shows an honest, sourced unavailable state.
-- M32 is reserved for external-skill qualification/integration. Direct subscription-backed Brain access is recorded as a deferred requirement for later roadmap reconciliation.
+- M33 is reserved for external-skill qualification/integration (see §1b — roadmap-reconciled from M32, 2026-09-18; M32 is now used and CLOSED for Brain Latency / Core Execution Architecture, see §1). Direct subscription-backed Brain access is recorded as a deferred requirement for later roadmap reconciliation.
 - Only discovered AND verified-usable models are ever selectable anywhere in the product.
 - Composer model selector is the single interactive model selector in the product.
 - `orchestrator.py` must never grow; keep routing logic in `model_router.py`. (Note: `orchestrator.py` is already at 6153 lines, past the `test_usage_import_boundary.py` guard's 5460 threshold, as of commit `8fa9ac6` — pre-existing, standing architecture debt confirmed to pre-date M31, not a new violation; see `docs/plans/M31_STATE.md`'s final audit section.)
@@ -180,10 +282,91 @@ No milestone write scope is currently active. The next milestone (or the Hybrid 
 ## 6. Next Milestone Status
 
 **NEXT MILESTONE:**  
-Roadmap reconciliation required (M32 is reserved in the roadmap for external-skill qualification/integration; direct subscription-backed Brain access is recorded as a deferred requirement to be assigned to the next appropriate free milestone).
+Roadmap reconciliation is now RESOLVED (see §1b, 2026-09-18): M33 is reserved in the roadmap for external-skill qualification/integration (`docs/plans/M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md`, frozen 2026-09-17); direct subscription-backed Brain access remains a separately deferred requirement, still unassigned to any milestone number.
 
 **NEXT MILESTONE STATUS:**  
-NOT AUTHORIZED
+NOT AUTHORIZED — M33 implementation has not been started and requires a separate, explicit User instruction to begin (per direct User instruction, 2026-09-18: "Do not begin M33 yet").
+
+---
+
+## 6f. Closure Record (M32 — Claude VERIFIED, released)
+
+```markdown
+VERDICT: VERIFIED
+VERDICT AUTHORITY: CLAUDE (independent final audit, per standing AO-4 release authority)
+MILESTONE: M32 — Brain Latency / Core Execution Architecture
+BASIS: Batches A-C (canonical cutover, fast/native tiered execution
+  path) plus D1-D6 (OAuth refresh persistence, single shared
+  CapabilityDirectory per turn, default-model-resolution correctness
+  fix, bounded parallel-tool-worker cap + context-probe skip,
+  streaming POST /ask/stream, committed/reproducible benchmark
+  harness). Every acceptance criterion each batch/D-item defined for
+  itself is implemented, tested, and independently re-verified. Two
+  headline latency findings (redundant CapabilityDirectory
+  construction; un-persisted OAuth refresh) fixed and re-confirmed
+  fresh with a 10-iteration real-model measurement in this closure
+  session, not merely re-cited from earlier batches. One correctness
+  defect (default-model resolution) fixed with dedicated regression
+  (58 test_model_router_* tests). Two resource-exhaustion risks
+  (unbounded parallel-tool-dispatch threads; unbounded streaming
+  connections) bounded and deployment-configurable. Streaming
+  implemented and real-verified end to end against a live model,
+  including a genuine tool-call turn through the completely
+  unmodified gate/dispatch chain (native_tool_loop.py has zero diff
+  across all of D1-D6, confirmed via git diff --stat before every
+  commit). A measurement-confidence question raised after the first
+  D6 benchmark pass (multi-tool scenario variance) was independently
+  re-investigated in this same closure session and traced to a
+  scenario-wording mismatch against the original D1+D2 baseline
+  prompt, not a code regression - corrected, and the committed harness
+  fixed so it cannot silently drift again. Full regression: 561
+  passed / 5 failed (all 5 independently confirmed pre-existing,
+  environment-only - qwen3:14b not installed on the dev machine - via
+  clean-HEAD comparison, 0 new), re-confirmed fresh in this closure
+  session, not merely re-asserted from an earlier batch. Full evidence
+  in docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md
+  §10-§15.
+RESIDUAL, EXPLICITLY NOT CLAIMED AS RESOLVED: (1) resumed approval
+  across turns (durable cross-turn pending-approval state) - real,
+  live-demonstrated in Batch B, confirmed still untouched through
+  Batch C and D1-D6 by direct re-inspection of source in this closure
+  session; (2) attachment-turn Brain tool-selection reliability -
+  disclosed in Batch B, not independently re-tested since. Both carried
+  forward per direct User instruction ("Do not claim resumed approval
+  or attachment-turn tool selection as resolved") - see the residual
+  register in docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md
+  §15.10 and the PRIOR MILESTONE entry in §1 above.
+RELEASE ACTION: Claude performed the release commit/push to
+  origin/master per standing release authority, on direct User
+  instruction this session ("Final M32 closure approved... commit D6 +
+  final M32 closure + approved milestone-number reconciliation...
+  push to master").
+TIMESTAMP: 2026-09-18
+```
+
+---
+
+## 6e. Approval Record (M32 Authorization)
+
+```markdown
+USER APPROVAL: APPROVED
+APPROVAL RELAY: USER DIRECT
+APPROVED MILESTONE: M32 — Brain Latency / Core Execution Architecture
+APPROVAL BASIS: Explicit User instruction, delivered incrementally
+  across D1-D6 and confirmed at final closure: "Final M32 closure
+  approved. Roadmap decision: Keep M32 = Brain Latency / Core
+  Execution Architecture. Renumber the unimplemented External
+  Capability Bridge to M33. Update governance/planning references
+  consistently. Preserve the final deferred/residual register exactly
+  as reported. Do not claim resumed approval or attachment-turn tool
+  selection as resolved." Each individual batch (D1+D2, D3, D4, D5,
+  D6) was separately User-verified and separately authorized to
+  commit/push before this final closure instruction; see the
+  individual commit messages (a6fe87c, 5d76a40, f9cfc92, and this
+  closure's own commit) for each batch's own citation of its specific
+  authorization.
+APPROVAL TIMESTAMP: 2026-09-18
+```
 
 ---
 

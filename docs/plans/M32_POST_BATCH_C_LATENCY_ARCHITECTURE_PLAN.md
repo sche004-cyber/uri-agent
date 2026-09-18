@@ -577,6 +577,182 @@ All three were caught by the tests in this same batch, not discovered later — 
 
 ---
 
+## 15. D6 — committed benchmark harness, final re-measurement, and milestone conclusion (2026-09-18, from clean HEAD `f9cfc92`)
+
+### 15.1 What changed
+
+**`scripts/m32_latency_profile.py`** (new, committed) — promotes the scratchpad-only harness named in this report's own §7 D6 charter ("promote to a committed, repeatable harness... re-measure against this report's numbers as the recorded baseline") into a permanent, reusable repository tool. No production code was changed to obtain any number in this section — every figure below comes from running this committed script against the real, unmodified execution stack.
+
+Two measurement modes, matching the D1/D2 report's own established methodology rather than inventing a new one:
+
+1. **Structural counts** — a scripted, deterministic fake `model_callable`, zero real inference: exact `model_calls`/`CapabilityDirectory` construction counts per turn, mirroring D1/D2's own "scripted fake model, exact call counting" approach.
+2. **Real-model timing** — the real `ModelRouter` against whatever model `OLLAMA_MODEL`/`model_roles.json` resolves to on the machine running it — **never a model name hardcoded in the script** (D3's own standing lesson, applied here explicitly); real-model sections skip cleanly with a clear reason if no model is reachable, so the harness stays useful even without one.
+
+`scripts/m32_latency_profile_results.json` (new, committed) is this run's raw output, matching this repo's own `scripts/m30_5*_results.json` convention.
+
+### 15.2 Cold-load, measured fresh (not carried forward from memory)
+
+Forced a genuine cold load via Ollama's `keep_alive: 0` eviction (confirmed live: `done_reason: "unload"`), rather than citing D1/D2's earlier cold-load figure from memory:
+
+| | Total | Model | URI overhead |
+|---|---|---|---|
+| Cold Tier 0 (fresh model load) | 15.07 s | 15.07 s | 0.001 s |
+
+Consistent in magnitude with D1/D2's own previously-documented cold-load variance on this machine (§10.4's disclosed 13.62 s outlier) — cold-load dominates total latency by construction; URI's own overhead is negligible either way. **Reported separately from every warm figure below, never blended into a median.**
+
+### 15.3 Warm re-measurement (10 iterations each, real model, this machine — final, post-§15.8 correction)
+
+| Scenario | Total (median) | Total (min–max) | Model (median) | URI overhead (median) |
+|---|---|---|---|---|
+| Tier 0, no-tool chat | 0.355 s | 0.333 – 0.400 s | 0.354 s | 0.001 s |
+| Tier 1 legacy (`remember_fact`) | 1.476 s | 1.443 – 1.636 s | 1.462 s | 0.015 s |
+| Tier 1 native single Gmail tool | 2.260 s | 2.249 – 2.283 s | 2.258 s | 0.002 s |
+| Tier 1 native multi-tool (search + read) | 2.690 s | 2.633 – 2.739 s | 2.687 s | 0.003 s |
+
+All four scenarios are now tight and consistent (widest spread: multi-tool's 106 ms across 10 runs) — see §15.8 for why the multi-tool figure changed from the initial 5-iteration D6 pass and why this is the corrected, trustworthy number.
+
+**Structural counts** (scripted, exact, zero network variance) — confirms D2's fix still holds with zero regression through D3–D5:
+
+| Scenario | Model calls (scripted) | `CapabilityDirectory` constructions |
+|---|---|---|
+| Tier 0 | 1 | 1 |
+| Tier 1 legacy | 2 | 1 |
+| Tier 1 native single tool | 2 | 1 |
+| Multi-tool (2 branches, scripted as 1 combined tool_calls response) | 2 | 1 |
+
+**Real-model call count, disclosed:** the scripted structural scenario above models the multi-tool case as the Brain returning both tool calls in ONE response (2 model calls total: propose, then final narrative). The REAL model (`gemma4:12b`) does not do this for the "search + read" prompt — it consistently makes 3 sequential calls (search → read → final narrative), confirmed identically across all 22 real-model multi-tool runs in §15.8 (0 exceptions). This is real Brain tool-calling behavior, not a URI-side call-count regression — `CapabilityDirectory` construction still stays at 1 per turn regardless (confirmed structurally above), which is the property D2 actually fixed.
+
+**Streaming TTFT** (10 iterations, real model, warm):
+
+| | TTFT (median) | TTFT (min–max) | Total (median) |
+|---|---|---|---|
+| Streamed Tier 0 | 0.148 s | 0.135 – 0.326 s | 0.302 s |
+
+**Approval/grants/audit dispatch overhead** (10 iterations, no model call):
+
+| | Median | Min–max |
+|---|---|---|
+| `ApprovalGate.execute_tool()`, zero-approval tool | 0.224 s | 0.223 – 0.462 s |
+
+**Caveat, found and disclosed during this run:** the probe tool (`system_performance`) deliberately blocks ~0.2 s per call in its own business logic (`psutil.cpu_percent(interval=0.2)`, `uri_core/tools/system_performance.py`) — a real CPU-sampling window, not `ApprovalGate`/`ToolDispatcher`/`AuditTrail` overhead. The pure gate/dispatch/audit cost is closer to `(median − 0.2 s)` ≈ 20–24 ms, not the raw ~224 ms figure. This confound existed in the original (pre-D6, uncommitted) diagnostic script too; D6 is the first pass to identify and disclose it rather than silently attribute a tool's own sampling delay to framework cost.
+
+### 15.4 Comparison against the committed Batch C / D1+D2 baseline (§10.4) — final
+
+| Scenario | Batch-C-era (pre-D1/D2) | D1+D2 (§10.4, real router) | D6 final (this run, real router, 10 iterations) |
+|---|---|---|---|
+| Tier 0, no-tool chat | 2463 ms | 476 ms | **355 ms** |
+| Tier 1 legacy (`remember_fact`) | 3791 ms | 1454 ms | **1476 ms** |
+| Tier 1 native single Gmail tool | 5155 ms | 2237 ms | **2260 ms** |
+| Tier 1 native multi-tool (search + read) | 5001 ms | 2608 ms | **2690 ms** |
+
+Every scenario is now stable within ordinary run-to-run variance of its own D1+D2 baseline (largest delta: legacy, +22 ms / 1.5%) — **no regression from D3, D4, or D5 in any scenario**, confirmed with 10-iteration rigor rather than a single sample.
+
+**Methodology note:** this run did not set `OLLAMA_NUM_CTX` (default/unconfigured deployment), so D4's own isolated ~15 ms-per-call context-probe saving is *included* inside these totals as overhead, not separately isolated again here — D4's own §12.1 already measured and reported that saving in isolation; re-deriving it here would duplicate evidence rather than add it.
+
+### 15.5 Remaining measurable bottlenecks / regressions
+
+- **None found.** URI's own overhead is consistently ≤15 ms (Tier 1 legacy) and often <3 ms (Tier 0, native single-tool, multi-tool) out of totals measured in the hundreds-of-ms to low-single-digit-seconds range — the dominant cost in every scenario is real model inference time, which is outside URI's own execution-architecture scope by design (a faster/smaller model, not a URI code change, is the only lever left there).
+- The multi-tool variance flagged after the initial 5-iteration D6 pass is **resolved, not merely re-flagged** — §15.8 traces it to a scenario-wording mismatch against the original D1+D2 prompt, not a regression; the corrected, apples-to-apples 10-iteration figure (§15.3/§15.4) matches baseline within 3%.
+- **OAuth refresh**: not independently re-measurable in this environment (no real Google OAuth credential configured here); D1's own fix is unit-tested and structurally unchanged since D1 (nothing in D2–D5 touched `google_auth_common.py`).
+- **Concurrency/resource bounds**: both now bounded and deployment-configurable — `DEFAULT_MAX_PARALLEL_TOOL_WORKERS = 4` (D4, `URI_MAX_PARALLEL_TOOL_WORKERS`) and `DEFAULT_MAX_CONCURRENT_STREAMS = 8` (D5, `URI_MAX_CONCURRENT_STREAMS`) — the unbounded-worker-pool risk this report originally flagged (R-New-1) no longer exists in the shipped code.
+
+### 15.6 Regression
+
+Full broad sweep re-run from clean D6 state (566 collected): **561 passed, 5 failed, 13 subtests passed** — identical to D5's own result. The 5 failures are the same pre-existing `qwen3:14b`-not-installed environment failures already root-caused in D3/D4/D5, confirmed unchanged. Expected and consistent, since D6 changed zero production code (`git status` shows only the two new `scripts/` files and this doc).
+
+### 15.8 Deep re-run of the multi-tool scenario (User-directed follow-up, ≥10 iterations)
+
+The initial D6 pass (§15.3 as first written, 5 iterations) used the wording *"Search my Gmail for messages about the quarterly renewal, then search again for invoices"* for the multi-tool scenario — **not** identical to D1+D2's own original prompt, *"...then read the first result"* (§10.4). This was an unnoticed methodology drift, found and corrected during this follow-up, not a pre-existing documented decision.
+
+**Step 1 — 12 iterations, the (incorrect, differently-worded) original D6 prompt:**
+
+| | Median | Min–max | stdev |
+|---|---|---|---|
+| Total | 3.953 s | 3.242 – 4.185 s | 0.234 s |
+
+All 12 runs made 3 real model calls (search "renewal" → search "invoices" → final narrative) — a genuinely more expensive prompt (two full searches instead of one search + one read), explaining the higher absolute number on its own, before any question of regression.
+
+**Step 2 — 10 iterations, D1+D2's exact original prompt** (*"...then read the first result"*):
+
+| | Median | Min–max | stdev |
+|---|---|---|---|
+| Total | 2.693 s | 2.583 – 2.811 s | ~0.07 s |
+
+All 10 runs succeeded, all made 3 real model calls (search → read → final narrative) — matching D1+D2's own disclosed call count for this exact scenario (§10.4's original raw data: `3050 ms (670+960+1420)`, 3 components). **2693 ms vs the 2608 ms baseline is a 3.3% difference, fully inside normal run-to-run model-timing variance** (compare: D1+D2's own report already disclosed a single Tier-0 run at 13.62 s against a representative 470–770 ms figure — this machine's real variance envelope is far wider than 3%).
+
+**Conclusion: the apparent multi-tool "regression" flagged after the first 5-iteration D6 pass is resolved — it was a scenario-wording mismatch, not a code regression.** `scripts/m32_latency_profile.py`'s own `multi_tool_two_branch` prompt has been corrected to D1+D2's exact original wording (with a comment explaining why, so this cannot silently drift again), and `WARM_ITERATIONS` raised from 5 to 10 by default, both committed as part of this follow-up. §15.3/§15.4 above already reflect the corrected, final 10-iteration numbers — this subsection preserves the investigation trail per this repository's own auditable-correction-history convention, rather than silently overwriting the original (now-superseded) 5-iteration figures.
+
+### 15.9 Batch B's resumed-approval-across-turns residual — re-checked, still OPEN
+
+**Original finding (Batch B, `M32_BATCH_B_COMPLETION_REPORT.md` §5/§7):** a canonical/native-tool-loop turn that returns `status=approval_required` sets no durable, cross-turn approval/pending-action state on the session. A live-demonstrated follow-up ("Yes, please go ahead and create that draft") in the same session was **not** recognized as resuming the pending proposal — the Brain re-interpreted it as an unrelated fresh request. Explicitly deferred to Batch C as "genuinely a Tier-1/continuation problem."
+
+**Batch C's own disposition (`M32_BATCH_C_COMPLETION_REPORT.md` §10 item 7, verbatim):** *"the resumed-approval-across-turns gap (durable cross-turn action/approval state is genuinely a Tier-1/continuation problem this batch's in-turn-only C3.9 does not solve for a new HTTP turn)"* — explicitly left untouched. C3.9 (idempotency) only prevents a duplicate dispatch **within one already-open turn's own iteration loop**; it was never designed to solve recognition of a natural-language follow-up arriving as a **new, separate HTTP `/ask` request** in a later turn.
+
+**Checked against D1–D6 for this follow-up:** none of D1 (OAuth persistence), D2 (`CapabilityDirectory` reuse), D3 (model-resolution correctness), D4 (context-probe skip / worker cap), or D5 (streaming) touch session-level pending-approval state, `ApprovalStore`, or the semantic-interpretation/routing layer that would need to recognize a resumption follow-up. Re-inspected `native_tool_loop.py` (unmodified throughout D1–D6) and `server.py`'s `/ask` routing (only touched by D5, solely to add `_resolve_ask_context`/`_finalize_ask_response` extractions and the new `/ask/stream` endpoint — no touch to the `workflow_continuation`/approval-pending check at the top of `ask()`) to confirm directly, not by inference from the batch reports alone.
+
+**Status: still OPEN, exactly as Batch C left it.** This is not a latency defect and was never in scope for the Brain-Latency/Core-Execution-Architecture work stream (D1–D6) — it is a genuine, disclosed functional/product gap (durable cross-turn pending-approval state + natural-language resumption recognition) that requires its own design and implementation, not a bounded fix. It does not block THIS work stream's own closure (latency/execution-architecture), but it must not be allowed to quietly disappear — recorded permanently in the register below (§15.10) so it survives this milestone's closure instead of being lost with it.
+
+### 15.10 Final deferred/residual register for this work stream (Batches A–C, D1–D6)
+
+| # | Item | Status | Origin | Disposition |
+|---|---|---|---|---|
+| 1 | Resumed approval across turns (durable cross-turn pending-approval state + natural-language resumption recognition) | **OPEN** | Batch B, confirmed untouched through Batch C and D1–D6 (§15.9) | Real, live-demonstrated, disclosed. Requires new design/implementation (session-level durable proposal state + routing), out of scope for a latency work stream. Carry forward to whichever future initiative owns Tier-1/continuation UX. |
+| 2 | `response_drafting.draft_response()` (canonical/legacy narrative) streaming | **NOT STARTED, explicitly descoped** | D5 §13.12/R-D5-5 | Needs its own buffer-then-validate-then-flush design (post-hoc `validate_drafted_response()` conflicts with live token display) — do not naively extend Tier 0's design to it. |
+| 3 | Flutter client (`UriClient`/`AppState`) streaming consumption | **NOT STARTED, explicitly descoped** | D5 §13.12 | Server-side SSE contract (`/ask/stream`, event shapes) exists and is stable; no consuming UI yet. Separate, sequenced follow-on. |
+| 4 | Anthropic / OpenAICompatible real token-by-token streaming | **NOT STARTED** (safe single-chunk fallback implemented and tested) | D5 §13.8/§13.12 | Provider-agnostic interface already supports this as a drop-in per-adapter upgrade whenever prioritized; nothing blocks it. |
+| 5 | Cross-capability multi-tool routing (C3.3) | **Correctly BLOCKED, out of THIS milestone's scope** | Batch C, pending P1 (`multi_action_dispatch._action_permitted`) | Owned by `M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md` — a different, correctly-numbered initiative. Not a residual of the latency work stream; listed here only for completeness/traceability. |
+| 6 | Committed, repeatable latency benchmark script (B1.3/PC3) | **CLOSED by D6** | Batch B (`scripts/m32_latency_battery.py`, never committed) | `scripts/m32_latency_profile.py` (D6, this report) fulfills the same functional requirement — committed, repeatable, multi-scenario, real + structural measurement. Different filename than originally envisioned; same requirement satisfied. |
+| 7 | Multi-tool scenario latency variance | **CLOSED by this follow-up** | Raised in the initial D6 pass (§15.3 as first written) | Root-caused to a scenario-wording mismatch, not a regression; resolved with a corrected, 10-iteration apples-to-apples measurement (§15.8). |
+| 8 | Attachment-turn Brain tool-selection reliability (chose `Gmail` over `read_attached_file`) | **OPEN, unverified since Batch B** | Batch B §5, explicitly "not independently re-tested" in Batch C §10 | Model/prompt-reliability finding, not an execution-architecture defect — out of scope for D1–D6 (none of them touch tool-selection prompting). Carry forward to whichever future initiative owns Brain tool-selection reliability/eval. |
+| 9 | Packaged default model (`qwen3:14b`) not installed on this dev machine | **Environment-only, not a defect** | D3 | Operator action (`ollama pull qwen3:14b` or set `OLLAMA_MODEL`), documented in D3 §11.5. Unchanged, not blocking. |
+| 10 | Repo-root `token.json` | **Environment-only, confirmed still present and gitignored** | Batch B/C, re-confirmed this session | Never committed (`git check-ignore -v token.json` confirmed); local-machine state, not a repository hygiene defect. Contents not inspected here (secret-handling discipline). |
+| 11 | OAuth refresh cost, live re-measurement | **Not independently measurable in this environment** | D6 §15.3/§15.5 | No real Google OAuth credential configured on this machine; D1's fix remains unit-tested and structurally unchanged. Not a residual — a standing environment limitation of this specific dev machine. |
+
+### 15.11 Milestone-number collision — findings and recommendation (not applied; awaiting User approval)
+
+**The collision, precisely:** `docs/governance/URI_ACTIVE_MILESTONE.md` (last updated at M31's closure, 2026-09-16) records `CURRENT MILESTONE: None active` and explicitly states *"M32 stays reserved for external-skill qualification/integration"* (§1, §5, §6, repeated three times in that file). This entire work stream (Batches A–C, D1–D6) has used the label **"M32 — Brain Latency / Core Execution Architecture"** throughout its own planning docs (`M32_EXECUTION_ARCHITECTURE_PLAN.md`, `M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md`, this report) — a different initiative sharing the same number. This is not a new discovery: `M32_STATE.md` (the External Capability Bridge planning doc, dated 2026-09-15) already flagged the identical collision at the time: *"Current active milestone: unchanged; `docs/governance/URI_ACTIVE_MILESTONE.md` still records M31 REPAIRING. This file tracks proposed M32, not a second active-milestone authority."*
+
+**Three options considered:**
+
+1. **Renumber this work stream** (Brain Latency / Core Execution Architecture) to the next free milestone number, leaving "M32" reserved for External Capability Bridge exactly as governance already states. Every `M32_*` filename in this initiative's own `docs/plans/` directory would need renaming (or a redirect/alias note) for internal consistency.
+2. **Renumber External Capability Bridge instead**, freeing "M32" for this work stream, since External Capability Bridge is still only a proposed/planned initiative (`M32_STATE.md`'s own status: `DRAFT — PLAN READY FOR REVIEW`, implementation never authorized or started) while this work stream has substantial completed, shipped, committed work already carrying the "M32" label across 6 D-batches and this report.
+3. **Leave both as informally-numbered working labels**, and let `URI_ACTIVE_MILESTONE.md` (the single authoritative governance record per its own title) be the sole source of truth for what "M32" formally means — record this Brain-Latency work stream's closure under a different, explicit designation (e.g. its own descriptive name, not a milestone number at all) without renaming any files.
+
+**Recommendation: Option 2**, on the evidence actually in front of me — this work stream has shipped, tested, committed code across 6 batches and closes with a substantial, verified before/after latency story; External Capability Bridge has produced planning documents only and was never authorized to implement (`M32_STATE.md` line 7: *"Implementation: NOT AUTHORIZED; NOT STARTED"*). Renumbering unimplemented planning work is lower-cost and lower-risk than renaming a completed, shipped work stream's own history across 6 already-committed batch reports. This recommendation is **not applied** — no file has been renamed or renumbered, and `URI_ACTIVE_MILESTONE.md` has not been touched, per instruction. Awaiting the User's own roadmap-numbering decision.
+
+### 15.12 Final CLOSE / HOLD recommendation
+
+**CLOSE**, for the Brain-Latency/Core-Execution-Architecture work stream's own scope (Batches A–C, D1–D6), with the following record attached to that closure:
+
+- Every acceptance criterion this report itself defined (§0) or that each batch/D-item defined for itself (§10.5, §11.6, §12.7, §13.9, §14.6) is implemented, tested, and independently re-verified.
+- Both headline latency findings (F2/F3) and the one correctness defect (F1) are fixed and hold under fresh, repeated (10-iteration) real-model evidence, not a single sample.
+- Both resource-risk items this report raised (R-New-1 and its streaming equivalent) are bounded and deployment-configurable.
+- Streaming is implemented, real-verified end to end including a genuine tool-call turn through the unmodified gate/dispatch chain.
+- The one measurement-confidence question raised after the first D6 pass (multi-tool variance) has been independently re-investigated and resolved to a specific, disclosed root cause (§15.8) — not merely re-asserted or left open.
+- Zero test regression across 561 passing tests, confirmed fresh in this same session.
+- A committed, reusable benchmark harness now exists (closing the long-standing B1.3/PC3 residual) so any future milestone can re-run this exact evidence rather than starting over.
+
+**Two items are explicitly carried forward, not closed, and must not be treated as resolved by this CLOSE:** item #1 (resumed approval across turns) and item #8 (attachment-turn tool-selection reliability) in the register at §15.10 — both are real, disclosed, functional/product gaps outside this work stream's own latency/execution-architecture scope, requiring their own future initiative.
+
+**The milestone-number collision (§15.11) is a separate, outstanding decision** that does not block this CLOSE recommendation but should be resolved by the User before `URI_ACTIVE_MILESTONE.md` is updated to reflect it.
+
+---
+
+## 15.13 Final closure — applied (2026-09-18)
+
+**User decision, verbatim:** "Final M32 closure approved. Roadmap decision: Keep M32 = Brain Latency / Core Execution Architecture. Renumber the unimplemented External Capability Bridge to M33. Update governance/planning references consistently. Preserve the final deferred/residual register exactly as reported. Do not claim resumed approval or attachment-turn tool selection as resolved."
+
+This adopts §15.11's Option 2 recommendation exactly. Applied:
+
+- **`docs/governance/URI_ACTIVE_MILESTONE.md`** updated: M32 recorded as a new `PRIOR MILESTONE (CLOSED)` entry (with its own residual-items carve-out, verbatim from §15.10 items #1/#8, directly in that entry so it cannot be missed by a reader of governance alone); `CURRENT MILESTONE` corrected from the stale M31 reference; new §1b records the M32→M33 roadmap reconciliation and its rationale; the stale "M32 is reserved for external-skill qualification/integration" bullet (§5/§6 of that file) preserved verbatim with a `[Superseded, 2026-09-18]` annotation rather than silently edited, plus a corrected, current statement added alongside it; new §6e/§6f Approval/Closure Records added, mirroring M31's own §6c/§6d format exactly.
+- **`docs/plans/M32_STATE.md`** (the External Capability Bridge's own, now-superseded M32-numbered state file): a `SUPERSEDED` banner added at the top, pointing to `M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md` and this closure record. **Not renamed, not deleted** — `M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md` (frozen 2026-09-17, discovered during this closure's own investigation) already established the "supersede in place, never rename/delete" convention for these exact files one day before this reconciliation; this closure follows that same convention rather than inventing a new one. No `docs/plans/M32_EXTERNAL_CAPABILITY_BRIDGE_PLAN.md`/`M32_CANONICAL_ARCHITECTURE.md`/`M32_ROOT_CAUSE_AUDIT.md`/`M32_MIGRATION_PLAN.md` file was touched.
+- **This report's own §15.10 register is preserved exactly as reported** — no item's status was changed, added, or removed as part of this closure; items #1 (resumed approval) and #8 (attachment-turn tool selection) remain explicitly OPEN, carried forward, per direct instruction.
+- **M33 implementation:** confirmed not started, no production code touched, no `docs/plans/M33_*` file created or modified by this closure.
+
+**Regression, re-confirmed at final closure:** no production code changed in this closure session (governance/planning docs only) — the D6 regression result (561 passed, 5 pre-existing environment failures, 13 subtests, §15.6) stands unchanged as the operative evidence for this closure.
+
+---
+
 ## 5. Proposed architectural changes (not authorized — for review)
 
 These follow directly from §4 and are ordered by measured impact. None has been implemented.
