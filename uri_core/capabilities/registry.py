@@ -54,6 +54,13 @@ class MultiActionCapabilityRegistry:
         return self._capabilities.get(name)
 
     def capability_summaries(self) -> List[Dict[str, Any]]:
+        # Deliberately unchanged shape (M33 Batch B): capability_directory.
+        # py's `_multi_action_entries` reads `aliases`/`intent_signals`/
+        # per-action descriptions directly off the `Capability` object via
+        # `get_capability()` instead of from this method, so this exact
+        # return shape - asserted literally by
+        # test_progressive_discovery_keeps_action_schemas_out_of_initial_
+        # summary - never has to change for that extension.
         return [
             {
                 "name": capability.name,
@@ -77,6 +84,8 @@ class MultiActionCapabilityRegistry:
             "preconditions": list(capability.preconditions),
             "availability": capability.check_availability(),
             "actions": [self._describe_action(action) for action in capability.list_actions()],
+            "aliases": list(capability.aliases),
+            "intent_signals": list(capability.intent_signals),
         }
 
     @staticmethod

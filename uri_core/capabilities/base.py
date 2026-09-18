@@ -183,6 +183,15 @@ class Capability:
     preconditions: List[str] = field(default_factory=list)
     actions: Dict[str, Action] = field(default_factory=dict)
     availability_check: Optional[AvailabilityCheck] = None
+    # M33 Batch B: bounded metadata extension. Alternate names a Brain or
+    # a user might use for this capability (e.g. an external descriptor's
+    # own declared `aliases`). Empty by default - every existing
+    # Capability construction (Gmail, every legacy adapter) is unaffected.
+    aliases: Tuple[str, ...] = ()
+    # M33 Batch B / addendum §13.1: normalized, Brain-agnostic intent
+    # signals - what KIND of request this capability answers, never a
+    # provider/model identifier. Empty by default.
+    intent_signals: Tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         self.actions = {name: action for name, action in self.actions.items()}

@@ -81,6 +81,16 @@ class CapabilityDirectoryEntry:
     health_status: Optional[str] = None
     grounding_supported: bool = False
     deprecated: bool = False
+    # M33 Batch B: extends Level 1 visibility with what `to_summary_dict`
+    # previously dropped - alternate names, per-action descriptions, and
+    # normalized intent signals (blueprint §6 Batch B). Empty defaults
+    # for every existing legacy/procedure entry, which declares none of
+    # these; populated for multi_action entries from `Capability.aliases`/
+    # `.intent_signals` and each action's own description.
+    aliases: List[str] = field(default_factory=list)
+    action_descriptions: Dict[str, str] = field(default_factory=dict)
+    intent_signals: List[str] = field(default_factory=list)
+    category: Optional[str] = None
     # M30.5B: a property of the CAPABILITY itself, declared once here -
     # never a property of any one sentence's wording. "Foundational"
     # means this capability's relevance cannot be judged by topical/
@@ -108,6 +118,10 @@ class CapabilityDirectoryEntry:
             "risk": self.risk,
             "actions": list(self.action_names),
             "foundational": self.foundational,
+            "aliases": list(self.aliases),
+            "action_descriptions": dict(self.action_descriptions),
+            "intent_signals": list(self.intent_signals),
+            "category": self.category,
         }
 
     def to_detail_dict(self, action_schemas: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -137,6 +151,23 @@ class CapabilityDirectoryEntry:
 # scoring structurally cannot judge their relevance and must not be
 # asked to.
 _FOUNDATIONAL_CAPABILITY_IDS = {"remember_fact", "recall_memory"}
+
+
+def _is_foundational(capability_id: str, feasibility_entry: Dict[str, Any]) -> bool:
+    """M33 Batch B: foundational status now reads the capability's own
+    registry entry first (a `"foundational": true/false` key in
+    `capabilities_registry.json`, exactly the descriptor field the
+    blueprint asks for), falling back to the hardcoded
+    `_FOUNDATIONAL_CAPABILITY_IDS` set only when that entry declares no
+    opinion (key absent) - so today's two hardcoded ids keep working
+    exactly as before (nothing in `capabilities_registry.json` declares
+    the key yet) while any future entry, including an external one, can
+    declare its own foundational status without another hardcoded-set
+    edit."""
+    declared = feasibility_entry.get("foundational")
+    if isinstance(declared, bool):
+        return declared
+    return capability_id in _FOUNDATIONAL_CAPABILITY_IDS
 
 
 def _legacy_entries(
@@ -188,7 +219,8 @@ def _legacy_entries(
             health_status=None,  # legacy capabilities have no independent health signal (Stage 1 §5)
             grounding_supported=False,  # no legacy CapabilityContextResolver equivalent yet
             deprecated=False,
-            foundational=capability_id in _FOUNDATIONAL_CAPABILITY_IDS,
+            foundational=_is_foundational(capability_id, feasibility_entry),
+            category=feasibility_entry.get("category"),
         )
 
     return entries
@@ -216,6 +248,21 @@ def _multi_action_entries(
         if not capability_id:
             continue
         actions = summary.get("actions") or []
+        # M33 Batch B: read directly off the real `Capability` object
+        # rather than extending `capability_summaries()`'s own return
+        # shape - that shape is asserted by exact equality elsewhere
+        # (test_multi_action_capabilities.py), and this achieves the
+        # same "category/aliases/per-action descriptions surfaced at
+        # Level 1" goal without touching it. `get_capability` is cheap
+        # (an in-memory dict lookup) - no live availability_check() call,
+        # so the "nothing is known yet at Level 1" comment below still
+        # holds exactly as before.
+        _capability_obj = multi_action_registry.get_capability(capability_id)
+        _capability_aliases = list(getattr(_capability_obj, "aliases", ()) or ())
+        _capability_intent_signals = list(getattr(_capability_obj, "intent_signals", ()) or ())
+        _capability_action_descriptions = {
+            action.name: action.description for action in (_capability_obj.list_actions() if _capability_obj else [])
+        }
         # This is the exact Stage 1 §1/§11.6 gap, made representable
         # rather than papered over: M27's own summary stage carries no
         # connection/usability signal at all. describe() below CAN
@@ -240,6 +287,10 @@ def _multi_action_entries(
             health_status=None,
             grounding_supported=True,  # CapabilityContextResolver exists for this family
             deprecated=False,
+            aliases=list(_capability_aliases),
+            action_descriptions=dict(_capability_action_descriptions),
+            intent_signals=list(_capability_intent_signals),
+            category=summary.get("category"),
         )
 
     return entries

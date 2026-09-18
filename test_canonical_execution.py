@@ -398,15 +398,15 @@ class GmailExecutionTests(unittest.TestCase):
     message) resolves through the real CapabilityContextResolver."""
 
     def test_single_action_search_executes_and_returns_real_evidence(self):
-        from uri_core.core.canonical_execution import _execute_gmail
+        from uri_core.core.canonical_execution import _execute_multi_action
 
         dispatch = _connected_dispatch()
         contract = {
             "capability": "Gmail",
             "actions": [{"name": "search_messages", "inputs": {"query": "insurance"}}],
         }
-        envelope = _execute_gmail(
-            contract, orchestrator=_FakeOrchestrator(multi_action_dispatch=dispatch),
+        envelope = _execute_multi_action(
+            contract, capability_id="Gmail", orchestrator=_FakeOrchestrator(multi_action_dispatch=dispatch),
             session_id="s1", user_text="find the latest insurance email", principal=None,
         )
         self.assertIsNotNone(envelope)
@@ -414,7 +414,7 @@ class GmailExecutionTests(unittest.TestCase):
         self.assertIn("results", envelope["response"])
 
     def test_grounded_follow_up_resolves_real_message_id(self):
-        from uri_core.core.canonical_execution import _execute_gmail
+        from uri_core.core.canonical_execution import _execute_multi_action
 
         dispatch = _connected_dispatch()
         orchestrator = _FakeOrchestrator(multi_action_dispatch=dispatch)
@@ -422,8 +422,8 @@ class GmailExecutionTests(unittest.TestCase):
             "capability": "Gmail",
             "actions": [{"name": "search_messages", "inputs": {"query": "insurance"}}],
         }
-        _execute_gmail(
-            search_contract, orchestrator=orchestrator, session_id="s1",
+        _execute_multi_action(
+            search_contract, capability_id="Gmail", orchestrator=orchestrator, session_id="s1",
             user_text="find the latest insurance email", principal=None,
         )
         # Follow-up: "Read that one." - no explicit message_id given,
@@ -431,8 +431,8 @@ class GmailExecutionTests(unittest.TestCase):
         # CapabilityContextResolver (the same mechanism the legacy
         # dispatch() path already used - unchanged here).
         read_contract = {"capability": "Gmail", "actions": [{"name": "read_message", "inputs": {}}]}
-        envelope = _execute_gmail(
-            read_contract, orchestrator=orchestrator, session_id="s1",
+        envelope = _execute_multi_action(
+            read_contract, capability_id="Gmail", orchestrator=orchestrator, session_id="s1",
             user_text="Read that one.", principal=None,
         )
         self.assertIsNotNone(envelope)
@@ -441,7 +441,7 @@ class GmailExecutionTests(unittest.TestCase):
         self.assertEqual(bound_message_id, "m-1")  # the real id FakeGmailService returned
 
     def test_multi_action_chain_executes_in_order(self):
-        from uri_core.core.canonical_execution import _execute_gmail
+        from uri_core.core.canonical_execution import _execute_multi_action
 
         dispatch = _connected_dispatch()
         contract = {
@@ -452,8 +452,8 @@ class GmailExecutionTests(unittest.TestCase):
                 {"name": "read_attachment", "inputs": {"message_id": "m-1", "attachment_id": "a-1", "filename": "policy.pdf"}},
             ],
         }
-        envelope = _execute_gmail(
-            contract, orchestrator=_FakeOrchestrator(multi_action_dispatch=dispatch),
+        envelope = _execute_multi_action(
+            contract, capability_id="Gmail", orchestrator=_FakeOrchestrator(multi_action_dispatch=dispatch),
             session_id="s2", user_text="find, read, and check the attachment", principal=None,
         )
         self.assertIsNotNone(envelope)
@@ -540,12 +540,12 @@ class NarrativeAndPersistenceTests(unittest.TestCase):
     execution evidence exists, never before."""
 
     def test_execution_evidence_present_before_narrative_would_draft(self):
-        from uri_core.core.canonical_execution import _execute_gmail
+        from uri_core.core.canonical_execution import _execute_multi_action
 
         dispatch = _connected_dispatch()
         contract = {"capability": "Gmail", "actions": [{"name": "list_labels", "inputs": {}}]}
-        envelope = _execute_gmail(
-            contract, orchestrator=_FakeOrchestrator(multi_action_dispatch=dispatch),
+        envelope = _execute_multi_action(
+            contract, capability_id="Gmail", orchestrator=_FakeOrchestrator(multi_action_dispatch=dispatch),
             session_id="s1", user_text="list my gmail labels", principal=None,
         )
         self.assertIsNotNone(envelope)

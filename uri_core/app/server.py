@@ -404,11 +404,12 @@ def _build_user_context(user_id: str) -> _UserContext:
     # previously always saved to the ambient uri_workspace/uploads
     # store instead and could never be found again via this same
     # user's own GET /files/{file_id}/content lookup below.
+    audit_trail = AuditTrail()
     approval_gate = ApprovalGate(
         dispatcher=ToolDispatcher(),
         capability_registry=_capability_registry,
         approval_store=approval_store,
-        audit_trail=AuditTrail(),
+        audit_trail=audit_trail,
         capability_grants_store=_capability_grants_store,
         principal=principal,
         file_store=file_store,
@@ -442,6 +443,46 @@ def _build_user_context(user_id: str) -> _UserContext:
         conversation_history=conversation_history,
         principal=principal,
         graph_store=graph_store,
+    )
+
+    # M33 Batch B: composition, not orchestrator growth. orchestrator.py's
+    # own MultiActionDispatch(capability_registry=...) construction
+    # (unmodified by this milestone) stays exactly what P1 found; this
+    # wires the M33 Batch B seams onto the already-built instance:
+    #   - a fresh registry generation (D3) containing this user's own
+    #     enabled+qualified external capabilities (Batch A's store),
+    #     built on top of the same base Gmail registration `Multi
+    #     ActionDispatch`'s own default construction already used;
+    #   - the generalized, fail-closed external-permission resolver
+    #     (uri_core/external/permission_binding.py) - never Capability
+    #     Resolver's legacy missing-grant full-registry default;
+    #   - a real audit_sink (executor.py's own already-existing kwarg,
+    #     previously never passed) - the SAME AuditTrail instance
+    #     approval_gate above already uses, so one user's multi-action
+    #     executions land in the one audit trail their approvals do.
+    from uri_core.capabilities.discovery import CapabilityDiscoveryEngine
+    from uri_core.capabilities.gmail import GmailCapability
+    from uri_core.external.permission_binding import (
+        external_permission_resolver as _external_permission_resolver,
+    )
+    from uri_core.external.registry_bridge import ExternalCapabilityPublisher
+
+    _publish_result = ExternalCapabilityPublisher().publish(
+        user_id, base_capabilities=[GmailCapability()]
+    )
+    orchestrator.multi_action_dispatch.registry = _publish_result.registry
+    orchestrator.multi_action_dispatch.discovery = CapabilityDiscoveryEngine(
+        orchestrator.multi_action_dispatch.registry
+    )
+    orchestrator.multi_action_dispatch.external_permission_resolver = _external_permission_resolver
+    orchestrator.multi_action_dispatch.audit_sink = (
+        lambda entry: audit_trail.record(
+            event_type="multi_action_capability_execution",
+            status=str(entry.get("status", "unknown")),
+            session_id=None,
+            capability=entry.get("capability"),
+            metadata=entry,
+        )
     )
 
     return _UserContext(

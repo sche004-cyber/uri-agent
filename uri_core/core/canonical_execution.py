@@ -183,14 +183,24 @@ def _propose_durable_gmail_approval(
         return None
 
 
-def _execute_gmail(
+def _execute_multi_action(
     contract: Dict[str, Any],
     *,
+    capability_id: str,
     orchestrator: Any,
     session_id: Optional[str],
     user_text: str,
     principal: Any,
 ) -> Optional[Dict[str, Any]]:
+    """M33 Batch B: the generalized form of the old `_execute_gmail` -
+    any capability registered in `orchestrator.multi_action_dispatch.
+    registry` (Gmail by default construction, plus whatever `server.py`'s
+    user-context composition has published from Batch A's enabled
+    external capabilities) executes through this ONE path. Gmail keeps
+    its exact prior behavior because it is still exactly the same
+    registered capability id going through the exact same `dispatch_
+    explicit`/`dispatch_chain_explicit` calls - through registration,
+    not through a `capability_id == "Gmail"` branch."""
     dispatch = getattr(orchestrator, "multi_action_dispatch", None)
     if dispatch is None:
         return None
@@ -202,7 +212,7 @@ def _execute_gmail(
     if len(actions) == 1:
         action_name = actions[0]["name"]
         envelope = dispatch.dispatch_explicit(
-            "Gmail", action_name, actions[0].get("inputs") or {},
+            capability_id, action_name, actions[0].get("inputs") or {},
             session_id=session_id, user_text=user_text, principal=principal,
         )
         # M32.1: a single-action awaiting_approval result is the ONLY
@@ -211,14 +221,17 @@ def _execute_gmail(
         # mid-chain approval is a materially different problem (which
         # step, preserving already-completed steps) and is explicitly
         # out of this bounded milestone's scope; disclosed, not silently
-        # handled.
+        # handled. `_propose_durable_gmail_approval` already takes
+        # `capability` as a parameter (never hardcodes "Gmail" itself),
+        # so this bridge applies identically to any registered capability
+        # - only its name is historical.
         if (
             isinstance(envelope, dict)
             and envelope.get("execution", {}).get("status") == "awaiting_approval"
         ):
             bound_inputs = envelope.get("plan", {}).get("inputs") or {}
             action_id = _propose_durable_gmail_approval(
-                orchestrator=orchestrator, session_id=session_id, capability="Gmail",
+                orchestrator=orchestrator, session_id=session_id, capability=capability_id,
                 action_name=action_name, bound_inputs=bound_inputs,
             )
             if action_id is not None:
@@ -232,7 +245,7 @@ def _execute_gmail(
                 )
     else:
         steps = [
-            {"capability": "Gmail", "action": a["name"], "inputs": a.get("inputs") or {}}
+            {"capability": capability_id, "action": a["name"], "inputs": a.get("inputs") or {}}
             for a in actions
         ]
         envelope = dispatch.dispatch_chain_explicit(
@@ -431,10 +444,22 @@ def _execute_canonical(
     principal: Any,
 ) -> Optional[Dict[str, Any]]:
     capability_id = contract.get("capability")
-    if capability_id == "Gmail":
-        return _execute_gmail(
-            contract, orchestrator=orchestrator, session_id=session_id,
-            user_text=user_text, principal=principal,
+    # M33 Batch B: registry lookup, not a `capability_id == "Gmail"`
+    # branch - Gmail is simply always present in `dispatch.registry` by
+    # its own default construction (`MultiActionCapabilityRegistry([Gmail
+    # Capability()])`, unchanged); any external capability `server.py`'s
+    # user-context composition has published lives in the exact same
+    # registry and is reached by the exact same generalized call below.
+    dispatch = getattr(orchestrator, "multi_action_dispatch", None)
+    registry = getattr(dispatch, "registry", None)
+    if (
+        isinstance(capability_id, str)
+        and registry is not None
+        and registry.get_capability(capability_id) is not None
+    ):
+        return _execute_multi_action(
+            contract, capability_id=capability_id, orchestrator=orchestrator,
+            session_id=session_id, user_text=user_text, principal=principal,
         )
     if capability_id == "remember_fact":
         return _execute_remember_fact(

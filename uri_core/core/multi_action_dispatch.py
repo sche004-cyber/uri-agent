@@ -59,6 +59,8 @@ class MultiActionDispatch:
         granted_permissions: Optional[Iterable[str]] = None,
         permission_checker: Optional[Callable[[str, Any], bool]] = None,
         capability_registry: Any = None,
+        external_permission_resolver: Optional[Callable[[str, Any], bool]] = None,
+        audit_sink: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> None:
         self.registry = registry or MultiActionCapabilityRegistry([GmailCapability()])
         self.discovery = CapabilityDiscoveryEngine(self.registry)
@@ -67,6 +69,23 @@ class MultiActionDispatch:
         )
         self.permission_checker = permission_checker
         self.capability_registry = capability_registry
+        # M33 Batch B: the generalized counterpart of `_ACTION_GRANT_
+        # CAPABILITY`/`_CAPABILITY_GRANT_ALIAS` above, for capability ids
+        # that are NOT Gmail. Optional, additive, default None - every
+        # existing caller (including `orchestrator.py`'s own zero-kwarg
+        # construction) sees byte-identical P1 behavior. Consulted only
+        # as the FALLBACK when the Gmail-specific alias tables above have
+        # no entry for the id in question, so Gmail's own authorization
+        # path never changes. See `uri_core/external/permission_binding.
+        # py` for the real, fail-closed implementation this is normally
+        # wired to (composition happens in `server.py`'s user-context
+        # construction, not here).
+        self.external_permission_resolver = external_permission_resolver
+        # M33 Batch B: wired to a real sink at the same composition site.
+        # `MultiActionExecutor` already accepts this kwarg (P1); it was
+        # simply never passed from here. Default None - unchanged for
+        # every existing caller.
+        self.audit_sink = audit_sink
         self._executors: Dict[str, MultiActionExecutor] = {}
         self._selected_capabilities: Dict[str, str] = {}
 
@@ -146,7 +165,7 @@ class MultiActionDispatch:
             if not self._action_permitted(capability, action_name, principal):
                 return self._permission_denied(capability, action_name)
             executor = self._executor_for(session_id, principal)
-            bound_inputs = self._bind_context(executor, action_name, inputs, user_text)
+            bound_inputs = self._bind_context(executor, capability, action_name, inputs, user_text)
             result = executor.execute(
                 capability,
                 action_name,
@@ -209,7 +228,7 @@ class MultiActionDispatch:
         if not self._action_permitted(capability, action_name, principal):
             return self._permission_denied(capability, action_name)
         executor = self._executor_for(session_id, principal)
-        bound_inputs = self._bind_context(executor, action_name, inputs, user_text)
+        bound_inputs = self._bind_context(executor, capability, action_name, inputs, user_text)
         result = executor.execute(
             capability, action_name, bound_inputs,
             user_approved=user_approved, admin_approved=admin_approved,
@@ -305,6 +324,7 @@ class MultiActionDispatch:
                 self.registry,
                 granted_permissions=self._granted_permissions(principal),
                 context_resolver=CapabilityContextResolver(),
+                audit_sink=self.audit_sink,
             )
             self._executors[key] = executor
         else:
@@ -323,12 +343,29 @@ class MultiActionDispatch:
         for summary in self.registry.capability_summaries():
             capability_id = summary.get("name")
             legacy_id = _CAPABILITY_GRANT_ALIAS.get(capability_id)
-            if legacy_id is None:
+            if legacy_id is not None:
+                if self._legacy_capability_allowed(legacy_id, principal):
+                    capability = self.registry.get_capability(capability_id)
+                    if capability is not None:
+                        granted |= set(capability.permissions)
                 continue
-            if self._legacy_capability_allowed(legacy_id, principal):
-                capability = self.registry.get_capability(capability_id)
-                if capability is not None:
-                    granted |= set(capability.permissions)
+            # M33 Batch B: capability ids with no Gmail-style legacy alias
+            # (every external capability) are never granted by the legacy
+            # path above - consult the generalized resolver instead, if
+            # one is wired in. Each of its granted actions' own declared
+            # `permissions` are unioned in, mirroring the legacy branch's
+            # own "grant the capability's declared scopes" semantics.
+            if self.external_permission_resolver is not None:
+                try:
+                    allowed = bool(self.external_permission_resolver(capability_id, principal))
+                except Exception:
+                    allowed = False
+                if allowed:
+                    capability = self.registry.get_capability(capability_id)
+                    if capability is not None:
+                        for action in capability.list_actions():
+                            granted |= set(action.permissions)
+                        granted |= set(capability.permissions)
         return granted
 
     def _action_permitted(self, capability: str, action: str, principal: Any) -> bool:
@@ -357,9 +394,25 @@ class MultiActionDispatch:
             required = set(registered.permissions) if registered is not None else set()
             return required <= self._explicit_permissions
         legacy_id = _ACTION_GRANT_CAPABILITY.get(action)
-        if legacy_id is None:
-            return False
-        return self._legacy_capability_allowed(legacy_id, principal)
+        if legacy_id is not None:
+            return self._legacy_capability_allowed(legacy_id, principal)
+        # M33 Batch B: no Gmail-style legacy alias for this action - the
+        # capability itself may still be a real, explicitly-granted
+        # external capability. This is a coarse capability-level yes/no
+        # (mirroring the legacy branch's own grain); the FINE, per-action
+        # scope check already happens downstream, unconditionally, in
+        # `MultiActionExecutor.execute()`'s P1 action-level gate
+        # (`action.permissions` vs `granted_permissions`) once execution
+        # is reached - this gate cannot be bypassed by answering "yes"
+        # here alone. Absence of a resolver, or the resolver denying,
+        # still denies - never a relaxation of P1's own additive-denial
+        # rule for ids with no binding.
+        if self.external_permission_resolver is not None:
+            try:
+                return bool(self.external_permission_resolver(capability, principal))
+            except Exception:
+                return False
+        return False
 
     def _legacy_capability_allowed(self, capability_id: str, principal: Any) -> bool:
         if self.permission_checker is not None:
@@ -377,8 +430,10 @@ class MultiActionDispatch:
             return False
 
     @staticmethod
-    def _bind_context(executor, action: str, inputs: Mapping[str, Any], user_text: str) -> Dict[str, Any]:
-        grounded = executor.context_resolver.resolve(action, user_text)
+    def _bind_context(
+        executor, capability: str, action: str, inputs: Mapping[str, Any], user_text: str
+    ) -> Dict[str, Any]:
+        grounded = executor.context_resolver.resolve(action, user_text, capability=capability)
         # Explicit inputs win, but omitted fields may only be filled with a
         # real identifier/header returned on this session's earlier turn.
         return {**grounded, **dict(inputs)}
@@ -402,7 +457,10 @@ class MultiActionDispatch:
             "handled": True, "status": "unavailable",
             "plan": {"status": "capability_selected", "capability": capability, "action": action, "source": "multi_action"},
             "execution": {"status": "permission_denied", "capability": capability, "action": action},
-            "response": {"status": "permission_denied", "message": "This Gmail action is not granted to the current user."},
+            "response": {
+                "status": "permission_denied",
+                "message": f"The '{action}' action on '{capability}' is not granted to the current user.",
+            },
         }
 
     @staticmethod
