@@ -159,6 +159,12 @@ class ProposedAction:
     decided_at: Optional[str] = None
     consumed_at: Optional[str] = None
     schema_version: str = SCHEMA_VERSION
+    # M32.1: set only for a multi-action (e.g. Gmail) proposal, where
+    # capability_id ("Gmail") and the actual action ("create_draft")
+    # are genuinely different - None for a legacy single-tool proposal,
+    # where capability_id already names the tool (unchanged meaning,
+    # zero behavior change for every pre-existing record/caller).
+    action_name: Optional[str] = None
 
 
 class ApprovalStore:
@@ -175,6 +181,7 @@ class ApprovalStore:
         capability_id: str,
         arguments: Dict[str, Any],
         session_id: Optional[str] = None,
+        action_name: Optional[str] = None,
     ) -> ProposedAction:
 
         arguments = dict(arguments or {})
@@ -190,6 +197,7 @@ class ApprovalStore:
             ),
             status=STATUS_PENDING,
             created_at=_now_iso(),
+            action_name=action_name,
         )
 
         actions = self._load()
@@ -400,6 +408,7 @@ class ApprovalStore:
                         schema_version=raw.get(
                             "schema_version", SCHEMA_VERSION
                         ),
+                        action_name=raw.get("action_name"),
                     )
                 )
 

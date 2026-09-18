@@ -1347,49 +1347,80 @@ def ask(
 ) -> dict:
     context, principal, personalization_context = _resolve_ask_context(payload, user_id)
 
+    # M32.1: a durable, pending approval-required action (see
+    # approval_resumption.py) gets first chance at this turn, before
+    # anything else even attempts to interpret it fresh - a plain "yes"
+    # sent as a brand-new message would otherwise be reinterpreted by
+    # the Brain as an unrelated request. Isolated, default-off,
+    # never raises: any failure here falls straight through to the
+    # existing chain below exactly as if this block did not exist.
+    result = None
+    early_executed = False
+    try:
+        from uri_core.core.approval_resumption import (
+            approval_resumption_enabled,
+            resume_pending_approval,
+        )
+
+        if approval_resumption_enabled():
+            resumed = resume_pending_approval(
+                orchestrator=context.orchestrator, session_id=payload.session_id,
+                user_text=payload.text, principal=principal,
+            )
+            if resumed is not None:
+                result = resumed
+                early_executed = True
+    except Exception:
+        result = None
+        early_executed = False
+
     # M30.7: pending WorkflowExecutor pauses otherwise resume inside the
     # legacy orchestrator before the Decision Contract can judge whether this
     # message is actually a continuation.  This isolated, default-off branch
     # gives that judgment one chance first; every fallback keeps the legacy
     # order below intact.
-    result = None
-    early_executed = False
+    # M32.1: only run this check (and only reset legacy_fallback) when
+    # the approval-resumption block above did NOT already produce a
+    # result - never reset result/early_executed here, or this would
+    # silently discard a real, already-resumed approval decision before
+    # it ever reached the response.
     legacy_fallback = None
-    try:
-        from uri_core.core.canonical_execution import workflow_continuation_mode_enabled
+    if not early_executed:
+        try:
+            from uri_core.core.canonical_execution import workflow_continuation_mode_enabled
 
-        if workflow_continuation_mode_enabled():
-            from uri_core.core.canonical_execution import run_canonical_for_ask
+            if workflow_continuation_mode_enabled():
+                from uri_core.core.canonical_execution import run_canonical_for_ask
 
-            session = context.orchestrator.session_manager.get_session(payload.session_id)
-            if (
-                session.active_workflow is not None
-                and session.active_workflow_status == "waiting_for_input"
-            ):
-                observed = {}
+                session = context.orchestrator.session_manager.get_session(payload.session_id)
+                if (
+                    session.active_workflow is not None
+                    and session.active_workflow_status == "waiting_for_input"
+                ):
+                    observed = {}
 
-                def _observe_decision(contract, gate_result):
-                    observed["mode"] = contract.get("mode")
-                    observed["gate_outcome"] = getattr(gate_result, "outcome", None)
+                    def _observe_decision(contract, gate_result):
+                        observed["mode"] = contract.get("mode")
+                        observed["gate_outcome"] = getattr(gate_result, "outcome", None)
 
-                early_result = run_canonical_for_ask(
-                    orchestrator=context.orchestrator,
-                    session_id=payload.session_id,
-                    user_text=payload.text,
-                    principal=principal,
-                    personalization_context=personalization_context,
-                    decision_observer=_observe_decision,
-                )
-                if observed.get("mode") == "workflow_continuation" and early_result is not None:
-                    if early_result.get("_canonical_fallback"):
-                        legacy_fallback = early_result
-                    else:
-                        result = early_result
-                        early_executed = True
-                elif observed.get("mode") and observed.get("mode") != "workflow_continuation":
-                    context.orchestrator._clear_active_workflow(session)
-    except Exception:
-        pass
+                    early_result = run_canonical_for_ask(
+                        orchestrator=context.orchestrator,
+                        session_id=payload.session_id,
+                        user_text=payload.text,
+                        principal=principal,
+                        personalization_context=personalization_context,
+                        decision_observer=_observe_decision,
+                    )
+                    if observed.get("mode") == "workflow_continuation" and early_result is not None:
+                        if early_result.get("_canonical_fallback"):
+                            legacy_fallback = early_result
+                        else:
+                            result = early_result
+                            early_executed = True
+                    elif observed.get("mode") and observed.get("mode") != "workflow_continuation":
+                        context.orchestrator._clear_active_workflow(session)
+        except Exception:
+            pass
 
     # M32 Batch C: the native tool loop (Tier 0 direct chat / Tier 1
     # native tool calling), built ON canonical's existing gate/execution

@@ -22,9 +22,16 @@ convention):
       INVALID_PROPOSAL, DEGRADED) falls back to the existing legacy
       `/ask` result untouched - this module never executes on any of
       them, and never invents a deterministic handling path of its own
-      for a protected action; approval-required cases still flow
-      through the existing ApprovalGate/ApprovalStore pending-decision
-      mechanism exactly as they do today, unchanged.
+      for a protected action; approval-required cases flow through the
+      existing ApprovalGate/ApprovalStore pending-decision mechanism.
+      (M32.1 correction: prior to M32.1 this was true only for the
+      legacy `remember_fact` path - a Gmail APPROVAL_REQUIRED outcome
+      had no durable ApprovalStore record at all, so it could never be
+      resumed on a later turn. M32.1's `_propose_durable_gmail_approval()`
+      bridges the Gmail single-action branch to a real, durable
+      `ApprovalStore.propose()` call, making this claim true for both
+      paths. The multi-step Gmail chain branch is still out of scope -
+      see `approval_resumption.py`'s module docstring.)
     - No new invocation mechanics: Gmail actions execute through
       `MultiActionDispatch.dispatch_explicit()`/`dispatch_chain_explicit()`
       (M30.6, `multi_action_dispatch.py`) - thin wrappers around the
@@ -144,6 +151,38 @@ def canonical_killswitch_enabled() -> bool:
     return _current_allowlist() is not None
 
 
+def _propose_durable_gmail_approval(
+    *, orchestrator: Any, session_id: Optional[str], capability: str,
+    action_name: str, bound_inputs: Dict[str, Any],
+) -> Optional[str]:
+    """M32.1: MultiActionExecutor.execute()'s approval_required outcome
+    (executor.py:54-57) is a stateless, per-call boolean check with no
+    persistence of its own - unlike the legacy ApprovalGate.execute_tool()
+    path, it never wrote anything to ApprovalStore, so an
+    "awaiting_approval" Gmail/Drive envelope previously carried no
+    action_id at all and could never actually be approved by anything,
+    UI button or natural language alike (live-confirmed during M32.1's
+    own investigation). Bridges it to the SAME ApprovalStore instance
+    ApprovalGate already owns - never a second store instance pointed
+    at a different file - so a real, durable, resumable action_id
+    exists. Returns None (never raises) on any failure - a proposal
+    write failing must degrade to "approval required, but not yet
+    resumable" honestly, never break the turn that already succeeded
+    in reaching a real, honest APPROVAL_REQUIRED decision."""
+    approval_gate = getattr(orchestrator, "approval_gate", None)
+    approval_store = getattr(approval_gate, "approval_store", None)
+    if approval_store is None:
+        return None
+    try:
+        proposed = approval_store.propose(
+            capability_id=capability, arguments=bound_inputs,
+            session_id=session_id, action_name=action_name,
+        )
+        return proposed.action_id
+    except Exception:
+        return None
+
+
 def _execute_gmail(
     contract: Dict[str, Any],
     *,
@@ -161,10 +200,36 @@ def _execute_gmail(
     if not actions:
         return None
     if len(actions) == 1:
+        action_name = actions[0]["name"]
         envelope = dispatch.dispatch_explicit(
-            "Gmail", actions[0]["name"], actions[0].get("inputs") or {},
+            "Gmail", action_name, actions[0].get("inputs") or {},
             session_id=session_id, user_text=user_text, principal=principal,
         )
+        # M32.1: a single-action awaiting_approval result is the ONLY
+        # shape this milestone bridges to a durable, resumable action_id
+        # - a multi-step chain (the `else` branch below) halting on a
+        # mid-chain approval is a materially different problem (which
+        # step, preserving already-completed steps) and is explicitly
+        # out of this bounded milestone's scope; disclosed, not silently
+        # handled.
+        if (
+            isinstance(envelope, dict)
+            and envelope.get("execution", {}).get("status") == "awaiting_approval"
+        ):
+            bound_inputs = envelope.get("plan", {}).get("inputs") or {}
+            action_id = _propose_durable_gmail_approval(
+                orchestrator=orchestrator, session_id=session_id, capability="Gmail",
+                action_name=action_name, bound_inputs=bound_inputs,
+            )
+            if action_id is not None:
+                envelope = dict(envelope)
+                envelope["execution"] = dict(envelope["execution"])
+                envelope["execution"]["action_id"] = action_id
+                response = envelope.get("response")
+                envelope["response"] = (
+                    {**response, "action_id": action_id}
+                    if isinstance(response, dict) else {"action_id": action_id, "detail": response}
+                )
     else:
         steps = [
             {"capability": "Gmail", "action": a["name"], "inputs": a.get("inputs") or {}}
@@ -294,7 +359,16 @@ def decide_fallback_reason(
         return None
     if gate_outcome in {"INVALID_PROPOSAL", "DEGRADED"}:
         return f"engine_failure:{gate_outcome}"
-    if gate_outcome != "READY":
+    # M32.1: APPROVAL_REQUIRED now also reaches _execute_canonical() (see
+    # run_canonical_for_ask's own dispatch condition below), so it must
+    # pass through the SAME executable-mode/workflow-continuation/
+    # allowlist checks READY already does - this function previously
+    # returned None for APPROVAL_REQUIRED before ever reaching those
+    # checks, which was safe only because APPROVAL_REQUIRED never
+    # dispatched at all. Widening the outcome set here without this
+    # would have silently skipped the allowlist/killswitch check for
+    # every approval-required capability.
+    if gate_outcome not in {"READY", "APPROVAL_REQUIRED"}:
         return None
     if mode not in EXECUTABLE_MODES:
         return None
@@ -494,7 +568,18 @@ def run_canonical_for_ask(
                 gate_outcome=gate_result.outcome, capability_id=capability_id, mode=mode,
                 reasons=getattr(gate_result, "reasons", ()),
             )
-            if fallback_reason is None and gate_result.outcome == "READY" and mode in EXECUTABLE_MODES:
+            # M32.1: APPROVAL_REQUIRED now also reaches _execute_canonical()
+            # - previously only READY did, which meant an approval-required
+            # capability never reached ApprovalGate/ApprovalStore (or the
+            # Gmail bridge above) at all and could never be durably
+            # proposed. decide_fallback_reason() above already applies the
+            # same executable-mode/allowlist gate to this outcome now, so
+            # this widening cannot reach an un-allowlisted capability.
+            if (
+                fallback_reason is None
+                and gate_result.outcome in ("READY", "APPROVAL_REQUIRED")
+                and mode in EXECUTABLE_MODES
+            ):
                 canonical_attempted = True
                 envelope = _execute_canonical(
                     contract, orchestrator=orchestrator, session_id=session_id,
