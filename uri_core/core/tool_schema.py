@@ -178,6 +178,7 @@ def build_tool_schemas(
     *,
     capability_registry: Optional[CapabilityRegistry] = None,
     multi_action_registry: Optional[MultiActionCapabilityRegistry] = None,
+    directory: Optional[CapabilityDirectory] = None,
 ) -> List[Dict[str, Any]]:
     """The Brain-facing native tool list, one entry per dispatchable
     capability/action, built from the same CapabilityDirectory overlap
@@ -188,13 +189,27 @@ def build_tool_schemas(
     for tests; production call sites omit both and get the real,
     installation-wide registry/GmailCapability the rest of the system
     already uses.
-    """
-    feasibility = CapabilityFeasibility(capability_registry=capability_registry or CapabilityRegistry())
-    directory = CapabilityDirectory(
-        capability_feasibility=feasibility,
-        multi_action_registry=multi_action_registry,
-        include_procedures=False,
-    )
+
+    M32 D2: `directory` lets a caller that already built a
+    CapabilityDirectory for this same turn (e.g.
+    native_tool_loop.run_native_tool_loop's own
+    build_turn_state_and_directory call) pass it in instead of this
+    function constructing a second one. Measured
+    (docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md §2.2):
+    each independent CapabilityDirectory construction pays a real,
+    uncached live Google OAuth refresh per connected service - building
+    two per turn doubles that cost for no behavioural benefit, since
+    both directories describe the exact same real world state. When
+    `directory` is omitted (every existing caller), behaviour is
+    byte-for-byte unchanged - a fresh directory is still built exactly
+    as before."""
+    if directory is None:
+        feasibility = CapabilityFeasibility(capability_registry=capability_registry or CapabilityRegistry())
+        directory = CapabilityDirectory(
+            capability_feasibility=feasibility,
+            multi_action_registry=multi_action_registry,
+            include_procedures=False,
+        )
 
     tools: List[Dict[str, Any]] = []
     for summary in directory.summaries(resolve_overlaps=True):

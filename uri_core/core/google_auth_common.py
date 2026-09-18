@@ -1,6 +1,7 @@
 """Shared, non-interactive Google OAuth token loading helpers."""
 
 import os
+import tempfile
 from typing import List, Optional
 
 from google.auth.transport.requests import Request
@@ -31,6 +32,41 @@ def resolve_google_token_path(user_id: Optional[str] = None) -> str:
     return os.path.join(_repo_root(), "token.json")
 
 
+def _persist_refreshed_credentials(creds: Credentials, resolved_path: str) -> None:
+    """Write a just-refreshed credential back to the exact path it was
+    loaded from (already resolved to that one user's own scoped file by
+    the caller - this never widens or changes which file is written, so
+    per-user isolation is preserved automatically). Best-effort only: a
+    write failure must never invalidate the refresh that already
+    succeeded in memory, so this never raises out to the caller.
+
+    M32 D1: without this, the on-disk token keeps its stale, already-
+    expired access token forever, so every subsequent load re-refreshes
+    from Google again - confirmed by measurement
+    (docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md §2.2) to
+    cost a real network round trip on literally every call. Persisting
+    the refreshed token lets a real Google access token (~1 hour
+    lifetime) actually be reused for its real lifetime."""
+    folder = os.path.dirname(resolved_path)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=folder or None, delete=False
+        ) as stream:
+            temporary = stream.name
+            stream.write(creds.to_json())
+        os.replace(temporary, resolved_path)
+        temporary = None
+    except Exception:
+        pass
+    finally:
+        if temporary is not None and os.path.exists(temporary):
+            try:
+                os.unlink(temporary)
+            except Exception:
+                pass
+
+
 def load_usable_credentials(
     token_path: Optional[str] = None,
     scopes: Optional[List[str]] = None,
@@ -55,6 +91,10 @@ def load_usable_credentials(
         if allow_refresh and creds.expired and creds.refresh_token:
             creds.refresh(Request())
             if creds.valid:
+                # M32 D1: persist so the NEXT load sees a still-valid
+                # token instead of refreshing again - see
+                # _persist_refreshed_credentials' own docstring.
+                _persist_refreshed_credentials(creds, resolved_path)
                 return creds
 
     except Exception:

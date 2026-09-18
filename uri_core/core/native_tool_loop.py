@@ -317,8 +317,17 @@ def run_native_tool_loop(
     except Exception:
         return None
 
+    # M32 D2: reuse the SAME CapabilityDirectory just built above for
+    # this turn's tool-schema generation, instead of build_tool_schemas
+    # constructing a second, independent one. Both would describe the
+    # exact same real-world capability/connection state; building two
+    # only doubled the live Google OAuth refresh cost measured in
+    # docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md §2.2.
     multi_action_registry = getattr(orchestrator.multi_action_dispatch, "registry", None)
-    tools = build_tool_schemas(capability_registry=capability_registry, multi_action_registry=multi_action_registry)
+    tools = build_tool_schemas(
+        capability_registry=capability_registry, multi_action_registry=multi_action_registry,
+        directory=directory,
+    )
     offered_names = {t["function"]["name"] for t in tools}
 
     all_branch_results: List[Dict[str, Any]] = []

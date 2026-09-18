@@ -19,6 +19,8 @@ from unittest.mock import patch
 from uri_core.capabilities import MultiActionCapabilityRegistry
 from uri_core.capabilities.gmail import GmailCapability
 from uri_core.core.approval_gate import ApprovalGate
+from uri_core.core.capability_directory import CapabilityDirectory
+from uri_core.core.capability_feasibility import CapabilityFeasibility
 from uri_core.core.capability_registry import CapabilityRegistry
 from uri_core.core.dispatcher import ToolDispatcher
 from uri_core.core.model_providers.base import ModelResponse, ToolCall
@@ -30,6 +32,7 @@ from uri_core.core.native_tool_loop import (
     run_native_tool_loop,
 )
 from uri_core.core.state import SessionManager
+from uri_core.core.tool_schema import build_tool_schemas
 from uri_core.core.user_memory import MemoryStore
 from test_multi_action_capabilities import FakeGmailService
 
@@ -449,6 +452,112 @@ class C34ParallelSafetyTests(unittest.TestCase):
             )
 
         self.assertEqual(concurrent_count["max"], 1, "two non-read-only calls ran concurrently - R4/SR-1 violation")
+
+
+class D2DirectoryReuseTests(unittest.TestCase):
+    """M32 D2: run_native_tool_loop must build exactly one
+    CapabilityDirectory per turn - previously it built two (its own
+    top-level build_turn_state_and_directory call, plus a second,
+    independent one inside build_tool_schemas), each paying its own
+    real connection-status construction. Proven here by counting real
+    CapabilityDirectory.__init__ calls, not by mocking away the
+    construction entirely - the real object is still built and used,
+    just once."""
+
+    @staticmethod
+    def _counting_init():
+        original_init = CapabilityDirectory.__init__
+        calls = {"n": 0}
+
+        def counting_init(self, *args, **kwargs):
+            calls["n"] += 1
+            return original_init(self, *args, **kwargs)
+
+        return calls, counting_init
+
+    def test_tier0_turn_builds_capability_directory_exactly_once(self):
+        fixture = _Fixture()
+        calls, counting_init = self._counting_init()
+
+        def fake_model(**kwargs):
+            return _response(content="Hi! How can I help?", tool_calls=())
+
+        with patch.object(CapabilityDirectory, "__init__", counting_init):
+            result = run_native_tool_loop(
+                orchestrator=fixture.orchestrator(), session_id="d2-tier0", user_text="hi",
+                principal=None, model_callable=fake_model,
+            )
+
+        self.assertEqual(result["tier"], "tier0")
+        self.assertEqual(calls["n"], 1)
+
+    def test_tier1_single_action_turn_builds_capability_directory_exactly_once(self):
+        fixture = _Fixture()
+        calls, counting_init = self._counting_init()
+        responses = iter([
+            _response(tool_calls=(ToolCall(id="c1", name="remember_fact", arguments={"request_text": "office is room 204"}),)),
+            _response(content="Noted.", tool_calls=()),
+        ])
+
+        def fake_model(**kwargs):
+            return next(responses)
+
+        with patch.object(CapabilityDirectory, "__init__", counting_init):
+            result = run_native_tool_loop(
+                orchestrator=fixture.orchestrator(), session_id="d2-tier1", user_text="remember my office is room 204",
+                principal=None, model_callable=fake_model,
+            )
+
+        self.assertEqual(result["execution"]["branch_results"][0]["status"], "success")
+        self.assertEqual(calls["n"], 1, "one Tier-1 branch caused more than one CapabilityDirectory construction")
+
+    def test_tier1_multi_branch_turn_still_builds_capability_directory_exactly_once(self):
+        """The count must not scale with the number of executed tool
+        branches - proves the shared directory is threaded through
+        execute_translated_batch/_execute_one_branch, not rebuilt per
+        branch."""
+        fixture = _Fixture(connected_gmail=True)
+        calls, counting_init = self._counting_init()
+        responses = iter([
+            _response(tool_calls=(
+                ToolCall(id="c1", name="gmail_search_messages", arguments={"query": "renewal"}),
+                ToolCall(id="c2", name="gmail_search_messages", arguments={"query": "invoice"}),
+            )),
+            _response(content="Found both.", tool_calls=()),
+        ])
+
+        def fake_model(**kwargs):
+            return next(responses)
+
+        with patch.object(CapabilityDirectory, "__init__", counting_init):
+            result = run_native_tool_loop(
+                orchestrator=fixture.orchestrator(), session_id="d2-multi", user_text="search gmail twice",
+                principal=None, model_callable=fake_model,
+            )
+
+        branch_statuses = [b.get("status") for b in result["execution"]["branch_results"]]
+        self.assertEqual(branch_statuses, ["success", "success"])
+        self.assertEqual(calls["n"], 1)
+
+    def test_build_tool_schemas_with_an_explicit_directory_builds_no_second_one(self):
+        """Direct unit proof at the tool_schema.py boundary itself, not
+        only observed indirectly through run_native_tool_loop."""
+        fixture = _Fixture()
+        real_directory = CapabilityDirectory(
+            capability_feasibility=CapabilityFeasibility(capability_registry=fixture.capability_registry),
+            multi_action_registry=fixture.multi_action_dispatch.registry,
+        )
+        calls, counting_init = self._counting_init()
+
+        with patch.object(CapabilityDirectory, "__init__", counting_init):
+            tools = build_tool_schemas(
+                capability_registry=fixture.capability_registry,
+                multi_action_registry=fixture.multi_action_dispatch.registry,
+                directory=real_directory,
+            )
+
+        self.assertTrue(tools)
+        self.assertEqual(calls["n"], 0, "a directory was passed in but build_tool_schemas built its own anyway")
 
 
 if __name__ == "__main__":
