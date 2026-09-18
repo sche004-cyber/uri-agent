@@ -10,6 +10,7 @@ Validates acceptance criteria 1, 3, and Claude remediation finding 1 & 3:
 - Deterministic capabilities remain fully operable when providers are unreachable.
 """
 
+import os
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -20,11 +21,18 @@ from uri_core.core.model_router import (
     ProviderPlan,
 )
 from uri_core.core.model_providers.base import (
+    DEFAULT_OLLAMA_MODEL,
     ModelNotFoundError,
     ModelResponse,
     ProviderTimeoutError,
     ProviderUnavailableError,
 )
+
+# ModelRouter._model_for_role() now resolves an unconfigured "ollama"
+# candidate to this same default (OLLAMA_MODEL env override, else the
+# packaged DEFAULT_OLLAMA_MODEL) instead of "" - see model_router.py's
+# own default-model-selection fix (M32 D3).
+_DEFAULT_OLLAMA_KEY_MODEL = os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
 from uri_core.config.model_roles import (
     ROLE_DOCUMENT_COMPOSITION,
     ROLE_REASONING,
@@ -42,7 +50,7 @@ class TestModelRouterDegradedMode(unittest.TestCase):
     def test_all_unhealthy_candidates_resolve_to_degraded_plan(self):
         """When all candidates are marked unhealthy, resolve() returns provider_id=None."""
         # Force ollama and primary unhealthy
-        self.health.mark_unhealthy("ollama", "")
+        self.health.mark_unhealthy("ollama", _DEFAULT_OLLAMA_KEY_MODEL)
         self.health.mark_unhealthy("openai", "")
         plan = self.router.resolve(ROLE_REASONING)
         self.assertIsNone(plan.provider_id)
@@ -183,7 +191,7 @@ class TestModelRouterDegradedMode(unittest.TestCase):
     def test_deterministic_capabilities_unaffected_when_providers_unreachable(self):
         """Deterministic operations (e.g. ProviderPlan inspection, router resolve)
         do not fail or call a model when all providers are unreachable."""
-        self.health.mark_unhealthy("ollama", "")
+        self.health.mark_unhealthy("ollama", _DEFAULT_OLLAMA_KEY_MODEL)
         plan = self.router.resolve(ROLE_REASONING)
         self.assertIsNone(plan.provider_id)
         self.assertEqual(len(plan.fallback_chain), 1)

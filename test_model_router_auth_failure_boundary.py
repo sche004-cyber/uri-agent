@@ -8,6 +8,7 @@ Verifies that ProviderAuthenticationError from any candidate:
 
 This is the load-bearing security rule of M22.6 (§5.1, §7.2).
 """
+import os
 import unittest
 from unittest.mock import MagicMock, patch, call
 
@@ -17,12 +18,19 @@ from uri_core.core.model_router import (
     ProviderHealthTracker,
 )
 from uri_core.core.model_providers.base import (
+    DEFAULT_OLLAMA_MODEL,
     ModelNotFoundError,
     ModelResponse,
     ProviderAuthenticationError,
     ProviderTimeoutError,
     ProviderUnavailableError,
 )
+
+# ModelRouter._model_for_role() now resolves an unconfigured "ollama"
+# candidate to this same default (OLLAMA_MODEL env override, else the
+# packaged DEFAULT_OLLAMA_MODEL) instead of "" - see model_router.py's
+# own default-model-selection fix (M32 D3).
+_DEFAULT_OLLAMA_KEY_MODEL = os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
 
 
 class FakeProvider:
@@ -70,7 +78,7 @@ class TestAuthFailurePropagates(unittest.TestCase):
             except ProviderAuthenticationError:
                 pass
         # The provider must still be reported as healthy (not in cooldown)
-        self.assertTrue(tracker.is_healthy("ollama", ""))
+        self.assertTrue(tracker.is_healthy("ollama", _DEFAULT_OLLAMA_KEY_MODEL))
 
     def test_auth_error_does_not_advance_chain(self):
         """After ProviderAuthenticationError, no further provider is tried."""
@@ -121,7 +129,7 @@ class TestAuthFailurePropagates(unittest.TestCase):
             except AllProvidersUnreachableError:
                 pass
         # After transient failure, provider should be in cooldown
-        self.assertFalse(tracker.is_healthy("ollama", ""))
+        self.assertFalse(tracker.is_healthy("ollama", _DEFAULT_OLLAMA_KEY_MODEL))
 
     def test_timeout_error_marks_unhealthy(self):
         tracker = ProviderHealthTracker()
@@ -132,7 +140,7 @@ class TestAuthFailurePropagates(unittest.TestCase):
                 router.attempt("reasoning")
             except AllProvidersUnreachableError:
                 pass
-        self.assertFalse(tracker.is_healthy("ollama", ""))
+        self.assertFalse(tracker.is_healthy("ollama", _DEFAULT_OLLAMA_KEY_MODEL))
 
     def test_model_not_found_marks_unhealthy(self):
         tracker = ProviderHealthTracker()
@@ -143,7 +151,7 @@ class TestAuthFailurePropagates(unittest.TestCase):
                 router.attempt("reasoning")
             except AllProvidersUnreachableError:
                 pass
-        self.assertFalse(tracker.is_healthy("ollama", ""))
+        self.assertFalse(tracker.is_healthy("ollama", _DEFAULT_OLLAMA_KEY_MODEL))
 
 
 if __name__ == "__main__":

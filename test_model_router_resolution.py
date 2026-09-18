@@ -4,6 +4,7 @@ Verifies that ModelRouter.resolve() follows the exact pipeline order
 specified in URI_M22_ARCHITECTURE.md §7.1:
   primary → health check → budget seam (always-pass) → install default → degrade
 """
+import os
 import time
 import unittest
 from unittest.mock import patch
@@ -16,12 +17,20 @@ from uri_core.core.model_router import (
     get_router,
 )
 from uri_core.core.model_providers.base import (
+    DEFAULT_OLLAMA_MODEL,
     ModelNotFoundError,
     ModelResponse,
     ProviderAuthenticationError,
     ProviderTimeoutError,
     ProviderUnavailableError,
 )
+
+# ModelRouter._model_for_role() now resolves an unconfigured "ollama"
+# candidate to this same default (OLLAMA_MODEL env override, else the
+# packaged DEFAULT_OLLAMA_MODEL) instead of "" - see model_router.py's
+# own default-model-selection fix (M32 D3). Health-tracker keys used by
+# these tests must match the real key the router now computes.
+_DEFAULT_OLLAMA_KEY_MODEL = os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
 
 
 class FakeProvider:
@@ -54,7 +63,7 @@ class TestResolveReturnsHealthyPrimary(unittest.TestCase):
     def test_unhealthy_primary_skipped(self):
         tracker = ProviderHealthTracker()
         # Mark ollama unhealthy
-        tracker.mark_unhealthy("ollama", "")
+        tracker.mark_unhealthy("ollama", _DEFAULT_OLLAMA_KEY_MODEL)
         router = ModelRouter(health_tracker=tracker)
         plan = router.resolve("reasoning")
         # With ollama unhealthy and no other candidates, degrades
@@ -80,8 +89,8 @@ class TestResolveReturnsHealthyPrimary(unittest.TestCase):
         tracker = ProviderHealthTracker()
         router = ModelRouter(health_tracker=tracker)
         # Mark all candidates unhealthy
-        for pid in ["ollama", "openai_compatible"]:
-            tracker.mark_unhealthy(pid, "")
+        tracker.mark_unhealthy("ollama", _DEFAULT_OLLAMA_KEY_MODEL)
+        tracker.mark_unhealthy("openai_compatible", "")
         plan = router.resolve("reasoning")
         self.assertIsNone(plan.provider_id)
 
@@ -89,8 +98,8 @@ class TestResolveReturnsHealthyPrimary(unittest.TestCase):
         """resolve() returns a ProviderPlan even on full degrade — never raises."""
         tracker = ProviderHealthTracker()
         # Force every possible candidate to be unhealthy
-        for pid in ["ollama", "openai_compatible"]:
-            tracker.mark_unhealthy(pid, "")
+        tracker.mark_unhealthy("ollama", _DEFAULT_OLLAMA_KEY_MODEL)
+        tracker.mark_unhealthy("openai_compatible", "")
         router = ModelRouter(health_tracker=tracker)
         plan = router.resolve("reasoning")
         self.assertIsInstance(plan, ProviderPlan)

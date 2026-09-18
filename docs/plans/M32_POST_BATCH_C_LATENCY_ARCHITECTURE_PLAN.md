@@ -208,6 +208,79 @@ Targeted sweep, real collaborators throughout (no new mocking of gates/dispatch/
 
 ---
 
+## 11. D3 implementation and verification (2026-09-18, User-verified, commit authorized)
+
+**D3 — default-model-resolution correctness fix** (§5 item 3 / §7 table row / risk R-New-3). Implemented, tested, User live-verification accepted, commit/push authorized.
+
+### 11.1 Live-reproduced root cause
+
+Traced the full failure path (`model_router.py`, `model_roles.py`, `ollama_provider.py`, `orchestrator.py`) and reproduced the defect directly against this repository's real `ModelRouter`, on this machine (Ollama installed, `OLLAMA_MODEL` unset, no `uri_workspace/model_roles.json` override, installed models `qwen3.5:9b`/`gemma4:12b` — NOT the packaged default `qwen3:14b`):
+
+```
+>>> get_router().resolve('reasoning', None)
+ProviderPlan(provider_id='ollama', model='')
+```
+
+`ModelRouter._model_for_role()` returned `""` (empty string) instead of the real default model, whenever a role had no explicit `"model"` key and no override applied — i.e. every packaged-default role, on every deployment that has not set `OLLAMA_MODEL` or a per-role config. `build_provider()` itself was already correct (its own `"ollama"` branch already fell back to `OLLAMA_MODEL` env, else `DEFAULT_OLLAMA_MODEL` = `"qwen3:14b"`) — only the router's own internal bookkeeping diverged from what was actually constructed. Confirmed impact:
+
+- Health-tracker cooldown keyed on `("ollama", "")` instead of the real model name.
+- `response_drafting._resolve_context_budget()` / `model_reasoning_adapter._resolve_router_context_budget()` — both "peek without calling" consumers of `router.resolve()` — silently used the wrong (empty) model name, degrading their context-window lookup to the conservative `8192`-token fallback instead of the real, catalogue-known `40960` tokens for `qwen3:14b`. This was a real, live-confirmed regression of the M21 context-budget-safety work for exactly the packaged-default case.
+- The top-level failure the User/Brain actually sees was **already clear** before this fix: `ModelNotFoundError("Model 'qwen3:14b' was not found on this Ollama server (...). Pull it first.")`, correctly propagated up through `AllProvidersUnreachableError`. D3 did not need to invent new error text — it needed to make the router's own internal model identity stop lying about what it had actually resolved.
+
+### 11.2 Fix
+
+`uri_core/core/model_router.py`, `_model_for_role()`: when no role config, Active Brain override, or explicit per-request override names a model, and the resolved candidate is `"ollama"`, fall back to `os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)` — the exact same precedence `build_provider()`'s own `"ollama"` branch already applies. No machine-specific model name hardcoded anywhere; only the existing env var and the existing packaged constant are used. Explicit override precedence (per-request `model_override`, Active Brain, static role config) all still win over this fallback, unchanged — verified in §11.3.
+
+Verified live, post-fix:
+
+```
+>>> get_router().resolve('reasoning', None)
+ProviderPlan(provider_id='ollama', model='qwen3:14b')
+>>> response_drafting._resolve_context_budget(ROLE_DRAFTING, None)
+(40960, 'qwen3:14b')
+>>> model_reasoning_adapter._resolve_router_context_budget(ROLE_REASONING, None)
+(40960, 'qwen3:14b')
+```
+
+### 11.3 Tests added
+
+New file `test_model_router_default_model_selection.py`, 10 tests in 4 groups:
+
+- **Missing default model** — resolves to the real default (not `""`); `_model_for_role()` agrees with `resolve()`; `OLLAMA_MODEL` env override wins over the packaged `DEFAULT_OLLAMA_MODEL` constant.
+- **Valid configured model** — an explicit role-config model always wins over the default; a valid configured model completes successfully through `attempt()`.
+- **Explicit override precedence** — a per-request `principal.model_override` wins over the packaged default, both directly (`_model_for_role`) and through `resolve()`.
+- **Fail-clear / no silent substitution** — an unavailable resolved model still raises `AllProvidersUnreachableError` naming the real model; the health tracker marks the *real* model unhealthy (not an empty-string key that could collide with an unrelated model); with only the one "ollama" install-default candidate, a failure is never silently retried against some other, different model — the router has no such authority and did not invent one.
+
+Also updated 3 pre-existing test files (`test_model_router_resolution.py`, `test_model_router_degraded_mode.py`, `test_model_router_auth_failure_boundary.py`) — 7 assertions there hardcoded `("ollama", "")` as the expected health-tracker key, which was itself an artifact of the bug this milestone fixes, not an intended contract. Updated to assert against the real resolved default key (`OLLAMA_MODEL` env override, else `DEFAULT_OLLAMA_MODEL`) so they now verify correct behavior instead of encoding the defect.
+
+### 11.4 Regression
+
+- **Full `ModelRouter` suite** (pre-existing 6 files + the 1 new file): **58 passed, 0 failed.**
+- **Broader focused sweep** (`-k "model_router or model_roles or provider or drafting or reasoning_adapter or decision_engine or native_tool_loop or document_composer or m31 or m32"`, 382 collected): **377 passed, 5 failed.**
+- The 5 failures (`test_ollama_provider_live.py` x2, `test_ollama_reasoning_adapter_live.py` x3) were verified pre-existing and unrelated to this change: the working tree was stashed back to clean HEAD (`054df23`) and the same 2 files re-run — **identical 5 failures reproduced on unmodified HEAD.** Root cause: these are live-integration tests that call the real local Ollama server and require the packaged default model `qwen3:14b` to be pulled; it is not, on this machine (§11.1). This is the deployment/environment condition D3 diagnoses, not something D3's code change causes or is required to fix in-place (see §11.5).
+
+### 11.5 Deployment/config recommendation (not implemented — operator action, not a code change)
+
+To make the packaged default actually resolve to a working model on this machine, either:
+
+- `ollama pull qwen3:14b` (matches the packaged default and the provider catalogue's `KNOWN` context-window entry, `provider_registry.py`), or
+- set `OLLAMA_MODEL` to an already-installed model (`qwen3.5:9b` or `gemma4:12b` on this machine).
+
+Deliberately not automated or hardcoded: picking a specific installed model on the operator's behalf would itself be "silently choosing an arbitrary replacement model" — exactly what this fix's own architecture (R-New-3) forbids.
+
+### 11.6 Requirements check
+
+- Provider/model-agnostic architecture: preserved — fix reads only `OLLAMA_MODEL`/`DEFAULT_OLLAMA_MODEL`, no machine-specific model name added anywhere (§11.2).
+- Explicit user/provider/model override precedence: preserved and tested (§11.3, `TestExplicitOverridePrecedence`).
+- Fail clearly when the configured/default model is unavailable: already true for the user-visible error before this fix; strengthened by making the router's own internal model identity (health-tracker key, context-budget lookups) consistent with the real failing model (§11.1–§11.2).
+- No silent substitution of an arbitrary replacement model: preserved and tested (§11.3, `TestUnavailableModelFailsClearly`).
+- Tests for missing default model, valid configured model, and explicit override paths: added (§11.3).
+- Focused regression: run (§11.4); pre-existing environmental failures isolated and confirmed via clean-HEAD comparison, not silently absorbed into this milestone's pass count.
+
+**D4–D6 not started, per instruction.**
+
+---
+
 ## 5. Proposed architectural changes (not authorized — for review)
 
 These follow directly from §4 and are ordered by measured impact. None has been implemented.

@@ -6,12 +6,14 @@ Auth failures must propagate to callers unchanged — they stop the chain, never
 Import boundary (M22.6 §6, invariant #2):
 This module MUST NOT import approval_gate, approval_store, dispatcher, or capability_registry.
 """
+import os
 import time
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 from uri_core.core.model_providers.base import (
+    DEFAULT_OLLAMA_MODEL,
     ModelResponse,
     ProviderAuthenticationError,
     ProviderError,
@@ -205,8 +207,26 @@ class ModelRouter:
         overridden = apply_active_brain_override(role, principal, role_config)
         overridden_id = overridden.get("provider_id") or overridden.get("provider", "ollama")
         if pid is not None and overridden_id != pid:
-            return role_config.get("model", "")
-        return overridden.get("model", "")
+            config, resolved_pid = role_config, pid
+        else:
+            config, resolved_pid = overridden, overridden_id
+
+        model = config.get("model") or ""
+        if not model and resolved_pid == "ollama":
+            # No role config, active-brain override, or explicit
+            # override named a model for this candidate - fall back to
+            # the exact same default build_provider()'s own "ollama"
+            # branch resolves to (OLLAMA_MODEL env override, else the
+            # packaged DEFAULT_OLLAMA_MODEL), instead of an empty
+            # string. Without this, resolve()'s reported model silently
+            # diverged from the model the provider is actually built
+            # with - breaking the health tracker's cooldown key and the
+            # context-budget pre-trim lookups (response_drafting.py /
+            # model_reasoning_adapter.py) for every role left on
+            # packaged defaults, i.e. every deployment that has not set
+            # OLLAMA_MODEL or a per-role override.
+            model = os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
+        return model
 
     def resolve(
         self,
