@@ -23,15 +23,19 @@ from uri_core.capabilities import MultiActionCapabilityRegistry
 from uri_core.capabilities.gmail import GmailCapability
 from uri_core.core.approval_gate import ApprovalGate
 from uri_core.core.canonical_execution import (
+    ALLOWLIST_ENV_VAR,
     CANONICAL_EXECUTION_ALLOWLIST,
     DEFAULT_TELEMETRY_LOG_PATH,
     LIVE_ENV_VAR,
+    WORKFLOW_CONTINUATION_ENV_VAR,
     build_canonical_telemetry,
+    canonical_killswitch_enabled,
     decide_fallback_reason,
     decision_engine_live_enabled,
     is_allowlisted,
     record_canonical_telemetry,
     run_canonical_for_ask,
+    workflow_continuation_mode_enabled,
 )
 from uri_core.core.dispatcher import ToolDispatcher
 from uri_core.core.multi_action_dispatch import MultiActionDispatch
@@ -76,11 +80,19 @@ class _FakeOrchestrator:
 
 class AllowlistAndFlagTests(unittest.TestCase):
 
-    def test_flag_disabled_by_default(self):
+    def test_flag_enabled_by_default(self):
+        # M32 B1.1: canonical is the committed production default - an
+        # unset env var must not mean "off" (an env var nothing sets is
+        # not a cutover).
         os.environ.pop(LIVE_ENV_VAR, None)
+        self.assertTrue(decision_engine_live_enabled())
+
+    def test_flag_explicit_zero_is_the_rollback_lever(self):
+        os.environ[LIVE_ENV_VAR] = "0"
+        self.addCleanup(lambda: os.environ.pop(LIVE_ENV_VAR, None))
         self.assertFalse(decision_engine_live_enabled())
 
-    def test_flag_enabled_when_set(self):
+    def test_flag_enabled_when_explicitly_set(self):
         os.environ[LIVE_ENV_VAR] = "1"
         self.addCleanup(lambda: os.environ.pop(LIVE_ENV_VAR, None))
         self.assertTrue(decision_engine_live_enabled())
@@ -94,15 +106,57 @@ class AllowlistAndFlagTests(unittest.TestCase):
         self.assertFalse(is_allowlisted(None))
 
 
+class RuntimeAllowlistRollbackLeverTests(unittest.TestCase):
+    """M32 B1.2: the emergency rollback lever must be runtime-settable -
+    an operator sets/clears an env var, not source code + redeploy."""
+
+    def tearDown(self):
+        os.environ.pop(ALLOWLIST_ENV_VAR, None)
+
+    def test_env_var_unset_defers_to_module_constant(self):
+        os.environ.pop(ALLOWLIST_ENV_VAR, None)
+        self.assertFalse(canonical_killswitch_enabled())
+        self.assertTrue(is_allowlisted("draft_institutional_note"))
+
+    def test_env_var_narrows_to_named_capabilities(self):
+        os.environ[ALLOWLIST_ENV_VAR] = "Gmail,remember_fact"
+        self.assertTrue(canonical_killswitch_enabled())
+        self.assertTrue(is_allowlisted("Gmail"))
+        self.assertTrue(is_allowlisted("remember_fact"))
+        self.assertFalse(is_allowlisted("draft_institutional_note"))
+
+    def test_env_var_explicit_empty_string_disables_everything(self):
+        # The actual full-rollback lever: an operator sets this to ""
+        # and every capability falls back to legacy-first, without
+        # editing or redeploying source.
+        os.environ[ALLOWLIST_ENV_VAR] = ""
+        self.assertTrue(canonical_killswitch_enabled())
+        self.assertFalse(is_allowlisted("Gmail"))
+        self.assertFalse(is_allowlisted("remember_fact"))
+
+    def test_rollback_lever_restores_legacy_via_decide_fallback_reason(self):
+        # Proves the toggle actually restores prior (legacy-first)
+        # behaviour end to end through the same function server.py's
+        # /ask calls, not just at the is_allowlisted() unit level -
+        # the plan's own rollback rule ("a lever that has never been
+        # exercised is not a rollback lever").
+        os.environ[ALLOWLIST_ENV_VAR] = ""
+        reason = decide_fallback_reason(gate_outcome="READY", capability_id="Gmail", mode="single_action")
+        self.assertEqual(reason, "canonical_killswitch_not_allowlisted")
+
+
 class FallbackDecisionTests(unittest.TestCase):
     """Test requirement 4-9: never execute on a non-READY gate outcome,
     a non-allowlisted capability, or a non-executable mode - pure,
     deterministic, model-free."""
 
-    def test_feature_flag_off_means_zero_canonical_execution(self):
-        # Requirement 1: server.py never even calls run_canonical_for_ask
-        # when the flag is off - proven at the flag level, not here.
-        os.environ.pop(LIVE_ENV_VAR, None)
+    def test_feature_flag_explicit_zero_means_zero_canonical_execution(self):
+        # M32 B1.1: server.py never even calls run_canonical_for_ask
+        # when the rollback lever is explicitly set to "0" - proven at
+        # the flag level, not here. An unset flag is no longer "off"
+        # (see test_flag_enabled_by_default).
+        os.environ[LIVE_ENV_VAR] = "0"
+        self.addCleanup(lambda: os.environ.pop(LIVE_ENV_VAR, None))
         self.assertFalse(decision_engine_live_enabled())
 
     def test_ready_gmail_single_action_is_eligible(self):
@@ -157,7 +211,25 @@ class FallbackDecisionTests(unittest.TestCase):
         self.assertIsNone(reason)
 
     def test_workflow_continuation_with_no_capability_never_executes(self):
+        # M32 B1.5: with no capability selected, "canonical_killswitch_
+        # not_allowlisted" (via is_allowlisted(None) == False) is reached
+        # first regardless of the continuation flag - there is nothing to
+        # execute either way. The continuation flag's own gate is proven
+        # separately by test_workflow_continuation_mode_disabled_falls_back.
         reason = decide_fallback_reason(gate_outcome="READY", capability_id=None, mode="workflow_continuation")
+        self.assertEqual(reason, "canonical_killswitch_not_allowlisted")
+
+    def test_workflow_continuation_mode_enabled_by_default(self):
+        os.environ.pop(WORKFLOW_CONTINUATION_ENV_VAR, None)
+        self.assertTrue(workflow_continuation_mode_enabled())
+
+    def test_workflow_continuation_mode_disabled_falls_back(self):
+        os.environ[WORKFLOW_CONTINUATION_ENV_VAR] = "0"
+        self.addCleanup(lambda: os.environ.pop(WORKFLOW_CONTINUATION_ENV_VAR, None))
+        self.assertFalse(workflow_continuation_mode_enabled())
+        reason = decide_fallback_reason(
+            gate_outcome="READY", capability_id="Gmail", mode="workflow_continuation"
+        )
         self.assertEqual(reason, "mode_not_executable:workflow_continuation")
 
     def test_false_unsupported_claim_rejected_is_a_completed_decision_not_a_fallback(self):
@@ -483,6 +555,79 @@ class NarrativeAndPersistenceTests(unittest.TestCase):
         self.assertIn("execution", envelope)
         self.assertIn("response", envelope)
         self.assertIsNotNone(envelope["execution"])
+
+
+class NarrativeDefenseInDepthTests(unittest.TestCase):
+    """M32 B1.6: `_draft_narrative_safely` documents that it never
+    raises - any drafting/validation failure calls
+    `mark_narrative_unavailable` on the envelope itself before
+    returning. This proves the residual case: if it ever raised past
+    that guarantee anyway, `run_canonical_for_ask` still marks the
+    envelope honestly rather than returning it with no narrative and
+    no record at all (the old bare `except: pass`). Real execution
+    (remember_fact) runs first, since falling back to legacy after a
+    real side effect has already happened would risk a duplicate
+    dispatch - not what this fix does."""
+
+    def test_narrative_safely_raising_still_marks_envelope_unavailable(self):
+        tmp_dir = tempfile.mkdtemp()
+        registry_path = os.path.join(tmp_dir, "registry.json")
+        with open(registry_path, "w", encoding="utf-8") as handle:
+            json.dump(
+                {
+                    "active_tools": {
+                        "remember_fact": {
+                            "file_path": "uri_core/tools/remember_fact.py",
+                            "class_name": "RememberFactTool",
+                            "method": "remember",
+                            "description": "test",
+                            "status": "implemented",
+                            "availability": "available",
+                            "permissions": [],
+                            "approval_requirement": "none",
+                            "risk": "controlled",
+                        }
+                    }
+                },
+                handle,
+            )
+        dispatcher = ToolDispatcher(registry_path=registry_path)
+        approval_gate = ApprovalGate(dispatcher=dispatcher)
+
+        class _RaisingNarrativeOrchestrator(_FakeOrchestrator):
+            def _draft_narrative_safely(self, **kwargs):
+                raise RuntimeError("simulated failure past _draft_narrative_safely's own guarantee")
+
+        orchestrator = _RaisingNarrativeOrchestrator(approval_gate=approval_gate)
+
+        fake_contract = {
+            "mode": "single_action",
+            "capability": "remember_fact",
+            "actions": [{"name": "remember_fact", "inputs": {}}],
+        }
+        fake_decision = SimpleNamespace(status="ok", contract=fake_contract, invalid_reason=None)
+        fake_gate_result = SimpleNamespace(outcome="READY", missing_field=None, reasons=())
+
+        with patch(
+            "uri_core.core.canonical_execution.build_turn_state_and_directory",
+            return_value=(SimpleNamespace(data={}), {}),
+        ), patch(
+            "uri_core.core.canonical_execution.propose_decision", return_value=fake_decision,
+        ), patch(
+            "uri_core.core.decision_gates.evaluate_gates", return_value=fake_gate_result,
+        ), patch(
+            "uri_core.core.decision_engine.candidate_recall_at_k", return_value=None,
+        ):
+            envelope = run_canonical_for_ask(
+                orchestrator=orchestrator, session_id="s1",
+                user_text="I work at NIT Sikkim.", principal=None,
+                log_path=os.path.join(tmp_dir, "canon.jsonl"),
+            )
+
+        self.assertIsNotNone(envelope)
+        self.assertNotIn("_canonical_fallback", envelope)
+        self.assertIn("narrative_unavailable_reason", envelope)
+        self.assertNotIn("narrative", envelope)
 
 
 class TelemetryTests(unittest.TestCase):

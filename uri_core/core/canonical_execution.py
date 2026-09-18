@@ -62,6 +62,7 @@ from uri_core.core.decision_engine import (
 
 LIVE_ENV_VAR = "URI_ENABLE_DECISION_ENGINE_LIVE"
 WORKFLOW_CONTINUATION_ENV_VAR = "URI_ENABLE_WORKFLOW_CONTINUATION_MODE"
+ALLOWLIST_ENV_VAR = "URI_CANONICAL_EXECUTION_ALLOWLIST"
 
 DEFAULT_TELEMETRY_LOG_PATH = os.path.join(
     os.path.dirname(DEFAULT_SHADOW_LOG_PATH) or ".", "canonical_execution_log.jsonl"
@@ -83,26 +84,64 @@ EXECUTABLE_MODES = frozenset({"single_action", "multi_action", "workflow_continu
 
 
 def decision_engine_live_enabled() -> bool:
-    return os.environ.get(LIVE_ENV_VAR) == "1"
+    """M32 B1.1: canonical is the committed production default - the
+    absence of this env var no longer means "off". Set it to "0"
+    (any other value than unset/"1" is treated as off) as the
+    operational rollback lever when legacy-first handling is needed
+    without a redeploy."""
+    value = os.environ.get(LIVE_ENV_VAR)
+    if value is None:
+        return True
+    return value == "1"
 
 
 def workflow_continuation_mode_enabled() -> bool:
-    return os.environ.get(WORKFLOW_CONTINUATION_ENV_VAR) == "1"
+    """M32 B1.5: the second cutover flag, decided the same way as B1.1 -
+    canonical handles resumed/continuation turns by default. Set to "0"
+    to force resumed turns back to legacy without touching the primary
+    LIVE_ENV_VAR."""
+    value = os.environ.get(WORKFLOW_CONTINUATION_ENV_VAR)
+    if value is None:
+        return True
+    return value == "1"
+
+
+def _current_allowlist() -> Optional[frozenset[str]]:
+    """M32 B1.2: the emergency rollback lever, made runtime-settable.
+
+    ``URI_CANONICAL_EXECUTION_ALLOWLIST``, when set, takes precedence
+    over the module-level ``CANONICAL_EXECUTION_ALLOWLIST`` constant -
+    a comma-separated list of capability ids narrows canonical
+    authority to exactly those, and an explicitly empty string narrows
+    it to nothing (full legacy-first fallback), both without a
+    redeploy. Unset means "defer to the module constant", preserving
+    the pre-B1.2 code-level default of unrestricted (``None``).
+    """
+    raw = os.environ.get(ALLOWLIST_ENV_VAR)
+    if raw is None:
+        return CANONICAL_EXECUTION_ALLOWLIST
+    raw = raw.strip()
+    if not raw:
+        return frozenset()
+    return frozenset(item.strip() for item in raw.split(",") if item.strip())
 
 
 def is_allowlisted(capability_id: Optional[str]) -> bool:
     if not capability_id:
         return False
-    return CANONICAL_EXECUTION_ALLOWLIST is None or capability_id in CANONICAL_EXECUTION_ALLOWLIST
+    allowlist = _current_allowlist()
+    return allowlist is None or capability_id in allowlist
 
 
 def canonical_killswitch_enabled() -> bool:
     """Whether an operator narrowed canonical authority for rollback.
 
-    The default ``None`` is unrestricted.  Any concrete set, including an
-    empty one, is an explicit request for legacy-first route handling.
+    The default ``None`` (module constant, or ``ALLOWLIST_ENV_VAR``
+    unset) is unrestricted.  Any concrete set, including an empty one -
+    from either the module constant or the runtime env var - is an
+    explicit request for legacy-first route handling.
     """
-    return CANONICAL_EXECUTION_ALLOWLIST is not None
+    return _current_allowlist() is not None
 
 
 def _execute_gmail(
@@ -490,13 +529,30 @@ def run_canonical_for_ask(
     envelope.setdefault("semantic_analysis", None)
     envelope.setdefault("error", None)
 
+    # M32 B1.6: `_draft_narrative_safely` already guarantees (by its own
+    # docstring and internal except clauses) that it never raises - any
+    # drafting/validation failure calls `mark_narrative_unavailable` on
+    # `envelope` itself before returning. Execution has already happened
+    # by this point, so falling back to legacy here would risk a second,
+    # duplicate dispatch of an already-completed side effect - not a
+    # safe or correct fix. The residual gap this closes is narrower:
+    # if `_draft_narrative_safely` were ever to raise anyway (a defect
+    # in that guarantee, not something to assume away), the previous
+    # bare `except: pass` left `envelope` with no narrative and no
+    # honest reason at all. This is defense in depth, not a new
+    # fallback path.
     try:
         orchestrator._draft_narrative_safely(
             user_text=user_text, response=envelope,
             personalization_context=personalization_context, session_id=session_id,
         )
-    except Exception:
-        pass
+    except Exception as exc:
+        try:
+            from uri_core.core.response_drafting import mark_narrative_unavailable
+
+            mark_narrative_unavailable(envelope, exc, principal)
+        except Exception:
+            pass
 
     try:
         orchestrator._persist_session(session_id)

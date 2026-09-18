@@ -160,10 +160,25 @@ class DurableMetadataTests(unittest.TestCase):
         self.assertEqual(result.capability_id, "Gmail")
         self.assertEqual(result.action_names, ["search_messages"])
 
-    def test_flag_off_retains_placeholder_continuation_result(self):
-        with patch.dict(os.environ, {}, clear=True):
+    def test_flag_explicit_off_retains_placeholder_continuation_result(self):
+        # M32 B1.5: the continuation flag now defaults ON (see
+        # test_flag_enabled_by_default_requires_durable_capability below) -
+        # this proves the opt-out ("0") still restores the pre-B1.5
+        # pass-through placeholder behaviour for a workflow_continuation
+        # contract with no continuation-specific enrichment.
+        with patch.dict(os.environ, {"URI_ENABLE_WORKFLOW_CONTINUATION_MODE": "0"}, clear=True):
             result = evaluate_gates(_decision(), capability_directory=_Directory(), turn_state_data={})
         self.assertEqual((result.outcome, result.capability_id), ("READY", None))
+
+    def test_flag_enabled_by_default_requires_durable_capability(self):
+        # M32 B1.5: with the flag unset (now the committed default), the
+        # continuation-specific validation actually runs - a contract with
+        # no capability and no active pointer is correctly rejected as an
+        # invalid continuation, not silently passed through as READY.
+        with patch.dict(os.environ, {}, clear=True):
+            result = evaluate_gates(_decision(), capability_directory=_Directory(), turn_state_data={})
+        self.assertEqual(result.outcome, "INVALID_PROPOSAL")
+        self.assertIn("continuation_no_durable_capability", result.reasons)
 
 
 class AskPrecedenceTests(unittest.TestCase):

@@ -38,14 +38,16 @@ from uri_core.core.capability_directory import CapabilityDirectory
 from uri_core.core.capability_relevance import plausible_matches
 from uri_core.core.decision_engine import DecisionOutcome
 
-
-WORKFLOW_CONTINUATION_ENV_VAR = "URI_ENABLE_WORKFLOW_CONTINUATION_MODE"
-
-
-def workflow_continuation_mode_enabled() -> bool:
-    """True only for the explicitly enabled M30.7 continuation path."""
-    import os
-    return os.environ.get(WORKFLOW_CONTINUATION_ENV_VAR) == "1"
+# M32 B1.5: this used to be a second, independent copy of the flag name
+# and its "== '1'" check - genuinely out of sync with canonical_execution.py's
+# own copy once B1.1/B1.5 flipped that one's default. Re-exported from the
+# single source of truth instead, so this module's gate decisions and
+# canonical_execution.py's own fallback decision can never disagree about
+# whether workflow continuation is live.
+from uri_core.core.canonical_execution import (
+    WORKFLOW_CONTINUATION_ENV_VAR,
+    workflow_continuation_mode_enabled,
+)
 
 
 GATE_OUTCOMES = {

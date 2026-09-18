@@ -1343,7 +1343,9 @@ def ask(
     early_executed = False
     legacy_fallback = None
     try:
-        if os.environ.get("URI_ENABLE_WORKFLOW_CONTINUATION_MODE") == "1":
+        from uri_core.core.canonical_execution import workflow_continuation_mode_enabled
+
+        if workflow_continuation_mode_enabled():
             from uri_core.core.canonical_execution import run_canonical_for_ask
 
             session = context.orchestrator.session_manager.get_session(payload.session_id)
