@@ -14,7 +14,11 @@ import requests
 from uri_core.core.context_budget import estimate_tokens
 
 from .base import (
+    DEFAULT_CONTEXT_TOKENS,
     DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS,
+    DEFAULT_OLLAMA_BASE_URL,
+    DEFAULT_OLLAMA_MODEL,
+    ContextWindowExceededError,
     ModelNotFoundError,
     ModelProvider,
     ModelProviderConfig,
@@ -33,6 +37,73 @@ from .base import (
 # up in ordinary logs instead of silently degrading the model's answer with
 # no visible signal anywhere - see the M21 audit's core finding.
 _LOG = logging.getLogger(__name__)
+
+
+def probe_model_max_context(
+    base_url: str = DEFAULT_OLLAMA_BASE_URL,
+    model: str = DEFAULT_OLLAMA_MODEL,
+    timeout_seconds: float = DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS,
+) -> Optional[int]:
+    """Probes Ollama's /api/tags for the model's supported context_length.
+    Returns None on any network error, timeout, or missing field.
+    Never raises."""
+    try:
+        url = f"{base_url.rstrip('/')}/api/tags"
+        response = requests.get(url, timeout=timeout_seconds)
+        if response.status_code != 200:
+            return None
+        body = response.json()
+        if not isinstance(body, dict):
+            return None
+        for entry in body.get("models", []):
+            if not isinstance(entry, dict):
+                continue
+            entry_name = entry.get("name", "")
+            if (
+                entry_name == model
+                or entry_name == f"{model}:latest"
+                or (model.endswith(":latest") and entry_name == model[:-7])
+            ):
+                details = entry.get("details")
+                if isinstance(details, dict):
+                    val = details.get("context_length")
+                    if isinstance(val, int) and val > 0:
+                        return val
+    except Exception:
+        return None
+    return None
+
+
+def resolve_model_context_tokens(
+    model: str = DEFAULT_OLLAMA_MODEL,
+    base_url: str = DEFAULT_OLLAMA_BASE_URL,
+    default: int = DEFAULT_CONTEXT_TOKENS,
+) -> int:
+    """Resolves the context window for an Ollama model in strict priority order:
+    1. Explicit OLLAMA_NUM_CTX environment variable override
+    2. Live discovery from Ollama /api/tags (probe_model_max_context)
+    3. Known value from provider catalogue (provider_registry)
+    4. Conservative default fallback (DEFAULT_CONTEXT_TOKENS = 8192)
+    """
+    import os
+
+    if "OLLAMA_NUM_CTX" in os.environ:
+        try:
+            return int(os.environ["OLLAMA_NUM_CTX"])
+        except ValueError:
+            pass
+
+    discovered = probe_model_max_context(base_url=base_url, model=model)
+    if isinstance(discovered, int) and discovered > 0:
+        return discovered
+
+    from uri_core.core.provider_registry import get_catalogue_context_tokens
+
+    catalogue_val = get_catalogue_context_tokens(model, provider_id="ollama")
+    if isinstance(catalogue_val, int) and catalogue_val > 0:
+        return catalogue_val
+
+    return default
 
 
 class OllamaProvider(ModelProvider):
@@ -91,17 +162,23 @@ class OllamaProvider(ModelProvider):
             payload["options"]["num_predict"] = max_tokens
 
         estimated_prompt_tokens = estimate_tokens(system) + estimate_tokens(user)
+        headroom = max_tokens or 0
+        total_required_tokens = estimated_prompt_tokens + headroom
 
-        if estimated_prompt_tokens > self.config.context_tokens:
-            _LOG.warning(
-                "Prompt to %s/%s is ~%d tokens (rough estimate), exceeding "
-                "the configured context_tokens (%d). Ollama will silently "
-                "drop the earliest content (typically the system prompt) "
-                "to fit - the model may not see the full request.",
-                self.config.base_url,
-                self.config.model,
-                estimated_prompt_tokens,
-                self.config.context_tokens,
+        if total_required_tokens > self.config.context_tokens:
+            msg = (
+                f"Prompt estimated at ~{estimated_prompt_tokens} tokens with {headroom} token output "
+                f"headroom ({total_required_tokens} total) exceeds configured context window "
+                f"({self.config.context_tokens} tokens) for model '{self.config.model}'. "
+                "Refusing execution to protect system policy and identity integrity."
+            )
+            _LOG.error(msg)
+            raise ContextWindowExceededError(
+                msg,
+                model=self.config.model,
+                prompt_tokens=estimated_prompt_tokens,
+                max_tokens=headroom,
+                context_tokens=self.config.context_tokens,
             )
 
         url = f"{self.config.base_url.rstrip('/')}/api/chat"

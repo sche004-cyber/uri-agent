@@ -4,7 +4,30 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
-from .base import Action, ActionSchema, ApprovalRequirement, Capability, RiskLevel
+from .base import Action, ActionSchema, ApprovalRequirement, Capability, EffectType, RiskLevel
+
+KNOWN_CAPABILITY_EFFECTS: Dict[str, EffectType] = {
+    # Pure reads (no state change)
+    "extract_student_records": EffectType.READ_ONLY,
+    "fetch_drive_spreadsheet": EffectType.READ_ONLY,
+    "system_performance": EffectType.READ_ONLY,
+    "recall_memory": EffectType.READ_ONLY,
+    "read_attached_file": EffectType.READ_ONLY,
+    "gmail_search": EffectType.READ_ONLY,
+    "gmail_find_draft": EffectType.READ_ONLY,
+    "web_search": EffectType.READ_ONLY,
+    "drive_search": EffectType.READ_ONLY,
+    "fetch_url": EffectType.READ_ONLY,
+    # Local writes (URI / local state mutation)
+    "draft_institutional_note": EffectType.LOCAL_WRITE,
+    "draft_institutional_order": EffectType.LOCAL_WRITE,
+    "generate_document": EffectType.LOCAL_WRITE,
+    "remember_fact": EffectType.LOCAL_WRITE,
+    "convert_document": EffectType.LOCAL_WRITE,
+    # External writes (side-effect in third-party services)
+    "gmail_create_draft": EffectType.EXTERNAL_WRITE,
+    "drive_upload": EffectType.EXTERNAL_WRITE,
+}
 
 
 class MultiActionCapabilityRegistry:
@@ -102,12 +125,25 @@ class LegacyCapabilityAdapter:
             approval = getattr(descriptor, "approval_requirement", "none")
             risk = getattr(descriptor, "risk", "controlled")
             interface = getattr(descriptor, "interface", None) or {}
+        raw_effect = (
+            source.get("effect_type")
+            if isinstance(descriptor, Mapping)
+            else getattr(descriptor, "effect_type", None)
+        )
+        if raw_effect:
+            try:
+                effect_type = EffectType(raw_effect)
+            except ValueError:
+                effect_type = EffectType.LOCAL_WRITE
+        else:
+            effect_type = KNOWN_CAPABILITY_EFFECTS.get(capability_id, EffectType.LOCAL_WRITE)
+
         action = Action(
             name=capability_id,
             description=description or f"Execute legacy capability {capability_id}.",
             parameters=ActionSchema.coerce(interface.get("parameters", {})),
             returns=dict(interface.get("returns", {})),
-            read_only=approval == "none",
+            effect_type=effect_type,
             approval_requirement=ApprovalRequirement(approval if approval in {item.value for item in ApprovalRequirement} else "none"),
             risk=RiskLevel(risk if risk in {item.value for item in RiskLevel} else "controlled"),
             handler=handler,

@@ -1,5 +1,6 @@
 from email.mime.text import MIMEText
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 import base64
 
 from google.auth.transport.requests import Request
@@ -57,18 +58,28 @@ class GmailService:
         'https://www.googleapis.com/auth/drive.file',
     ]
 
-    def __init__(self):
+    def __init__(
+        self,
+        user_id: Optional[str] = None,
+        token_path: Optional[Union[str, Path]] = None,
+        credentials_path: Optional[Union[str, Path]] = None,
+    ):
         from uri_core.core.connection_status import _repo_root
+        from uri_core.core.google_auth_common import resolve_google_token_path
 
         credentials_root = Path(_repo_root())
+        self.user_id = user_id
 
         self.credentials_path = (
-            credentials_root / "credentials.json"
+            Path(credentials_path)
+            if credentials_path is not None
+            else (credentials_root / "credentials.json")
         )
 
-        self.token_path = (
-            credentials_root / "token.json"
-        )
+        if token_path is not None:
+            self.token_path = Path(token_path)
+        else:
+            self.token_path = Path(resolve_google_token_path(user_id))
 
         self.service = None
 
@@ -116,6 +127,7 @@ class GmailService:
                 port=0
             )
 
+        self.token_path.parent.mkdir(parents=True, exist_ok=True)
         with open(
             self.token_path,
             "w"

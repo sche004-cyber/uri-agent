@@ -25,6 +25,12 @@ class RiskLevel(str, Enum):
     CRITICAL = "critical"
 
 
+class EffectType(str, Enum):
+    READ_ONLY = "read_only"             # read / no state change
+    LOCAL_WRITE = "local_write"         # URI / local state write
+    EXTERNAL_WRITE = "external_write"   # external side effect / write
+
+
 _TYPE_NAMES = {
     "str": str,
     "string": str,
@@ -134,6 +140,7 @@ class Action:
     description: str
     parameters: Union[ActionSchema, Mapping[str, Any]] = field(default_factory=ActionSchema)
     returns: Dict[str, Any] = field(default_factory=dict)
+    effect_type: EffectType = EffectType.READ_ONLY
     read_only: bool = True
     approval_requirement: ApprovalRequirement = ApprovalRequirement.NONE
     risk: RiskLevel = RiskLevel.LOW
@@ -141,6 +148,10 @@ class Action:
 
     def __post_init__(self) -> None:
         self.parameters = ActionSchema.coerce(self.parameters)
+        if not isinstance(self.effect_type, EffectType):
+            self.effect_type = EffectType(self.effect_type)
+        # read_only is strictly synchronized with effect_type == EffectType.READ_ONLY
+        self.read_only = (self.effect_type == EffectType.READ_ONLY)
         if not isinstance(self.approval_requirement, ApprovalRequirement):
             self.approval_requirement = ApprovalRequirement(self.approval_requirement)
         if not isinstance(self.risk, RiskLevel):

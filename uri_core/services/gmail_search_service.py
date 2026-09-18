@@ -2,7 +2,7 @@ import os
 from googleapiclient.discovery import build
 
 from uri_core.core.connection_status import _repo_root
-from uri_core.core.google_auth_common import load_usable_credentials
+from uri_core.core.google_auth_common import load_usable_credentials, resolve_google_token_path
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
@@ -11,28 +11,19 @@ class GmailSearchService:
     Handles secure authentication and targeted email searching
     to fetch administrative context directly from Gmail.
 
-    2026-09-12 (User directive): previously kept its OWN, independent
-    pickle-based token.pickle, entirely separate from the JSON-based
-    token.json every other Google-connected class (GmailService,
-    DriveService, connection_status.py) reads and writes - so a
-    connection the User actually completed via Settings > Connections
-    was invisible here, and using this service would have started a
-    SECOND, redundant OAuth consent flow. Now reads the exact same
-    token.json (read-only here - this class never writes it; the one
-    real consent flow lives in GmailService.connect(), started only
-    from POST /connections/{id}/authorize) via the same _repo_root()
-    every other Google-connected class already uses, so a connection
-    made once is usable everywhere.
+    Per-user mailbox isolation (M32 A1-3): when user_id is provided,
+    token_path resolves strictly to that user's own scoped token.json.
+    credentials.json remains install-wide.
     """
-    def __init__(self, credentials_path=None, token_path=None):
+    def __init__(self, credentials_path=None, token_path=None, user_id=None):
         credentials_root = _repo_root()
         self.credentials_path = credentials_path or os.path.join(credentials_root, "credentials.json")
-        self.token_path = token_path or os.path.join(credentials_root, "token.json")
+        self.user_id = user_id
+        self.token_path = token_path or resolve_google_token_path(user_id)
         self.service = None
 
     def authenticate(self) -> bool:
-        """Authenticates using the token.json this install's one real
-        Google consent flow (GmailService.connect()) already produced.
+        """Authenticates using the token.json for this user or install.
         Never launches an interactive consent flow itself - if no
         usable token exists yet, this honestly reports False rather
         than starting a second, redundant browser flow."""

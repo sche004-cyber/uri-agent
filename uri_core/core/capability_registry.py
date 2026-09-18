@@ -90,6 +90,7 @@ class CapabilityDescriptor:
     platform: str = DEFAULT_PLATFORM
     limitations: str = ""
     interface: Optional[Dict[str, Any]] = None
+    effect_type: str = "read_only"
 
     @property
     def is_executable(self) -> bool:
@@ -185,6 +186,11 @@ def _descriptor_from_entry(
         platform=str(entry.get("platform", DEFAULT_PLATFORM) or DEFAULT_PLATFORM),
         limitations=str(entry.get("limitations", "") or ""),
         interface=interface,
+        effect_type=_clean_choice(
+            entry.get("effect_type", "read_only"),
+            {"read_only", "local_write", "external_write"},
+            "read_only",
+        ),
     )
 
 

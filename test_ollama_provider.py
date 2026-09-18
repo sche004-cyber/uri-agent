@@ -5,6 +5,7 @@ import requests
 
 from uri_core.core.model_providers.base import (
     DEFAULT_HEALTH_CHECK_TIMEOUT_SECONDS,
+    ContextWindowExceededError,
     ModelNotFoundError,
     ModelProviderConfig,
     ModelProviderStatus,
@@ -64,8 +65,20 @@ class ModelProviderConfigTests(unittest.TestCase):
         self.assertEqual(config.timeout_seconds, 12.0)
 
     def test_context_tokens_default_when_env_unset(self):
+        # M32: With no role config and no OLLAMA_NUM_CTX, a provider built
+        # for a model whose real window is known/discoverable uses that window (40960 for qwen3:14b),
+        # not the legacy stale 8192.
         with patch.dict("os.environ", {}, clear=True):
             config = ModelProviderConfig.from_env()
+
+        self.assertEqual(config.context_tokens, 40960)
+
+    def test_context_tokens_fallback_when_model_unknown(self):
+        # M32: When provider metadata is unavailable (unknown model, no probe),
+        # safely falls back to conservative DEFAULT_CONTEXT_TOKENS (8192).
+        with patch.dict("os.environ", {"OLLAMA_MODEL": "unknown-model-xyz"}, clear=True):
+            with patch("uri_core.core.model_providers.ollama_provider.probe_model_max_context", return_value=None):
+                config = ModelProviderConfig.from_env()
 
         self.assertEqual(config.context_tokens, 8192)
 
@@ -247,7 +260,7 @@ class OllamaProviderMockedTests(unittest.TestCase):
         self.assertIsNone(result.prompt_tokens)
         self.assertIsNone(result.eval_tokens)
 
-    def test_oversized_prompt_estimate_logs_a_warning(self):
+    def test_oversized_prompt_estimate_raises_context_window_exceeded(self):
         provider = OllamaProvider(
             config=ModelProviderConfig(
                 base_url="http://localhost:11434",
@@ -257,17 +270,11 @@ class OllamaProviderMockedTests(unittest.TestCase):
             )
         )
 
-        with patch(
-            "uri_core.core.model_providers.ollama_provider.requests.post",
-            return_value=_fake_ok_response("{}"),
-        ), self.assertLogs(
-            "uri_core.core.model_providers.ollama_provider", level="WARNING"
-        ) as logs:
+        with self.assertRaises(ContextWindowExceededError) as ctx:
             provider.complete(system="a" * 200, user="hello")
 
-        self.assertTrue(
-            any("exceeding" in message for message in logs.output)
-        )
+        self.assertIn("exceeds configured context window", str(ctx.exception))
+        self.assertEqual(ctx.exception.context_tokens, 10)
 
 
 class OllamaProviderDescribeTests(unittest.TestCase):

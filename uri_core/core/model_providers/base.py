@@ -50,6 +50,27 @@ class ProviderAuthenticationError(ProviderResponseError):
     Raised only on explicit credential rejection, not network errors."""
 
 
+class ContextWindowExceededError(ProviderResponseError):
+    """Raised when a request exceeds the model's context window and cannot be
+    safely fitted without violating non-negotiable policy/identity invariants.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        model: str = "",
+        prompt_tokens: int = 0,
+        max_tokens: int = 0,
+        context_tokens: int = 0,
+    ):
+        super().__init__(message)
+        self.model = model
+        self.prompt_tokens = prompt_tokens
+        self.max_tokens = max_tokens
+        self.context_tokens = context_tokens
+
+
 @dataclass(frozen=True)
 class ModelResponse:
     """A completed model response. Deliberately minimal - no raw backend
@@ -140,16 +161,25 @@ class ModelProviderConfig:
     context_tokens: int = DEFAULT_CONTEXT_TOKENS
 
     @classmethod
-    def from_env(cls) -> "ModelProviderConfig":
+    def from_env(cls, discover_context: bool = True) -> "ModelProviderConfig":
+        base_url = os.environ.get("OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL)
+        model = os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
+        timeout_seconds = float(
+            os.environ.get("OLLAMA_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS)
+        )
+        if "OLLAMA_NUM_CTX" in os.environ:
+            context_tokens = int(os.environ["OLLAMA_NUM_CTX"])
+        elif discover_context:
+            from uri_core.core.model_providers.ollama_provider import resolve_model_context_tokens
+            context_tokens = resolve_model_context_tokens(model=model, base_url=base_url)
+        else:
+            context_tokens = DEFAULT_CONTEXT_TOKENS
+
         return cls(
-            base_url=os.environ.get("OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL),
-            model=os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL),
-            timeout_seconds=float(
-                os.environ.get("OLLAMA_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS)
-            ),
-            context_tokens=int(
-                os.environ.get("OLLAMA_NUM_CTX", DEFAULT_CONTEXT_TOKENS)
-            ),
+            base_url=base_url,
+            model=model,
+            timeout_seconds=timeout_seconds,
+            context_tokens=context_tokens,
         )
 
 

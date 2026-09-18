@@ -23,8 +23,8 @@ from uri_core.services.drive_service import DriveService
 
 
 class DriveUploadTool:
-    def __init__(self, drive_service=None, file_store=None):
-        self._drive_service = drive_service or DriveService()
+    def __init__(self, drive_service=None, file_store=None, user_id=None):
+        self._drive_service = drive_service or DriveService(user_id=user_id)
         self._file_store = file_store or FileStore()
 
     def generate(self, **kwargs) -> Dict[str, Any]:

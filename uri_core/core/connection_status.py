@@ -30,7 +30,7 @@ ConnectionStatus enum (see uri_ui/lib/models/connection.dart):
 """
 
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from uri_core.core.google_auth_common import load_usable_credentials
 
@@ -108,15 +108,21 @@ def _google_service_status(
     }
 
 
-def list_connection_status() -> List[Dict[str, Any]]:
+def list_connection_status(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
     """Every external service URI knows how to connect to, with its
     real current authorization state. Read-only and non-interactive;
     safe to call on every client refresh. Never raises - an
     unexpected failure degrades that service to not_connected with an
-    honest detail rather than inventing a connected state."""
+    honest detail rather than inventing a connected state.
+
+    Per-user mailbox isolation (M32 A1-3): when user_id is provided,
+    token_path resolves strictly to that user's own scoped token.json.
+    """
+    from uri_core.core.google_auth_common import resolve_google_token_path
 
     root = _repo_root()
     credentials_path = os.path.join(root, "credentials.json")
+    token_path = resolve_google_token_path(user_id) if user_id else os.path.join(root, "token.json")
 
     services = [
         {
@@ -126,7 +132,7 @@ def list_connection_status() -> List[Dict[str, Any]]:
                 "Read relevant messages and prepare replies for your "
                 "review."
             ),
-            "token_path": os.path.join(root, "token.json"),
+            "token_path": token_path,
             "scopes": [
                 "https://www.googleapis.com/auth/gmail.readonly"
             ],
@@ -138,7 +144,7 @@ def list_connection_status() -> List[Dict[str, Any]]:
                 "Find and reference documents you already have access "
                 "to."
             ),
-            "token_path": os.path.join(root, "token.json"),
+            "token_path": token_path,
             "scopes": [
                 "https://www.googleapis.com/auth/drive.readonly"
             ],

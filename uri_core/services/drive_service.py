@@ -1,4 +1,4 @@
-﻿import os
+import os
 import io
 from pathlib import Path
 from google.oauth2.credentials import Credentials
@@ -17,19 +17,16 @@ class DriveService:
     discipline exactly.
     """
 
-    def __init__(self):
+    def __init__(self, token_path=None, user_id=None):
         self.project_root = Path(__file__).resolve().parents[2]
+        self.user_id = user_id
 
-        # 2026-09-12 (User directive): use the same resolved credentials
-        # root as connection_status.py/gmail_service.py (which already
-        # honors URI_GOOGLE_CREDENTIALS_DIR) - previously derived
-        # independently here, so a User-configured override, or a
-        # consistency check against gmail_service.py's own token, would
-        # silently diverge. evidence_dir is unrelated to credentials
-        # location and stays under the real project root.
-        from uri_core.core.connection_status import _repo_root
+        from uri_core.core.google_auth_common import resolve_google_token_path
 
-        self.token_path = Path(_repo_root()) / "token.json"
+        if token_path is not None:
+            self.token_path = Path(token_path)
+        else:
+            self.token_path = Path(resolve_google_token_path(user_id))
         self.evidence_dir = self.project_root / "uri_workspace" / "evidence"
         self.service = None
 

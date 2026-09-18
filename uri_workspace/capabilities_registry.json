@@ -13,7 +13,8 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Requires a roll number stated in the request and the indexed spreadsheet directory to be present; honestly reports 'not found' or 'records unavailable' rather than returning simulated data.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     },
     "fetch_drive_spreadsheet": {
       "file_path": "uri_core/tools/fetch_drive_spreadsheet.py",
@@ -22,12 +23,15 @@
       "description": "Read rows from a Google Sheets spreadsheet by spreadsheet ID and range.",
       "status": "implemented",
       "availability": "unavailable_missing_dependency",
-      "permissions": ["google_drive_service_account"],
+      "permissions": [
+        "google_drive_service_account"
+      ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
       "limitations": "No Google service-account credentials are configured at uri_workspace/credentials.json; reports 'unavailable' honestly rather than returning simulated data until they are.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     },
     "draft_institutional_note": {
       "file_path": "uri_core/tools/draft_institutional_note.py",
@@ -41,7 +45,8 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Drafting only; does not submit, approve, or file the noting anywhere.",
-      "interface": null
+      "interface": null,
+      "effect_type": "local_write"
     },
     "draft_institutional_order": {
       "file_path": "uri_core/tools/draft_institutional_order.py",
@@ -55,7 +60,8 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Drafting only; does not issue, sign, or distribute the order.",
-      "interface": null
+      "interface": null,
+      "effect_type": "local_write"
     },
     "generate_document": {
       "file_path": "uri_core/tools/generate_document.py",
@@ -69,7 +75,8 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Generation only; does not distribute, upload, or file the document anywhere. PDF output is plain-text pagination, not rich layout.",
-      "interface": null
+      "interface": null,
+      "effect_type": "local_write"
     },
     "system_performance": {
       "file_path": "uri_core/tools/system_performance.py",
@@ -83,7 +90,8 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Read-only reporting; does not configure, throttle, or terminate anything.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     },
     "remember_fact": {
       "file_path": "uri_core/tools/remember_fact.py",
@@ -97,7 +105,8 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Only ever writes with consent='user_provided' (the user's own explicit request) - never guesses or auto-captures from ordinary conversation.",
-      "interface": null
+      "interface": null,
+      "effect_type": "local_write"
     },
     "recall_memory": {
       "file_path": "uri_core/tools/recall_memory.py",
@@ -111,7 +120,8 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Only reads already-consented (user_provided/user_confirmed) memory entries; never writes new memory itself.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     },
     "convert_document": {
       "file_path": "uri_core/tools/convert_document.py",
@@ -125,7 +135,8 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "PDF-to-DOCX only today; requires the source PDF already attached to this conversation.",
-      "interface": null
+      "interface": null,
+      "effect_type": "local_write"
     },
     "read_attached_file": {
       "file_path": "uri_core/tools/read_attached_file.py",
@@ -134,12 +145,15 @@
       "description": "Read the text of a file the user attached to this conversation (PDF including scanned/OCR, plain text, CSV, JSON, spreadsheet, image, or Word document), returning the extracted text as evidence for the Brain to reason from - never an answer URI composes itself.",
       "status": "implemented",
       "availability": "available",
-      "permissions": ["read_user_attachments"],
+      "permissions": [
+        "read_user_attachments"
+      ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
       "limitations": "Reads only files the user actually attached to the current conversation; honestly reports when nothing is attached, when a file type has no text extractor, when a document contains no readable text, or when extraction fails, rather than inventing content.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     },
     "gmail_search": {
       "file_path": "uri_core/tools/gmail_search.py",
@@ -148,12 +162,15 @@
       "description": "Search the user's Gmail for messages matching an administrative query, returning subject/date/snippet as evidence for the Brain to reason from - never an answer URI composes itself.",
       "status": "implemented",
       "availability": "unavailable_missing_dependency",
-      "permissions": ["gmail_readonly"],
+      "permissions": [
+        "gmail_readonly"
+      ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
       "limitations": "Requires uri_workspace/credentials.json (a Google OAuth client secret) and a completed one-time OAuth consent; honestly reports when credentials are missing, authentication fails, or the search returns no results rather than inventing information.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     },
     "gmail_find_draft": {
       "file_path": "uri_core/tools/gmail_find_draft.py",
@@ -162,12 +179,15 @@
       "description": "Search the user's existing Gmail drafts (read-only) for one relevant to the request, returning it as evidence for the Brain to reason from. URI cannot create, modify, send, or delete drafts through this capability.",
       "status": "implemented",
       "availability": "unavailable_missing_dependency",
-      "permissions": ["gmail_readonly"],
+      "permissions": [
+        "gmail_readonly"
+      ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
       "limitations": "Requires the same Google OAuth credentials as gmail_search; reports 'not found' when Gmail is unavailable or when no relevant draft exists, and cannot distinguish those two cases from the underlying service's return value.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     },
     "web_search": {
       "file_path": "uri_core/tools/web_search.py",
@@ -176,12 +196,15 @@
       "description": "Search the public Internet for real, current information via a real search API, returning titles/URLs/content snippets as evidence for the Brain to reason from - never an answer URI composes itself.",
       "status": "implemented",
       "availability": "available",
-      "permissions": ["external_web_search"],
+      "permissions": [
+        "external_web_search"
+      ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
       "limitations": "Requires a configured TAVILY_API_KEY (see .env.example); honestly reports when the search service is unreachable, misconfigured, or returns no results rather than inventing information.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     },
     "drive_search": {
       "file_path": "uri_core/tools/drive_search.py",
@@ -190,12 +213,15 @@
       "description": "Search Google Drive (files the user already has access to) by name/content and return real file metadata (id, name, type) as evidence - read-only, the same scope Gmail/Drive already share.",
       "status": "implemented",
       "availability": "available",
-      "permissions": ["google_drive_readonly"],
+      "permissions": [
+        "google_drive_readonly"
+      ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
       "limitations": "Requires a stored Google OAuth token (token.json) on the server host; honestly reports 'unavailable' with the real reason when Drive is not connected rather than inventing results.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     },
     "gmail_create_draft": {
       "file_path": "uri_core/tools/gmail_create_draft.py",
@@ -204,12 +230,15 @@
       "description": "Create a Gmail DRAFT (never sends it) - the Brain composes the subject/body from the request and any evidence; the recipient is taken directly from an email address in the request text. The user still reviews and sends the draft themselves in Gmail.",
       "status": "implemented",
       "availability": "available",
-      "permissions": ["gmail_compose"],
+      "permissions": [
+        "gmail_compose"
+      ],
       "approval_requirement": "user_approval_required",
       "risk": "high",
       "platform": "any",
       "limitations": "Requires a stored Google OAuth token with gmail.compose scope on the server host; creates a draft only - there is no capability anywhere in URI that sends an email.",
-      "interface": null
+      "interface": null,
+      "effect_type": "external_write"
     },
     "drive_upload": {
       "file_path": "uri_core/tools/drive_upload.py",
@@ -218,12 +247,15 @@
       "description": "Upload the most recently generated or attached file in this conversation to Google Drive as a new file - never overwrites, moves, renames, or deletes anything already in Drive.",
       "status": "implemented",
       "availability": "available",
-      "permissions": ["google_drive_file_write"],
+      "permissions": [
+        "google_drive_file_write"
+      ],
       "approval_requirement": "user_approval_required",
       "risk": "high",
       "platform": "any",
       "limitations": "Requires a stored Google OAuth token with drive.file scope on the server host, and a file already generated or attached in this conversation to upload.",
-      "interface": null
+      "interface": null,
+      "effect_type": "external_write"
     },
     "fetch_url": {
       "file_path": "uri_core/tools/fetch_url.py",
@@ -232,12 +264,15 @@
       "description": "Fetch one web page or document by URL and extract its readable text as evidence (HTML, PDF, DOCX, XLSX, plain text, CSV) - lets URI actually read a source web_search found (or one the user gave directly), not just cite its search-result snippet.",
       "status": "implemented",
       "availability": "available",
-      "permissions": ["external_web_fetch"],
+      "permissions": [
+        "external_web_fetch"
+      ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
       "limitations": "The URL must appear literally in the request text (the Brain cannot supply an arbitrary URL of its own choosing - see the tool's own module docstring on the argument boundary); bounded to 10 MB and content types URI can extract text from; honestly reports an unreachable page, an unsupported content type, or an empty result rather than inventing content.",
-      "interface": null
+      "interface": null,
+      "effect_type": "read_only"
     }
   },
   "planned_capabilities": {
@@ -245,14 +280,22 @@
       "description": "Inspect and optimize this device's performance (e.g. startup programs, disk/temp cleanup, resource-heavy processes) with explicit user approval before any change.",
       "status": "not_implemented",
       "availability": "unavailable_missing_dependency",
-      "permissions": ["system_command_execution"],
+      "permissions": [
+        "system_command_execution"
+      ],
       "approval_requirement": "user_approval_required",
       "risk": "high",
       "platform": "windows_powershell",
       "limitations": "No execution adapter exists yet; this entry exists so URI can explain the gap honestly rather than pretend the capability is available. See the Controlled Self-Development architecture (research -> propose -> approve -> test -> approve -> execute -> verify -> rollback) for how this would eventually be built - none of that pipeline exists yet either.",
       "interface": {
         "kind": "system_diagnostics",
-        "summary_fields": ["cpu_usage", "gpu_usage", "ram_usage", "temperature", "disk_usage"]
+        "summary_fields": [
+          "cpu_usage",
+          "gpu_usage",
+          "ram_usage",
+          "temperature",
+          "disk_usage"
+        ]
       }
     }
   }

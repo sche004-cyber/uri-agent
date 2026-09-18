@@ -31,13 +31,26 @@ deterministic template text - still never URI improvising a reply, only
 URI's plainest, template-based report of the same already-decided facts.
 """
 
+import copy
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
+from uri_core.core.context_budget import bound_json_value, estimate_tokens, fit_within_budget
 from uri_core.core.model_providers import ModelProvider
+from uri_core.core.model_providers.base import ContextWindowExceededError
 from uri_core.config.model_roles import ROLE_DRAFTING, build_provider
 from uri_core.core.model_router import get_router
+
+# The single source of truth for this call's output headroom - referenced
+# both by the pre-send trim budget below and by complete_kwargs["max_tokens"]
+# in draft_response(), so the two can never independently drift. Deliberately
+# NOT shared with the reasoning call's headroom (see model_reasoning_adapter.py):
+# drafting has always requested a smaller max_tokens=300, and reusing the
+# reasoning path's 800 here would silently under-protect a call whose real
+# output budget is less than half that (M32 A2 production-wiring repair,
+# 2026-09-18).
+DRAFTING_MAX_TOKENS = 300
 
 _DRAFTING_INSTRUCTIONS = """
 ---
@@ -194,6 +207,104 @@ def condense_known_gaps(known_gaps: Any) -> Any:
     return condensed
 
 
+def _resolve_context_budget(
+    role: str, principal: Optional[object]
+) -> Tuple[Optional[int], str]:
+    """Best-effort lookup of the context window the router's chosen
+    candidate will actually use for `role`+`principal`, mirroring
+    model_reasoning_adapter._resolve_router_context_budget. Never raises:
+    (None, "") means no pre-trim is attempted and the provider's own hard
+    ContextWindowExceededError check remains the safety net.
+    """
+    try:
+        plan = get_router().resolve(role, principal)
+        if plan.provider_id is None:
+            return None, ""
+        if plan.provider_id == "ollama":
+            from uri_core.core.model_providers.ollama_provider import (
+                resolve_model_context_tokens,
+            )
+
+            return resolve_model_context_tokens(model=plan.model), plan.model
+
+        from uri_core.core.model_providers.base import DEFAULT_CONTEXT_TOKENS
+        from uri_core.core.provider_registry import get_catalogue_context_tokens
+
+        ctx = get_catalogue_context_tokens(plan.model, provider_id=plan.provider_id)
+        return (ctx if ctx is not None else DEFAULT_CONTEXT_TOKENS), plan.model
+    except Exception:
+        return None, ""
+
+
+def _fit_draft_payload_to_budget(
+    payload: Dict[str, Any],
+    system: str,
+    context_tokens: int,
+    model_name: str,
+    headroom: int = DRAFTING_MAX_TOKENS,
+) -> Dict[str, Any]:
+    """Fits the drafting user payload within `context_tokens` given the
+    already-fixed `system` prompt and `headroom` output budget.
+
+    PROTECTED, NEVER TRIMMED: user_request, outcome (the runtime's
+    already-decided facts this call exists only to phrase - see module
+    docstring) and personalization. Only query_context's optional,
+    additive sections (conversation/experience/attachments/verified_facts/
+    diagnostics - see orchestrator.py._draft_narrative_safely, which
+    already blanks identity/soul/session/capabilities before this is ever
+    called) are trimmed.
+
+    Raises ContextWindowExceededError, honestly, if the protected sections
+    plus `system` still cannot fit even after trimming everything
+    budgetable - this is caught by draft_response()'s existing broad
+    except and surfaces as the same ResponseDraftingError -> honest
+    "no narrative" degradation every other drafting failure already uses.
+    """
+    allowed = max(0, context_tokens - headroom)
+    system_tokens = estimate_tokens(system)
+
+    def _total_tokens(p: Dict[str, Any]) -> int:
+        try:
+            body = json.dumps(p, ensure_ascii=False, default=str)
+        except Exception:
+            body = str(p)
+        return system_tokens + estimate_tokens(body)
+
+    if _total_tokens(payload) <= allowed:
+        return payload
+
+    trimmed = copy.deepcopy(payload)
+    qc = trimmed.get("query_context")
+    if isinstance(qc, dict):
+        qc = dict(qc)
+        for key in ("conversation", "experience", "attachments"):
+            val = qc.get(key)
+            if isinstance(val, list) and val:
+                qc[key] = fit_within_budget(val, max_tokens=150)
+        for key in ("verified_facts", "diagnostics"):
+            val = qc.get(key)
+            if isinstance(val, (dict, list)) and val:
+                qc[key] = bound_json_value(val, max_chars=400)
+        trimmed["query_context"] = qc
+        if _total_tokens(trimmed) <= allowed:
+            return trimmed
+
+    final_tokens = _total_tokens(trimmed)
+    if final_tokens > allowed:
+        raise ContextWindowExceededError(
+            f"Drafting prompt estimated at ~{final_tokens} tokens with {headroom} token "
+            f"output headroom exceeds configured context window ({context_tokens} tokens) "
+            f"for model '{model_name}'. user_request and the already-decided outcome cannot "
+            "be safely accommodated.",
+            model=model_name,
+            prompt_tokens=final_tokens,
+            max_tokens=headroom,
+            context_tokens=context_tokens,
+        )
+
+    return trimmed
+
+
 class ResponseDraftingError(Exception):
     """Raised whenever drafting could not produce usable text for any
     reason (provider unreachable, empty response, etc.). Callers must
@@ -269,14 +380,31 @@ def draft_response(
         "query_context": request.query_context or {},
     }
 
-    complete_kwargs = dict(
-        system=system,
-        user=json.dumps(payload, ensure_ascii=False, default=str),
-        temperature=0.3,
-        max_tokens=300,
-    )
-
     try:
+        # M32 A2 production-wiring repair (2026-09-18): call 3 (drafting)
+        # previously called provider.complete()/router.attempt() directly
+        # with no trim attempt at all - only OllamaProvider.complete()'s
+        # raw hard refusal protected it. Resolve the real context budget
+        # for whichever path this call actually uses (explicit provider in
+        # tests, router-resolved candidate in production) and trim first.
+        if provider is not None:
+            context_tokens = getattr(getattr(provider, "config", None), "context_tokens", None)
+            model_name = getattr(getattr(provider, "config", None), "model", "")
+        else:
+            context_tokens, model_name = _resolve_context_budget(ROLE_DRAFTING, principal)
+
+        if context_tokens is not None:
+            payload = _fit_draft_payload_to_budget(
+                payload, system, context_tokens, model_name, headroom=DRAFTING_MAX_TOKENS
+            )
+
+        complete_kwargs = dict(
+            system=system,
+            user=json.dumps(payload, ensure_ascii=False, default=str),
+            temperature=0.3,
+            max_tokens=DRAFTING_MAX_TOKENS,
+        )
+
         if provider is not None:
             # Explicit provider injected (test path) — bypass router.
             response = provider.complete(**complete_kwargs)

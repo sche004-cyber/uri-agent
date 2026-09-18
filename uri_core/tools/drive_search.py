@@ -18,8 +18,8 @@ class DriveSearchTool:
     Drive file metadata as evidence. Never decides what a result means
     and never fabricates a result when Drive is not connected."""
 
-    def __init__(self, drive_service=None):
-        self._drive_service = drive_service or DriveService()
+    def __init__(self, drive_service=None, user_id=None):
+        self._drive_service = drive_service or DriveService(user_id=user_id)
 
     def execute(self, **kwargs) -> Dict[str, Any]:
         request_text = kwargs.get("request_text", "") or ""

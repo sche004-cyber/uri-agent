@@ -30,8 +30,9 @@ class GmailSearchTool:
     (or URI) composes - the same boundary already enforced for every
     other capability (see web_search.py's own module note)."""
 
-    def __init__(self, service=None, max_results=None):
-        self._service = service or GmailSearchService()
+    def __init__(self, service=None, max_results=None, user_id=None):
+        self._user_id = user_id
+        self._service = service or GmailSearchService(user_id=user_id)
         self._max_results = max_results or _DEFAULT_MAX_RESULTS
 
     # 2026-09-12 (User directive): "how many unread emails do I have"

@@ -1613,15 +1613,26 @@ def system_performance(
 
 @app.get("/gmail/unread-count")
 def gmail_unread_count(
-    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+    principal: PrincipalContext = Depends(_resolve_principal),
 ) -> dict:
     """Return Gmail's current unread-label count without proposing or
     executing an action.  A failed Gmail read is passed through unchanged so
     the UI can render an explicit unavailable state rather than inventing a
     count."""
+    user_id = principal.user_id
+    if user_id:
+        from uri_core.core.capability_resolver import CapabilityResolver
+
+        if not CapabilityResolver.is_allowed("gmail_search", principal=principal):
+            return {
+                "success": False,
+                "error": "Capability 'gmail_search' is not granted for this user.",
+                "unread_count": None,
+            }
+
     from uri_core.services.gmail_search_service import GmailSearchService
 
-    return GmailSearchService().get_unread_count()
+    return GmailSearchService(user_id=user_id).get_unread_count()
 
 
 @app.get("/tasks")
@@ -2255,7 +2266,9 @@ def capabilities(
 
 
 @app.get("/connections")
-def connections() -> dict:
+def connections(
+    user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
+) -> dict:
     """Real authorization state of URI's external service connections
     (Gmail, Drive), read-only and non-interactive - see
     connection_status.py. This exists so the client can show what is
@@ -2270,7 +2283,7 @@ def connections() -> dict:
     interactive OAuth sign-in on the server host.
     """
 
-    return {"connections": list_connection_status()}
+    return {"connections": list_connection_status(user_id=user_id)}
 
 
 # ------------------------------------------------------------------
@@ -2652,11 +2665,11 @@ _google_auth_flow_lock = threading.Lock()
 _google_auth_flow_state: dict = {"running": False, "last_error": None}
 
 
-def _run_google_auth_flow_in_background() -> None:
+def _run_google_auth_flow_in_background(user_id: Optional[str] = None) -> None:
     from uri_core.services.gmail_service import GmailService
 
     try:
-        result = GmailService().connect()
+        result = GmailService(user_id=user_id).connect()
         if not result.get("success", True):
             _google_auth_flow_state["last_error"] = result.get("reason")
     except Exception as exc:  # noqa: BLE001 - reported via status, never raised into the request
@@ -2671,9 +2684,8 @@ def authorize_connection(
     request: Request,
     principal: PrincipalContext = Depends(_resolve_authenticated_principal),
 ) -> dict:
-    """M16 Priority 4, revised 2026-09-12 (User directive): actually
-    start Google sign-in for a service, not just report what would be
-    required.
+    """M16 Priority 4, revised for M32 (A1-3): actually
+    start Google sign-in for a service on behalf of THIS user.
 
     Google's installed-app consent flow opens a browser and a local
     callback server ON THE URI SERVER HOST (see GmailService.connect /
@@ -2692,18 +2704,15 @@ def authorize_connection(
     run_uri_server.py), a non-loopback caller cannot reach this
     behavior at all under the sanctioned launch path.
 
-    Runs GmailService.connect() (which blocks on the interactive
-    consent) in a background thread rather than the request handler
-    itself, so the HTTP response returns immediately with "started"
-    rather than hanging for however long the User takes to complete
-    consent in their browser. Poll GET /connections afterward for the
-    real, resulting status once consent completes.
+    Runs GmailService(user_id=principal.user_id).connect() (which blocks
+    on the interactive consent) in a background thread rather than the
+    request handler itself, so the HTTP response returns immediately
+    with "started" rather than hanging for however long the User takes to
+    complete consent in their browser. Poll GET /connections afterward for
+    the real, resulting status once consent completes.
 
-    M22.3 (S1) opened this ADMIN-only; open to any authenticated user
-    (User directive, 2026-09-12) - still 401 for no login, no longer
-    403 for a non-ADMIN role. This remains an install-host-scoped
-    action, not a per-user one: any signed-in user's call affects the
-    one shared Google connection every user on this install shares.
+    Per-user mailbox isolation (M32 A1-3): writes token.json strictly
+    to THIS user's scoped directory.
     """
 
     if connection_id not in {"gmail", "drive"}:
@@ -2735,7 +2744,7 @@ def authorize_connection(
                 "configured on the URI server host yet, so sign-in "
                 "cannot be started."
             ),
-            "connections": list_connection_status(),
+            "connections": list_connection_status(user_id=principal.user_id),
         }
 
     with _google_auth_flow_lock:
@@ -2746,12 +2755,13 @@ def authorize_connection(
                     "A Google sign-in is already in progress - "
                     "complete or close that browser window first."
                 ),
-                "connections": list_connection_status(),
+                "connections": list_connection_status(user_id=principal.user_id),
             }
         _google_auth_flow_state["running"] = True
         _google_auth_flow_state["last_error"] = None
         threading.Thread(
             target=_run_google_auth_flow_in_background,
+            args=(principal.user_id,),
             name="google-oauth-consent",
             daemon=True,
         ).start()
@@ -2762,7 +2772,7 @@ def authorize_connection(
             "Opening your browser for Google sign-in - complete the "
             "consent there, then refresh this screen."
         ),
-        "connections": list_connection_status(),
+        "connections": list_connection_status(user_id=principal.user_id),
     }
 
 
@@ -2771,22 +2781,13 @@ def disconnect_connection(
     connection_id: str,
     principal: PrincipalContext = Depends(_resolve_authenticated_principal),
 ) -> dict:
-    """M16 Priority 2: a REAL disconnect. Previously the client faked
-    this against mock state, so "Disconnected" was displayed while
-    nothing had changed.
+    """M16 Priority 2 / M32 A1-3: a REAL per-user disconnect.
 
-    Revoking a Google connection means removing the stored OAuth token
-    on the server host - after this, connection_status.py reports the
-    service as needing authorization again, because it genuinely does.
+    Revoking a Google connection means removing the calling user's stored
+    OAuth token in their own user_scoped_path.
     Both Gmail and Drive share one token file (they are one Google
-    authorization with two scopes), so this is reported honestly as
-    affecting both rather than pretending they are independent.
-
-    M22.3 (S1) opened this ADMIN-only; open to any authenticated user
-    (User directive, 2026-09-12) - still 401 for no login, no longer
-    403 for a non-ADMIN role. This still revokes one shared,
-    install-wide token, not per-user state: any signed-in user can now
-    disconnect Gmail/Drive for every user on this install.
+    authorization with two scopes), so this affects both for THIS user
+    without modifying any other user's authorization.
     """
 
     if connection_id not in {"gmail", "drive"}:
@@ -2795,13 +2796,15 @@ def disconnect_connection(
             detail=f"Unknown connection: {connection_id}",
         )
 
-    token_path = os.path.join(_repo_root_for_credentials(), "token.json")
+    from uri_core.core.google_auth_common import resolve_google_token_path
+
+    token_path = resolve_google_token_path(principal.user_id)
 
     if not os.path.exists(token_path):
         return {
             "disconnected": False,
             "detail": "That service was not connected.",
-            "connections": list_connection_status(),
+            "connections": list_connection_status(user_id=principal.user_id),
         }
 
     try:
@@ -2816,10 +2819,10 @@ def disconnect_connection(
     return {
         "disconnected": True,
         "detail": (
-            "Google authorization removed. Gmail and Drive share one "
+            "Google authorization removed for this account. Gmail and Drive share one "
             "token, so both now require sign-in again."
         ),
-        "connections": list_connection_status(),
+        "connections": list_connection_status(user_id=principal.user_id),
     }
 
 

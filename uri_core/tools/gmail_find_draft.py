@@ -25,8 +25,13 @@ class GmailFindDraftTool:
     """The query is the request text itself - the same argument
     boundary every other capability respects (see web_search.py)."""
 
-    def __init__(self, draft_service=None):
-        self._draft_service = draft_service or GmailDraftService()
+    def __init__(self, draft_service=None, user_id=None):
+        if draft_service is not None:
+            self._draft_service = draft_service
+        else:
+            from uri_core.services.gmail_service import GmailService
+
+            self._draft_service = GmailDraftService(gmail_service=GmailService(user_id=user_id))
 
     def execute(self, **kwargs):
 

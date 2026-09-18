@@ -1,4 +1,4 @@
-﻿"""M22.5: Provider registry - ProviderDescriptor, ModelDescriptor, and the
+"""M22.5: Provider registry - ProviderDescriptor, ModelDescriptor, and the
 static catalogue of known OpenAI-compatible providers.
 
 Every numeric field is wrapped in ConfidenceValue so its reliability
@@ -108,7 +108,7 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
             ModelDescriptor(
                 model_id="gemma4:12b",
                 display_name="Gemma 4 12B",
-                context_tokens=ConfidenceValue(value=None, confidence=UNAVAILABLE),
+                context_tokens=ConfidenceValue(value=262144, confidence=KNOWN),
             ),
         ],
         auth_transports=["local"],
@@ -191,13 +191,13 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
     ProviderDescriptor(
         provider_id="anthropic", display_name="Anthropic", adapter="anthropic",
         base_url="https://api.anthropic.com",
-        models=[ModelDescriptor("claude-3-5-sonnet", "Claude 3.5 Sonnet", ConfidenceValue(None, UNAVAILABLE))],
+        models=[ModelDescriptor("claude-3-5-sonnet", "Claude 3.5 Sonnet", ConfidenceValue(200000, KNOWN))],
         auth_transports=["api_key", "subscription_oauth"],
     ),
     ProviderDescriptor(
         provider_id="gemini", display_name="Gemini", adapter="openai_compatible",
         base_url="https://generativelanguage.googleapis.com/v1beta/openai",
-        models=[ModelDescriptor("gemini-2.0-flash", "Gemini 2.0 Flash", ConfidenceValue(None, UNAVAILABLE))],
+        models=[ModelDescriptor("gemini-2.0-flash", "Gemini 2.0 Flash", ConfidenceValue(1048576, KNOWN))],
         auth_transports=["api_key", "subscription_oauth"],
     ),
 ]
@@ -206,6 +206,27 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
 CATALOGUE_BY_ID: Dict[str, ProviderDescriptor] = {
     p.provider_id: p for p in PROVIDER_CATALOGUE
 }
+
+
+def get_catalogue_context_tokens(
+    model_id: str, provider_id: Optional[str] = None
+) -> Optional[int]:
+    """Resolves the known context window for a model from the static catalogue.
+    Returns None if the model is not found or its context is UNAVAILABLE.
+    """
+    if provider_id and provider_id in CATALOGUE_BY_ID:
+        descriptors = [CATALOGUE_BY_ID[provider_id]]
+    else:
+        descriptors = PROVIDER_CATALOGUE
+
+    for p in descriptors:
+        for m in p.models:
+            if m.model_id == model_id:
+                if m.context_tokens.confidence == KNOWN and isinstance(
+                    m.context_tokens.value, int
+                ):
+                    return m.context_tokens.value
+    return None
 
 
 # ---------------------------------------------------------------------------

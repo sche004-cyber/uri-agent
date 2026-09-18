@@ -59,8 +59,8 @@ class GmailCreateDraftTool:
     lazily construct the real objects, so importing/instantiating this
     tool never requires a running model or a Gmail connection."""
 
-    def __init__(self, gmail_service=None, composer: Optional[DocumentComposer] = None):
-        self._gmail_service = gmail_service or GmailService()
+    def __init__(self, gmail_service=None, composer: Optional[DocumentComposer] = None, user_id=None):
+        self._gmail_service = gmail_service or GmailService(user_id=user_id)
         self._composer = composer
 
     def generate(self, **kwargs) -> Dict[str, Any]:

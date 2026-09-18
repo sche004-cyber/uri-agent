@@ -15,10 +15,27 @@ def _repo_root() -> str:
     return os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 
+def resolve_google_token_path(user_id: Optional[str] = None) -> str:
+    """Resolve the Google OAuth token.json path.
+
+    If a user_id is provided, resolves strictly to that user's scoped
+    directory (via portable_paths.user_scoped_path) so each user's
+    mailbox token is completely isolated.
+    If user_id is None, falls back to the install-wide token.json at
+    _repo_root() for backwards-compatibility with ambient test fixtures.
+    """
+    if user_id:
+        from uri_core.core.portable_paths import user_scoped_path
+
+        return user_scoped_path(user_id, "token.json")
+    return os.path.join(_repo_root(), "token.json")
+
+
 def load_usable_credentials(
     token_path: Optional[str] = None,
     scopes: Optional[List[str]] = None,
     allow_refresh: bool = True,
+    user_id: Optional[str] = None,
 ) -> Optional[Credentials]:
     """Load usable stored credentials, optionally refreshing non-interactively.
 
@@ -27,7 +44,7 @@ def load_usable_credentials(
     ``None``.
     """
     try:
-        resolved_path = token_path or os.path.join(_repo_root(), "token.json")
+        resolved_path = token_path or resolve_google_token_path(user_id)
         if not os.path.exists(resolved_path):
             return None
 

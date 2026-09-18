@@ -1,4 +1,4 @@
-﻿import inspect
+import inspect
 import json
 import importlib
 import os
@@ -77,6 +77,8 @@ class ToolDispatcher:
         # a user just generated could never be found again via their
         # own per-user GET /files/{file_id}/content lookup.
         file_store = kwargs.pop("file_store", None)
+        principal = kwargs.get("principal") or kwargs.get("principal_context")
+        user_id = kwargs.pop("user_id", None) or getattr(principal, "user_id", None)
         try:
             # Load the registry safely
             with open(self.registry_path, "r", encoding="utf-8-sig") as f:
@@ -107,12 +109,13 @@ class ToolDispatcher:
                 tool_class = getattr(module, class_name)
 
                 # Instantiate the class and execute the method
-                if file_store is not None and "file_store" in inspect.signature(
-                    tool_class.__init__
-                ).parameters:
-                    instance = tool_class(file_store=file_store)
-                else:
-                    instance = tool_class()
+                init_params = inspect.signature(tool_class.__init__).parameters
+                init_kwargs = {}
+                if file_store is not None and "file_store" in init_params:
+                    init_kwargs["file_store"] = file_store
+                if user_id is not None and "user_id" in init_params:
+                    init_kwargs["user_id"] = user_id
+                instance = tool_class(**init_kwargs)
                 method = getattr(instance, method_name)
 
             except Exception as load_exc:

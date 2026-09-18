@@ -21,11 +21,52 @@ first time - see attempt_history below.
 """
 
 import json
-from typing import Optional
+from typing import Optional, Tuple
 
 from .model_providers import ModelProvider
 from uri_core.config.model_roles import ROLE_REASONING, build_provider
+from uri_core.core.context_trimmer import DEFAULT_OUTPUT_HEADROOM_TOKENS
 from uri_core.core.model_router import get_router
+
+# The single source of truth for this call's output headroom - referenced
+# both by the pre-send trim budget and by complete_kwargs["max_tokens"]
+# below, so the two can never independently drift (M32 A2 production-wiring
+# repair, 2026-09-18).
+_REASONING_MAX_TOKENS = DEFAULT_OUTPUT_HEADROOM_TOKENS
+
+
+def _resolve_router_context_budget(
+    role: str, principal: Optional[object]
+) -> Tuple[Optional[int], str]:
+    """Best-effort lookup of the context window the router's chosen
+    candidate will actually use for `role`+`principal`, so the request can
+    be trimmed BEFORE OllamaProvider.complete()'s hard enforcement fires.
+
+    Mirrors ModelRouter.attempt()'s own candidate resolution
+    (router.resolve()) without building or calling a provider, so this is
+    a cheap peek, not a duplicate model call. Never raises: any failure
+    here returns (None, ""), which simply means no pre-trim is attempted
+    and the provider's own hard ContextWindowExceededError check (which
+    already exists and is unaffected by this) remains the safety net.
+    """
+    try:
+        plan = get_router().resolve(role, principal)
+        if plan.provider_id is None:
+            return None, ""
+        if plan.provider_id == "ollama":
+            from uri_core.core.model_providers.ollama_provider import (
+                resolve_model_context_tokens,
+            )
+
+            return resolve_model_context_tokens(model=plan.model), plan.model
+
+        from uri_core.core.model_providers.base import DEFAULT_CONTEXT_TOKENS
+        from uri_core.core.provider_registry import get_catalogue_context_tokens
+
+        ctx = get_catalogue_context_tokens(plan.model, provider_id=plan.provider_id)
+        return (ctx if ctx is not None else DEFAULT_CONTEXT_TOKENS), plan.model
+    except Exception:
+        return None, ""
 
 REASONING_SYSTEM_PROMPT = """
 This is a reasoning-assistant role in service of URI's deterministic
@@ -295,6 +336,32 @@ class OllamaReasoningAdapter:
         except (TypeError, ValueError):
             request = {}
 
+        if isinstance(request, dict):
+            # M32 A2 production-wiring repair (2026-09-18): this MUST resolve
+            # a context budget on the router path too, not only when a
+            # provider is injected - the router path is what every real
+            # request runs (server.py never injects a provider). Previously
+            # this block was gated on `self._explicit_provider is not None`,
+            # which made trimming reachable only from tests and left
+            # production protected by nothing but OllamaProvider.complete()'s
+            # hard refusal, with no trim attempt first.
+            if self._explicit_provider is not None:
+                ctx = getattr(getattr(self._explicit_provider, "config", None), "context_tokens", None)
+                mod = getattr(getattr(self._explicit_provider, "config", None), "model", "")
+            else:
+                ctx, mod = _resolve_router_context_budget(ROLE_REASONING, self._principal)
+
+            if ctx is not None:
+                from uri_core.core.context_trimmer import trim_reasoning_request, estimate_request_tokens
+                if estimate_request_tokens(request) > max(0, ctx - _REASONING_MAX_TOKENS):
+                    request = trim_reasoning_request(
+                        request,
+                        context_tokens=ctx,
+                        max_tokens_headroom=_REASONING_MAX_TOKENS,
+                        model_name=mod,
+                    )
+                    request_json = json.dumps(request, ensure_ascii=False)
+
         # M21: system_policy (URI_AI_OPERATING_POLICY.md, ~9.5k characters)
         # is fully static within a session - the same file, reloaded
         # verbatim, on every one of the up to ~9 Brain calls one turn can
@@ -341,7 +408,7 @@ class OllamaReasoningAdapter:
             system=system,
             user=user_json,
             temperature=0,
-            max_tokens=800,
+            max_tokens=_REASONING_MAX_TOKENS,
         )
 
         if self._explicit_provider is not None:

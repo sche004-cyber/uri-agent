@@ -3,6 +3,7 @@ import os
 from typing import Any, Callable, Optional
 
 from uri_core.core.capability_feasibility import CapabilityFeasibility
+from uri_core.core.model_providers.base import ContextWindowExceededError
 
 
 class ModelReasoningGateway:
@@ -145,9 +146,11 @@ class ModelReasoningGateway:
         pending_proposal: Optional[dict] = None,
         interaction_signal: Optional[str] = None,
         retention_request: bool = False,
+        context_tokens: Optional[int] = None,
+        model_name: str = "",
     ) -> dict:
 
-        return {
+        req = {
             "contract_version":
                 self.CONTRACT_VERSION,
 
@@ -272,6 +275,16 @@ class ModelReasoningGateway:
             ),
         }
 
+        if context_tokens is not None:
+            from uri_core.core.context_trimmer import trim_reasoning_request
+            req = trim_reasoning_request(
+                req,
+                context_tokens=context_tokens,
+                model_name=model_name,
+            )
+
+        return req
+
     def _capability_catalogue(self) -> list[dict]:
         """M20: the Brain-facing capability catalogue, sourced from
         CapabilityFeasibility.snapshot() (implemented AND planned
@@ -354,12 +367,22 @@ class ModelReasoningGateway:
                     None,
             }
 
-        raw_response = self.model_callable(
-            json.dumps(
-                request,
-                ensure_ascii=False,
+        try:
+            raw_response = self.model_callable(
+                json.dumps(
+                    request,
+                    ensure_ascii=False,
+                )
             )
-        )
+        except ContextWindowExceededError as exc:
+            return {
+                "status": "context_window_exceeded",
+                "request": request,
+                "proposal": None,
+                "error": str(exc),
+                "model": getattr(exc, "model", None),
+                "context_tokens": getattr(exc, "context_tokens", None),
+            }
 
         proposal = (
             self.parse_model_response(

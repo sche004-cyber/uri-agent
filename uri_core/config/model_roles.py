@@ -296,19 +296,28 @@ def build_provider(
         role_config = overridden_role_config
 
     # -------------------------------------------------------------------
-    # "ollama" - unchanged M21 behaviour
+    # "ollama" - model-aware discovery with M21 fallback
     # -------------------------------------------------------------------
     if provider_name == "ollama":
         env_config = ModelProviderConfig.from_env()
+        target_base_url = role_config.get("base_url", env_config.base_url)
+        target_model = role_config.get("model", env_config.model)
+        configured_ctx = role_config.get("context_tokens")
+        if configured_ctx is None and "OLLAMA_NUM_CTX" not in os.environ:
+            from uri_core.core.model_providers.ollama_provider import resolve_model_context_tokens
+            context_tokens = resolve_model_context_tokens(model=target_model, base_url=target_base_url)
+        else:
+            context_tokens = (
+                configured_ctx if configured_ctx is not None else env_config.context_tokens
+            )
+
         config = ModelProviderConfig(
-            base_url=role_config.get("base_url", env_config.base_url),
-            model=role_config.get("model", env_config.model),
+            base_url=target_base_url,
+            model=target_model,
             timeout_seconds=role_config.get(
                 "timeout_seconds", env_config.timeout_seconds
             ),
-            context_tokens=role_config.get(
-                "context_tokens", env_config.context_tokens
-            ),
+            context_tokens=context_tokens,
         )
         return OllamaProvider(config=config)
 
@@ -324,7 +333,7 @@ def build_provider(
                 "config or key.  Pass a PrincipalContext to build_provider()."
             )
 
-        from uri_core.core.provider_registry import ProviderConfigStore, CATALOGUE_BY_ID
+        from uri_core.core.provider_registry import ProviderConfigStore, CATALOGUE_BY_ID, get_catalogue_context_tokens
         from uri_core.core.provider_keys import ProviderKeyStore
 
         user_id = principal.user_id
@@ -340,16 +349,22 @@ def build_provider(
             catalogue_entry.base_url if catalogue_entry else ""
         )
         default_model = role_config.get("model", "gpt-4o")
+        target_model = user_cfg.get("model", default_model)
+
+        configured_ctx = role_config.get("context_tokens")
+        if configured_ctx is None:
+            cat_ctx = get_catalogue_context_tokens(target_model, provider_id=provider_id)
+            context_tokens = cat_ctx if cat_ctx is not None else ModelProviderConfig().context_tokens
+        else:
+            context_tokens = configured_ctx
 
         config = ModelProviderConfig(
             base_url=user_cfg.get("base_url", default_base_url),
-            model=user_cfg.get("model", default_model),
+            model=target_model,
             timeout_seconds=role_config.get(
                 "timeout_seconds", ModelProviderConfig().timeout_seconds
             ),
-            context_tokens=role_config.get(
-                "context_tokens", ModelProviderConfig().context_tokens
-            ),
+            context_tokens=context_tokens,
         )
 
         # The ONE permitted call site for get_key_for_use().
@@ -369,18 +384,27 @@ def build_provider(
                 f"Role '{role}' is configured for 'anthropic' but no principal "
                 "was supplied - cannot look up per-user provider config or key."
             )
-        from uri_core.core.provider_registry import ProviderConfigStore, CATALOGUE_BY_ID
+        from uri_core.core.provider_registry import ProviderConfigStore, CATALOGUE_BY_ID, get_catalogue_context_tokens
         from uri_core.core.provider_keys import ProviderKeyStore
 
         user_id = principal.user_id
         provider_id = resolved_provider_id or role_config.get("provider_id", "anthropic")
         catalogue_entry = CATALOGUE_BY_ID.get(provider_id)
         user_cfg = ProviderConfigStore(user_id).get_provider_config(provider_id)
+        target_model = user_cfg.get("model", role_config.get("model", ""))
+
+        configured_ctx = role_config.get("context_tokens")
+        if configured_ctx is None:
+            cat_ctx = get_catalogue_context_tokens(target_model, provider_id=provider_id)
+            context_tokens = cat_ctx if cat_ctx is not None else ModelProviderConfig().context_tokens
+        else:
+            context_tokens = configured_ctx
+
         config = ModelProviderConfig(
             base_url=user_cfg.get("base_url", catalogue_entry.base_url if catalogue_entry else ""),
-            model=user_cfg.get("model", role_config.get("model", "")),
+            model=target_model,
             timeout_seconds=role_config.get("timeout_seconds", ModelProviderConfig().timeout_seconds),
-            context_tokens=role_config.get("context_tokens", ModelProviderConfig().context_tokens),
+            context_tokens=context_tokens,
         )
         key_store = ProviderKeyStore(user_id)
         api_key = key_store.get_key_for_use(provider_id)
