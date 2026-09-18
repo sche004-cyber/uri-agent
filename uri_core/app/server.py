@@ -1378,6 +1378,38 @@ def ask(
     except Exception:
         pass
 
+    # M32 Batch C: the native tool loop (Tier 0 direct chat / Tier 1
+    # native tool calling), built ON canonical's existing gate/execution
+    # boundary - see native_tool_loop.py. Runtime-settable, OFF by
+    # default (plan §10: "the toggle must be runtime-settable, not a
+    # module constant") - materially newer code than canonical's own
+    # flags, with less accumulated live evidence, so it has not yet
+    # earned the same default-on bar. A None result (turn-state assembly
+    # failure, or the toggle simply being off) falls through completely
+    # unchanged to the existing canonical/legacy chain below - this can
+    # never be a third, competing execution route: it is additive, and
+    # inert until explicitly enabled.
+    if result is None and not early_executed:
+        try:
+            from uri_core.core.native_tool_loop import (
+                default_model_callable,
+                native_tool_loop_enabled,
+                run_native_tool_loop,
+            )
+
+            if native_tool_loop_enabled():
+                native_result = run_native_tool_loop(
+                    orchestrator=context.orchestrator,
+                    session_id=payload.session_id,
+                    user_text=payload.text,
+                    principal=principal,
+                    model_callable=default_model_callable(principal),
+                )
+                if native_result is not None:
+                    result = native_result
+        except Exception:
+            pass
+
     # M30.8: canonical is the default authority.  A canonical response is
     # terminal whether it executes or correctly reports clarification,
     # unsupported, connection, approval, or conversation state.  Legacy is

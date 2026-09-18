@@ -7,7 +7,8 @@ so nothing here is hardcoded beyond that config's own defaults.
 
 import logging
 import time
-from typing import Optional
+import uuid
+from typing import Any, Dict, List, Optional
 
 import requests
 
@@ -27,6 +28,7 @@ from .base import (
     ProviderResponseError,
     ProviderTimeoutError,
     ProviderUnavailableError,
+    ToolCall,
     _location_from_base_url,
 )
 
@@ -117,6 +119,7 @@ class OllamaProvider(ModelProvider):
         user: str,
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
     ) -> ModelResponse:
 
         payload = {
@@ -160,6 +163,17 @@ class OllamaProvider(ModelProvider):
 
         if max_tokens is not None:
             payload["options"]["num_predict"] = max_tokens
+
+        # M32 C1: Ollama's /api/chat accepts the same OpenAI-compatible
+        # `tools` array the caller already builds (tool_schema.py) - passed
+        # through verbatim, additive, and a no-op (Ollama simply never
+        # populates message.tool_calls) for a model with no tool-calling
+        # support. estimate_tokens below intentionally does not count
+        # `tools` - the context-budget module trims/reserves headroom for
+        # the tool catalogue itself (see context_trimmer.py's own
+        # available_capabilities cap), not this adapter.
+        if tools:
+            payload["tools"] = tools
 
         estimated_prompt_tokens = estimate_tokens(system) + estimate_tokens(user)
         headroom = max_tokens or 0
@@ -237,6 +251,39 @@ class OllamaProvider(ModelProvider):
         prompt_tokens = data.get("prompt_eval_count")
         eval_tokens = data.get("eval_count")
 
+        # M32 C1: Ollama's own tool_calls shape is already
+        # [{"function": {"name": str, "arguments": dict}}, ...] - dict
+        # arguments, not a JSON string (unlike OpenAI's wire format) - no
+        # extra parsing needed. Ollama does not supply a per-call id, so
+        # one is generated here so every ToolCall always has a real,
+        # non-empty id a continuation message can reference.
+        raw_tool_calls = message.get("tool_calls")
+        parsed_tool_calls: Optional[tuple] = None
+        if tools:
+            parsed_tool_calls = ()
+            if isinstance(raw_tool_calls, list):
+                collected = []
+                for entry in raw_tool_calls:
+                    if not isinstance(entry, dict):
+                        continue
+                    function = entry.get("function")
+                    if not isinstance(function, dict):
+                        continue
+                    name = function.get("name")
+                    if not isinstance(name, str) or not name:
+                        continue
+                    arguments = function.get("arguments")
+                    if not isinstance(arguments, dict):
+                        arguments = {}
+                    collected.append(
+                        ToolCall(
+                            id=str(entry.get("id") or uuid.uuid4()),
+                            name=name,
+                            arguments=arguments,
+                        )
+                    )
+                parsed_tool_calls = tuple(collected)
+
         if isinstance(prompt_tokens, int):
             _LOG.info(
                 "Ollama completion: model=%s prompt_tokens=%d eval_tokens=%s "
@@ -264,6 +311,7 @@ class OllamaProvider(ModelProvider):
             prompt_tokens=prompt_tokens if isinstance(prompt_tokens, int) else None,
             eval_tokens=eval_tokens if isinstance(eval_tokens, int) else None,
             duration_seconds=duration_seconds,
+            tool_calls=parsed_tool_calls,
         )
 
     def _model_max_context(self, response) -> Optional[int]:

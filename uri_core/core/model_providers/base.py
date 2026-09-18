@@ -12,8 +12,8 @@ logic.
 
 import os
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 
@@ -72,6 +72,20 @@ class ContextWindowExceededError(ProviderResponseError):
 
 
 @dataclass(frozen=True)
+class ToolCall:
+    """One normalised tool call a model asked for, regardless of which
+    provider's own wire shape it came from (M32 C1). ``id`` is the
+    provider's own call identifier when it supplies one (used to match a
+    tool result back to its call in a continuation message); providers
+    that don't supply one get a generated fallback so callers never see
+    an empty id."""
+
+    id: str
+    name: str
+    arguments: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class ModelResponse:
     """A completed model response. Deliberately minimal - no raw backend
     payload is carried here, so a provider can never leak backend-internal
@@ -85,7 +99,13 @@ class ModelResponse:
     measurable at all - see the M21 audit's finding that no latency
     instrumentation existed anywhere in this pipeline. All three default to
     None (unknown) rather than 0, so a provider that cannot report them is
-    never mistaken for one that measured zero."""
+    never mistaken for one that measured zero.
+
+    M32 C1: tool_calls is None when no ``tools`` were offered on this
+    request, and an empty tuple (never None) when tools were offered but
+    the model chose not to call one - that emptiness IS Tier 0's own
+    selection signal (see native_tool_loop.py), so it must never be
+    conflated with "no tools were available to call" by being left None."""
 
     content: str
     model: str
@@ -93,6 +113,7 @@ class ModelResponse:
     prompt_tokens: Optional[int] = None
     eval_tokens: Optional[int] = None
     duration_seconds: Optional[float] = None
+    tool_calls: Optional[Tuple[ToolCall, ...]] = None
 
 
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
@@ -223,7 +244,14 @@ class ModelProvider(ABC):
         user: str,
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
     ) -> ModelResponse:
+        """M32 C1: ``tools``, each an OpenAI-compatible function-calling
+        definition (``{"type": "function", "function": {"name", "description",
+        "parameters"}}``), is additive - every existing caller that never
+        passes it keeps calling exactly as before, and every adapter must
+        accept and ignore it as a no-op if it cannot honour tool calling
+        (never raise merely because tools= was supplied)."""
         raise NotImplementedError
 
     @abstractmethod

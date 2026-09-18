@@ -16,8 +16,9 @@ Security contract:
 
 from __future__ import annotations
 
+import json
 import time
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 
@@ -32,6 +33,7 @@ from .base import (
     ProviderResponseError,
     ProviderTimeoutError,
     ProviderUnavailableError,
+    ToolCall,
     _location_from_base_url,
 )
 
@@ -72,6 +74,7 @@ class OpenAICompatibleProvider(ModelProvider):
         user: str,
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
     ) -> ModelResponse:
         payload: dict = {
             "model": self._config.model,
@@ -83,6 +86,11 @@ class OpenAICompatibleProvider(ModelProvider):
         }
         if max_tokens is not None:
             payload["max_tokens"] = max_tokens
+        # M32 C1: already the exact OpenAI-compatible shape this caller
+        # builds - passed through verbatim, no adapter-boundary translation
+        # needed (unlike Anthropic's native format).
+        if tools:
+            payload["tools"] = tools
 
         headers = {"Content-Type": "application/json"}
         if self._api_key:
@@ -138,7 +146,46 @@ class OpenAICompatibleProvider(ModelProvider):
 
         choices = data.get("choices") or []
         message = choices[0].get("message", {}) if choices else {}
-        content = message.get("content", "")
+        content = message.get("content") or ""
+
+        # M32 C1: OpenAI's tool_calls shape nests function.arguments as a
+        # JSON *string* (unlike Ollama's already-parsed dict) - each one
+        # is decoded individually so one malformed call never discards the
+        # rest of a valid batch.
+        raw_tool_calls = message.get("tool_calls")
+        parsed_tool_calls = None
+        if tools:
+            parsed_tool_calls = ()
+            if isinstance(raw_tool_calls, list):
+                collected = []
+                for entry in raw_tool_calls:
+                    if not isinstance(entry, dict):
+                        continue
+                    function = entry.get("function")
+                    if not isinstance(function, dict):
+                        continue
+                    name = function.get("name")
+                    if not isinstance(name, str) or not name:
+                        continue
+                    raw_arguments = function.get("arguments")
+                    arguments: Dict[str, Any] = {}
+                    if isinstance(raw_arguments, str):
+                        try:
+                            decoded = json.loads(raw_arguments)
+                            if isinstance(decoded, dict):
+                                arguments = decoded
+                        except ValueError:
+                            pass
+                    elif isinstance(raw_arguments, dict):
+                        arguments = raw_arguments
+                    collected.append(
+                        ToolCall(
+                            id=str(entry.get("id") or f"openai-{len(collected)}"),
+                            name=name,
+                            arguments=arguments,
+                        )
+                    )
+                parsed_tool_calls = tuple(collected)
 
         usage = data.get("usage") or {}
         prompt_tokens = usage.get("prompt_tokens")
@@ -151,6 +198,7 @@ class OpenAICompatibleProvider(ModelProvider):
             prompt_tokens=prompt_tokens if isinstance(prompt_tokens, int) else None,
             eval_tokens=eval_tokens if isinstance(eval_tokens, int) else None,
             duration_seconds=time.monotonic() - start,
+            tool_calls=parsed_tool_calls,
         )
 
     def describe(self) -> ModelProviderStatus:
