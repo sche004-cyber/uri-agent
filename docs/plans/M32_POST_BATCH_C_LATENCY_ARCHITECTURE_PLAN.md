@@ -281,6 +281,83 @@ Deliberately not automated or hardcoded: picking a specific installed model on t
 
 ---
 
+## 12. D4 implementation and verification (2026-09-18, from clean HEAD `a6fe87c`)
+
+**D4 — context-probe skip + bounded parallel-tool-dispatch worker cap** (§5 items 4/5, §7 table row, risk R-New-1). Two independent sub-items, reported separately since one required no code change and the other did.
+
+### 12.1 Item 1 — skip the Ollama context probe when `OLLAMA_NUM_CTX` is already set
+
+**Finding: already correctly implemented — no production code change made.** Traced all three real call paths (`ModelProviderConfig.from_env()`, `build_provider("ollama")`, and the direct `resolve_model_context_tokens()` call `response_drafting.py`/`model_reasoning_adapter.py` use) and verified empirically, by spying on `probe_model_max_context` (the actual `/api/tags` HTTP call), that **all three already perform zero probe calls** when `OLLAMA_NUM_CTX` is set — each checks the env var first and returns immediately:
+
+```
+build_provider probe calls: 0   (context_tokens=8192, from OLLAMA_NUM_CTX)
+from_env probe calls:       0
+resolve_model_context_tokens probe calls: 0
+```
+
+This was a real, structurally sound implementation from an earlier milestone (`resolve_model_context_tokens()`'s own docstring already documents "1. Explicit OLLAMA_NUM_CTX environment variable override" as priority one). No defect was reproduced. The one real gap was **test coverage**: no existing test asserted "zero probe calls" specifically — `test_explicit_env_override_always_wins` (`test_m32_model_aware_context_safety.py`) and `test_context_tokens_reads_override_from_env` (`test_ollama_provider.py`) both only asserted the returned *value*, which would still pass even if a wasted probe call happened before the override took effect. Closed that gap (§12.2).
+
+**Measured latency win from setting `OLLAMA_NUM_CTX`** (this is a deployment-config effect, not a code change - `build_provider(ROLE_REASONING)`, this machine, Ollama reachable):
+
+| Condition | Elapsed |
+|---|---|
+| `OLLAMA_NUM_CTX` unset (probe attempted) | 15.6 ms |
+| `OLLAMA_NUM_CTX` set (probe skipped) | 0.1 ms |
+
+Consistent in direction and order of magnitude with the original report's own ~30 ms estimate (§5 item 4). This win is already available today by setting the env var — restated as the deployment recommendation (§12.5), not something this batch needed to implement.
+
+### 12.2 Item 1 tests added
+
+`test_ollama_provider.py`: `test_from_env_skips_probe_when_num_ctx_set`, `test_from_env_does_probe_when_num_ctx_unset` (control), and a new `BuildProviderContextProbeSkipTests` class with `test_build_provider_skips_probe_when_num_ctx_set` and `test_resolve_model_context_tokens_skips_probe_when_num_ctx_set` — all assert `probe_model_max_context` is never called (not just that the final value is correct), closing the coverage gap identified in §12.1.
+
+### 12.3 Item 2 — bounded, configurable worker cap for parallel tool dispatch
+
+**Finding: real, confirmed gap.** `native_tool_loop.execute_translated_batch()` built its `ThreadPoolExecutor` with `max_workers=len(eligible)` - unbounded, growing with however many read-only + approval-free tool calls the Brain requested in a single turn. Under this machine's independently measured 97% RAM utilization (R-New-1), this is a real, structurally demonstrable resource-exhaustion risk on a turn with an unusually large parallel-eligible batch (not yet observed in production, but not hypothetical either — nothing in the code prevented it).
+
+**Fix** (`uri_core/core/native_tool_loop.py`): added `DEFAULT_MAX_PARALLEL_TOOL_WORKERS = 4` and env var `URI_MAX_PARALLEL_TOOL_WORKERS`, read via `_max_parallel_tool_workers()` (falls back to the safe default for anything that isn't a positive integer - unset, non-numeric, zero, or negative). `execute_translated_batch` now uses `worker_count = min(len(eligible), _max_parallel_tool_workers())`. This bounds only **how many run at once** — every eligible branch still executes exactly once; which branches are eligible for concurrency at all (`_read_only_and_approval_free`, C3.4's safety classification) is completely untouched, so approvals/grants/audit/dispatch and the existing "never two non-read-only calls concurrently" (R4/SR-1) invariant are unaffected by construction, not just by test result.
+
+### 12.4 Item 2 tests added
+
+`test_m32_c2_c3_native_tool_loop.py`:
+
+- `C34ParallelSafetyTests.test_worker_cap_bounds_concurrency_below_eligible_count` — 6 eligible read-only branches, cap=2: peak concurrency measured (lock-protected counter around a faked `_execute_one_branch`) never exceeds 2, and is `>1` (proves the cap allows real parallelism up to itself, not accidental full serialization).
+- `test_worker_cap_still_executes_every_eligible_branch` — same 6-branch/cap=2 batch, real dispatch (not faked): all 6 branches complete with `status="success"` — the cap bounds concurrency, never how much work actually runs.
+- `test_worker_cap_does_not_relax_non_read_only_serial_safety` — cap set permissively high (8) with two non-read-only (`remember_fact`) calls: peak concurrency still exactly 1. Proves the cap cannot be used to accidentally widen the serial-safety boundary (R4/SR-1) — it only ever bounds the size of the already-safe read-only pool.
+- New `MaxParallelToolWorkersTests` class: default when unset, configurable via env var, falls back to the safe default on a non-integer value, on `"0"`, and on a negative value; and a sanity bound (`1 <= DEFAULT_MAX_PARALLEL_TOOL_WORKERS <= 8`) so the packaged default itself cannot silently drift toward "arbitrarily large."
+
+Both eligible-batch tests had to be built against **the same capability** (`Gmail`, `search_messages`, called 6 times with distinct query arguments) rather than 6 distinct legacy tool names. **Disclosed, out of D4 scope:** while building these, found that `test_eligible_read_only_batch_executes_concurrently_not_serially` (pre-existing, `C34ParallelSafetyTests`, written for an earlier milestone) is a false positive — it uses three *different* legacy tool names in one batch, which `translate_tool_calls`'s R12/SR-4 cross-capability guard refuses outright (`"Multiple tool calls in one turn must target the same capability"`) before any dispatch or concurrency ever happens; the test's own elapsed-time assertion passes trivially because nothing runs. Confirmed via direct branch-result inspection, not by running the test itself. This is a test-quality defect in earlier C3.4 coverage, not a production defect, and is not something D4 asked to fix — flagged here rather than silently repaired or silently left unmentioned.
+
+### 12.5 Regression
+
+Broad focused sweep (`-k "native_tool_loop or ollama_provider or model_aware_context_safety or a2_production_wiring or tool_schema or tool_call_translator or canonical_execution or multi_action or model_router or model_roles"`, 239 collected): **237 passed, 2 failed, 13 subtests passed.** The 2 failures (`test_ollama_provider_live.py::test_real_completion_from_configured_model`, `::test_real_orchestrator_call_succeeds_without_groq`) are the same pre-existing, environment-caused failures already isolated and root-caused in §11.4 (`qwen3:14b` not pulled on this machine) — not new, not caused by D4. `test_model_router_*` suite (58 tests, including the D3 additions) re-run separately and unaffected: 37/37 relevant files passed (the model-router-specific subset of the sweep above).
+
+### 12.6 Before/after, measured — resource-risk reduction, explicitly NOT a demonstrated RAM improvement
+
+**Distinguishing actual RAM improvement from risk reduction only, as required:** no before/after RAM measurement is claimed, because no real URI turn in this codebase's own evidence (this report's own benchmark scenarios, §3) has ever produced more than 3 parallel-eligible tool calls in one batch — well under the new cap of 4. For every observed real scenario, **this change has zero effect**: `worker_count = min(len(eligible), 4)` equals `len(eligible)` exactly as before. There is nothing to measure as an "improvement" under normal, observed load.
+
+What was measured is the **structural bound itself**, under a synthetic pathological batch (20 eligible calls, exceeding anything ever observed) — a direct proxy for the risk R-New-1 describes, not a production measurement:
+
+| Configuration | Peak concurrent OS threads (20-call batch) | Elapsed (20 calls × 50 ms simulated work) |
+|---|---|---|
+| OLD (`max_workers=len(eligible)`, unbounded) | ~20 | 0.057 s |
+| NEW (`max_workers=4`, capped) | ~4 | 0.252 s |
+
+This is the honest trade-off the fix makes, and only for a batch size that has not been observed in production: **peak concurrent OS threads bounded 5× lower** (reducing exactly the resource-exhaustion surface R-New-1 names), at the cost of **proportionally longer wall-clock time for that same unusually large batch** (each excess call queues behind the 4-worker pool instead of running immediately). For any batch at or below the default cap (4) - which is every real scenario measured in this report - there is no latency cost and no behavior change at all.
+
+### 12.7 Requirements check
+
+- Provider/model-agnostic behavior: preserved — item 1 touched no provider-selection code; item 2 touched no model/provider code at all.
+- No change to model-selection semantics: confirmed — `test_model_router_*` (58 tests) unaffected (§12.5).
+- Approvals/grants/audit/dispatch/non-read-only concurrency safety: unweakened — `_read_only_and_approval_free` classification untouched; `test_worker_cap_does_not_relax_non_read_only_serial_safety` (§12.4) proves the cap cannot be used to widen the serial boundary; full existing C3.4/gate/dispatch regression suite still passes (§12.5).
+- Worker cap safe/configurable, not arbitrarily large: `DEFAULT_MAX_PARALLEL_TOOL_WORKERS = 4`, env-configurable via `URI_MAX_PARALLEL_TOOL_WORKERS`, always falls back to the safe default rather than 0/negative/unparseable (§12.3–12.4).
+- Tests for probe-skip, fallback probing, worker-cap enforcement, unsafe-concurrency prevention: all added (§12.2, §12.4); fallback probing itself was already covered by pre-existing tests (`test_context_tokens_fallback_when_model_unknown`, `test_unknown_model_offline_falls_back_to_8192`, `test_live_probe_overrides_catalogue_if_different`) and re-verified passing, not duplicated.
+- Focused regression: run (§12.5).
+- Before/after measured, RAM-improvement vs risk-reduction distinguished: §12.6.
+
+**D5–D6 not started, per instruction.**
+
+---
+
 ## 5. Proposed architectural changes (not authorized — for review)
 
 These follow directly from §4 and are ordered by measured impact. None has been implemented.

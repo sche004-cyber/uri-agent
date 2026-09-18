@@ -92,6 +92,65 @@ class ModelProviderConfigTests(unittest.TestCase):
 
         self.assertEqual(config.context_tokens, 16384)
 
+    def test_from_env_skips_probe_when_num_ctx_set(self):
+        """M32 D4: OLLAMA_NUM_CTX already defines the context size, so the
+        live /api/tags probe (probe_model_max_context) must never be
+        called at all - not merely overridden after the fact."""
+        with patch.dict("os.environ", {"OLLAMA_NUM_CTX": "16384"}, clear=True):
+            with patch(
+                "uri_core.core.model_providers.ollama_provider.probe_model_max_context"
+            ) as probe:
+                config = ModelProviderConfig.from_env()
+
+        probe.assert_not_called()
+        self.assertEqual(config.context_tokens, 16384)
+
+    def test_from_env_does_probe_when_num_ctx_unset(self):
+        """Control: with no OLLAMA_NUM_CTX, discovery must still run -
+        proves the skip above is conditional on the env var, not a
+        blanket disablement of probing."""
+        with patch.dict("os.environ", {}, clear=True):
+            with patch(
+                "uri_core.core.model_providers.ollama_provider.probe_model_max_context",
+                return_value=None,
+            ) as probe:
+                ModelProviderConfig.from_env()
+
+        probe.assert_called()
+
+
+class BuildProviderContextProbeSkipTests(unittest.TestCase):
+    """M32 D4: build_provider("ollama") must not hit the live /api/tags
+    probe when OLLAMA_NUM_CTX already defines the context window - the
+    exact case this batch targets."""
+
+    def test_build_provider_skips_probe_when_num_ctx_set(self):
+        from uri_core.config.model_roles import ROLE_REASONING, build_provider
+
+        with patch.dict("os.environ", {"OLLAMA_NUM_CTX": "16384"}, clear=True):
+            with patch(
+                "uri_core.core.model_providers.ollama_provider.probe_model_max_context"
+            ) as probe:
+                provider = build_provider(ROLE_REASONING)
+
+        probe.assert_not_called()
+        self.assertEqual(provider.config.context_tokens, 16384)
+
+    def test_resolve_model_context_tokens_skips_probe_when_num_ctx_set(self):
+        """The direct-call path response_drafting.py / model_reasoning_
+        adapter.py use (resolve_model_context_tokens(model=...)) must
+        also skip the probe - it checks OLLAMA_NUM_CTX itself, first."""
+        from uri_core.core.model_providers.ollama_provider import resolve_model_context_tokens
+
+        with patch.dict("os.environ", {"OLLAMA_NUM_CTX": "16384"}, clear=True):
+            with patch(
+                "uri_core.core.model_providers.ollama_provider.probe_model_max_context"
+            ) as probe:
+                tokens = resolve_model_context_tokens(model="qwen3:14b")
+
+        probe.assert_not_called()
+        self.assertEqual(tokens, 16384)
+
 
 class OllamaProviderMockedTests(unittest.TestCase):
     """No real network access - Ollama's HTTP layer is faked so these

@@ -65,6 +65,44 @@ DEFAULT_MAX_ITERATIONS = 3  # C3.7 - matches legacy's own max_brain_iterations (
 
 TOOL_LOOP_ENV_VAR = "URI_ENABLE_NATIVE_TOOL_LOOP"
 
+# M32 D4: a bounded, deployment-configurable cap on how many read-only +
+# approval-free branches (see C3.4/_read_only_and_approval_free) may run
+# concurrently in one ThreadPoolExecutor. Before this, worker count was
+# `len(eligible)` - unbounded, growing with however many read-only tool
+# calls the Brain happened to request in a single turn. Risk R-New-1
+# (M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md): this machine was
+# independently measured at 97% RAM utilization, so an unbounded pool on
+# a turn with many parallel-eligible calls is a real, if not-yet-observed,
+# resource-exhaustion risk. 4 is a conservative default for I/O-bound
+# tool calls (network-bound Gmail/web_search work, not CPU-bound) -
+# deliberately not "arbitrarily large" (Python's own ThreadPoolExecutor
+# default, min(32, cpu_count+4), was rejected as too large given the
+# measured memory pressure). Only bounds *how many run at once*; every
+# eligible branch still executes exactly once, in whatever order
+# ThreadPoolExecutor schedules it - WHICH branches are eligible for
+# concurrency at all is unaffected (_read_only_and_approval_free, C3.4's
+# safety classification, is untouched).
+DEFAULT_MAX_PARALLEL_TOOL_WORKERS = 4
+MAX_PARALLEL_TOOL_WORKERS_ENV_VAR = "URI_MAX_PARALLEL_TOOL_WORKERS"
+
+
+def _max_parallel_tool_workers() -> int:
+    """Runtime-configurable worker cap (env var, read per-call so a test
+    or a live deployment can change it without a process restart - same
+    discipline as native_tool_loop_enabled()). Falls back to the safe
+    default on anything that isn't a positive integer - never 0, never
+    negative, never a parse error left to propagate into
+    ThreadPoolExecutor (which itself raises ValueError for max_workers
+    <= 0)."""
+    raw = os.environ.get(MAX_PARALLEL_TOOL_WORKERS_ENV_VAR)
+    if raw is None:
+        return DEFAULT_MAX_PARALLEL_TOOL_WORKERS
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_MAX_PARALLEL_TOOL_WORKERS
+    return value if value >= 1 else DEFAULT_MAX_PARALLEL_TOOL_WORKERS
+
 
 def native_tool_loop_enabled() -> bool:
     """M32 C toggle (plan §10: "the toggle must be runtime-settable, not
@@ -255,7 +293,8 @@ def execute_translated_batch(
         )
 
     if len(eligible) > 1:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(eligible)) as pool:
+        worker_count = min(len(eligible), _max_parallel_tool_workers())
+        with concurrent.futures.ThreadPoolExecutor(max_workers=worker_count) as pool:
             list(pool.map(_run, eligible))
     else:
         for index in eligible:

@@ -27,7 +27,10 @@ from uri_core.core.model_providers.base import ModelResponse, ToolCall
 from uri_core.core.multi_action_dispatch import MultiActionDispatch
 from uri_core.core.native_tool_loop import (
     DEFAULT_MAX_ITERATIONS,
+    DEFAULT_MAX_PARALLEL_TOOL_WORKERS,
+    MAX_PARALLEL_TOOL_WORKERS_ENV_VAR,
     TOOL_LOOP_ENV_VAR,
+    _max_parallel_tool_workers,
     native_tool_loop_enabled,
     run_native_tool_loop,
 )
@@ -452,6 +455,170 @@ class C34ParallelSafetyTests(unittest.TestCase):
             )
 
         self.assertEqual(concurrent_count["max"], 1, "two non-read-only calls ran concurrently - R4/SR-1 violation")
+
+    def test_worker_cap_does_not_relax_non_read_only_serial_safety(self):
+        """M32 D4: a large configured worker cap must not leak into the
+        strictly-serial (non-read-only) path - the cap only ever bounds
+        the SIZE of the already-safe read-only pool, never widens which
+        calls are eligible for concurrency in the first place."""
+        import threading
+
+        fixture = _Fixture()
+        responses = iter([
+            _response(tool_calls=(
+                ToolCall(id="c1", name="remember_fact", arguments={"request_text": "a"}),
+                ToolCall(id="c2", name="remember_fact", arguments={"request_text": "b"}),
+            )),
+            _response(content="done", tool_calls=()),
+        ])
+
+        def fake_model(**kwargs):
+            return next(responses)
+
+        concurrent_count = {"current": 0, "max": 0}
+        lock = threading.Lock()
+
+        def tracked_branch(**kwargs):
+            with lock:
+                concurrent_count["current"] += 1
+                concurrent_count["max"] = max(concurrent_count["max"], concurrent_count["current"])
+            import time as _t
+            _t.sleep(0.02)
+            with lock:
+                concurrent_count["current"] -= 1
+            return {"tool_call_id": kwargs["tool_call_id"], "capability": kwargs["capability_id"],
+                    "action": kwargs["action_name"], "status": "success"}
+
+        with patch.dict(os.environ, {MAX_PARALLEL_TOOL_WORKERS_ENV_VAR: "8"}), \
+             patch("uri_core.core.native_tool_loop._execute_one_branch", side_effect=tracked_branch):
+            run_native_tool_loop(
+                orchestrator=fixture.orchestrator(), session_id="s1", user_text="remember two things",
+                principal=None, model_callable=fake_model,
+            )
+
+        self.assertEqual(
+            concurrent_count["max"], 1,
+            "a permissive worker cap let two non-read-only calls run concurrently - R4/SR-1 violation",
+        )
+
+    def _n_gmail_search_calls(self, n):
+        """N calls against the SAME capability ("Gmail") and SAME
+        read-only action ("search_messages") - translate_tool_calls
+        refuses a batch that spans more than one capability (R12/SR-4),
+        so distinct legacy tool names (as in the other tests in this
+        class) cannot be used to build a batch bigger than 1 without
+        being rejected before ever reaching execute_translated_batch.
+        Real, distinct query args just to keep the calls individually
+        meaningful; concurrency-safety does not depend on that."""
+        from uri_core.core.tool_schema import GMAIL_TOOL_PREFIX
+
+        return tuple(
+            ToolCall(id=f"c{i}", name=f"{GMAIL_TOOL_PREFIX}search_messages", arguments={"query": f"q{i}"})
+            for i in range(n)
+        )
+
+    def test_worker_cap_bounds_concurrency_below_eligible_count(self):
+        """M32 D4: with more eligible read-only branches than the configured
+        cap, peak concurrency must never exceed the cap - the old
+        `max_workers=len(eligible)` behaviour let it grow unbounded with
+        however many read-only calls the Brain requested in one turn."""
+        import threading
+
+        n = 6
+        cap = 2
+        fixture = _Fixture()
+        responses = iter([
+            _response(tool_calls=self._n_gmail_search_calls(n)),
+            _response(content="done", tool_calls=()),
+        ])
+
+        def fake_model(**kwargs):
+            return next(responses)
+
+        concurrent_count = {"current": 0, "max": 0}
+        lock = threading.Lock()
+
+        def tracked_branch(**kwargs):
+            with lock:
+                concurrent_count["current"] += 1
+                concurrent_count["max"] = max(concurrent_count["max"], concurrent_count["current"])
+            import time as _t
+            _t.sleep(0.03)
+            with lock:
+                concurrent_count["current"] -= 1
+            return {"tool_call_id": kwargs["tool_call_id"], "capability": kwargs["capability_id"],
+                    "action": kwargs["action_name"], "status": "success"}
+
+        with patch.dict(os.environ, {MAX_PARALLEL_TOOL_WORKERS_ENV_VAR: str(cap)}), \
+             patch("uri_core.core.native_tool_loop._execute_one_branch", side_effect=tracked_branch):
+            run_native_tool_loop(
+                orchestrator=fixture.orchestrator(), session_id="s1",
+                user_text="do six read-only things", principal=None, model_callable=fake_model,
+            )
+
+        self.assertLessEqual(
+            concurrent_count["max"], cap,
+            f"peak concurrency {concurrent_count['max']} exceeded configured cap {cap}",
+        )
+        self.assertGreater(
+            concurrent_count["max"], 1,
+            "capped batch still ran fully serially - cap should allow real parallelism up to itself",
+        )
+
+    def test_worker_cap_still_executes_every_eligible_branch(self):
+        """The cap bounds concurrency, never how much work actually runs -
+        every eligible branch must still complete exactly once."""
+        n = 6
+        cap = 2
+        fixture = _Fixture()
+        responses = iter([
+            _response(tool_calls=self._n_gmail_search_calls(n)),
+            _response(content="done", tool_calls=()),
+        ])
+
+        def fake_model(**kwargs):
+            return next(responses)
+
+        with patch.dict(os.environ, {MAX_PARALLEL_TOOL_WORKERS_ENV_VAR: str(cap)}):
+            result = run_native_tool_loop(
+                orchestrator=fixture.orchestrator(), session_id="s1",
+                user_text="do six read-only things", principal=None, model_callable=fake_model,
+            )
+
+        branch_results = result["execution"]["branch_results"]
+        self.assertEqual(len(branch_results), n)
+        self.assertTrue(all(r.get("status") == "success" for r in branch_results))
+
+
+class MaxParallelToolWorkersTests(unittest.TestCase):
+    """M32 D4: the worker cap itself must be safe (never 0, never
+    negative, never unbounded) and deployment-configurable."""
+
+    def test_default_when_env_unset(self):
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(_max_parallel_tool_workers(), DEFAULT_MAX_PARALLEL_TOOL_WORKERS)
+
+    def test_configurable_via_env_var(self):
+        with patch.dict(os.environ, {MAX_PARALLEL_TOOL_WORKERS_ENV_VAR: "8"}):
+            self.assertEqual(_max_parallel_tool_workers(), 8)
+
+    def test_falls_back_to_default_on_non_integer_value(self):
+        with patch.dict(os.environ, {MAX_PARALLEL_TOOL_WORKERS_ENV_VAR: "not-a-number"}):
+            self.assertEqual(_max_parallel_tool_workers(), DEFAULT_MAX_PARALLEL_TOOL_WORKERS)
+
+    def test_falls_back_to_default_on_zero(self):
+        with patch.dict(os.environ, {MAX_PARALLEL_TOOL_WORKERS_ENV_VAR: "0"}):
+            self.assertEqual(_max_parallel_tool_workers(), DEFAULT_MAX_PARALLEL_TOOL_WORKERS)
+
+    def test_falls_back_to_default_on_negative_value(self):
+        with patch.dict(os.environ, {MAX_PARALLEL_TOOL_WORKERS_ENV_VAR: "-3"}):
+            self.assertEqual(_max_parallel_tool_workers(), DEFAULT_MAX_PARALLEL_TOOL_WORKERS)
+
+    def test_default_is_bounded_not_arbitrarily_large(self):
+        """A sanity ceiling on the packaged default itself - this must
+        stay a small, conservative number, not silently drift upward."""
+        self.assertLessEqual(DEFAULT_MAX_PARALLEL_TOOL_WORKERS, 8)
+        self.assertGreaterEqual(DEFAULT_MAX_PARALLEL_TOOL_WORKERS, 1)
 
 
 class D2DirectoryReuseTests(unittest.TestCase):
