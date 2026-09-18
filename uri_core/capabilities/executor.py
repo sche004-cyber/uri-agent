@@ -48,6 +48,17 @@ class MultiActionExecutor:
             return self._record(
                 capability_name, action_name, "permission_denied", {"missing_permissions": missing_permissions}
             )
+        # M33 P1: action-level gate, between the capability-level check
+        # above and schema validation. A no-op for every action that
+        # declares no permissions of its own (every action as of P1) -
+        # this is the primitive Batch B's external capabilities use to
+        # require a scope narrower than their capability's own grant.
+        missing_action_permissions = sorted(set(action.permissions) - self.granted_permissions)
+        if missing_action_permissions:
+            return self._record(
+                capability_name, action_name, "permission_denied",
+                {"missing_action_permissions": missing_action_permissions},
+            )
         errors = action.parameters.validate(inputs)
         if errors:
             return self._record(capability_name, action_name, "invalid_input", {"errors": errors})

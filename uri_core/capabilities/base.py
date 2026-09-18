@@ -145,6 +145,12 @@ class Action:
     approval_requirement: ApprovalRequirement = ApprovalRequirement.NONE
     risk: RiskLevel = RiskLevel.LOW
     handler: Optional[Callable[..., Dict[str, Any]]] = None
+    # M33 P1: declared scopes this SPECIFIC action requires, on top of its
+    # capability's own `Capability.permissions`. Empty by default (the
+    # pre-P1 behavior for every existing action - MultiActionExecutor's
+    # new action-level gate is a strict no-op until an action opts in by
+    # declaring a non-empty tuple here).
+    permissions: Tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         self.parameters = ActionSchema.coerce(self.parameters)

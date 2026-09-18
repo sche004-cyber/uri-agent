@@ -32,6 +32,16 @@ _ACTION_GRANT_CAPABILITY = {
     "archive_message": "gmail_search",
 }
 
+# M33 P1: the CAPABILITY-level counterpart of the action-level table
+# above - which legacy grant id gates access to a whole registered
+# capability at all. Consulted by `_granted_permissions`, generalized
+# over every registered capability rather than hardcoded to Gmail alone
+# (requirement #2) - Gmail's own resulting grant set is unchanged
+# because it remains the only entry, not because the mechanism assumes it.
+_CAPABILITY_GRANT_ALIAS = {
+    "Gmail": "gmail_search",
+}
+
 
 class MultiActionDispatch:
     """Owns progressive discovery and per-session multi-action state.
@@ -304,18 +314,52 @@ class MultiActionDispatch:
     def _granted_permissions(self, principal: Any) -> set:
         if self._explicit_permissions is not None:
             return set(self._explicit_permissions)
-        # The executor's capability-level permission is the Gmail read
-        # connection boundary.  Per-action legacy grant aliases below add the
-        # compose restriction for draft creation.
-        if self._legacy_capability_allowed("gmail_search", principal):
-            return {"gmail.readonly"}
-        return set()
+        # M33 P1: generalized over every registered capability via
+        # `_CAPABILITY_GRANT_ALIAS`, not hardcoded to check "gmail_search"
+        # specifically - Gmail's own resulting set ({"gmail.readonly"})
+        # is preserved as the OUTCOME (it is still the only alias entry),
+        # not as the implementation (requirement #2).
+        granted: set = set()
+        for summary in self.registry.capability_summaries():
+            capability_id = summary.get("name")
+            legacy_id = _CAPABILITY_GRANT_ALIAS.get(capability_id)
+            if legacy_id is None:
+                continue
+            if self._legacy_capability_allowed(legacy_id, principal):
+                capability = self.registry.get_capability(capability_id)
+                if capability is not None:
+                    granted |= set(capability.permissions)
+        return granted
 
     def _action_permitted(self, capability: str, action: str, principal: Any) -> bool:
-        if self._explicit_permissions is not None or self.permission_checker is not None:
-            return True
+        """M33 P1 fix (F2): the presence of `_explicit_permissions` or
+        `permission_checker` used to short-circuit this to an
+        unconditional `True`, bypassing per-action authorization
+        entirely the moment either was supplied. Both must now narrow,
+        never universally allow.
+
+        `_explicit_permissions` (a caller-supplied scope set, e.g. in
+        tests) narrows to: does this action's owning CAPABILITY's own
+        declared scope already hold within that set? Matches
+        `_granted_permissions`'s own capability-level semantics rather
+        than inventing a second meaning for the same constructor
+        argument.
+
+        Absence of a legacy alias for an action (a capability id not
+        yet bound to a grant) denies by default - additive denial for
+        new ids, never a relaxation for Gmail's existing ones
+        (requirement #4). `permission_checker`, when present, is always
+        genuinely consulted via `_legacy_capability_allowed` for any
+        action that DOES have a legacy alias - its own `False`/error
+        answer is honored, never overridden."""
+        if self._explicit_permissions is not None:
+            registered = self.registry.get_capability(capability)
+            required = set(registered.permissions) if registered is not None else set()
+            return required <= self._explicit_permissions
         legacy_id = _ACTION_GRANT_CAPABILITY.get(action)
-        return bool(legacy_id and self._legacy_capability_allowed(legacy_id, principal))
+        if legacy_id is None:
+            return False
+        return self._legacy_capability_allowed(legacy_id, principal)
 
     def _legacy_capability_allowed(self, capability_id: str, principal: Any) -> bool:
         if self.permission_checker is not None:
