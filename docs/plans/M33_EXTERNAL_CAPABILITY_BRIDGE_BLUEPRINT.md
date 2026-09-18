@@ -108,10 +108,10 @@ A fifth, independent item: the F4 provider-key break should be confirmed live an
 
 - Every existing Gmail, approval-gate and multi-action test passes unchanged: `test_multi_action_capabilities.py` (12), `test_approval_gate.py` (18), `test_decision_gates.py` (27), `test_canonical_execution.py` (36).
 - New tests prove: checker present and returning `False` denies (the F2 regression, stated as a named test); unknown capability ID with no grant denies; action-level scope missing denies even when capability-level scope is granted; `_explicit_permissions` narrows rather than universalizes.
-- `pytest -q` from the repo root shows zero new failures against the baseline recorded immediately before P1 begins (the M31 figure of 1798/10/7/40 in this document is historical context, not the baseline to diff against — re-record fresh, since P2 and M32 will each need to do the same and a stale comparison would misattribute failures).
+- `pytest -q` from the repo root shows zero new failures against the baseline recorded immediately before P1 begins (the M31 figure of 1798/10/7/40 in this document is historical context, not the baseline to diff against — re-record fresh, since P2 and M33 [corrected 2026-09-18, approved cross-reference fix — originally read "M32," the same stale pre-collision-resolution self-reference as line 114; this is the blueprint's own next sequencing step (§2), not the unrelated, already-closed Brain Latency milestone] will each need to do the same and a stale comparison would misattribute failures).
 - Independent audit traces the production construction site at `orchestrator.py:270` and confirms what is actually passed, not what is passable.
 
-**Explicitly out of scope for P1:** wiring an `audit_sink`, generalizing `CapabilityContextResolver`, and any registry change. Those belong to M32 and must not be smuggled into a security repair.
+**Explicitly out of scope for P1:** wiring an `audit_sink`, generalizing `CapabilityContextResolver`, and any registry change. Those belong to M33 [corrected 2026-09-18, approved cross-reference fix — originally read "M32", a stale self-reference from before the M32/M33 identifier collision was resolved (`M32_EXECUTION_ARCHITECTURE_PLAN.md` §0, 2026-09-17); `CapabilityContextResolver` generalization is this blueprint's own §5.2/D6 in-scope work] and must not be smuggled into a security repair.
 
 ---
 
@@ -358,3 +358,31 @@ The review should treat these as the places this blueprint is most likely to be 
 4. Is D4's split of the 10000 and 4000 bounds into "stored" versus "projected" a genuine reconciliation, or does it preserve a latent inconsistency under a better name?
 5. Is Batch C's constraint — rewrite `_make_evidence_item` as an adapter without growing `orchestrator.py` — actually achievable, or should the evidence helpers move out of that file as a precondition rather than as a fallback?
 6. Are the twelve acceptance criteria sufficient to declare the contract genuinely generic, or is A10's diff-based no-Core-change proof doing too much of that work alone?
+
+---
+
+## 13. Addendum — Replaceable Brain architectural constraints (User-directed, 2026-09-18, added after freeze)
+
+**This is an additive post-freeze addendum. §§1–12 above are unchanged except the one approved cross-reference correction in §3 (the "M32"→"M33" self-reference).** Recorded per direct User instruction, as constraints and acceptance considerations M33 must satisfy — **not** a requirement to implement M35 (URI Companion Experience & Mini AI) inside M33.
+
+### 13.1 Constraints
+
+- **No provider/model identity in the capability layer.** External capability descriptors (§5.2), the registry publisher (D3), and permission binding (P1) must carry no adapter/provider/model identity anywhere in their own shape — the same discipline `ProviderDescriptor.adapter`/`auth_transports` (`uri_core/core/provider_registry.py`) already applies across cloud API brains, desktop-local brains, and (per this addendum) an optional downloadable mobile-local Brain. A capability must be describable and dispatchable identically regardless of which Brain proposed it.
+- **Capability negotiation, conservative by default.** The active Brain must only be offered the subset of capabilities/actions it can actually handle — extending the existing tool-schema-offering discipline (`build_tool_schemas`/`tool_call_translator.py`'s "never dispatch a tool the model wasn't offered" rule) to be Brain-capability-aware, not just registry-driven. **If the active Brain's support for a given capability/action shape is unknown, it must be treated as unsupported and not offered — never assumed supported, never offered speculatively.**
+- **Optional mobile-local Brain.** Download/install optional; URI functions fully without it. Already-supported local/offline tasks remain available where the active Brain can handle them. Unsupported or heavier tasks escalate to the configured main Brain.
+- **Escalation is explicit routing, never silent substitution.** An escalation from a constrained or local Brain to the main Brain must be a deliberate, visible routing decision — mirroring `ModelRouter`'s own "fail clearly, never silently substitute a different model" discipline (M32 D3) — never an unannounced swap the caller can't distinguish from the original Brain having handled the request itself.
+- **Authority boundary, unconditional regardless of active Brain.** Permissions, grants, evidence, and audit stay exactly where M33 core already places them (`ApprovalGate`, `CapabilityResolver`, `EvidenceStore`/`EvidenceLedger`, `AuditTrail`) — never delegated to, inferred from, or bypassable by whichever Brain is currently active. No Brain, cloud or local, gains execution authority a capability's own registry entry doesn't already grant.
+- **One integration serves every Brain type.** Switching the active Brain must never require rebuilding or duplicating a capability's own integration — the external-capability descriptor/registry/dispatch layer (§5) is the single integration surface for every Brain, exactly as `ModelProvider`/`ModelRouter` already let M32 D5's streaming work add real functionality with zero duplication across Ollama/Anthropic/OpenAICompatible adapters.
+
+### 13.2 Acceptance considerations
+
+To be specified as formal `A#` rows at M33 planning start (not retrofitted onto the already-NOT-RUN criteria in §7) — recorded here as the considerations those rows must cover:
+
+- A capability descriptor correctly excludes itself from a Brain's offered set when that Brain lacks a declared prerequisite, and does so identically whether the Brain is cloud/API, desktop-local, or mobile-local.
+- An unsupported-capability request from a constrained Brain escalates to the main Brain rather than silently failing or fabricating a result; the escalation itself is observable (logged/evidenced), not implicit.
+- Permission/evidence/audit behavior is identical across at least two different active-Brain configurations exercising the same capability — proving the authority boundary holds regardless of which Brain is active, not merely asserted.
+- An unknown-support case (a capability/action shape the active Brain's negotiation has no data on) is never offered — tested as its own explicit case, not inferred from the "known unsupported" case.
+
+### 13.3 Explicit non-scope
+
+This addendum does not require M33 to implement: the mobile-local Brain itself, any Brain↔Mini-AI escalation/delegation protocol, shared context/state boundaries between Brain and Mini AI, or Companion Mode/robot-face UI integration. Those are M35's scope (`docs/governance/URI_ACTIVE_MILESTONE.md` §1c). M33's obligation under this addendum is architectural: build the capability layer so none of that future work requires rebuilding it.

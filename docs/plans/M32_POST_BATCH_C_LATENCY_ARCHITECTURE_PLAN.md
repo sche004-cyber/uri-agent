@@ -696,19 +696,40 @@ All 10 runs succeeded, all made 3 real model calls (search → read → final na
 
 | # | Item | Status | Origin | Disposition |
 |---|---|---|---|---|
-| 1 | Resumed approval across turns (durable cross-turn pending-approval state + natural-language resumption recognition) | **OPEN** | Batch B, confirmed untouched through Batch C and D1–D6 (§15.9) | Real, live-demonstrated, disclosed. Requires new design/implementation (session-level durable proposal state + routing), out of scope for a latency work stream. Carry forward to whichever future initiative owns Tier-1/continuation UX. |
+| 1 | Resumed approval across turns (durable cross-turn pending-approval state + natural-language resumption recognition) | **OPEN — destination assigned: M32.1** (2026-09-18 roadmap update; assignment ≠ resolution) | Batch B, confirmed untouched through Batch C and D1–D6 (§15.9) | Real, live-demonstrated, disclosed. Requires new design/implementation (session-level durable proposal state + routing), out of scope for a latency work stream. Now scoped as **M32.1 — Execution Continuation Residual Hardening** (see `URI_ACTIVE_MILESTONE.md` §1c). |
 | 2 | `response_drafting.draft_response()` (canonical/legacy narrative) streaming | **NOT STARTED, explicitly descoped** | D5 §13.12/R-D5-5 | Needs its own buffer-then-validate-then-flush design (post-hoc `validate_drafted_response()` conflicts with live token display) — do not naively extend Tier 0's design to it. |
 | 3 | Flutter client (`UriClient`/`AppState`) streaming consumption | **NOT STARTED, explicitly descoped** | D5 §13.12 | Server-side SSE contract (`/ask/stream`, event shapes) exists and is stable; no consuming UI yet. Separate, sequenced follow-on. |
 | 4 | Anthropic / OpenAICompatible real token-by-token streaming | **NOT STARTED** (safe single-chunk fallback implemented and tested) | D5 §13.8/§13.12 | Provider-agnostic interface already supports this as a drop-in per-adapter upgrade whenever prioritized; nothing blocks it. |
-| 5 | Cross-capability multi-tool routing (C3.3) | **Correctly BLOCKED, out of THIS milestone's scope** | Batch C, pending P1 (`multi_action_dispatch._action_permitted`) | Owned by `M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md` — a different, correctly-numbered initiative. Not a residual of the latency work stream; listed here only for completeness/traceability. |
+| 5 | Cross-capability multi-tool routing (C3.3) | **Correctly BLOCKED, out of THIS milestone's scope. Destination corrected 2026-09-18: M34, not M33.** | Batch C, pending P1 (`multi_action_dispatch._action_permitted`) | Not a residual of the latency work stream; listed here only for completeness/traceability. **Correction (2026-09-18 roadmap audit):** P1 (the blocking prerequisite) is fixed under M33 §3, but the M33 blueprint's own Batches A–D never lift `native_tool_loop.py`'s `translate_tool_calls` single-capability restriction — grepped the entire frozen blueprint for `native_tool_loop`/`tool_call_translator`/`translate_tool_calls`/`cross-capability`, zero matches. C3.3 itself (the feature, distinct from its P1 prerequisite) is carried into **M34** per the User's roadmap decision — see `URI_ACTIVE_MILESTONE.md` §1c. |
 | 6 | Committed, repeatable latency benchmark script (B1.3/PC3) | **CLOSED by D6** | Batch B (`scripts/m32_latency_battery.py`, never committed) | `scripts/m32_latency_profile.py` (D6, this report) fulfills the same functional requirement — committed, repeatable, multi-scenario, real + structural measurement. Different filename than originally envisioned; same requirement satisfied. |
 | 7 | Multi-tool scenario latency variance | **CLOSED by this follow-up** | Raised in the initial D6 pass (§15.3 as first written) | Root-caused to a scenario-wording mismatch, not a regression; resolved with a corrected, 10-iteration apples-to-apples measurement (§15.8). |
-| 8 | Attachment-turn Brain tool-selection reliability (chose `Gmail` over `read_attached_file`) | **OPEN, unverified since Batch B** | Batch B §5, explicitly "not independently re-tested" in Batch C §10 | Model/prompt-reliability finding, not an execution-architecture defect — out of scope for D1–D6 (none of them touch tool-selection prompting). Carry forward to whichever future initiative owns Brain tool-selection reliability/eval. |
+| 8 | Attachment-turn Brain tool-selection reliability (chose `Gmail` over `read_attached_file`) | **OPEN — destination assigned: M34** (2026-09-18 roadmap update; assignment ≠ resolution), unverified since Batch B | Batch B §5, explicitly "not independently re-tested" in Batch C §10 | Model/prompt-reliability finding, not an execution-architecture defect — out of scope for D1–D6 (none of them touch tool-selection prompting). Now scoped as part of **M34 — Model-Native Capability Preservation & Adaptive Scaffolding** (see `URI_ACTIVE_MILESTONE.md` §1c). |
 | 9 | Packaged default model (`qwen3:14b`) not installed on this dev machine | **Environment-only, not a defect** | D3 | Operator action (`ollama pull qwen3:14b` or set `OLLAMA_MODEL`), documented in D3 §11.5. Unchanged, not blocking. |
 | 10 | Repo-root `token.json` | **Environment-only, confirmed still present and gitignored** | Batch B/C, re-confirmed this session | Never committed (`git check-ignore -v token.json` confirmed); local-machine state, not a repository hygiene defect. Contents not inspected here (secret-handling discipline). |
 | 11 | OAuth refresh cost, live re-measurement | **Not independently measurable in this environment** | D6 §15.3/§15.5 | No real Google OAuth credential configured on this machine; D1's fix remains unit-tested and structurally unchanged. Not a residual — a standing environment limitation of this specific dev machine. |
 
 ### 15.11 Milestone-number collision — findings and recommendation (not applied; awaiting User approval)
+
+**Provenance correction, added 2026-09-18, same-day follow-up
+(auditable — the paragraphs below are preserved as originally
+written, this note is additive).** This section originally presented
+the collision below as newly found during this D6 closure session. A
+subsequent read-only roadmap audit, later the same day, found that
+`docs/plans/M32_EXECUTION_ARCHITECTURE_PLAN.md` §0 ("Identifier
+collision — RESOLVED") had **already** authoritatively resolved this
+exact numbering — M32 = Brain Latency, M33 = External Capability
+Bridge, M34 = Model-Native Capability Preservation & Adaptive
+Scaffolding — on **2026-09-17**, one day before this work stream's
+own D-batches began, and `M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md`
+(also frozen 2026-09-17) already built on that same resolution. Even
+this report's own §0 scope-boundary note (written during D1/D2,
+before this section existed) already referred to "M33" correctly.
+The collision finding below is real and the investigation that
+produced it was genuine, independent work — but the *numbering
+decision itself* had already been made a day earlier; this section
+ratified and completed its propagation into governance, it did not
+originate it. See `docs/governance/URI_ACTIVE_MILESTONE.md` §1b for
+the identical correction applied there.
 
 **The collision, precisely:** `docs/governance/URI_ACTIVE_MILESTONE.md` (last updated at M31's closure, 2026-09-16) records `CURRENT MILESTONE: None active` and explicitly states *"M32 stays reserved for external-skill qualification/integration"* (§1, §5, §6, repeated three times in that file). This entire work stream (Batches A–C, D1–D6) has used the label **"M32 — Brain Latency / Core Execution Architecture"** throughout its own planning docs (`M32_EXECUTION_ARCHITECTURE_PLAN.md`, `M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md`, this report) — a different initiative sharing the same number. This is not a new discovery: `M32_STATE.md` (the External Capability Bridge planning doc, dated 2026-09-15) already flagged the identical collision at the time: *"Current active milestone: unchanged; `docs/governance/URI_ACTIVE_MILESTONE.md` still records M31 REPAIRING. This file tracks proposed M32, not a second active-milestone authority."*
 
@@ -750,6 +771,22 @@ This adopts §15.11's Option 2 recommendation exactly. Applied:
 - **M33 implementation:** confirmed not started, no production code touched, no `docs/plans/M33_*` file created or modified by this closure.
 
 **Regression, re-confirmed at final closure:** no production code changed in this closure session (governance/planning docs only) — the D6 regression result (561 passed, 5 pre-existing environment failures, 13 subtests, §15.6) stands unchanged as the operative evidence for this closure.
+
+---
+
+## 15.14 Roadmap extension, 2026-09-18 (same-day follow-up to §15.12/§15.13)
+
+Following M32's own closure, two read-only audits (M32→M33 handoff; Compact Mode/Mini AI roadmap survey) and a consolidated governance/planning proposal were performed and approved the same day. This section records the roadmap extension that resulted — additive to §15.10–§15.13, none of which is reopened or reversed.
+
+**Applied, per direct User instruction ("Approve the consolidated governance/planning proposal... Apply the pending roadmap items"):**
+
+- **§15.10 register, items #1, #5, #8 corrected/annotated** (not rewritten): #1 (resumed approval) → destination **M32.1**; #5 (C3.3) → destination corrected to **M34** (not M33 — the frozen M33 blueprint fixes C3.3's P1 prerequisite but never lifts `translate_tool_calls`'s own restriction, confirmed by direct grep of the blueprint, zero matches for `native_tool_loop`/`tool_call_translator`/`translate_tool_calls`/`cross-capability`); #8 (attachment-turn tool selection) → destination **M34**.
+- **§15.11 provenance corrected** — the M32→M33 collision this section originally presented as a fresh D6-session finding is now attributed to its real origin: `M32_EXECUTION_ARCHITECTURE_PLAN.md` §0, dated 2026-09-17, one day earlier.
+- **New roadmap reservations recorded in `docs/governance/URI_ACTIVE_MILESTONE.md` §1c:** **M32.1** — Execution Continuation Residual Hardening (resumed approval across turns only); **M34** scope substantiated for the first time (name existed, `M32_EXECUTION_ARCHITECTURE_PLAN.md` §0, but carried no items until now) — C3.3 cross-capability native multi-tool routing, attachment-turn tool-selection reliability; **M35** — URI Companion Experience & Mini AI (net-new concept, zero prior documentation found anywhere in this repository), scope direction only, not a detailed plan.
+- **`docs/governance/URI_ACTIVE_MILESTONE.md` §1a** — the existing Hybrid UI "Compact" presentation mode is now referred to in governance as **"Compact Chat Mode"**, disambiguating it from M35's distinct "Companion Mode" (robot-face) concept. Governance-level naming only — the frozen Hybrid UI documents (`UI_HYBRID_FROZEN_BLUEPRINT.md`, `UI_HYBRID_BATCH_4_REPORT.md`, `UI_DESIGN_AUTHORITY.md`) are unedited; their own internal "Compact" terminology stands as the historical record of what was actually built. Hybrid UI's own status unchanged: paused, not accepted, not closed, not milestone-numbered.
+- **`M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md`** — exactly two changes, both additive/cross-reference-only, §§1–12 otherwise untouched (the blueprint already has its own §12 "Questions for the independent reviewer" — the addendum below is §13, not a collision): (1) line 114's stale self-reference ("Those belong to M32") corrected to "M33" — `CapabilityContextResolver` generalization is the blueprint's own §5.2/D6 in-scope work, not M32's; (2) new **§13**, an explicit post-freeze addendum recording Replaceable Brain architectural constraints for M33 (capability descriptors/registry/dispatch carry no provider/model identity; capability negotiation against the active Brain's real, not assumed, support; conservative negotiation — unknown support is treated as unsupported, never offered speculatively; escalation from a constrained/local Brain to the main Brain is explicit routing, never silent substitution; permissions/grants/evidence/audit remain URI-authoritative regardless of active Brain; one capability integration serves every Brain type, no per-Brain duplication) — explicitly scoped as an M33 constraint set, not a requirement to implement M35 inside M33.
+
+**Not applied / not started:** no production code changed; no M32.1/M33/M33.1/M34/M35 implementation begun; no file renamed or deleted.
 
 ---
 

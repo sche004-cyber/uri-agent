@@ -108,15 +108,22 @@ it. M32's closure does not itself open or affect that gate.
    Batch C and D1–D6 (re-checked directly against source in this
    closure session, not merely re-quoted from earlier reports). A
    genuine functional/product gap, out of scope for a latency work
-   stream, requiring its own design/implementation.
+   stream, requiring its own design/implementation. **Destination
+   assigned, 2026-09-18: M32.1 — Execution Continuation Residual
+   Hardening (see §1c). Assignment is not resolution** — M32.1 is
+   NOT STARTED.
 2. **Attachment-turn Brain tool-selection reliability** (chose `Gmail`
    over `read_attached_file`) — a model/prompt-reliability finding
    (Batch B), explicitly not independently re-tested since (Batch C's
-   own disclosure), out of scope for D1–D6.
+   own disclosure), out of scope for D1–D6. **Destination assigned,
+   2026-09-18: M34 — Model-Native Capability Preservation & Adaptive
+   Scaffolding (see §1c). Assignment is not resolution** — M34 is
+   NOT STARTED.
 
 Neither item may be treated as resolved, implicitly or explicitly, by
-this milestone's CLOSED status. Full detail: `docs/plans/M32_POST_
-BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10.
+this milestone's CLOSED status, nor by having since been assigned a
+destination milestone number. Full detail: `docs/plans/M32_POST_
+BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10, §15.14.
 
 **CURRENT STATE:**  
 Awaiting the next milestone. No implementation authorized yet on any
@@ -181,9 +188,48 @@ development roles are: ..."). This records the frozen blueprint and role
 set; it does not advance M31's own state, and it does not authorize UI
 implementation to start ahead of the M31 dependency above.
 
+**Naming disambiguation, added 2026-09-18 (governance-level only — the
+frozen Hybrid UI documents themselves are not edited; see §1c's M35
+entry).** This initiative's existing "Compact" presentation mode — the
+420×580 floating chat-window overlay described in `UI_HYBRID_FROZEN_
+BLUEPRINT.md` §4.4 and shipped in `UI_HYBRID_BATCH_4_REPORT.md` (all
+4 batches report complete, 150–168/168 Flutter tests passing, still
+**paused, not accepted, not closed** per commit `7bb916f`) — is
+henceforth referred to in governance and roadmap documents as
+**"Compact Chat Mode"**, to disambiguate it from M35's distinct new
+"Companion Mode" (expressive robot-face interface) concept. It remains
+the same feature, same code, same status; only the disambiguating
+label is new, and only at the governance level.
+
+**Status, current:** still paused, still not milestone-numbered, still
+awaiting User live acceptance and Claude's final audit/release before
+it can close — unaffected by M32's closure or by the roadmap additions
+in §1c.
+
 ---
 
 ## 1b. Roadmap Reservation: M33 — External Capability Bridge (renumbered from M32, 2026-09-18)
+
+**Provenance correction, 2026-09-18, same-day follow-up (auditable,
+not a silent rewrite of the paragraph below).** This section
+originally framed the M32→M33 renumbering as a fresh discovery/
+decision made during the same closure session. A subsequent read-only
+roadmap audit, later the same day, found that `docs/plans/M32_EXECUTION_
+ARCHITECTURE_PLAN.md` §0 ("Identifier collision — RESOLVED") had
+**already** authoritatively decided this exact numbering — M32 =
+Brain Latency, M33 = External Capability Bridge, M34 = Model-Native
+Capability Preservation & Adaptive Scaffolding — on **2026-09-17**,
+one day before M32's own D-batches began, and the M33 blueprint
+(`M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md`, also frozen 2026-09-17)
+already built on that same resolution. The 2026-09-18 User instruction
+below **ratified and completed the propagation** of an already-decided
+number into this governance file — it was not itself the original
+numbering decision. The paragraph below is preserved as written at the
+time, since it is not factually wrong (the User's instruction was
+real and is what caused this file to be updated) — only incomplete
+about its own prior history. See `docs/plans/M32_POST_BATCH_C_
+LATENCY_ARCHITECTURE_PLAN.md` §15.11 for the same correction applied
+to that report.
 
 **Decision:** on M32 (Brain Latency / Core Execution Architecture)'s
 closure, the User directly instructed: "Keep M32 = Brain Latency /
@@ -224,8 +270,74 @@ blueprint, not a new decision invented here.
 
 **Current authoritative state:**
 - **M32 = Brain Latency / Core Execution Architecture — CLOSED.** See the PRIOR MILESTONE entry in §1.
-- **M33 = External Capability Bridge — NOT STARTED.** Authoritative planning document: `docs/plans/M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md` (frozen 2026-09-17; implementation not authorized). Earlier `M32_EXTERNAL_CAPABILITY_BRIDGE_PLAN.md`/`M32_STATE.md`/`M32_CANONICAL_ARCHITECTURE.md`/`M32_ROOT_CAUSE_AUDIT.md`/`M32_MIGRATION_PLAN.md` remain in place as superseded historical drafts, per that blueprint's own §10 and this repository's standing auditable-correction-history convention — not renamed, not deleted.
-- **Do NOT begin M33 implementation** without a separate, explicit User instruction — explicitly not authorized by this reconciliation record.
+- **M33 = External Capability Bridge — NOT STARTED.** Authoritative planning document: `docs/plans/M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md` (frozen 2026-09-17; implementation not authorized; additive post-freeze §13 addendum added 2026-09-18, see §1c). Earlier `M32_EXTERNAL_CAPABILITY_BRIDGE_PLAN.md`/`M32_STATE.md`/`M32_CANONICAL_ARCHITECTURE.md`/`M32_ROOT_CAUSE_AUDIT.md`/`M32_MIGRATION_PLAN.md` remain in place as superseded historical drafts, per that blueprint's own §10 and this repository's standing auditable-correction-history convention — not renamed, not deleted.
+- **M33.1 = Real Integrations + Tools & Skills UI — NOT STARTED.** Scope boundaries only (blueprint §10); depends on M33 core landing plus the three unresolved prerequisites named there (vendor pair, credential store/F4, settings-surface collision with Hybrid UI).
+- **Do NOT begin M33 or M33.1 implementation** without a separate, explicit User instruction — explicitly not authorized by this reconciliation record.
+
+---
+
+## 1c. Roadmap Reservations, 2026-09-18: M32.1, M34, M35
+
+Recorded per direct User instruction ("Approve the consolidated
+governance/planning proposal... Apply the pending roadmap items").
+All three are reservations/scope records only — **none is started,
+none is authorized to begin implementation.**
+
+### M32.1 — Execution Continuation Residual Hardening
+**Status:** NOT STARTED. **Scope:** durable resumed approval across
+turns only (cross-turn pending-approval state + natural-language
+resumption recognition) — the item named in §1's "M32 residual items"
+#1. Source: Batch B Completion Report §5/§7; Batch C Completion
+Report §10 item 7; `M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md`
+§15.9/§15.10. Deliberately narrow — does not absorb any other M32
+residual or any M33/M34/M35 scope.
+
+### M34 — Model-Native Capability Preservation & Adaptive Scaffolding
+**Status:** NOT STARTED. Name only, per `M32_EXECUTION_ARCHITECTURE_
+PLAN.md` §0 (2026-09-17). **Scope, as of this update:** carries two
+items forward —
+1. **C3.3 — cross-capability native multi-tool routing.** `native_
+   tool_loop.py`'s `translate_tool_calls` refuses a Brain tool-call
+   batch spanning more than one capability (R12/SR-4). Blocked on P1
+   (`multi_action_dispatch._action_permitted`, specified and fixed
+   under M33 §3) — but note (from the 2026-09-18 roadmap audit): the
+   M33 blueprint fixes P1 only; it does not itself lift `translate_
+   tool_calls`'s own restriction. That lift is M34's to do.
+2. **Attachment-turn Brain tool-selection reliability** — see §1
+   item #2 above.
+
+Neither item's underlying code has been touched since Batch B/C
+disclosed them.
+
+### M35 — URI Companion Experience & Mini AI
+**Status:** NOT STARTED. Net-new concept — no prior documentation
+existed anywhere in this repository before the 2026-09-18 roadmap
+audit confirmed a zero-match search. **Scope direction (not yet a
+detailed plan):**
+- Expressive robot-face **Companion Mode** — interactive visual
+  states/expressions. Distinct from, and must not be confused with,
+  the existing **Compact Chat Mode** (§1a) — same repository, same
+  Flutter app, different feature, different name.
+- Lightweight/local **Mini AI** complementing (never replacing) URI's
+  main Brain.
+- Brain ↔ Mini-AI task escalation/delegation.
+- Shared context/state boundaries between Brain and Mini AI.
+- Resource/fallback policy.
+- Integration with Compact Chat Mode and the full URI UI.
+
+**Dependency, recorded explicitly:** the last bullet implies M35
+integration work has a prerequisite on Hybrid UI (Compact Chat Mode's
+home) reaching an accepted/closed state — Hybrid UI is currently
+paused, not accepted (§1a). This is a sequencing note, not a hard gate
+recorded here the way M31→Hybrid UI's gate was — M35 has no detailed
+plan yet for such a gate to attach to.
+
+**Relationship to M34, disclosed as an open question, not resolved:**
+M34's name ("Model-Native Capability Preservation & Adaptive
+Scaffolding") and M35's "Mini AI" are suggestively similar but nothing
+in either's current scope record confirms or rules out that they are
+the same underlying idea under two different working names. Left
+open for whoever plans either milestone to resolve, not assumed here.
 
 ---
 
@@ -282,10 +394,10 @@ No milestone write scope is currently active. The next milestone (or the Hybrid 
 ## 6. Next Milestone Status
 
 **NEXT MILESTONE:**  
-Roadmap reconciliation is now RESOLVED (see §1b, 2026-09-18): M33 is reserved in the roadmap for external-skill qualification/integration (`docs/plans/M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md`, frozen 2026-09-17); direct subscription-backed Brain access remains a separately deferred requirement, still unassigned to any milestone number.
+Full roadmap now recorded (§1c, 2026-09-18): **M32.1** (Execution Continuation Residual Hardening) → **M33** (External Capability Bridge, `M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md`, frozen 2026-09-17 + additive §13) → **M33.1** (Real Integrations + Tools & Skills UI) → **M34** (Model-Native Capability Preservation & Adaptive Scaffolding, carrying C3.3 and attachment-turn tool-selection reliability) → **M35** (URI Companion Experience & Mini AI). None sequenced as a hard dependency chain except M33.1-on-M33 and M33's own Hybrid-UI-Batch-1 gate (blueprint §2); direct subscription-backed Brain access remains a separately deferred requirement, still unassigned to any milestone number.
 
 **NEXT MILESTONE STATUS:**  
-NOT AUTHORIZED — M33 implementation has not been started and requires a separate, explicit User instruction to begin (per direct User instruction, 2026-09-18: "Do not begin M33 yet").
+NOT AUTHORIZED — none of M32.1/M33/M33.1/M34/M35 implementation has been started; each requires its own separate, explicit User instruction to begin (per direct User instruction, 2026-09-18: "Do not begin M33 yet" / "Do not start any milestone yet").
 
 ---
 
@@ -343,6 +455,15 @@ RELEASE ACTION: Claude performed the release commit/push to
   push to master").
 TIMESTAMP: 2026-09-18
 ```
+
+**Follow-up, same day (additive — the VERDICT block above is preserved
+verbatim, not edited):** the two RESIDUAL items above were assigned
+destination milestone numbers later the same day, per direct User
+instruction — resumed approval across turns → **M32.1**; attachment-
+turn Brain tool-selection reliability → **M34**. Both remain
+explicitly NOT resolved by this closure or by that assignment; see
+§1c for the reservation record and §1's "M32 residual items" for the
+inline annotation.
 
 ---
 
