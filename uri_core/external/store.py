@@ -194,3 +194,15 @@ class ExternalCapabilityStore:
 
     def disable(self, user_id: str, descriptor_id: str) -> Optional[Dict[str, Any]]:
         return self._mutate_lifecycle(user_id, descriptor_id, self.lifecycle_controller.disable)
+
+    def remove(self, user_id: str, descriptor_id: str) -> bool:
+        document = self._load(user_id)
+        capabilities = document.get("capabilities", {})
+        if descriptor_id not in capabilities:
+            return False
+        del capabilities[descriptor_id]
+        document["capabilities"] = capabilities
+        self._save(user_id, document)
+        from uri_core.external.credentials import ExternalCredentialStore
+        ExternalCredentialStore(root=self.root).delete_credential(user_id, descriptor_id)
+        return True

@@ -83,6 +83,101 @@ class TransportProfilesTests(unittest.TestCase):
         self.assertEqual(result["execution"]["status"], "success")
         self.assertEqual(result["response"]["result"]["echo"], "alpha")
 
+    def test_http_profile_redirect_loopback_to_loopback_allowed(self):
+        class RedirectHandler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                if self.path == "/redirect_init":
+                    self.send_response(307)
+                    self.send_header("Location", f"http://127.0.0.1:{self.server.server_port}/redirect_dest")
+                    self.end_headers()
+                elif self.path == "/redirect_dest":
+                    length = int(self.headers["Content-Length"])
+                    value = json.loads(self.rfile.read(length))
+                    body = json.dumps({"redirected": True, "echo": value["query"]}).encode()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+            def log_message(self, *_): pass
+        server = ThreadingHTTPServer(("127.0.0.1", 0), RedirectHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+        self.addCleanup(server.server_close); self.addCleanup(server.shutdown)
+        result = self._execute(http_profile(f"http://127.0.0.1:{server.server_port}/redirect_init"))
+        self.assertEqual(result["execution"]["status"], "success")
+        self.assertEqual(result["response"]["result"]["echo"], "alpha")
+        self.assertTrue(result["response"]["result"]["redirected"])
+
+    def test_http_profile_redirect_to_non_loopback_rejected(self):
+        targets = [
+            "http://8.8.8.8/public",
+            "http://192.168.1.50/private",
+            "http://example.com/external",
+            "https://127.0.0.1/https_escape",
+        ]
+        for target in targets:
+            class NonLoopbackRedirectHandler(BaseHTTPRequestHandler):
+                def do_POST(self):
+                    self.send_response(307)
+                    self.send_header("Location", target)
+                    self.end_headers()
+                def log_message(self, *_): pass
+            server = ThreadingHTTPServer(("127.0.0.1", 0), NonLoopbackRedirectHandler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+            self.addCleanup(server.server_close); self.addCleanup(server.shutdown)
+            result = self._execute(http_profile(f"http://127.0.0.1:{server.server_port}/redirect_escape"))
+            self.assertEqual(result["execution"]["status"], "unavailable")
+            self.assertIn("HTTP fixture failed", result["response"].get("message", ""))
+
+    def test_http_ip_address_forms_and_mapped_addresses(self):
+        from uri_core.external.adapters.http import is_loopback_url
+        # IPv4 loopback forms
+        self.assertTrue(is_loopback_url("http://127.0.0.1:8080/path"))
+        self.assertTrue(is_loopback_url("http://127.0.0.2/foo"))
+        self.assertTrue(is_loopback_url("http://127.1.2.3:9000/bar"))
+        # IPv6 loopback forms
+        self.assertTrue(is_loopback_url("http://[::1]:8080/path"))
+        self.assertTrue(is_loopback_url("http://[::1]/path"))
+        # IPv4-mapped IPv6 loopback forms
+        self.assertTrue(is_loopback_url("http://[::ffff:127.0.0.1]:8080/path"))
+        self.assertTrue(is_loopback_url("http://[::ffff:127.0.0.2]/path"))
+        # Non-loopback / invalid addresses rejected
+        self.assertFalse(is_loopback_url("http://localhost:8080/path"))
+        self.assertFalse(is_loopback_url("http://0.0.0.0:8080/path"))
+        self.assertFalse(is_loopback_url("http://192.168.1.1:8080/path"))
+        self.assertFalse(is_loopback_url("http://10.0.0.1:8080/path"))
+        self.assertFalse(is_loopback_url("http://172.16.0.1:8080/path"))
+        self.assertFalse(is_loopback_url("http://8.8.8.8:8080/path"))
+        self.assertFalse(is_loopback_url("https://127.0.0.1:8080/path"))
+        self.assertFalse(is_loopback_url("ftp://127.0.0.1:8080/path"))
+        self.assertFalse(is_loopback_url("http://[2001:db8::1]:8080/path"))
+        self.assertFalse(is_loopback_url("not-a-url"))
+
+    def test_http_profile_redirect_loop_fails_safely(self):
+        class LoopHandler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                if self.path == "/loop_a":
+                    self.send_response(307)
+                    self.send_header("Location", f"http://127.0.0.1:{self.server.server_port}/loop_b")
+                    self.end_headers()
+                elif self.path == "/loop_b":
+                    self.send_response(307)
+                    self.send_header("Location", f"http://127.0.0.1:{self.server.server_port}/loop_a")
+                    self.end_headers()
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+            def log_message(self, *_): pass
+        server = ThreadingHTTPServer(("127.0.0.1", 0), LoopHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+        self.addCleanup(server.server_close); self.addCleanup(server.shutdown)
+        result = self._execute(http_profile(f"http://127.0.0.1:{server.server_port}/loop_a"))
+        self.assertEqual(result["execution"]["status"], "unavailable")
+        self.assertIn("HTTP fixture failed", result["response"].get("message", ""))
+
     def test_profile_and_durable_completion_are_user_scoped_and_replay_safe(self):
         profile = in_process_profile()
         result = self._execute(profile)

@@ -45,6 +45,7 @@ import sys
 # the same reason).
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("URI_PROVIDER_KEY_SECRET", "uri_local_dev_secret_key_v1")
+os.environ.setdefault("URI_EXTERNAL_CREDENTIAL_SECRET", "uri_local_dev_credential_secret_v1")
 
 import uvicorn
 

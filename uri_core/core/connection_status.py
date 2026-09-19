@@ -178,4 +178,22 @@ def list_connection_status(user_id: Optional[str] = None) -> List[Dict[str, Any]
             }
         )
 
+    if user_id:
+        try:
+            from uri_core.external.service_store import ConnectedServiceStore
+            ext_store = ConnectedServiceStore()
+            for ext_svc in ext_store.list_services(user_id):
+                if ext_svc["id"] not in {"gmail", "drive"}:
+                    results.append(
+                        {
+                            "id": ext_svc["id"],
+                            "name": ext_svc["name"],
+                            "description": ext_svc["description"],
+                            "status": ext_svc["status"],
+                            "detail": ext_svc["detail"],
+                        }
+                    )
+        except Exception:
+            pass
+
     return results

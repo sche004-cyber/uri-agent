@@ -48,6 +48,7 @@ _SCOPE_PREFIXES = {
     "skills": "skill:",
     "workflows": "workflow:",
     "memory": "memory:",
+    "services": "service:",
 }
 
 
@@ -252,12 +253,53 @@ def _index_memory_pointers(memory_store: Any) -> Dict[str, Dict[str, Any]]:
     return records
 
 
+def _index_services(service_store: Any, user_id: Optional[str] = None) -> Dict[str, Dict[str, Any]]:
+    records: Dict[str, Dict[str, Any]] = {}
+    if service_store is None:
+        return records
+    try:
+        if user_id and hasattr(service_store, "list_services"):
+            services = service_store.list_services(user_id)
+        elif hasattr(service_store, "list_all"):
+            services = service_store.list_all()
+        elif hasattr(service_store, "list_services"):
+            services = service_store.list_services(user_id or "default")
+        else:
+            services = []
+    except Exception:
+        return records
+    for svc in services:
+        if not isinstance(svc, dict):
+            continue
+        svc_id = svc.get("id")
+        if not svc_id:
+            continue
+        entry_id = f"service:{svc_id}"
+        records[entry_id] = _record(
+            entry_id=entry_id,
+            kind="connected_service",
+            source_path=None,
+            provenance="connected_service_store",
+            dependencies=list(svc.get("scopes") or []),
+            availability={
+                "known": True,
+                "available": svc.get("status") == "connected",
+                "reason": svc.get("detail"),
+            },
+            pointer={"registry": "ConnectedServiceStore", "lookup_key": svc_id},
+            summary=f"{svc.get('name', svc_id)}: {svc.get('description', '')} [{svc.get('status', 'unknown')}]",
+        )
+    return records
+
+
 def build_index(
     *,
     capability_directory: Any = None,
     skill_memory: Any = None,
     workflow_planner: Any = None,
     memory_store: Any = None,
+    connected_service_store: Any = None,
+    user_id: Optional[str] = None,
 ) -> GraphifyIndex:
     """Builds a fresh index from real, already-existing authorities.
     Any argument may be omitted - the resulting index simply has no
@@ -267,6 +309,7 @@ def build_index(
     records.update(_index_skills(skill_memory))
     records.update(_index_workflows(workflow_planner))
     records.update(_index_memory_pointers(memory_store))
+    records.update(_index_services(connected_service_store, user_id=user_id))
     return GraphifyIndex(records=records)
 
 
@@ -277,11 +320,13 @@ def refresh(
     skill_memory: Any = None,
     workflow_planner: Any = None,
     memory_store: Any = None,
+    connected_service_store: Any = None,
+    user_id: Optional[str] = None,
     scope: Optional[str] = None,
 ) -> GraphifyIndex:
     """Incremental refresh. `scope=None` rebuilds every category an
     argument was supplied for. `scope` in {"capabilities", "skills",
-    "workflows", "memory"} rebuilds only that one category's records,
+    "workflows", "memory", "services"} rebuilds only that one category's records,
     leaving every other record in the index completely untouched -
     the concrete mechanism behind "supports incremental refresh"
     (plan §A.3)."""
@@ -290,10 +335,13 @@ def refresh(
         "skills": lambda: _index_skills(skill_memory),
         "workflows": lambda: _index_workflows(workflow_planner),
         "memory": lambda: _index_memory_pointers(memory_store),
+        "services": lambda: _index_services(connected_service_store, user_id=user_id),
     }
 
     scopes = [scope] if scope is not None else list(builders)
     for one_scope in scopes:
+        if one_scope not in _SCOPE_PREFIXES:
+            continue
         prefix = _SCOPE_PREFIXES[one_scope]
         for key in [k for k in index.records if k.startswith(prefix)]:
             del index.records[key]
