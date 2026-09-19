@@ -244,8 +244,20 @@ def _execute_multi_action(
                     if isinstance(response, dict) else {"action_id": action_id, "detail": response}
                 )
     else:
+        # M34 C3.3: an action's own "capability" (already validated
+        # against the real directory by `_validate_contract()`, and
+        # already independently re-authorized per its OWN capability by
+        # `evaluate_gates()`'s per-group pipeline before this function
+        # is ever reached) takes precedence; an action with none keeps
+        # inheriting the contract's top-level `capability_id` exactly as
+        # before this milestone - so a single-capability chain builds
+        # the identical `steps` list it always did.
         steps = [
-            {"capability": capability_id, "action": a["name"], "inputs": a.get("inputs") or {}}
+            {
+                "capability": (a.get("capability") if isinstance(a.get("capability"), str) and a.get("capability") else capability_id),
+                "action": a["name"],
+                "inputs": a.get("inputs") or {},
+            }
             for a in actions
         ]
         envelope = dispatch.dispatch_chain_explicit(
@@ -345,6 +357,7 @@ def decide_fallback_reason(
     capability_id: Optional[str],
     mode: Optional[str],
     reasons: Sequence[str] = (),
+    capability_ids: Optional[Sequence[str]] = None,
 ) -> Optional[str]:
     """Pure, deterministic, model-free: the exact eligibility check
     `run_canonical_for_ask()` applies once a Decision Contract and its
@@ -367,7 +380,17 @@ def decide_fallback_reason(
     turn canonical already decided correctly. Every other INVALID_PROPOSAL
     cause (malformed contract, unknown capability/action, a continuation
     with no active pointer, a mode requiring a capability that named none)
-    is unaffected and still falls back exactly as before."""
+    is unaffected and still falls back exactly as before.
+
+    `capability_ids` (M34 C3.3, optional, additive): for a heterogeneous
+    `multi_action` proposal, EVERY distinct effective capability the
+    proposal can dispatch must be supplied by the caller's canonical
+    contract calculation and be allowlisted. Omitted (every caller before
+    this milestone, and every single-capability proposal after it) falls
+    back to checking exactly `capability_id` alone. This closes the
+    per-action-override authority gap: `URI_CANONICAL_EXECUTION_ALLOWLIST`
+    narrows canonical authority for EVERY capability a proposal can reach,
+    not only the contract's top-level one."""
     if gate_outcome == "INVALID_PROPOSAL" and "false_unsupported_claim_rejected_by_directory" in reasons:
         return None
     if gate_outcome in {"INVALID_PROPOSAL", "DEGRADED"}:
@@ -387,9 +410,34 @@ def decide_fallback_reason(
         return None
     if mode == "workflow_continuation" and not workflow_continuation_mode_enabled():
         return "mode_not_executable:workflow_continuation"
-    if not is_allowlisted(capability_id):
+    ids_to_check = list(capability_ids) if capability_ids is not None else [capability_id]
+    if not all(is_allowlisted(one_id) for one_id in ids_to_check):
         return "canonical_killswitch_not_allowlisted"
     return None
+
+
+def effective_capability_ids(contract: Dict[str, Any]) -> List[Optional[str]]:
+    """Return every capability an execution contract can actually reach.
+
+    Derived at the execution boundary rather than from GateResult rollups:
+    gates report evaluation detail, while the allowlist must cover every
+    action dispatch can address. Actions without an override retain the
+    historical top-level identity. A no-action contract retains its
+    pre-C3.3 top-level-only behavior.
+    """
+    top_level = contract.get("capability")
+    actions = [action for action in (contract.get("actions") or []) if isinstance(action, dict)]
+    raw_ids = [
+        action.get("capability")
+        if isinstance(action.get("capability"), str) and action.get("capability")
+        else top_level
+        for action in actions
+    ] or [top_level]
+    return list(dict.fromkeys(raw_ids))
+
+
+def _is_heterogeneous_contract(contract: Dict[str, Any]) -> bool:
+    return len(set(effective_capability_ids(contract))) > 1
 
 
 def _canonical_nonexecution_envelope(
@@ -421,15 +469,28 @@ def _canonical_nonexecution_envelope(
     else:
         message = contract.get("reason") or "I can help with that."
         status, execution_status = "success", "not_applicable"
+    plan: Dict[str, Any] = {
+        "status": "canonical_non_execution",
+        "mode": contract.get("mode"),
+        "capability": contract.get("capability"),
+        "gate_outcome": outcome,
+    }
+    # M34 C3.3: for a heterogeneous proposal, report exactly which
+    # capability/action(s) blocked the chain (the real per-group
+    # GateResults, never re-derived) rather than only the aggregate
+    # outcome - so a denial or approval requirement on one action in a
+    # multi-capability chain is never reported as an undifferentiated,
+    # unexplained failure of the whole turn.
+    sub_results = getattr(gate_result, "sub_results", None) or []
+    if sub_results:
+        plan["per_capability"] = [
+            {"capability_id": sub.capability_id, "outcome": sub.outcome, "action_names": list(sub.action_names)}
+            for sub in sub_results
+        ]
     return {
         "status": status,
         "canonical_outcome": outcome,
-        "plan": {
-            "status": "canonical_non_execution",
-            "mode": contract.get("mode"),
-            "capability": contract.get("capability"),
-            "gate_outcome": outcome,
-        },
+        "plan": plan,
         "execution": {"status": execution_status, "capability": contract.get("capability")},
         "response": {"message": message},
     }
@@ -457,6 +518,28 @@ def _execute_canonical(
         and registry is not None
         and registry.get_capability(capability_id) is not None
     ):
+        # M34 C3.3: a heterogeneous proposal's per-action "capability"
+        # overrides only ever reach `dispatch_chain_explicit()` - the
+        # ONE existing mechanism that already authorizes and executes a
+        # real per-step capability. If any referenced capability (top-
+        # level or per-action) is NOT also registered in this same
+        # `dispatch.registry`, no existing execution boundary can run
+        # this specific mix safely (a legacy single-tool capability like
+        # `remember_fact` has no chain concept at all) - decline here
+        # (fall back to legacy for the whole turn, exactly like any
+        # other `execution_dispatch_returned_none` case) rather than
+        # inventing a new mixed-boundary execution path or silently
+        # dropping/misrouting an action the model explicitly named.
+        referenced_ids = {capability_id}
+        for action in contract.get("actions") or []:
+            if isinstance(action, dict):
+                named = action.get("capability")
+                if isinstance(named, str) and named:
+                    referenced_ids.add(named)
+        if len(referenced_ids) > 1 and not all(
+            registry.get_capability(one_id) is not None for one_id in referenced_ids
+        ):
+            return None
         return _execute_multi_action(
             contract, capability_id=capability_id, orchestrator=orchestrator,
             session_id=session_id, user_text=user_text, principal=principal,
@@ -502,6 +585,24 @@ def build_canonical_telemetry(
         "selected_capability": contract.get("capability"),
         "selected_actions": [
             a.get("name") for a in (contract.get("actions") or []) if isinstance(a, dict)
+        ],
+        # M34 C3.3: per-action capability identity, additive - {action:
+        # capability} for every action, falling back to the contract's
+        # top-level `capability` for an action with no override of its
+        # own (every contract before this milestone, and every single-
+        # capability one after it, so `selected_capability` above
+        # already told the whole story for those - this field's real
+        # audit value appears only once a heterogeneous proposal exists).
+        "action_capabilities": [
+            {
+                "action": a.get("name"),
+                "capability": (
+                    a.get("capability")
+                    if isinstance(a.get("capability"), str) and a.get("capability")
+                    else contract.get("capability")
+                ),
+            }
+            for a in (contract.get("actions") or []) if isinstance(a, dict)
         ],
         "candidate_recall_at_5": recall_at_5,
         "gate_outcome": getattr(gate_result, "outcome", None),
@@ -589,9 +690,16 @@ def run_canonical_for_ask(
             capability_id = contract.get("capability")
             mode = contract.get("mode")
 
+            # M34 C3.3: check every capability dispatch could actually
+            # reach, including an override shape that happens to form only
+            # one gate group. GateResult sub-results are evidence, not the
+            # allowlist authority source.
+            capability_ids = effective_capability_ids(contract)
+
             fallback_reason = decide_fallback_reason(
                 gate_outcome=gate_result.outcome, capability_id=capability_id, mode=mode,
                 reasons=getattr(gate_result, "reasons", ()),
+                capability_ids=capability_ids,
             )
             # M32.1: APPROVAL_REQUIRED now also reaches _execute_canonical()
             # - previously only READY did, which meant an approval-required
@@ -603,6 +711,10 @@ def run_canonical_for_ask(
             if (
                 fallback_reason is None
                 and gate_result.outcome in ("READY", "APPROVAL_REQUIRED")
+                and not (
+                    gate_result.outcome == "APPROVAL_REQUIRED"
+                    and _is_heterogeneous_contract(contract)
+                )
                 and mode in EXECUTABLE_MODES
             ):
                 canonical_attempted = True

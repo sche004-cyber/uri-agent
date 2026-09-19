@@ -259,16 +259,81 @@ def execute_translated_batch(
 ) -> List[Dict[str, Any]]:
     """C3.5 (branch preservation) + C3.4 (bounded parallel execution).
 
-    Every action in `contract["actions"]` is gated and executed
-    independently - a failure or approval-required outcome on one never
-    stops the others. Calls that are BOTH read-only and approval-free
-    (per capability-real ground truth, not the old provably-wrong
-    `read_only = approval == "none"` derivation C3.4 was blocked on) run
-    concurrently; anything else runs strictly serially, in order.
+    Single-capability actions are gated and executed independently: a
+    failure or approval-required outcome on one never stops sibling native
+    calls. A C3.3 heterogeneous contract is the deliberate exception: it
+    is aggregate-gated and dispatched only when EVERY effective capability
+    is READY, so an approval-required or denied sibling cannot cause partial
+    execution. Single-capability calls that are BOTH read-only and
+    approval-free (per capability-real ground truth, not the old
+    provably-wrong `read_only = approval == "none"` derivation C3.4 was
+    blocked on) run concurrently; anything else runs strictly serially, in
+    order.
     """
     capability_id = contract["capability"]
     actions = contract["actions"]
     call_ids = [meta["tool_call_id"] for meta in results_meta]
+
+    # M34 C3.3: a translated native batch can now carry more than one
+    # capability. It must traverse the aggregate contract gate exactly once:
+    # branch-by-branch execution would reintroduce the partial-approval
+    # behavior this path is specifically intended to prevent.
+    effective_capabilities = {
+        action.get("capability")
+        if isinstance(action, dict) and isinstance(action.get("capability"), str) and action.get("capability")
+        else capability_id
+        for action in actions
+    }
+    if len(effective_capabilities) > 1:
+        gate_result = evaluate_gates(
+            DecisionOutcome(status="ok", contract=contract),
+            capability_directory=directory, principal=principal,
+            turn_state_data=turn_state_data,
+        )
+        if gate_result.outcome != "READY":
+            detail = "; ".join(gate_result.reasons) if gate_result.reasons else gate_result.outcome
+            return [
+                {
+                    "tool_call_id": call_ids[index],
+                    "capability": (
+                        action.get("capability") if isinstance(action.get("capability"), str) and action.get("capability")
+                        else capability_id
+                    ),
+                    "action": action["name"], "status": "not_executed",
+                    "gate_outcome": gate_result.outcome, "detail": detail,
+                }
+                for index, action in enumerate(actions)
+            ]
+        envelope = _execute_canonical(
+            contract, orchestrator=orchestrator, session_id=session_id,
+            user_text=user_text, principal=principal,
+        )
+        if envelope is None:
+            return [
+                {
+                    "tool_call_id": call_ids[index],
+                    "capability": (
+                        action.get("capability") if isinstance(action.get("capability"), str) and action.get("capability")
+                        else capability_id
+                    ),
+                    "action": action["name"], "status": "unavailable",
+                    "gate_outcome": "READY", "detail": "execution dispatch returned no result",
+                }
+                for index, action in enumerate(actions)
+            ]
+        return [
+            {
+                "tool_call_id": call_ids[index],
+                "capability": (
+                    action.get("capability") if isinstance(action.get("capability"), str) and action.get("capability")
+                    else capability_id
+                ),
+                "action": action["name"], "status": envelope.get("status", "unavailable"),
+                "gate_outcome": "READY", "execution": envelope.get("execution"),
+                "response": envelope.get("response"),
+            }
+            for index, action in enumerate(actions)
+        ]
 
     legacy_descriptors = _legacy_effect_map(capability_registry)
     eligible: List[int] = []

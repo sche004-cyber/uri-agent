@@ -2,9 +2,13 @@
 
 import unittest
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from uri_core.core.model_providers.base import ToolCall
 from uri_core.core.tool_call_translator import translate_tool_call, translate_tool_calls
+from uri_core.core.decision_engine import DecisionOutcome
+from uri_core.core.decision_gates import GateResult
+from uri_core.core.native_tool_loop import execute_translated_batch
 
 OFFERED = [
     "gmail_search_messages",
@@ -40,6 +44,13 @@ class TranslateSingleCallTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertNotIn("contract", result)
         self.assertIn("error", result)
+
+    def test_offered_tool_without_a_capability_mapping_fails_closed(self):
+        call = ToolCall(id="c1", name="mapped_nowhere", arguments={})
+        with patch("uri_core.core.tool_call_translator.tool_name_to_contract_target", return_value=None):
+            result = translate_tool_call(call, offered_tool_names=["mapped_nowhere"], principal=None)
+        self.assertFalse(result["ok"])
+        self.assertNotIn("contract", result)
 
     def test_tool_not_offered_this_turn_is_rejected_even_if_name_is_real(self):
         # gmail_create_draft IS a real, resolvable tool name in general,
@@ -89,17 +100,23 @@ class TranslateBatchTests(unittest.TestCase):
         self.assertEqual(result["contract"]["capability"], "Gmail")
         self.assertEqual(len(result["contract"]["actions"]), 2)
 
-    def test_cross_capability_batch_is_refused_not_partially_dispatched(self):
+    def test_cross_capability_batch_becomes_heterogeneous_contract(self):
         calls = [
             ToolCall(id="c1", name="gmail_search_messages", arguments={"query": "invoice"}),
             ToolCall(id="c2", name="remember_fact", arguments={"request_text": "x"}),
         ]
         result = translate_tool_calls(calls, offered_tool_names=OFFERED, principal=None)
 
-        self.assertFalse(result["ok"])
-        self.assertNotIn("contract", result)
-        self.assertEqual(len(result["results"]), 2)
-        self.assertTrue(all(not r["ok"] for r in result["results"]))
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["contract"]["mode"], "multi_action")
+        self.assertEqual(result["contract"]["capability"], "Gmail")
+        self.assertEqual(
+            result["contract"]["actions"],
+            [
+                {"name": "search_messages", "inputs": {"query": "invoice"}, "capability": "Gmail"},
+                {"name": "remember_fact", "inputs": {"request_text": "x"}, "capability": "remember_fact"},
+            ],
+        )
 
     def test_batch_with_one_unknown_call_is_refused_entirely(self):
         calls = [
@@ -109,6 +126,26 @@ class TranslateBatchTests(unittest.TestCase):
         result = translate_tool_calls(calls, offered_tool_names=OFFERED, principal=None)
 
         self.assertFalse(result["ok"])
+
+    def test_mixed_contract_reaches_aggregate_gate_and_canonical_execution(self):
+        calls = [
+            ToolCall(id="c1", name="gmail_search_messages", arguments={"query": "invoice"}),
+            ToolCall(id="c2", name="remember_fact", arguments={"request_text": "x"}),
+        ]
+        translated = translate_tool_calls(calls, offered_tool_names=OFFERED, principal=None)
+        self.assertTrue(translated["ok"])
+        with patch("uri_core.core.native_tool_loop.evaluate_gates", return_value=GateResult(outcome="READY", capability_id="Gmail")) as gate, \
+             patch("uri_core.core.native_tool_loop._execute_canonical", return_value={"status": "success", "execution": {"status": "success"}, "response": {}}) as execute:
+            results = execute_translated_batch(
+                translated["contract"], results_meta=translated["results"], orchestrator=object(),
+                session_id="s1", user_text="x", principal=None, directory=object(), turn_state_data={},
+                capability_registry=object(), executed_signatures=set(),
+            )
+        gate.assert_called_once()
+        self.assertIsInstance(gate.call_args.args[0], DecisionOutcome)
+        self.assertEqual(gate.call_args.args[0].contract, translated["contract"])
+        execute.assert_called_once()
+        self.assertEqual([result["capability"] for result in results], ["Gmail", "remember_fact"])
 
     def test_empty_batch_is_refused(self):
         result = translate_tool_calls([], offered_tool_names=OFFERED, principal=None)

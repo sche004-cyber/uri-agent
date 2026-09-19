@@ -11,15 +11,10 @@ review findings:
       parameter here, supplied by the caller from the authenticated request
       context - never parsed out of a tool call's own arguments. A tool
       call cannot smuggle a principal of its own choosing.
-    - R12 / SR-4 (single-capability scope): C3.3 (cross-capability
-      multi-tool routing) is explicitly BLOCKED in the frozen plan pending
-      P1 (`multi_action_dispatch._action_permitted`, specified in
-      `M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md` and out of this
-      milestone's scope). ``translate_tool_calls`` therefore only ever
-      builds a contract when every call in the batch targets the SAME
-      capability - a mixed-capability batch is refused honestly (an error
-      result per call, never a partial or silent dispatch), not smuggled
-      through as if it were the existing single-capability trust boundary.
+    - C3.3: mixed native calls retain the capability resolved from each
+      offered tool schema in their action entries. They then use the
+      existing Decision Contract validation, gates, and canonical dispatch
+      boundaries; no native-loop authorization logic is introduced here.
 
 Unknown tool name -> an error result returned to the Brain, never a
 dispatch (verified against the SAME tool schema catalogue actually offered
@@ -90,13 +85,11 @@ def translate_tool_calls(
 ) -> Dict[str, Any]:
     """Translate a whole batch from one Brain response.
 
-    Single-capability batches (including multiple actions against the
-    SAME capability, e.g. two Gmail actions in one response - the
-    diagnostic report's own headline multi-tool case) build one
-    `multi_action`-mode contract, reusing the existing, already-audited
-    `MultiActionDispatch.dispatch_chain_explicit` trust boundary. A
-    mixed-capability batch is refused per-call rather than partially
-    executed - see this module's own docstring for why (C3.3/P1 blocked).
+    Single-capability batches retain their existing contract shape. A
+    mixed-capability batch becomes the C3.3 heterogeneous `multi_action`
+    shape: every action carries its own resolved capability identity, so it
+    reaches the existing contract validation/gates/canonical-dispatch path
+    without being flattened to a top-level capability.
     """
     if not tool_calls:
         return {"ok": False, "results": [], "error": "No tool calls to translate."}
@@ -114,35 +107,21 @@ def translate_tool_calls(
         return {"ok": False, "results": translated, "error": "One or more tool calls could not be translated."}
 
     capabilities = {entry["contract"]["capability"] for entry in translated}
-    if len(capabilities) > 1:
-        # R12/SR-4: cross-capability multi-tool has no execution path
-        # today and is explicitly blocked pending P1. Refuse honestly
-        # rather than smuggling a new, un-audited trust boundary through
-        # under "the gates are unchanged."
-        return {
-            "ok": False,
-            "results": [
-                {
-                    "ok": False,
-                    "tool_call_id": entry["tool_call_id"],
-                    "tool_name": entry["tool_name"],
-                    "error": (
-                        "Multiple tool calls in one turn must target the same "
-                        "capability - cross-capability multi-tool calls are not "
-                        "yet supported."
-                    ),
-                }
-                for entry in translated
-            ],
-            "error": "Cross-capability multi-tool batch refused (C3.3 blocked pending P1).",
-        }
-
     if len(translated) == 1:
         single = translated[0]
         return {"ok": True, "results": translated, "contract": single["contract"], "principal": principal}
 
-    capability = capabilities.pop()
-    actions = [entry["contract"]["actions"][0] for entry in translated]
+    capability = translated[0]["contract"]["capability"]
+    mixed_capabilities = len(capabilities) > 1
+    actions = []
+    for entry in translated:
+        action = dict(entry["contract"]["actions"][0])
+        if mixed_capabilities:
+            # Preserve the real target resolved from the offered tool
+            # catalogue on EVERY action. This is not model text and cannot
+            # smuggle a capability.
+            action["capability"] = entry["contract"]["capability"]
+        actions.append(action)
     contract = {
         "mode": "multi_action",
         "capability": capability,

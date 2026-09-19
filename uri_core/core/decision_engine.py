@@ -281,7 +281,14 @@ capability: the exact capability_id from the given capability_summaries
 actions: a list of {"name": "...", "inputs": {...}} objects using only
     action names you were told this capability has (if none were given,
     leave actions empty - detailed schemas are looked up separately,
-    after you select a capability, never guessed here).
+    after you select a capability, never guessed here). When mode is
+    "multi_action" and the request genuinely needs actions from MORE
+    THAN ONE of the given capabilities (rare - most multi-action
+    requests still use only one), give that one action its own
+    "capability" key naming the OTHER real capability_id from
+    capability_summaries; every action with no "capability" key still
+    uses the top-level `capability` field above. Never invent a
+    capability_id here that capability_summaries did not give you.
 
 clarification: {"question": "...", "missing_field": "..."} or null -
     only when mode is "clarification".
@@ -495,15 +502,69 @@ def _validate_contract(
     if not isinstance(actions, list):
         return DecisionOutcome(status="invalid", invalid_reason="actions_not_a_list")
 
+    # M34 C3.3: per-action capability identity is an authority-bearing
+    # extension for a real multi-action chain only. Accepting it on a
+    # single_action (or another mode) would let gates validate one
+    # capability while legacy single-action execution follows the top-level
+    # capability. Reject that ambiguous shape instead of choosing either.
+    if any(isinstance(action, dict) and "capability" in action for action in actions):
+        if mode != "multi_action":
+            return DecisionOutcome(
+                status="invalid", invalid_reason="per_action_capability_requires_multi_action"
+            )
+
     if capability is not None and actions and directory is not None:
         detail = directory.describe(capability)
         known_actions = set(detail["actions"]) if detail else set()
+        # M34 C3.3: an action MAY name its own "capability" - only
+        # meaningful for `mode: "multi_action"` (a heterogeneous
+        # proposal), optional and additive. An action with no
+        # "capability" key (every contract before this milestone, and
+        # every single-capability contract after it) is validated
+        # exactly as before, against the top-level `capability`/
+        # `known_actions` computed above - this loop's behavior is
+        # unchanged for that case, not merely similar to it.
         for action in actions:
             name = action.get("name") if isinstance(action, dict) else None
+            action_capability = (
+                action.get("capability") if isinstance(action, dict) else None
+            )
+            if action_capability is not None:
+                if (
+                    not isinstance(action_capability, str)
+                    or action_capability not in known_capability_ids
+                ):
+                    return DecisionOutcome(
+                        status="invalid",
+                        invalid_reason=f"unknown_capability_for_action:{name}",
+                    )
+                action_detail = directory.describe(action_capability)
+                action_known = set(action_detail["actions"]) if action_detail else set()
+                if action_known and name not in action_known:
+                    return DecisionOutcome(
+                        status="invalid", invalid_reason=f"unknown_action:{name}"
+                    )
+                continue
             if known_actions and name not in known_actions:
                 return DecisionOutcome(
                     status="invalid", invalid_reason=f"unknown_action:{name}"
                 )
+
+        # The top-level capability remains the canonical identity for
+        # legacy consumers. A proposal that overrides EVERY action to
+        # another capability is misleading and used to create an allowlist
+        # blind spot; reject it instead of normalizing it.
+        effective_capabilities = {
+            action.get("capability")
+            if isinstance(action.get("capability"), str) and action.get("capability")
+            else capability
+            for action in actions
+            if isinstance(action, dict)
+        }
+        if effective_capabilities and capability not in effective_capabilities:
+            return DecisionOutcome(
+                status="invalid", invalid_reason="top_level_capability_not_used_by_any_action"
+            )
 
     return DecisionOutcome(status="ok", contract=parsed)
 

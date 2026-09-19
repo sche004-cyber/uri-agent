@@ -62,6 +62,36 @@ GATE_OUTCOMES = {
     "DEGRADED",
 }
 
+# M34 C3.3: the deterministic precedence a heterogeneous rollup uses to
+# pick ONE blocking outcome among several non-READY sub-results
+# (`_rollup_gate_results`). This is not a new, invented ordering - it is
+# `_evaluate_single_capability`'s own existing, accepted gate-check
+# order for a single capability, numbered in its own comments: gate 2/3
+# (existence -> INVALID_PROPOSAL), gate 5 (availability ->
+# DISCONNECTED/UNSUPPORTED/UNAVAILABLE, in that sub-order per
+# `_availability_outcome`), gate 4 (completeness -> MISSING_PARAMETER),
+# gate 6 (PERMISSION_DENIED), gate 7 (APPROVAL_REQUIRED). Reusing this
+# exact order means a chain that would have hit INVALID_PROPOSAL first
+# had its actions been evaluated as one capability continues to report
+# INVALID_PROPOSAL first across capabilities too - one semantic
+# ordering, never two. DEGRADED is listed for completeness only: it
+# cannot occur as an individual sub-result today (an exception inside
+# `_evaluate_single_capability` propagates to `evaluate_gates()`'s own
+# outer try/except and yields a single top-level DEGRADED before
+# `sub_results` is ever populated), so it is ranked highest (most
+# severe) on the same principle as every other entry: earlier detection
+# in the pipeline outranks later detection.
+_OUTCOME_PRECEDENCE = (
+    "DEGRADED",
+    "INVALID_PROPOSAL",
+    "DISCONNECTED",
+    "UNSUPPORTED",
+    "UNAVAILABLE",
+    "MISSING_PARAMETER",
+    "PERMISSION_DENIED",
+    "APPROVAL_REQUIRED",
+)
+
 
 @dataclass(frozen=True)
 class GateResult:
@@ -76,6 +106,26 @@ class GateResult:
     # never silently resolved by picking one (per the accepted M30.5
     # scope: "do not solve overlap by deleting legacy capabilities yet").
     overlap_candidates: List[str] = field(default_factory=list)
+    # M34 C3.3: populated only when a `multi_action` proposal's own
+    # `actions` named more than one distinct capability (grouped inline
+    # in `_evaluate_gates_inner`) - one GateResult per capability, each
+    # evaluated only against its OWN directory entry/actions, never
+    # against another group's. Empty for every ordinary (single-
+    # capability) proposal - the overwhelming majority of contracts
+    # today, and the only shape that existed before this milestone - so
+    # an empty list here is not a special case, it is simply "this
+    # GateResult IS the whole decision," identical to this dataclass's
+    # pre-existing meaning. When non-empty, this GateResult's own top-
+    # level `outcome`/`reasons`/`missing_field`/`expected_type` are a
+    # strict, deterministic rollup (see `_rollup_gate_results`/
+    # `_OUTCOME_PRECEDENCE`): READY only if every sub-result is READY,
+    # otherwise the one non-READY sub-result `_OUTCOME_PRECEDENCE`
+    # ranks highest - a fixed property of the outcome TYPE, never of
+    # which action the model happened to list first, so a caller
+    # reading only the top-level fields can never mistake a partially-
+    # authorized chain for a fully-authorized one, and two contracts
+    # differing only in action order always agree on this verdict.
+    sub_results: List["GateResult"] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -86,6 +136,7 @@ class GateResult:
             "missing_field": self.missing_field,
             "expected_type": self.expected_type,
             "overlap_candidates": list(self.overlap_candidates),
+            "sub_results": [r.to_dict() for r in self.sub_results],
         }
 
 
@@ -338,6 +389,68 @@ def _evaluate_gates_inner(
             reasons=["no_capability_directory_available_to_verify_against"],
         )
 
+    # M34 C3.3: partition actions by their OWN effective capability -
+    # an action's own "capability" key when the model set one (only
+    # meaningful for `multi_action`; every other mode's actions never
+    # carry one), else the contract's single top-level capability_id,
+    # exactly as before this milestone. This is the ONLY new decision
+    # point in this function: every existing single-capability contract
+    # (no action ever sets its own "capability") produces exactly one
+    # group equal to (capability_id, actions) - the same two values
+    # `_evaluate_single_capability` would have closed over directly -
+    # so that path's return value is unchanged, not merely similar.
+    groups: "Dict[str, List[Dict[str, Any]]]" = {}
+    group_order: List[str] = []
+    for action in actions:
+        effective = capability_id
+        if isinstance(action, dict):
+            named = action.get("capability")
+            if isinstance(named, str) and named:
+                effective = named
+        if effective not in groups:
+            groups[effective] = []
+            group_order.append(effective)
+        groups[effective].append(action)
+    if not group_order:
+        group_order = [capability_id]
+        groups[capability_id] = []
+
+    if len(group_order) == 1:
+        only_id = group_order[0]
+        return _evaluate_single_capability(
+            only_id, groups[only_id], capability_directory=capability_directory,
+            principal=principal, permission_checker=permission_checker,
+        )
+
+    sub_results = [
+        _evaluate_single_capability(
+            group_capability_id, groups[group_capability_id],
+            capability_directory=capability_directory,
+            principal=principal, permission_checker=permission_checker,
+        )
+        for group_capability_id in group_order
+    ]
+    return _rollup_gate_results(sub_results)
+
+
+def _evaluate_single_capability(
+    capability_id: str,
+    actions: List[Dict[str, Any]],
+    *,
+    capability_directory: CapabilityDirectory,
+    principal: Any,
+    permission_checker: Optional[Callable[[str, Any], bool]],
+) -> GateResult:
+    """Gates 2-9 (existence/action-existence/availability/completeness/
+    permission/approval/ready) for exactly ONE capability and exactly
+    the subset of `actions` that named it (or inherited it from the
+    contract's top-level `capability`). Extracted verbatim from this
+    module's pre-M34-C3.3 single-capability body so the single-group
+    call site above is byte-identical to the prior implementation -
+    this function invents no new gate logic, it only makes the existing
+    logic callable once per capability group instead of exactly once."""
+    action_names = [a.get("name") for a in actions if isinstance(a, dict) and a.get("name")]
+
     # 2. CAPABILITY EXISTENCE
     entry = capability_directory.describe(capability_id)
     overlap_ids = _overlap_candidates_for(capability_directory, capability_id)
@@ -387,7 +500,11 @@ def _evaluate_gates_inner(
                 overlap_candidates=overlap_ids,
             )
 
-    # 6. PERMISSION
+    # 6. PERMISSION - checked against THIS group's own capability_id
+    # only; a permission grant for one capability in a heterogeneous
+    # chain never carries over to another (no cross-capability
+    # inheritance is possible here since each group only ever reads
+    # its own `entry`/`capability_id`).
     if entry.get("permission_required"):
         allowed = True
         if permission_checker is not None:
@@ -420,4 +537,69 @@ def _evaluate_gates_inner(
     return GateResult(
         outcome="READY", capability_id=capability_id, action_names=action_names,
         reasons=["all_gates_passed"], overlap_candidates=overlap_ids,
+    )
+
+
+def _blocking_precedence_key(result: GateResult) -> "tuple":
+    """Sort key for choosing ONE blocking sub-result deterministically:
+    rank by `_OUTCOME_PRECEDENCE` first (the outcome TYPE, never the
+    action/group's position in the contract), then by `capability_id`
+    alphabetically as a pure tie-break for two sub-results that share
+    the same outcome. Both components are independent of the order
+    `actions` happened to list capabilities in, which is the whole
+    point: `_rollup_gate_results` must return the identical top-level
+    outcome for the identical set of sub-results regardless of what
+    order they were evaluated/listed in."""
+    try:
+        rank = _OUTCOME_PRECEDENCE.index(result.outcome)
+    except ValueError:
+        rank = len(_OUTCOME_PRECEDENCE)
+    return (rank, result.capability_id or "")
+
+
+def _rollup_gate_results(sub_results: List[GateResult]) -> GateResult:
+    """M34 C3.3: combine one GateResult per named capability into a
+    single top-level GateResult whose own outcome is a strict AND -
+    READY only when every sub-result is READY. A caller that reads
+    only `.outcome` (every caller that existed before this milestone)
+    can therefore never observe READY for a proposal where even one
+    action, in one capability, was denied/incomplete/unapproved - this
+    is the concrete mechanism behind "partial authorization must not
+    silently authorize the whole chain."
+
+    When more than one sub-result blocks, the ONE that surfaces at the
+    top level is chosen by `_blocking_precedence_key` - this module's
+    own existing single-capability gate-check order (see
+    `_OUTCOME_PRECEDENCE`'s docstring), never "whichever action the
+    model happened to list first." Two calls with the same set of
+    sub-results, in any action order, therefore always produce the
+    same top-level outcome/reason class - this is deliberately NOT
+    "first blocker wins," which would make the top-level verdict depend
+    on contract ordering rather than on what actually went wrong.
+    `sub_results` (never dropped, in original action-group order)
+    carries the full per-capability detail for a caller that wants to
+    report exactly which action/capability blocked the chain, and no
+    per-capability authority check itself is weakened by this choice -
+    it only decides which of several REAL, independently-computed
+    verdicts is reported first."""
+    all_action_names: List[str] = []
+    all_overlap: List[str] = []
+    for result in sub_results:
+        all_action_names.extend(result.action_names)
+        all_overlap.extend(result.overlap_candidates)
+
+    blocking_candidates = [r for r in sub_results if r.outcome != "READY"]
+    if not blocking_candidates:
+        return GateResult(
+            outcome="READY", capability_id=sub_results[0].capability_id,
+            action_names=all_action_names,
+            reasons=["all_gates_passed_for_every_capability_in_chain"],
+            overlap_candidates=all_overlap, sub_results=sub_results,
+        )
+    blocking = min(blocking_candidates, key=_blocking_precedence_key)
+    return GateResult(
+        outcome=blocking.outcome, capability_id=blocking.capability_id,
+        action_names=all_action_names, reasons=list(blocking.reasons),
+        missing_field=blocking.missing_field, expected_type=blocking.expected_type,
+        overlap_candidates=all_overlap, sub_results=sub_results,
     )
