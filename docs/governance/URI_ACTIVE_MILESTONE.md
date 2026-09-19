@@ -93,13 +93,71 @@ reconciliation, §15.12 for the CLOSE recommendation this closure
 adopts). **Two items explicitly carried forward, NOT resolved by this
 closure** — see "M32 residual items, carried forward" below.
 
+**PRIOR MILESTONE (CLOSED):**  
+M34 — Model-Native Capability Preservation & Adaptive Scaffolding —
+**CLOSED: CLAUDE VERIFIED — COMPLETE** (User closure instruction,
+2026-09-19: "Close M34 documentation only... current verified state:
+master == origin/master, M34 closure audit verdict: M34 READY TO
+CLOSE"). Three accepted, independently audited, committed/pushed
+slices:
+1. **Graphify Hint Activation** (`78fb5e1`) — activated the existing
+   M30 `graphify_index.py` as a per-turn skill/memory orientation hint
+   in Turn State and the Brain's decision prompt, behind a killswitch
+   (`GRAPHIFY_HINT_ENABLED`), with benchmark evidence and zero
+   regression. See `docs/plans/M34_GRAPHIFY_HINT_ACTIVATION_STATE.md`.
+2. **C3.3 — Heterogeneous Multi-Capability Routing** (`4aa3478`) — let
+   a `multi_action` Decision Contract name actions spanning more than
+   one capability without collapsing authority to a single
+   `capability_id`, with independent per-capability gating, a
+   deterministic aggregate-outcome rollup (reusing the module's own
+   established gate-check precedence order, not an invented one), and
+   an allowlist derivation fixed to read every effective capability
+   directly off the contract rather than off gate internals. Three
+   independent audit rounds (Claude, Codex, Claude again) each found
+   and fixed a real, execution-verified defect before release. This
+   closes item 1 of the "C3.3 — cross-capability native multi-tool
+   routing" scope note below — direct execution-level verification in
+   this milestone confirmed `MultiActionDispatch` already supported
+   capability-heterogeneous chains, so the routing-restriction lift
+   did not in fact require M33's P1 fix first, contrary to that scope
+   note's original blocked-on-M33 framing (preserved below, not
+   deleted, per this file's auditable-correction-history convention).
+3. **Attachment-Turn Brain / Tool-Selection Reliability** (`b994270`)
+   — resolves the M32 residual item named below (§1, "M32 residual
+   items" #2): uploaded-file turns ("summarize this") no longer
+   compete against Gmail purely on lexical overlap. `/ask` gained an
+   explicit, validated `attached_file_ids` field (authenticated-user +
+   session-scoped, fail-closed on unknown/blank/cross-user/cross-
+   session/excessive ids); validated references flow as one shared,
+   additive `current_turn_attachments` Turn State signal into both the
+   canonical and native tool-calling paths; capabilities self-declare
+   `reads_current_attachments` (reusing the existing `foundational`
+   flag pattern) to be force-included as *candidates*, never force-
+   *selected* — Gmail remains fully selectable. `read_attached_file`
+   gained an explicit-id execution mode that reads only the referenced
+   file(s), never falling back to scanning older session files, while
+   preserving the legacy session-scoped behavior exactly when no
+   explicit ids are supplied. Independently audited across two rounds
+   (a first-round execution-scope gap found and routed back, then a
+   second-round final audit that independently reproduced end-to-end
+   id-validation and real-dispatch-stack execution-scoping live, not
+   merely via unit tests). See `test_m34_attachment_turn_routing.py`
+   and `test_read_attached_file.py`.
+
+Every accepted checkpoint above was independently audited by Claude
+(source inspection, live re-execution, full regression) before its own
+commit/push, per standing AO-4 release authority. Full evidence trail:
+this milestone's own audit exchanges (no single `docs/plans/M34_*`
+umbrella plan/state pair was created for the C3.3 or attachment-turn
+slices — see §6g below for the consolidated closure record).
+
 **CURRENT MILESTONE:**  
-None active — M32 is CLOSED (M31 was closed earlier, 2026-09-16; see
-the M31 entry above). Per §1a, the Hybrid UI initiative's own
-hard-dependency gate was already opened by M31's own earlier closure,
-independently of M32 — see that section for the initiative's own
-separate role set and status before any implementation work begins on
-it. M32's closure does not itself open or affect that gate.
+None active — M32, M31, and M34 are all CLOSED. Per §1a, the Hybrid UI
+initiative's own hard-dependency gate was already opened by M31's own
+earlier closure, independently of M32/M34 — see that section for the
+initiative's own separate role set and status before any implementation
+work begins on it. Neither M32's nor M34's closure opens or affects
+that gate.
 
 **M32 residual items, carried forward (NOT resolved by this closure):**
 1. **Resumed approval across turns** (durable cross-turn pending-
@@ -118,7 +176,10 @@ it. M32's closure does not itself open or affect that gate.
    own disclosure), out of scope for D1–D6. **Destination assigned,
    2026-09-18: M34 — Model-Native Capability Preservation & Adaptive
    Scaffolding (see §1c). Assignment is not resolution** — M34 is
-   NOT STARTED.
+   NOT STARTED. **Resolved, 2026-09-19 (additive, this line preserved
+   verbatim as the original disclosure): M34's "Attachment-Turn Brain /
+   Tool-Selection Reliability" slice (`b994270`) closed this item — see
+   the PRIOR MILESTONE (M34) entry above.**
 
 Neither item may be treated as resolved, implicitly or explicitly, by
 this milestone's CLOSED status, nor by having since been assigned a
@@ -135,7 +196,7 @@ reconciled into this number per the User's 2026-09-18 instruction; see
 separate, explicit User instruction.
 
 **LOOP_STATE:**  
-IDLE (M32 COMPLETE — awaiting next milestone initiation; M33 not started)
+IDLE (M32 COMPLETE, M34 COMPLETE — awaiting next milestone initiation; M33 not started)
 
 **M31 OBJECTIVE (achieved, preserved for reference):**  
 Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).
@@ -293,9 +354,11 @@ Report §10 item 7; `M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md`
 residual or any M33/M34/M35 scope.
 
 ### M34 — Model-Native Capability Preservation & Adaptive Scaffolding
-**Status:** NOT STARTED. Name only, per `M32_EXECUTION_ARCHITECTURE_
-PLAN.md` §0 (2026-09-17). **Scope, as of this update:** carries two
-items forward —
+**Status:** **CLOSED: CLAUDE VERIFIED — COMPLETE (2026-09-19).** See
+the PRIOR MILESTONE (M34) entry in §1 for the three accepted
+checkpoints (`78fb5e1`, `4aa3478`, `b994270`) and §6g for the
+consolidated closure record. Originally recorded (2026-09-17) as name-
+only, carrying two items forward —
 1. **C3.3 — cross-capability native multi-tool routing.** `native_
    tool_loop.py`'s `translate_tool_calls` refuses a Brain tool-call
    batch spanning more than one capability (R12/SR-4). Blocked on P1
@@ -303,11 +366,18 @@ items forward —
    under M33 §3) — but note (from the 2026-09-18 roadmap audit): the
    M33 blueprint fixes P1 only; it does not itself lift `translate_
    tool_calls`'s own restriction. That lift is M34's to do.
+   **[Correction, 2026-09-19, preserved not deleted: implementation
+   found this "blocked on M33 P1" framing to be inaccurate — direct
+   execution-level verification confirmed `MultiActionDispatch`
+   already supported capability-heterogeneous action chains, so C3.3
+   was implemented and closed under M34 directly, without any M33
+   dependency.]**
 2. **Attachment-turn Brain tool-selection reliability** — see §1
-   item #2 above.
+   item #2 above. **Resolved by the third M34 checkpoint (`b994270`),
+   2026-09-19.**
 
-Neither item's underlying code has been touched since Batch B/C
-disclosed them.
+Both items' underlying code was untouched from Batch B/C's own
+disclosure until this M34 closure implemented and resolved them.
 
 ### M35 — URI Companion Experience & Mini AI
 **Status:** NOT STARTED. Net-new concept — no prior documentation
@@ -394,10 +464,72 @@ No milestone write scope is currently active. The next milestone (or the Hybrid 
 ## 6. Next Milestone Status
 
 **NEXT MILESTONE:**  
-Full roadmap now recorded (§1c, 2026-09-18): **M32.1** (Execution Continuation Residual Hardening) → **M33** (External Capability Bridge, `M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md`, frozen 2026-09-17 + additive §13) → **M33.1** (Real Integrations + Tools & Skills UI) → **M34** (Model-Native Capability Preservation & Adaptive Scaffolding, carrying C3.3 and attachment-turn tool-selection reliability) → **M35** (URI Companion Experience & Mini AI). None sequenced as a hard dependency chain except M33.1-on-M33 and M33's own Hybrid-UI-Batch-1 gate (blueprint §2); direct subscription-backed Brain access remains a separately deferred requirement, still unassigned to any milestone number.
+Roadmap recorded in §1c (2026-09-18): **M32.1** (Execution Continuation Residual Hardening) → **M33** (External Capability Bridge, `M33_EXTERNAL_CAPABILITY_BRIDGE_BLUEPRINT.md`, frozen 2026-09-17 + additive §13) → **M33.1** (Real Integrations + Tools & Skills UI) → **M35** (URI Companion Experience & Mini AI). **M34** (Model-Native Capability Preservation & Adaptive Scaffolding) is no longer next — it CLOSED 2026-09-19 (see §1 and §6g) out of the originally-recorded sequence, since none of these items were ever a hard dependency chain except M33.1-on-M33 and M33's own Hybrid-UI-Batch-1 gate (blueprint §2). Direct subscription-backed Brain access remains a separately deferred requirement, still unassigned to any milestone number.
 
 **NEXT MILESTONE STATUS:**  
-NOT AUTHORIZED — none of M32.1/M33/M33.1/M34/M35 implementation has been started; each requires its own separate, explicit User instruction to begin (per direct User instruction, 2026-09-18: "Do not begin M33 yet" / "Do not start any milestone yet").
+NOT AUTHORIZED — none of M32.1/M33/M33.1/M35 implementation has been started; each requires its own separate, explicit User instruction to begin (per direct User instruction, 2026-09-18: "Do not begin M33 yet" / "Do not start any milestone yet"). M34 is CLOSED, not pending authorization.
+
+---
+
+## 6g. Closure Record (M34 — Claude VERIFIED, released)
+
+```markdown
+VERDICT: VERIFIED
+VERDICT AUTHORITY: CLAUDE (independent final audit, per standing AO-4 release authority)
+MILESTONE: M34 — Model-Native Capability Preservation & Adaptive Scaffolding
+BASIS: Three independently audited slices, each committed and pushed
+  separately after its own final audit:
+  1. Graphify Hint Activation (78fb5e1) — GRAPHIFY_HINT_ENABLED
+     killswitch, capability_index_hint threaded through Turn State and
+     the decision prompt, skill/memory-only scope, benchmark evidence
+     recorded in docs/plans/M34_GRAPHIFY_HINT_ACTIVATION_STATE.md.
+  2. C3.3 Heterogeneous Multi-Capability Routing (4aa3478) — per-action
+     capability identity in multi_action contracts, independent per-
+     capability gating (no permission/approval inheritance across
+     capabilities), deterministic rollup precedence reusing the
+     module's own established gate-check order, and an allowlist
+     derivation (effective_capability_ids) fixed to read every
+     effective capability directly off the contract. Three independent
+     audit rounds each found and fixed one real, execution-verified
+     defect before release (non-deterministic first-blocker-wins
+     rollup; an allowlist-check gap keyed off empty gate sub_results;
+     a null-handling gap in per-action capability validation).
+  3. Attachment-Turn Brain / Tool-Selection Reliability (b994270) — an
+     explicit, validated /ask attached_file_ids field; one shared,
+     additive current_turn_attachments Turn State signal consumed
+     identically by canonical and native tool-calling; capability-
+     declared reads_current_attachments force-includes candidates
+     without force-selecting them (Gmail remains selectable);
+     read_attached_file's explicit-id execution mode reads only the
+     referenced file(s), never falling back to older session files,
+     while the no-explicit-id path is byte-identical to the prior
+     session-scoped behavior. Two audit rounds: the first found a
+     genuine execution-scope gap (routing was correctly scoped but the
+     read tool itself still scanned the whole session); the second
+     independently reproduced both the fix and live end-to-end
+     evidence (id validation and real-dispatch-stack execution
+     scoping) that the implementing session's own environment could
+     not produce (a Windows TEMP ACL limitation that did not reproduce
+     under this audit).
+  Full regression run after every slice: zero new failures against
+  each slice's own clean-baseline comparison (188/188 passing across
+  the attachment-turn slice's eight targeted suites in the final audit
+  alone). No parallel discovery/routing/dispatch architecture was
+  created by any of the three slices; each reused an existing
+  established mechanism (graphify_index.py's own relevant_subset,
+  MultiActionDispatch.dispatch_chain_explicit, and the foundational-
+  flag preselection pattern, respectively).
+RESIDUAL: none blocking. Real /ask-scale latency for the attachment-
+  turn signal was not benchmarked end-to-end (isolated FileStore
+  lookup overhead measured at ~130us/call, negligible against model-
+  call latency) — recorded as open, non-blocking evidence, not a
+  defect.
+RELEASE ACTION: Claude performed the release commit/push to
+  origin/master for each of the three slices per standing release
+  authority, on the User's own explicit ACCEPT/commit instruction for
+  each slice this session.
+TIMESTAMP: 2026-09-19
+```
 
 ---
 

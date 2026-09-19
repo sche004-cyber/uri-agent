@@ -2,7 +2,7 @@
 
 **Plan:** `docs/plans/M34_GRAPHIFY_HINT_ACTIVATION_PLAN.md`
 
-STATE: VERIFIED (2026-09-19) — implemented, independently audited by Claude, User live-verified, releasing.
+STATE: CLOSED / ACCEPTED (2026-09-19) — implemented, independently audited by Claude, User live-verified, released as commit `78fb5e1`.
 
 ## History Log
 
@@ -56,4 +56,8 @@ STATE: VERIFIED (2026-09-19) — implemented, independently audited by Claude, U
 ## Release gate
 
 Per the 2026-09-12 live-verification-gate revision and this session's standing AO-4 discipline: once implementation against this plan is complete, the User live-verifies the result first; only after the User directs commit/push does Claude perform its independent final audit (tracing the actual production paths — `build_turn_state_and_directory()`, `build_decision_request()`, the killswitch, the authority-boundary test — rather than trusting an agent's own report) and declare `VERIFIED`/`NOT VERIFIED` before the release commit/push to `origin/master`.
+
+## Closure
+
+- 2026-09-19: Committed as `78fb5e1` ("M34: activate Graphify index as runtime skill/memory orientation hint") and pushed to `origin/master`. This was the first of three M34 slices; the milestone as a whole (Graphify Hint Activation + C3.3 Heterogeneous Multi-Capability Routing `4aa3478` + Attachment-Turn Brain/Tool-Selection Reliability `b994270`) is recorded CLOSED / ACCEPTED in `docs/governance/URI_ACTIVE_MILESTONE.md` §1/§1c/§6g. All benchmark caveats and disclosed limitations above (import-order-fragile call counter, ~71-record scaling caveat, unreproduced repo-wide full-suite figure) are preserved as historical evidence, not resolved or retracted by this closure.
 
