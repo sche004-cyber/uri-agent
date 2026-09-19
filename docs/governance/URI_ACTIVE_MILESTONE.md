@@ -240,12 +240,58 @@ merely compared away. Disclosed, non-blocking residual: the HTTP
 fixture adapter does not re-validate a redirect's `Location` host
 against loopback — not exploitable today (no live untrusted endpoint
 exists yet), but must be closed before any M33.1 live HTTP vendor
-work. M33.1 (vendor integrations, credential store, Tools & Skills UI)
-remains **NOT STARTED**; this correction closes Batch D only.
+work.
+
+**Further correction, 2026-09-19, same day (additive):** that
+redirect-revalidation prerequisite has now been implemented and is
+**CLOSED: CLAUDE VERIFIED — ACCEPTED**, together with **M33.1 Batch 1**
+(Connected Service/credential foundations), committed as `d78366d`.
+**No frozen M33.1 plan document exists anywhere in this repository** —
+only the M33 blueprint's §10 lists M33.1's scope boundaries and three
+open prerequisites (vendor pair, credential store, settings-surface
+collision); this session's direct User instruction to audit and
+conditionally commit is recorded as the explicit authorization this
+gate requires for Batch 1 specifically, not as retroactive cover for
+Batch 2/3 or for the still-open §10 prerequisites. Verified by Claude's
+independent audit: the redirect fix was tested against a real local
+server (userinfo/backslash/scheme-change/public-IP/hostname redirects
+rejected; `::ffff:127.0.0.1` correctly accepted; a real 2-hop redirect
+loop terminates via urllib's own loop detection; a 307 POST body
+reaches a second, separately-validated loopback target intact) in
+addition to the four adversarial tests Gemini's own implementation
+added to `test_m33_batch_d_transports.py`. `ConnectedServiceDescriptor`/
+`ConnectedServiceStore`/`ExternalCredentialStore` are architecturally
+distinct from the Skill/Capability lifecycle (no shared class or method
+surface); `ExternalCapabilityStore.remove()` hard-deletes the descriptor
++lifecycle+credential record in one call, verified by test to produce a
+registry generation without the removed capability on re-publish. One
+blocking security defect was found and fixed in the same commit:
+`ExternalCredentialStore` stored secrets with a plain `json.dump` — a
+regression against this repository's own existing, "non-negotiable"
+Fernet/PBKDF2 encryption-at-rest policy for this exact class of secret
+(`provider_keys.py`'s `ProviderKeyStore`), not an unaddressed new
+question. Fixed with the identical pattern under its own secret
+(`URI_EXTERNAL_CREDENTIAL_SECRET`); verified empirically that the file
+on disk contains only ciphertext and that the wrong secret returns
+`None` rather than leaking anything. A full `pytest -q` regression
+(2150 passed, 14 failed, 7 skipped, 40 subtests passed) shows the
+identical pre-existing 14-failure set from the Batch D baseline, +10
+passed matching the 10 new tests this batch added — zero regressions.
+Disclosed, non-blocking residuals carried to Batch 2/3: `Connected
+ServiceStore`/`ExternalCredentialStore`/the new `connection_status.py`
+branch all default to `DEFAULT_USER_STATE_ROOT` rather than reading
+`server.py`'s actual configured root (currently inert — nothing in
+`server.py` constructs these stores yet); no live endpoint yet
+re-publishes the registry after `remove()`; `LifecycleController.
+remove()` is implemented but unused outside its own test. **M33.1
+Batches 2/3, and its still-open §10 prerequisites (vendor pair,
+Tools & Skills settings-surface collision), remain NOT STARTED** —
+this correction closes Batch 1 only.
 
 **LOOP_STATE:**  
-IDLE (M32 COMPLETE, M34 COMPLETE, M33 Batches A/P1/P2/B/C/D COMPLETE —
-awaiting explicit User instruction before M33.1)
+IDLE (M32 COMPLETE, M34 COMPLETE, M33 COMPLETE (A/P1/P2/B/C/D), M33.1
+Batch 1 COMPLETE — awaiting explicit User instruction before M33.1
+Batch 2)
 
 **M31 OBJECTIVE (achieved, preserved for reference):**  
 Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).
