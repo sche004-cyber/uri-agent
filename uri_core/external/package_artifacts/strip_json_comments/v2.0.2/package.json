@@ -1,0 +1,9 @@
+{
+  "name": "uri-reviewed-strip-json-comments-cli-v2",
+  "private": true,
+  "version": "1.0.0",
+  "description": "URI-reviewed dependency root for strip-json-comments-cli v2.0.2.",
+  "dependencies": {
+    "strip-json-comments-cli": "2.0.2"
+  }
+}

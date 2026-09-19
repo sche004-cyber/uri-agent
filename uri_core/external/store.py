@@ -160,6 +160,64 @@ class ExternalCapabilityStore:
             reasons=list(qualification.reasons),
         )
 
+    def replace_qualified_descriptor(
+        self,
+        descriptor_data: Mapping[str, Any],
+        *,
+        user_id: str,
+        source_revision: Optional[str] = None,
+        dependency_lock: Optional[Mapping[str, str]] = None,
+    ) -> RegistrationResult:
+        """Atomically replace a user's record only after fresh qualification.
+
+        This is generic lifecycle persistence, not package-manager policy.  A
+        failed replacement leaves the prior record byte-for-byte authoritative;
+        a successful replacement preserves its configured/enabled operational
+        state so a separately staged immutable artifact can take over in one
+        subsequent live-registry publication.
+        """
+        descriptor_id = str(descriptor_data.get("id", "")) or None
+        if descriptor_id is None:
+            return RegistrationResult(ok=False, reasons=["descriptor has no usable id"])
+        qualification = self.qualifier.qualify(
+            descriptor_data, source_revision=source_revision, dependency_lock=dependency_lock
+        )
+        if qualification.status != "qualified":
+            return RegistrationResult(
+                ok=False,
+                descriptor_id=descriptor_id,
+                qualification=qualification.to_dict(),
+                reasons=list(qualification.reasons),
+            )
+        document = self._load(user_id)
+        prior = document["capabilities"].get(descriptor_id)
+        state = self.lifecycle_controller.apply_qualification(
+            self.lifecycle_controller.detect(descriptor_id), qualified=True
+        )
+        if isinstance(prior, Mapping):
+            prior_state = LifecycleState.from_dict(prior.get("lifecycle") or {})
+            # Preserve only lifecycle state, never descriptor/qualification
+            # contents from the old artifact.  Enablement remains valid only
+            # because this fresh descriptor has just qualified.
+            state.configuration = prior_state.configuration
+            state.authentication = prior_state.authentication
+            state.health = prior_state.health
+            state.enabled = bool(prior_state.enabled and prior_state.configuration == "configured")
+            state.update_available = False
+        document["capabilities"][descriptor_id] = {
+            "descriptor": dict(descriptor_data),
+            "qualification": qualification.to_dict(),
+            "lifecycle": state.to_dict(),
+        }
+        self._save(user_id, document)
+        return RegistrationResult(
+            ok=True,
+            descriptor_id=descriptor_id,
+            lifecycle=state.to_dict(),
+            qualification=qualification.to_dict(),
+            reasons=[],
+        )
+
     def get(self, user_id: str, descriptor_id: str) -> Optional[Dict[str, Any]]:
         return self._load(user_id).get("capabilities", {}).get(descriptor_id)
 

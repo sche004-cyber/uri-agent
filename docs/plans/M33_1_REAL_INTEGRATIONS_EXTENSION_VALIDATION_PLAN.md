@@ -1,6 +1,6 @@
 # M33.1 — Real Integrations & Extension Validation
 
-**Status:** Batch 2 CLOSED / ACCEPTED — authoritative frozen plan for the remainder of M33.1. The bounded pinned-`yt-dlp` CLI-Skill acceptance case and its §4 residual corrections were independently audited and accepted on 2026-09-19. Batch 3 (GitHub Skill / Package Lifecycle) is NOT STARTED.
+**Status:** Batch 2 CLOSED / ACCEPTED — authoritative frozen plan for the remainder of M33.1. The bounded pinned-`yt-dlp` CLI-Skill acceptance case and its §4 residual corrections were independently audited and accepted on 2026-09-19. Batch 3 (GitHub Skill / Package Lifecycle) candidate is now frozen (§11: `strip-json-comments-cli`) after an independent adversarial audit against the real npm registry and GitHub repository found and corrected several defects in the original candidate proposal; the entry gate is satisfied on paper. Implementation is NOT STARTED — this document authorizes the target and contract, not the work itself.
 
 **Authority:** This supersedes the M33 bridge blueprint §10 sketch for the remainder of M33.1. Batch 1 is CLOSED / ACCEPTED at `d78366d` / `0558a99`. Batch 2 entry slice is authorized.
 
@@ -28,7 +28,7 @@ Services are not Skills, and Skills are not Services. A Skill can declare a serv
 
 1. **Batch 1 — Foundations:** CLOSED / ACCEPTED: descriptor/store, encrypted credentials, lifecycle primitives, status/Graphify seams, and persisted removal at `d78366d`.
 2. **Batch 2 — pinned `yt-dlp` CLI Skill** (corrected from "Agent Reach": real Skill-package/CLI acceptance case, 2026-09-19 — see §7). CLOSED / ACCEPTED at `dd4863a`.
-3. **Batch 3 — GitHub Skill / Package Lifecycle:** real GitHub-hosted Skill/package acquisition and lifecycle proof. NOT STARTED.
+3. **Batch 3 — GitHub Skill / Package Lifecycle:** real GitHub-hosted Skill/package acquisition and lifecycle proof. Candidate frozen (§11: `strip-json-comments-cli`). NOT STARTED (implementation).
 4. **Batch 4 — M33.1 Closure:** extension-matrix proof, natural-language/UI lifecycle seam, compatibility, and regression evidence. NOT STARTED.
 
 Firecrawl is not an M33.1 acceptance case or closure prerequisite. Generic HTTP/API capability support remains part of the external-capability bridge; Firecrawl may later be onboarded as an optional Connected Service, but URI never depends on it for crawling, Sources, Watches, or knowledge functions.
@@ -121,7 +121,7 @@ Batch 3 may begin only when all of the following are recorded in its task-initia
 4. The implementation plan identifies how qualification, integrity/provenance checks, atomic install/update, rollback/quarantine, per-user lifecycle state, live retirement, and Graphify refresh will be tested.
 5. Acceptance evidence is specified for discovery/inspection, rejected qualification, install/register/enable/execute, disable/re-enable, update, remove, stale-session retirement, cross-user denial, Graphify refresh, permissions/approvals/evidence, and Gmail/Drive/native compatibility.
 
-**Current entry status:** NOT STARTED / BLOCKED ON TARGET SELECTION AND PRE-AUDIT. No repository/ref has been frozen by this plan, so implementation must not begin on a guessed package.
+**Current entry status:** target selected and frozen — see §11. Entry criteria 1–5 above are satisfied by §11's contract. Implementation is authorized to begin against §11 exactly as written; NOT STARTED means no code has been written yet, not that the gate remains open.
 
 ## 9. Batch 4 — M33.1 Closure
 
@@ -132,7 +132,7 @@ Batch 4 consolidates the remaining work where it is materially coherent: extensi
 | Real CLI capability — pinned `yt-dlp` | Qualified descriptor, generic CLI execution, live lifecycle retirement | Proven, Batch 2 |
 | OAuth Connected Service — Gmail | Existing consent/connection lifecycle and canonical compatibility | Existing; re-confirm in closure |
 | Local in-process capability — `remember_fact` | Existing common executor and grant/availability behavior | Existing; re-confirm in closure |
-| GitHub-hosted Skill/package | Batch 3 acquisition, qualification, managed install/update/removal, generic execution | Required, not started |
+| GitHub-hosted Skill/package | Batch 3 acquisition, qualification, managed install/update/removal, generic execution | Candidate frozen (§11: `strip-json-comments-cli`); implementation not started |
 | Manifest/SKILL-style package or equivalent | Prove only if structurally distinct from the GitHub package mechanism; otherwise record that it is not double-counted and use another materially distinct mechanism | Closure decision/evidence required |
 
 Generic HTTP/API capability support remains reusable infrastructure, not an M33.1 vendor-onboarding requirement. Firecrawl is optional future work only.
@@ -142,6 +142,45 @@ The natural-language/UI seam may request lifecycle intent such as “install [re
 ## 10. M33.1 exit criteria
 
 M33.1 closes only with evidence that: the pinned `yt-dlp` CLI proof remains compatible; the GitHub Skill/package lifecycle works end-to-end; install/enable/disable/update/remove and immediate live retirement work; credentials, grants, and lifecycle state remain isolated and encrypted where applicable; Discovery/Graphify refresh correctly while staying derived/non-authoritative; every proven mechanism uses generic contracts with no vendor-specific execution-core branch; the four required matrix mechanisms and any qualifying fifth distinct mechanism are evidenced; the natural-language/UI lifecycle seam works; Gmail/Drive/canonical/native execution remains compatible; and full regression has zero new failures plus component, integration, canonical-loop, and live user-visible evidence.
+
+## 11. Batch 3 frozen candidate — `strip-json-comments-cli` (2026-09-19)
+
+An initial candidate proposal (v3.0.0, "commit" `16523e04be035a62187650e2ddef2d572ec2978a`, update source v2.0.2 `e614aab7ca463a09d7978145d52f0d154df3c1cc`) was independently audited against the real npm registry and the real GitHub repository via `gh api`, not taken on trust. That audit found and this section corrects: the two cited hashes are annotated-**tag-object** SHAs, not commit SHAs (`gh api repos/.../commits/16523e04...` returns "No commit found for SHA"); the CLI's real dependency closure includes `meow@^12.0.1`, which carries its own `"prepare": "npm run build"` lifecycle script (confirmed directly from the npm registry); the real `cli.js` (fetched and read at the tag) accepts an optional positional file-path argument (`fs.readFileSync(input, 'utf8')`) and its stdout is raw transformed text, not JSON — neither matches this plan's contracts as originally assumed.
+
+### A. Pinned revisions (dereferenced commits, not tag objects)
+
+- v3.0.0 → commit `d1f67f37c0543fbc06a107b7df4ea034476c98d7` (dereferenced from tag object `16523e04be035a62187650e2ddef2d572ec2978a`; matches npm's own published `gitHead` for this version).
+- v2.0.2 (update source) → commit `f820f90720ae34faf0b05dea82c99432da4131dc` (dereferenced from tag object `e614aab7ca463a09d7978145d52f0d154df3c1cc`; matches npm's published `gitHead`).
+- Any future revision pin in this repository must record the dereferenced commit SHA (`git rev-parse <tag>^{commit}` or the registry's own `gitHead` field), never a bare tag-object SHA, so tooling that expects a commit object behaves correctly.
+
+### B. Generic CLI descriptor output mode (adapter-level, not vendor-specific)
+
+`uri_core/external/adapters/cli.py`'s descriptor contract gains one new, fully generic field: `output: "json" | "text"`, defaulting to `"json"` (existing behavior for every descriptor that does not set it, including the Batch 2 `yt-dlp` descriptor — zero behavior change there). `output: "text"` means the adapter does not `json.loads()` stdout; it instead wraps the raw stdout string as `{"text": <stdout>}` and returns that through the same structured URI result envelope every other CLI action already uses. This is a capability of the adapter available to any future text-transform Skill, not a `strip-json-comments-cli`-specific branch.
+
+### C. Installation contract — reviewed lockfile, not a hand-picked tarball list
+
+The original candidate's "pin the N direct tarballs" approach is rejected as unsound: it does not reliably cover the full transitive dependency closure for an arbitrary npm package, and would need re-deriving by hand for every future npm-based Skill. Instead:
+
+- A developer-authored, code-reviewed `package.json` + `package-lock.json` (the full, real lockfile for `strip-json-comments-cli@3.0.0`, generated and reviewed at implementation time, committed to this repository) is the installation artifact — not the live npm registry consulted at install time for anything beyond fetching exactly what the lockfile pins.
+- Install runs `npm ci --ignore-scripts --omit=dev` inside a URI-managed, immutable staging directory. `--ignore-scripts` is unconditional and non-negotiable — it applies regardless of whether any specific transitive dependency's lifecycle script is believed safe on a given npm version, precisely because that belief is not something this contract will re-verify on every future lockfile update.
+- The reviewed lockfile must pin the complete transitive dependency tree and its integrity data (npm's own `package-lock.json` `resolved`+`integrity` fields for every entry) — this is npm's own existing, already-correct mechanism; URI does not invent a second lock format.
+- The resulting staged install (a content-addressed, immutable artifact keyed by the lockfile's own hash) may be shared read-only across users with no user state or credentials in it, per §8's existing shared-artifact-cache rule; per-user lifecycle state (installed/enabled/disabled/removed, grants, evidence) stays exactly as user-scoped as every other store in this plan.
+
+### D. Execution boundary (unconditional, not a per-package judgment)
+
+No package lifecycle script (`preinstall`/`install`/`postinstall`/`prepare`/`postpack`, etc., for the target or any transitive dependency) may execute at any point — enforced structurally by `--ignore-scripts`, not by auditing each dependency's scripts field per install. No `npx` (it triggers its own on-demand resolution/install path outside this contract). No caller-controlled executable name, argv, or file path — the fixed invocation is `["node", "cli.js"]` (or the equivalent resolved staged path) with zero positional arguments; `cli.js`'s own optional file-path argument is never used or reachable, since text always arrives over stdin only, matching how the existing CLI adapter already injects input.
+
+### E. The bounded action
+
+One action only: `strip_json_comments(text, remove_whitespace=false) -> {text}`. Fixed CLI invocation as above. Input is JSON-encoded and piped to stdin exactly as the existing adapter already does for every CLI action; `remove_whitespace` maps to the tool's own `--no-whitespace` flag (default `false`, i.e., whitespace preserved, matching the tool's own default). `output: "text"` (§B) carries the raw stdout back as `{"text": ...}` — no double-JSON-parsing of output that may or may not itself be valid JSON.
+
+### F. Update and removal
+
+Update (v2.0.2 → v3.0.0, or any future revision) is a fresh qualification of the new commit's own reviewed lockfile, staged into its own immutable, content-addressed directory, and atomically activated only after that staged install validates — never an in-place mutation of the currently active staged install. Removal immediately retires the user's lifecycle/enablement state and its registry/discovery/Graphify presence, exactly as §4B already requires for every other Skill; the immutable shared staged artifact itself is only garbage-collected once no user's lifecycle record references it, since it carries no per-user state to begin with.
+
+### G. Entry criteria satisfied
+
+§8's five entry-criteria items are satisfied by A–F above: (1) real repository, dereferenced immutable commits, MIT license, inspected layout; (2) the bounded action is representable by the existing generic adapter contract plus the one additive `output` field in §B, with browser automation/self-updaters/MCP/cookies/runtime-generated commands all absent from this candidate; (3) exact artifact (the reviewed lockfile + `npm ci --ignore-scripts --omit=dev`), dependency lock, staging location, update/removal semantics all specified in C/F, with no install hook ever running (D); (4) qualification/integrity/atomic-install/rollback/per-user-state/live-retirement/Graphify-refresh testing follows the same pattern already proven for `yt-dlp` in Batch 2; (5) acceptance evidence is the same discovery/qualification/install/enable/disable/update/remove/cross-user/Graphify/compatibility matrix Batch 2 already used, extended to this candidate.
 
 ## 12. Batch 2 closure record (2026-09-19 — see §7)
 

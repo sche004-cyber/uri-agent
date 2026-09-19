@@ -1,4 +1,4 @@
-"""Bounded local CLI fixture adapter (JSON stdin/stdout, no shell)."""
+"""Bounded local CLI adapter (JSON stdin, JSON or text stdout, no shell)."""
 
 from __future__ import annotations
 
@@ -16,6 +16,9 @@ def execute(descriptor: Mapping[str, Any], _action_name: str, inputs: Mapping[st
     timeout = config.get("timeout_seconds", 3)
     if not isinstance(timeout, (int, float)) or timeout <= 0 or timeout > 10:
         return {"status": "invalid_input", "message": "invalid CLI fixture timeout"}
+    output = config.get("output", "json")
+    if output not in {"json", "text"}:
+        return {"status": "invalid_input", "message": "invalid CLI fixture output mode"}
     try:
         completed = subprocess.run(
             command, input=json.dumps(dict(inputs)), text=True, capture_output=True,
@@ -25,6 +28,8 @@ def execute(descriptor: Mapping[str, Any], _action_name: str, inputs: Mapping[st
         return {"status": "unavailable", "message": f"CLI fixture failed: {exc}"}
     if completed.returncode:
         return {"status": "unavailable", "message": "CLI fixture returned a non-zero status"}
+    if output == "text":
+        return {"status": "success", "result": {"text": completed.stdout}}
     try:
         payload = json.loads(completed.stdout)
     except json.JSONDecodeError:

@@ -34,6 +34,32 @@ def register_and_refresh(
         return result
 
 
+def replace_qualified_and_refresh(
+    context: Any,
+    user_id: str,
+    descriptor_data: Mapping[str, Any],
+    *,
+    source_revision: Optional[str] = None,
+    dependency_lock: Optional[Mapping[str, str]] = None,
+) -> Any:
+    """Freshly qualify and atomically replace an already-managed descriptor.
+
+    Callers stage and validate any immutable artifact before this function.
+    A rejection leaves both durable and live state on the previous generation.
+    """
+    with context.external_lifecycle_lock:
+        store = context.external_capability_store
+        result = store.replace_qualified_descriptor(
+            descriptor_data,
+            user_id=user_id,
+            source_revision=source_revision,
+            dependency_lock=dependency_lock,
+        )
+        if result.ok:
+            refresh_user_external_lifecycle(user_id, context=context)
+        return result
+
+
 def configure_and_refresh(context: Any, user_id: str, descriptor_id: str) -> Optional[Dict[str, Any]]:
     """Configure a qualified capability and refresh live lifecycle."""
     with context.external_lifecycle_lock:
