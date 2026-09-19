@@ -289,7 +289,7 @@ Tools & Skills settings-surface collision), remain NOT STARTED** —
 this correction closes Batch 1 only.
 
 **LOOP_STATE:**  
-IDLE (M33.1 Batch 2 bounded pinned-`yt-dlp` CLI-Skill acceptance case CLOSED / ACCEPTED, 2026-09-19; Batch 3 — GitHub Skill / Package Lifecycle — is NOT STARTED)
+IDLE (M33.1 Batches 1/2/3 CLOSED / ACCEPTED, 2026-09-19; awaiting explicit User instruction before the M33.1 closure batch)
 
 **M33.1 planning correction, 2026-09-19 (additive):**
 `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` is now the
@@ -347,6 +347,58 @@ M33.1 closure batch. M33.2 is reserved for **Edge / Second Brain Foundation**;
 M33.3 is reserved for **Unified URI Interaction & Capability UI**; M33.4 is
 reserved for **Knowledge Fabric / Sources / Watches**. None is implemented or
 opened by this revision.
+
+**M33.1 Batch 3 final independent audit, 2026-09-19 (additive):** the GitHub
+Skill/package lifecycle acceptance case (`strip-json-comments-cli`, per
+`M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` §11) is **CLOSED /
+ACCEPTED** at implementation commit `0fcdf29`. The audit independently
+re-verified, live against the real npm registry and GitHub repository (not
+trusted from the plan or the implementation report), that: both pinned
+revisions' committed `package.json`/`package-lock.json` pairs have complete,
+correct `resolved`/`integrity` fields for their full transitive dependency
+tree (4 packages at v3.0.0, ~40 at v2.0.2, all cross-checked hash-for-hash
+against the live registry); neither lockfile carries an npm
+`hasInstallScript` marker on any entry; the two commit SHAs are the
+dereferenced commits, matching npm's own published `gitHead` exactly (a
+prior candidate draft had cited the annotated-tag-object SHAs instead,
+corrected in plan §11.A before this implementation). Install runs only
+`npm ci --ignore-scripts --omit=dev` inside a from-scratch environment that
+cannot inherit the real user's `HOME`/`npmrc`/token/cache, staging into a
+content-addressed, lockfile-hash-keyed immutable cache via atomic
+`os.replace`; a staging failure never touches persisted lifecycle state.
+Execution invokes only `[node, cli.js]` with zero positional arguments -
+the real `cli.js`'s own optional file-path argument is confirmed
+unreachable by construction. `adapters/cli.py`'s new `output: "json"|"text"`
+field is confirmed generic (default unchanged, zero effect on the existing
+`yt-dlp` descriptor) and no package-specific branch exists anywhere in
+`canonical_execution.py`, `multi_action_dispatch.py`, `orchestrator.py`,
+`permission_binding.py`, `registry_bridge.py`, or `qualification.py`
+(independently grepped, zero matches).
+
+A real, un-mocked end-to-end lifecycle was independently run against the
+actual npm registry: install v2.0.2 → register → configure → enable → live
+execute → disable (live dispatch denial confirmed) → re-enable (live
+dispatch restored) → real staged update to v3.0.0 → live execute → a
+rejected re-stage attempt that leaves v3.0.0 fully authoritative and still
+dispatchable (previous working version survives a failed update) → remove
+with real shared-cache garbage collection, all without a server restart or
+context rebuild. Cross-user isolation (User B cannot see, execute, disable,
+update, remove, or inherit Graphify entries for User A's installation) and
+corrupt-user-state fail-closed behavior (with no leakage to an unaffected
+user) were both independently confirmed in the same live test, and the
+derived Graphify record was confirmed free of `command`/`runner`/
+`credential`/`secret`/`node_modules` content.
+
+Full `pytest -q`: 2,164 passed, 16 failed, 7 skipped, 40 subtests. 14 of the
+16 failures are this repository's already-established pre-existing set. The
+other 2 (`test_m19_office_readiness.py`'s Gmail/Drive "no credentials"
+tests) were independently reproduced identically against the unmodified
+pre-Batch-3 baseline with this entire diff stashed away - proving they
+depend on this machine's live Gmail/Drive credential/network state, exactly
+the same environment-drift pattern already recorded for Batch 2 above, and
+not on any code in this commit. Zero regressions attributable to Batch 3.
+The M33.1 closure batch (extension-matrix proof, natural-language/UI
+lifecycle seam, final regression/live evidence) remains **NOT STARTED**.
 
 **M31 OBJECTIVE (achieved, preserved for reference):**  
 Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).
