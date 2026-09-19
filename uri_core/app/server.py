@@ -28,8 +28,8 @@ import tempfile
 import threading
 import time
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
-from typing import List, Optional
+from dataclasses import dataclass, field
+from typing import Any, List, Optional
 
 # Direct ``uvicorn uri_core.app.server:app`` development starts do not pass
 # through scripts/run_uri_server.py, which otherwise supplies this local
@@ -329,6 +329,11 @@ class _UserContext:
     evidence_ledger: EvidenceLedger
     operation_store: FileOperationStore
     complete_operation_feedback: object
+    # M33.1: store-root consistency
+    external_capability_store: Optional[Any] = None
+    connected_service_store: Optional[Any] = None
+    external_credential_store: Optional[Any] = None
+    external_lifecycle_lock: Any = field(default_factory=threading.RLock)
 
 
 _user_contexts: dict = {}
@@ -513,21 +518,35 @@ def _build_user_context(user_id: str) -> _UserContext:
     from uri_core.capabilities.discovery import CapabilityDiscoveryEngine
     from uri_core.capabilities.gmail import GmailCapability
     from uri_core.external.adapters.in_process import remember_fact_capability
-    from uri_core.external.permission_binding import (
-        external_permission_resolver as _external_permission_resolver,
-    )
+    from uri_core.external.credentials import ExternalCredentialStore
+    from uri_core.external.permission_binding import make_permission_resolver
     from uri_core.external.registry_bridge import ExternalCapabilityPublisher
+    from uri_core.external.service_store import ConnectedServiceStore
+    from uri_core.external.store import ExternalCapabilityStore
+
+    external_credential_store = ExternalCredentialStore(root=_USER_STATE_ROOT)
+    external_capability_store = ExternalCapabilityStore(root=_USER_STATE_ROOT)
+    connected_service_store = ConnectedServiceStore(
+        root=_USER_STATE_ROOT, credential_store=external_credential_store
+    )
 
     _remember_descriptor = _capability_registry.describe_status("remember_fact")
     _base_capabilities = [GmailCapability()]
     if _remember_descriptor is not None:
         _base_capabilities.append(remember_fact_capability(_remember_descriptor, principal=principal))
-    _publish_result = ExternalCapabilityPublisher().publish(user_id, base_capabilities=_base_capabilities)
+    _publisher = ExternalCapabilityPublisher(store=external_capability_store)
+    _publish_result = _publisher.publish(user_id, base_capabilities=_base_capabilities)
     orchestrator.multi_action_dispatch.registry = _publish_result.registry
     orchestrator.multi_action_dispatch.discovery = CapabilityDiscoveryEngine(
         orchestrator.multi_action_dispatch.registry
     )
-    orchestrator.multi_action_dispatch.external_permission_resolver = _external_permission_resolver
+    orchestrator.multi_action_dispatch.external_permission_resolver = make_permission_resolver(
+        store=external_capability_store
+    )
+    # This is a derived, per-user view.  Never mutate the process-global
+    # Graphify index with a user's installed capability/service state: doing
+    # so would leak that state to another user's context.
+    orchestrator.graphify_index = GraphifyIndex(records=dict(_graphify_index.records))
     orchestrator.multi_action_dispatch.audit_sink = (
         lambda entry: audit_trail.record(
             event_type="multi_action_capability_execution",
@@ -549,7 +568,72 @@ def _build_user_context(user_id: str) -> _UserContext:
         evidence_ledger=evidence_ledger,
         operation_store=operation_store,
         complete_operation_feedback=_complete_operation_feedback,
+        external_capability_store=external_capability_store,
+        connected_service_store=connected_service_store,
+        external_credential_store=external_credential_store,
     )
+
+
+def refresh_user_external_lifecycle(
+    user_id: str, context: Optional[_UserContext] = None
+) -> Any:
+    """Synchronously republish the external capability registry, update live
+    MultiActionDispatch registry & discovery references, and refresh Graphify
+    derived capability and service indexes without requiring a server restart."""
+    if context is None:
+        context = _get_user_context(user_id)
+    with context.external_lifecycle_lock:
+        from uri_core.capabilities.gmail import GmailCapability
+        from uri_core.external.adapters.in_process import remember_fact_capability
+        from uri_core.external.permission_binding import make_permission_resolver
+        from uri_core.external.registry_bridge import ExternalCapabilityPublisher
+        from uri_core.core.multi_action_dispatch import MultiActionDispatch
+
+        base_caps = [GmailCapability()]
+        rem = _capability_registry.describe_status("remember_fact")
+        if rem is not None:
+            principal = getattr(context.orchestrator, "principal", None)
+            base_caps.append(remember_fact_capability(rem, principal=principal))
+        publisher = ExternalCapabilityPublisher(store=context.external_capability_store)
+        res = publisher.publish(user_id, base_capabilities=base_caps)
+        previous_dispatch = context.orchestrator.multi_action_dispatch
+        next_dispatch = MultiActionDispatch(
+            registry=res.registry,
+            granted_permissions=previous_dispatch._explicit_permissions,
+            permission_checker=previous_dispatch.permission_checker,
+            capability_registry=previous_dispatch.capability_registry,
+            external_permission_resolver=make_permission_resolver(
+                store=context.external_capability_store
+            ),
+            audit_sink=previous_dispatch.audit_sink,
+        )
+        graphify = getattr(context.orchestrator, "graphify_index", None)
+        if graphify is not None:
+            from uri_core.core.capability_directory import CapabilityDirectory
+            from uri_core.core.graphify_index import refresh as graphify_refresh
+
+            cap_dir = CapabilityDirectory(multi_action_registry=res.registry)
+            graphify_refresh(graphify, capability_directory=cap_dir, scope="capabilities")
+            if context.connected_service_store is not None:
+                graphify_refresh(
+                    graphify,
+                    connected_service_store=context.connected_service_store,
+                    user_id=user_id,
+                    scope="services",
+                )
+        # One attribute replacement publishes a complete coherent generation:
+        # registry, discovery engine, permission resolver, selected-session
+        # state, and cached executors can never be mixed across generations.
+        context.orchestrator.multi_action_dispatch = next_dispatch
+        return res
+
+
+def _connection_status_for_user(user_id: Optional[str]) -> list[dict]:
+    """Project status from the same composed service store as execution."""
+    service_store = None
+    if user_id is not None:
+        service_store = _get_user_context(user_id).connected_service_store
+    return list_connection_status(user_id=user_id, service_store=service_store)
 
 
 def _get_user_context(user_id: str) -> _UserContext:
@@ -2651,7 +2735,7 @@ def connections(
     interactive OAuth sign-in on the server host.
     """
 
-    return {"connections": list_connection_status(user_id=user_id)}
+    return {"connections": _connection_status_for_user(user_id)}
 
 
 # ------------------------------------------------------------------
@@ -3112,7 +3196,7 @@ def authorize_connection(
                 "configured on the URI server host yet, so sign-in "
                 "cannot be started."
             ),
-            "connections": list_connection_status(user_id=principal.user_id),
+            "connections": _connection_status_for_user(principal.user_id),
         }
 
     with _google_auth_flow_lock:
@@ -3123,7 +3207,7 @@ def authorize_connection(
                     "A Google sign-in is already in progress - "
                     "complete or close that browser window first."
                 ),
-                "connections": list_connection_status(user_id=principal.user_id),
+                "connections": _connection_status_for_user(principal.user_id),
             }
         _google_auth_flow_state["running"] = True
         _google_auth_flow_state["last_error"] = None
@@ -3140,7 +3224,7 @@ def authorize_connection(
             "Opening your browser for Google sign-in - complete the "
             "consent there, then refresh this screen."
         ),
-        "connections": list_connection_status(user_id=principal.user_id),
+        "connections": _connection_status_for_user(principal.user_id),
     }
 
 
@@ -3172,7 +3256,7 @@ def disconnect_connection(
         return {
             "disconnected": False,
             "detail": "That service was not connected.",
-            "connections": list_connection_status(user_id=principal.user_id),
+            "connections": _connection_status_for_user(principal.user_id),
         }
 
     try:
@@ -3190,7 +3274,7 @@ def disconnect_connection(
             "Google authorization removed for this account. Gmail and Drive share one "
             "token, so both now require sign-in again."
         ),
-        "connections": list_connection_status(user_id=principal.user_id),
+        "connections": _connection_status_for_user(principal.user_id),
     }
 
 

@@ -91,19 +91,6 @@ class CapabilityCleanRemovalTests(unittest.TestCase):
         republished = publisher.publish(self.user_a)
         self.assertIsNone(republished.registry.get_capability(profile_id))
 
-    def test_lifecycle_controller_remove_transition(self):
-        controller = LifecycleController()
-        state = controller.detect("cap_test")
-        state = controller.apply_qualification(state, qualified=True)
-        state = controller.configure(state)
-        state = controller.enable(state)
-        self.assertEqual(derive_label(state), "ready")
-
-        state = controller.remove(state)
-        self.assertEqual(state.presence, PRESENCE_ABSENT)
-        self.assertFalse(state.enabled)
-        self.assertEqual(derive_label(state), "not_installed")
-
 
 class ConnectedServiceStoreTests(unittest.TestCase):
     def setUp(self):

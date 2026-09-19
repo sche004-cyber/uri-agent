@@ -1,0 +1,1 @@
+"""Committed external capability descriptors."""

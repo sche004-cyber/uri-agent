@@ -108,7 +108,12 @@ def _google_service_status(
     }
 
 
-def list_connection_status(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+def list_connection_status(
+    user_id: Optional[str] = None,
+    *,
+    service_store: Optional[Any] = None,
+    root: Optional[str] = None,
+) -> List[Dict[str, Any]]:
     """Every external service URI knows how to connect to, with its
     real current authorization state. Read-only and non-interactive;
     safe to call on every client refresh. Never raises - an
@@ -120,9 +125,9 @@ def list_connection_status(user_id: Optional[str] = None) -> List[Dict[str, Any]
     """
     from uri_core.core.google_auth_common import resolve_google_token_path
 
-    root = _repo_root()
-    credentials_path = os.path.join(root, "credentials.json")
-    token_path = resolve_google_token_path(user_id) if user_id else os.path.join(root, "token.json")
+    repo_root = _repo_root()
+    credentials_path = os.path.join(repo_root, "credentials.json")
+    token_path = resolve_google_token_path(user_id) if user_id else os.path.join(repo_root, "token.json")
 
     services = [
         {
@@ -165,7 +170,7 @@ def list_connection_status(user_id: Optional[str] = None) -> List[Dict[str, Any]
         except Exception:
             state = {
                 "status": STATUS_NOT_CONNECTED,
-                "detail": "Connection state could not be determined.",
+                "detail": "Failed to determine service status",
             }
 
         results.append(
@@ -181,7 +186,12 @@ def list_connection_status(user_id: Optional[str] = None) -> List[Dict[str, Any]
     if user_id:
         try:
             from uri_core.external.service_store import ConnectedServiceStore
-            ext_store = ConnectedServiceStore()
+            if service_store is not None:
+                ext_store = service_store
+            elif root is not None:
+                ext_store = ConnectedServiceStore(root=root)
+            else:
+                ext_store = ConnectedServiceStore()
             for ext_svc in ext_store.list_services(user_id):
                 if ext_svc["id"] not in {"gmail", "drive"}:
                     results.append(

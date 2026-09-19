@@ -23,3 +23,6 @@ psutil>=6.0
 pymupdf>=1.24
 pytesseract>=0.3
 Pillow>=10.0
+# M33.1 Batch 2: developer-reviewed bounded CLI Skill.  The runner rejects
+# every other installed version before it can launch a network-capable process.
+yt-dlp==2026.08.19

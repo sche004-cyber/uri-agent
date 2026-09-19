@@ -149,10 +149,3 @@ class LifecycleController:
         state.update_available = available
         state.updated_at = _now()
         return state
-
-    def remove(self, state: LifecycleState) -> LifecycleState:
-        state.presence = PRESENCE_ABSENT
-        state.enabled = False
-        state.health = HEALTH_UNKNOWN
-        state.updated_at = _now()
-        return state
