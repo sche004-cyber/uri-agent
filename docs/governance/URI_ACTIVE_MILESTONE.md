@@ -187,16 +187,33 @@ destination milestone number. Full detail: `docs/plans/M32_POST_
 BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10, §15.14.
 
 **CURRENT STATE:**  
-Awaiting the next milestone. No implementation authorized yet on any
-surface until a fresh milestone (or the already-frozen Hybrid UI
-initiative) is explicitly started per standing governance. **M33 —
-External Capability Bridge is explicitly NOT started** (roadmap-
-reconciled into this number per the User's 2026-09-18 instruction; see
-"Roadmap Reservation" below and §1b) — do not begin it without a
-separate, explicit User instruction.
+**Correction, 2026-09-19 (auditable, preserving history rather than
+silently rewriting it):** the text immediately below this note
+previously said "M33 — External Capability Bridge is explicitly NOT
+started." That was already false at the time it was written relative
+to this repository's own commit history and was never updated as M33
+actually proceeded. As of this correction, M33 Batches A
+(`b86c6dd`), P1 (`69d54ea`), P2 (`bf71f73`), B (`85eb445`), and now C
+(`8926bb4`) are all committed on `master`. Batch C — durable
+evidence/operation ledger, sole evidence-authority cutover — is
+**CLOSED: CLAUDE VERIFIED — ACCEPTED (2026-09-19)** per Claude's
+independent final audit this session: frozen requirements D4/D5 and
+acceptance rows A7/A8/A13/A14 confirmed by direct code reading and by
+independently rerunning the relevant test suites; one bounded defect
+found (an unauthenticated-path `TypeError` in `server.py`'s
+`_UserContext` construction, introduced by this batch and untested by
+its own new tests) was fixed, reverified, and included in the same
+commit; a full `pytest -q` regression (2134 passed, 14 failed, 7
+skipped, 40 subtests passed) was independently cross-checked against
+unmodified `HEAD` and all 14 failures reproduced identically pre-batch,
+confirming zero regressions attributable to Batch C. Batch D (CLI/HTTP
+transports, `remember_fact` pilot) remains **NOT STARTED** — this
+correction closes Batch C only, not M33 as a whole, and authorizes no
+further implementation beyond what is already committed.
 
 **LOOP_STATE:**  
-IDLE (M32 COMPLETE, M34 COMPLETE — awaiting next milestone initiation; M33 not started)
+IDLE (M32 COMPLETE, M34 COMPLETE, M33 Batches A/P1/P2/B/C COMPLETE —
+awaiting explicit User instruction before Batch D)
 
 **M31 OBJECTIVE (achieved, preserved for reference):**  
 Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).
