@@ -1,12 +1,12 @@
 # M33.1 — Real Integrations & Extension Validation
 
-**Status:** Batch 2 CLOSED / ACCEPTED — authoritative frozen plan for the remainder of M33.1. The bounded pinned-`yt-dlp` CLI-Skill acceptance case and its §4 residual corrections were independently audited and accepted on 2026-09-19. Batch 3 has not started.
+**Status:** Batch 2 CLOSED / ACCEPTED — authoritative frozen plan for the remainder of M33.1. The bounded pinned-`yt-dlp` CLI-Skill acceptance case and its §4 residual corrections were independently audited and accepted on 2026-09-19. Batch 3 (GitHub Skill / Package Lifecycle) is NOT STARTED.
 
 **Authority:** This supersedes the M33 bridge blueprint §10 sketch for the remainder of M33.1. Batch 1 is CLOSED / ACCEPTED at `d78366d` / `0558a99`. Batch 2 entry slice is authorized.
 
 ## 1. Evidence and authority
 
-M33.1 proves that URI can acquire and manage external abilities through the landed generic external-capability bridge. It is not M33.2.
+M33.1 proves that URI can acquire and manage external abilities through the landed generic external-capability bridge. It is neither M33.2, M33.3, nor M33.4.
 
 Live source establishes: `ExternalCapabilityStore` owns persisted descriptor and skill-style lifecycle records; `ExternalCapabilityPublisher` creates a fresh registry generation from enabled qualified records; and `MultiActionDispatch` remains the execution, permission, and approval path. Batch D's `transport_handler()` selects only the closed `in_process`, `cli`, or `http` adapter vocabulary and validates input/output. `ConnectedServiceStore`/`ExternalCredentialStore` are separate from installable-capability lifecycle; the service store currently does not publish capabilities or enter user-context composition. `GraphifyIndex` derives service records only when given a service store. `server.py` builds a cached per-user registry once, with no lifecycle mutation route that swaps it or refreshes discovery/Graphify.
 
@@ -24,15 +24,22 @@ The model proposes; URI validates, grants, approves, dispatches, executes, store
 
 Services are not Skills, and Skills are not Services. A Skill can declare a service dependency, but URI verifies it as a precondition.
 
-## 3. Frozen batches and M33.2 boundary
+## 3. Frozen batches and milestone boundaries
 
 1. **Batch 1 — Foundations:** CLOSED / ACCEPTED: descriptor/store, encrypted credentials, lifecycle primitives, status/Graphify seams, and persisted removal at `d78366d`.
 2. **Batch 2 — pinned `yt-dlp` CLI Skill** (corrected from "Agent Reach": real Skill-package/CLI acceptance case, 2026-09-19 — see §7). CLOSED / ACCEPTED at `dd4863a`.
-3. **Batch 3 — Firecrawl:** optional HTTP/API Connected Service acceptance case. NOT STARTED.
-4. **Batch 4 — Broader Extensibility Proof:** prove four to five structurally different mechanisms. NOT STARTED.
-5. **Batch 5 — Natural-Language / UI Lifecycle Seam:** lifecycle requests such as Install/Remove a registered Skill and Connect/Disconnect GitHub. NOT STARTED.
+3. **Batch 3 — GitHub Skill / Package Lifecycle:** real GitHub-hosted Skill/package acquisition and lifecycle proof. NOT STARTED.
+4. **Batch 4 — M33.1 Closure:** extension-matrix proof, natural-language/UI lifecycle seam, compatibility, and regression evidence. NOT STARTED.
 
-M33.1 acquires and manages abilities. M33.2 is reserved for Knowledge Fabric—sources, watches, continuous learning. M33.1 outputs may carry normalized evidence metadata but no integration gains direct durable-knowledge write authority. A future M33.2 Knowledge Gateway must validate candidate, provenance, user scope, consent, and retention before a durable write.
+Firecrawl is not an M33.1 acceptance case or closure prerequisite. Generic HTTP/API capability support remains part of the external-capability bridge; Firecrawl may later be onboarded as an optional Connected Service, but URI never depends on it for crawling, Sources, Watches, or knowledge functions.
+
+**M33.1 — Acquire / manage abilities.** It may emit bounded evidence results but never grants an integration direct durable-knowledge write authority.
+
+**M33.2 — Edge / Second Brain Foundation.** This is a separate reserved milestone; it does not implement Sources, Watches, crawling, or Knowledge Fabric.
+
+**M33.3 — Unified URI Interaction & Capability UI.** This is a separate reserved interaction/UI milestone; it does not change the M33.1 authority model or open knowledge ingestion.
+
+**M33.4 — Knowledge Fabric / Sources / Watches.** A future M33.4 Knowledge Gateway must validate every candidate's provenance, user scope, consent, retention, and policy before any durable write. No M33.1 integration gets unrestricted direct-write authority merely by being installed or connected.
 
 ## 4. Batch 1 residual decisions — mandatory before Batch 2
 
@@ -94,29 +101,47 @@ Batch A's `Qualifier.qualify()` validates a descriptor's *shape* (contract versi
 
 **Decision:** for Batch 2 and for any future real external Skill, the descriptor (including its exact pinned command/argv) must be **developer-authored and code-reviewed at implementation time, committed to the repository, and never constructed from end-user input, model output, or a runtime "install by URL/package name" flow**. No endpoint or lifecycle seam in Batch 2 accepts an arbitrary descriptor from a request. This must hold until a real install-time integrity/provenance check (signature, allowlist, or equivalent) exists — which is explicitly out of Batch 2's scope, not assumed away.
 
-## 8. Batch 3 — Firecrawl acceptance
+## 8. Batch 3 — GitHub Skill / Package Lifecycle
 
-Firecrawl remains optional; URI works without it. As HTTP/API Connected Service, a pinned provider API version must prove per-user encrypted key, explicit connect/configure/health, sanitized status, service descriptor capability registration, generic HTTP-adapter execution through URI validation/permission/approval/audit/evidence, and disconnect/revoke deleting local key plus immediately retiring live capabilities and refreshing discovery/Graphify. Bad/expired/revoked credentials, transport/redirect/response failures, and cross-user attempts fail closed without disclosure. Include component, integration, canonical-loop, and live UI/chat evidence; Gmail/Drive/native execution stay compatible.
+**Goal:** prove URI can acquire a real GitHub-hosted Skill/package and manage it through generic contracts. GitHub is an acquisition/provenance surface, not execution authority. A repository, its README, or `SKILL.md` cannot confer permission, approval, credential access, dispatch authority, or a successful lifecycle result.
 
-## 9. Batch 4 extensibility matrix
+**Required lifecycle:** inspect/discover the repository; identify a structured package/manifest/SKILL contract; qualify it before execution; install only its reviewed artifact into a URI-managed location; register declared capabilities; enable, disable, update, and remove; retire live capabilities immediately; refresh Discovery/Graphify; and preserve user isolation and URI's permission, approval, dispatch, evidence, and audit gates.
 
-| Mechanism | Onboarding/lifecycle | Credentials/dependencies | Registration/execution | Removal/discovery |
-| --- | --- | --- | --- | --- |
-| CLI/local Skill — pinned `yt-dlp` | Inspect, qualify, install/configure/enable/update/disable/remove | Pinned version/dependencies; no browser/cookie import, no third-party installer/router | Descriptor + generic CLI adapter | Store removal; immediate registry/discovery/Graphify retirement |
-| HTTP/API Service — Firecrawl | Configure/connect/health/disconnect/revoke | Per-user encrypted key | Service descriptor + generic HTTP adapter | Revoke/retire/refresh |
-| OAuth Service — Gmail/equivalent | Consent/connect/refresh/health/disconnect | User OAuth token/scopes | Existing canonical path/equivalent bridge | Disconnect makes availability false |
-| Local in-process — `remember_fact` | Built-in availability and normal enable/grant | No external credential | Existing common executor | Grant/enable removal affects surfaces |
-| Manifest/SKILL.md package | Inspect, qualify/install/update/enable/disable/remove | Declared dependencies; prose is never executable authority | Validated action descriptor only | Remove/refresh derived views |
+**Frozen safety rules:** the model and user may request a registered target but cannot construct an arbitrary repository URL, revision, manifest, argv, handler, or installer command. `SKILL.md` prose is descriptive only; it must be projected through a validated descriptor before execution. Installation may use a shared immutable verified-artifact cache only when it contains no user state or credentials; the installed/enabled record, grants, status, evidence, and removal authority remain strictly user-scoped. Update selects a separately qualified immutable revision and atomically swaps only after its validation succeeds. Removal deletes the user's installation state and retires it from every live surface without deleting another user's state.
 
-Batch 4 closes only when all five are evidenced as structurally distinct.
+No GitHub-, package-, or vendor-specific branch may be added to canonical execution, the orchestrator, `MultiActionDispatch`, the generic adapters, permission resolution, approval handling, or Graphify.
 
-## 10. Batch 5 lifecycle seam
+### Batch 3 entry criteria
 
-Natural language/UI may request lifecycle intent, but URI resolves registered target, validates eligibility, requires needed confirmation/approval, runs lifecycle, and returns actual sanitized state. Neither model nor UI can invent id, credential, registration, grant, or success.
+Batch 3 may begin only when all of the following are recorded in its task-initiation package:
 
-## 11. M33.1 exit criteria
+1. A specific public GitHub repository, immutable commit/tag, license/provenance record, and repository layout have been independently inspected; mutable branch names are not an execution input.
+2. The target exposes a bounded, reviewable package/manifest contract and at least one useful capability that can be represented by existing generic adapter contracts. Browser automation, arbitrary shell installation, opaque self-updaters, MCP sidecars, cookies, and runtime-generated commands are excluded.
+3. The exact allowed artifact files, dependency lock, installation location, update source revision, uninstallation semantics, and capability projection are specified. No package install hook or unreviewed script runs merely because it is present in the repository.
+4. The implementation plan identifies how qualification, integrity/provenance checks, atomic install/update, rollback/quarantine, per-user lifecycle state, live retirement, and Graphify refresh will be tested.
+5. Acceptance evidence is specified for discovery/inspection, rejected qualification, install/register/enable/execute, disable/re-enable, update, remove, stale-session retirement, cross-user denial, Graphify refresh, permissions/approvals/evidence, and Gmail/Drive/native compatibility.
 
-Close only with evidence that the pinned `yt-dlp` CLI Skill and optional Firecrawl work end-to-end; live install/enable/disable/update/remove and connect/disconnect/revoke work; retirement is immediate; credentials remain encrypted/isolated/sanitized; discovery/Graphify refresh and remain non-authoritative; generic contracts carry every mechanism without vendor-specific core execution; all five matrix mechanisms are proven; the natural-language/UI seam works; Gmail/Drive/canonical/native execution stays compatible; and full regression has zero new failures plus component, integration, canonical-loop, and live user-visible evidence.
+**Current entry status:** NOT STARTED / BLOCKED ON TARGET SELECTION AND PRE-AUDIT. No repository/ref has been frozen by this plan, so implementation must not begin on a guessed package.
+
+## 9. Batch 4 — M33.1 Closure
+
+Batch 4 consolidates the remaining work where it is materially coherent: extension-matrix proof, the natural-language/UI lifecycle seam, compatibility, and final regression/live evidence. It does not add a mandatory HTTP vendor.
+
+| Mechanism | Required proof | M33.1 status |
+| --- | --- | --- |
+| Real CLI capability — pinned `yt-dlp` | Qualified descriptor, generic CLI execution, live lifecycle retirement | Proven, Batch 2 |
+| OAuth Connected Service — Gmail | Existing consent/connection lifecycle and canonical compatibility | Existing; re-confirm in closure |
+| Local in-process capability — `remember_fact` | Existing common executor and grant/availability behavior | Existing; re-confirm in closure |
+| GitHub-hosted Skill/package | Batch 3 acquisition, qualification, managed install/update/removal, generic execution | Required, not started |
+| Manifest/SKILL-style package or equivalent | Prove only if structurally distinct from the GitHub package mechanism; otherwise record that it is not double-counted and use another materially distinct mechanism | Closure decision/evidence required |
+
+Generic HTTP/API capability support remains reusable infrastructure, not an M33.1 vendor-onboarding requirement. Firecrawl is optional future work only.
+
+The natural-language/UI seam may request lifecycle intent such as “install [registered package],” “remove [registered package],” “enable [capability],” or “connect GitHub.” URI resolves the registered target, validates eligibility, obtains needed confirmation/approval, runs the lifecycle operation, and returns sanitized actual state. Neither model nor UI can invent an id, credential, registration, grant, or success.
+
+## 10. M33.1 exit criteria
+
+M33.1 closes only with evidence that: the pinned `yt-dlp` CLI proof remains compatible; the GitHub Skill/package lifecycle works end-to-end; install/enable/disable/update/remove and immediate live retirement work; credentials, grants, and lifecycle state remain isolated and encrypted where applicable; Discovery/Graphify refresh correctly while staying derived/non-authoritative; every proven mechanism uses generic contracts with no vendor-specific execution-core branch; the four required matrix mechanisms and any qualifying fifth distinct mechanism are evidenced; the natural-language/UI lifecycle seam works; Gmail/Drive/canonical/native execution remains compatible; and full regression has zero new failures plus component, integration, canonical-loop, and live user-visible evidence.
 
 ## 12. Batch 2 closure record (2026-09-19 — see §7)
 
@@ -129,6 +154,6 @@ The vendor-selection question that originally blocked this gate is resolved by �
 
 Each item above was implemented only within the bounded entry authorization and independently verified. The slice did not add a new URI adapter type or vendor-specific execution branch.
 
-**Accepted bounded scope:** §4's three residual corrections, the developer-authored pinned `yt-dlp` descriptor, runtime lifecycle seam, the unchanged generic CLI adapter, one read-only action, and component/canonical-loop/live-refresh evidence. It excludes Firecrawl, Batches 4/5, M33.2, the `agent-reach` package/installer/SKILL.md/router in any form, arbitrary SKILL.md prose execution, and vendor-specific core changes.
+**Accepted bounded scope:** §4's three residual corrections, the developer-authored pinned `yt-dlp` descriptor, runtime lifecycle seam, the unchanged generic CLI adapter, one read-only action, and component/canonical-loop/live-refresh evidence. It excludes Firecrawl, later M33.1 batches, M33.2/M33.3/M33.4, the `agent-reach` package/installer/SKILL.md/router in any form, arbitrary SKILL.md prose execution, and vendor-specific core changes.
 
-CLOSED / ACCEPTED — Batch 2 bounded pinned-`yt-dlp` CLI-Skill acceptance case. Batch 3 (Firecrawl) remains NOT STARTED.
+CLOSED / ACCEPTED — Batch 2 bounded pinned-`yt-dlp` CLI-Skill acceptance case. Batch 3 (GitHub Skill / Package Lifecycle) remains NOT STARTED.

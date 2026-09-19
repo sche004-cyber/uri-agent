@@ -52,7 +52,10 @@ starting with M30); M33 and M33.1 are tracked there. M33 is CLOSED; M33.1
 Batch 1 is CLOSED / ACCEPTED and its remaining work is governed by
 `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md`, with its
 bounded pinned-`yt-dlp` Batch 2 CLOSED / ACCEPTED at `dd4863a`. Batch 3 remains
-NOT STARTED. M32.1/M35 remain
+NOT STARTED as GitHub Skill / Package Lifecycle. M33.2 is reserved for Edge /
+Second Brain Foundation; M33.3 is reserved for Unified URI Interaction &
+Capability UI; M33.4 is reserved for Knowledge Fabric / Sources / Watches.
+M32.1/M35 remain
 reserved/NOT STARTED and none of these records block M34's closure.
 
 ## Relationship to the older Phase 0–4 checklist
@@ -108,8 +111,11 @@ by the M-numbered milestones below.
 historical text but is stale. M33 is CLOSED; M33.1 Batch 1 is CLOSED / ACCEPTED.
 `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` is the
 authoritative frozen remaining plan. Batch 2 is CLOSED / ACCEPTED at `dd4863a`;
-Batch 3 is NOT STARTED. M33.2 is reserved Knowledge Fabric only and is not
-implemented.
+Batch 3 is GitHub Skill / Package Lifecycle and is NOT STARTED. Firecrawl is
+optional future Connected-Service work, not an M33.1 closure requirement.
+M33.2 is reserved for Edge / Second Brain Foundation; M33.3 is reserved for
+Unified URI Interaction & Capability UI; M33.4 is reserved for Knowledge
+Fabric / Sources / Watches. None is implemented.
 
 ---
 

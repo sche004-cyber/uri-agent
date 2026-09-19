@@ -289,7 +289,7 @@ Tools & Skills settings-surface collision), remain NOT STARTED** —
 this correction closes Batch 1 only.
 
 **LOOP_STATE:**  
-IDLE (M33.1 Batch 2 bounded pinned-`yt-dlp` CLI-Skill acceptance case CLOSED / ACCEPTED, 2026-09-19; Batch 3 is NOT STARTED)
+IDLE (M33.1 Batch 2 bounded pinned-`yt-dlp` CLI-Skill acceptance case CLOSED / ACCEPTED, 2026-09-19; Batch 3 — GitHub Skill / Package Lifecycle — is NOT STARTED)
 
 **M33.1 planning correction, 2026-09-19 (additive):**
 `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` is now the
@@ -329,8 +329,24 @@ M19 failures require an ambient `credentials.json` that pre-dated this slice
 worktree, and the accepted diff does not change Google/Drive code. The one
 baseline-only privacy failure likewise follows the isolated worktree's missing
 credentials. This is environment-state drift, not a Batch 2 regression.
-Batch 3 (Firecrawl) and all later M33.1 batches remain **NOT STARTED**; M33.2
-remains reserved only.
+Batch 3 (GitHub Skill / Package Lifecycle) and the M33.1 closure batch remain
+**NOT STARTED**.
+
+**M33.1 roadmap revision, 2026-09-19 (additive):** Firecrawl is removed as an
+M33.1 acceptance and closure requirement. The generic HTTP/API bridge remains
+available; Firecrawl may be a future optional Connected Service but is not a
+dependency for Sources, Watches, crawling, Edge / Second Brain, or Knowledge
+Fabric. The next batch is **M33.1 Batch 3 — GitHub Skill / Package Lifecycle**:
+one specifically pre-audited immutable GitHub repository/ref must be inspected,
+qualified, installed in a URI-managed location, registered, enabled/disabled,
+updated, removed, live-retired, and reflected in Discovery/Graphify through
+generic contracts. It is **NOT STARTED / BLOCKED ON TARGET SELECTION AND
+PRE-AUDIT**. The remaining extension-matrix proof, natural-language/UI lifecycle
+seam, compatibility, and regression evidence are consolidated into one later
+M33.1 closure batch. M33.2 is reserved for **Edge / Second Brain Foundation**;
+M33.3 is reserved for **Unified URI Interaction & Capability UI**; M33.4 is
+reserved for **Knowledge Fabric / Sources / Watches**. None is implemented or
+opened by this revision.
 
 **M31 OBJECTIVE (achieved, preserved for reference):**  
 Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).
