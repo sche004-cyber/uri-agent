@@ -80,6 +80,7 @@ from uri_core.config.model_roles import ROLE_REASONING, build_provider, load_mod
 from uri_core.core.model_reasoning_adapter import OllamaReasoningAdapter
 from uri_core.core.model_reasoning_gateway import ModelReasoningGateway
 from uri_core.core.orchestrator import UriOrchestrator
+from uri_core.core.evidence_fact_integrity import EvidenceLedger, FileEvidenceStore
 from uri_core.core.personalization_context import (
     build_personalization_context,
 )
@@ -111,6 +112,8 @@ from uri_core.core.user_profile import (
     UserProfileStore,
     UserProfileValidationError,
 )
+from uri_core.external.operation_store import FileOperationStore
+from uri_core.external.evidence_adapter import complete_operation_feedback
 from uri_core.core.graph_store import GraphStore
 from uri_core.core.graphify_index import (
     DEFAULT_INDEX_PATH, GraphifyIndex, build_index, load_index, save_index,
@@ -285,6 +288,22 @@ _auth_session_store = AuthSessionStore()
 # tempfile.TemporaryDirectory() isolation discipline.
 _USER_STATE_ROOT = "uri_workspace/users"
 
+# M33 Batch C bounded fix: the legacy ambient path (no Authorization
+# header, no user_id, predates login) never gets a per-user durable
+# EvidenceLedger/FileOperationStore - FileEvidenceStore/FileOperation
+# Store both require a real UUID user_id (see portable_paths.py) and
+# no such identity exists on this branch. Nothing currently reads
+# operation_store or complete_operation_feedback off the legacy
+# _UserContext, so an in-memory-only ledger and an explicit no-op
+# feedback callable satisfy _UserContext's fields honestly, without
+# fabricating per-user durability that does not apply here.
+_legacy_evidence_ledger = EvidenceLedger()
+_legacy_operation_store = None
+
+
+def _legacy_complete_operation_feedback(operation_id, completion):
+    return None
+
 
 @dataclass
 class _UserContext:
@@ -303,6 +322,13 @@ class _UserContext:
     orchestrator: UriOrchestrator
     file_store: FileStore
     graph_store: GraphStore
+    # M33 Batch C: these stores are constructed per authenticated user and
+    # rehydrate on process restart.  C3 alone will route legacy evidence
+    # projections through this ledger, so this is composition, not a second
+    # runtime authority alongside the legacy dict transport.
+    evidence_ledger: EvidenceLedger
+    operation_store: FileOperationStore
+    complete_operation_feedback: object
 
 
 _user_contexts: dict = {}
@@ -431,6 +457,14 @@ def _build_user_context(user_id: str) -> _UserContext:
         )
     )
 
+    # M33 Batch C: construct durable stores at the same user-context seam as
+    # every other user-owned store.  Their constructors perform fail-closed
+    # rehydration; no replay or resubmission occurs here.
+    evidence_ledger = EvidenceLedger(
+        store=FileEvidenceStore(user_id=user_id, root=_USER_STATE_ROOT)
+    )
+    operation_store = FileOperationStore(user_id=user_id, root=_USER_STATE_ROOT)
+
     orchestrator = UriOrchestrator(
         model_reasoning_gateway=ModelReasoningGateway(
             model_callable=OllamaReasoningAdapter(principal=principal)
@@ -445,6 +479,21 @@ def _build_user_context(user_id: str) -> _UserContext:
         principal=principal,
         graph_store=graph_store,
     )
+    # C3: the workflow's compatibility dicts are now derived from this one
+    # durable ledger; the orchestrator never owns an independent evidence map.
+    orchestrator.evidence_ledger = evidence_ledger
+    orchestrator.pending_completion_evidence = []
+
+    def _complete_operation_feedback(operation_id, completion):
+        projection = complete_operation_feedback(
+            operation_store=operation_store,
+            ledger=evidence_ledger,
+            operation_id=operation_id,
+            completion=completion,
+        )
+        if projection is not None:
+            orchestrator.pending_completion_evidence.append(projection)
+        return projection
 
     # M33 Batch B: composition, not orchestrator growth. orchestrator.py's
     # own MultiActionDispatch(capability_registry=...) construction
@@ -494,6 +543,9 @@ def _build_user_context(user_id: str) -> _UserContext:
         orchestrator=orchestrator,
         file_store=file_store,
         graph_store=graph_store,
+        evidence_ledger=evidence_ledger,
+        operation_store=operation_store,
+        complete_operation_feedback=_complete_operation_feedback,
     )
 
 
@@ -522,6 +574,9 @@ def _resolve_context(user_id: Optional[str]) -> _UserContext:
             orchestrator=_orchestrator,
             file_store=_file_store,
             graph_store=_graph_store,
+            evidence_ledger=_legacy_evidence_ledger,
+            operation_store=_legacy_operation_store,
+            complete_operation_feedback=_legacy_complete_operation_feedback,
         )
 
     return _get_user_context(user_id)

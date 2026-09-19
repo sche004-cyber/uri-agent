@@ -1,8 +1,13 @@
+import json
+import os
+import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
+
+from uri_core.core.portable_paths import DEFAULT_USER_STATE_ROOT, user_scoped_path
 
 from uri_core.core.security_guards import (
     MAX_METADATA_VALUE_LENGTH,
@@ -236,6 +241,142 @@ class InMemoryEvidenceStore(EvidenceStore):
 
             resolved.append(record)
 
+        return resolved
+
+
+EVIDENCE_STORE_FILENAME = "evidence_records.json"
+EVIDENCE_STORE_SCHEMA_VERSION = "1.0"
+
+
+def _atomic_write_json(path: str, document: Mapping[str, Any]) -> None:
+    """Write a complete JSON document or leave the prior file intact."""
+    folder = os.path.dirname(path) or "."
+    os.makedirs(folder, exist_ok=True)
+    descriptor, temporary_path = tempfile.mkstemp(prefix=".tmp-", dir=folder)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            json.dump(document, handle, indent=2)
+        os.replace(temporary_path, path)
+    except BaseException:
+        try:
+            os.remove(temporary_path)
+        except OSError:
+            pass
+        raise
+
+
+class FileEvidenceStore(EvidenceStore):
+    """Append-only, atomic evidence persistence for one authenticated user.
+
+    A store instance is bound to one UUID-validated user path, so its public
+    interface cannot accidentally enumerate another user's data. Batch C2
+    composes it into authenticated user contexts; C3 will make it the single
+    evidence authority by routing the legacy projection through the ledger.
+    """
+
+    def __init__(
+        self,
+        *,
+        user_id: str,
+        root: str = DEFAULT_USER_STATE_ROOT,
+    ) -> None:
+        self.user_id = user_id
+        self.root = root
+        # Validate before any read or write can construct a path.
+        self._path = user_scoped_path(
+            user_id, EVIDENCE_STORE_FILENAME, root=root
+        )
+        self._records: Dict[str, EvidenceRecord] = {}
+        self._order: List[str] = []
+        self._rehydrate()
+
+    def _empty_document(self) -> Dict[str, Any]:
+        return {
+            "schema_version": EVIDENCE_STORE_SCHEMA_VERSION,
+            "records": [],
+        }
+
+    def _rehydrate(self) -> None:
+        if not os.path.exists(self._path):
+            return
+        try:
+            with open(self._path, "r", encoding="utf-8") as handle:
+                document = json.load(handle)
+        except (OSError, json.JSONDecodeError) as error:
+            raise IntegrityValidationError(
+                "durable evidence store cannot be read safely"
+            ) from error
+        if (
+            not isinstance(document, dict)
+            or document.get("schema_version") != EVIDENCE_STORE_SCHEMA_VERSION
+        ):
+            raise IntegrityValidationError(
+                "durable evidence store has an unsupported schema"
+            )
+        records = document.get("records")
+        if not isinstance(records, list):
+            raise IntegrityValidationError("durable evidence store has invalid records")
+        for raw in records:
+            if not isinstance(raw, dict):
+                raise IntegrityValidationError("durable evidence record is invalid")
+            try:
+                record = EvidenceRecord(**raw)
+            except (TypeError, ValueError) as error:
+                raise IntegrityValidationError(
+                    "durable evidence record fails validation"
+                ) from error
+            if record.evidence_id in self._records:
+                raise IntegrityValidationError("durable evidence store has duplicate id")
+            self._records[record.evidence_id] = record
+            self._order.append(record.evidence_id)
+
+    def _save(self) -> None:
+        _atomic_write_json(
+            self._path,
+            {
+                "schema_version": EVIDENCE_STORE_SCHEMA_VERSION,
+                "records": [
+                    self._records[evidence_id].to_dict()
+                    for evidence_id in self._order
+                ],
+            },
+        )
+
+    def add(self, record: EvidenceRecord) -> None:
+        if not isinstance(record, EvidenceRecord):
+            raise IntegrityValidationError("only EvidenceRecord instances may be added")
+        if record.evidence_id in self._records:
+            raise IntegrityValidationError("evidence_id already exists")
+        # Persist first: callers never observe an accepted record that was not
+        # durably written.
+        new_records = dict(self._records)
+        new_order = list(self._order)
+        new_records[record.evidence_id] = record
+        new_order.append(record.evidence_id)
+        previous_records, previous_order = self._records, self._order
+        self._records, self._order = new_records, new_order
+        try:
+            self._save()
+        except BaseException:
+            self._records, self._order = previous_records, previous_order
+            raise
+
+    def get(self, evidence_id: str) -> Optional[EvidenceRecord]:
+        return self._records.get(evidence_id)
+
+    def query(self, source_type: Optional[str] = None) -> List[EvidenceRecord]:
+        records = [self._records[evidence_id] for evidence_id in self._order]
+        if source_type is not None:
+            records = [record for record in records if record.source_type == source_type]
+        return records
+
+    def resolve(self, evidence_ids: List[str]) -> List[EvidenceRecord]:
+        resolved = []
+        for evidence_id in evidence_ids:
+            record = self.get(evidence_id)
+            if record is None:
+                raise ProvenanceError(f"unknown evidence_id '{evidence_id}'")
+            resolved.append(record)
         return resolved
 
 

@@ -68,6 +68,10 @@ from uri_core.services.evidence_processor import (
 from uri_core.core.context_budget import bound_json_value, fit_within_budget
 from uri_core.core.multi_action_dispatch import MultiActionDispatch
 from uri_core.core.turn_state import _project_active_pointer
+from uri_core.external.evidence_adapter import (
+    make_legacy_evidence_projection,
+    resolve_legacy_evidence_projection,
+)
 
 
 # M21: bounds on the persisted session state fed into every Brain call's
@@ -2284,76 +2288,14 @@ class UriOrchestrator:
                 return candidates[0]
         return None
 
-    @staticmethod
-    def _render_evidence_markdown(item: Dict[str, Any]) -> str:
-        """One canonical, clean-prose rendering of a single evidence
-        item - structured fields only, never an instruction. Built
-        purely from fields the item itself already carries (title/
-        author/date/source_type/content/source_locator, all already
-        real and already capped) - this function invents no new
-        content and never reads anything Brain-authored."""
-        lines = [f"### {item.get('title') or '(untitled)'}"]
+    def _make_evidence_item(self, **kwargs: Any) -> Dict[str, Any]:
+        """Compatibility view derived from the attached authoritative ledger."""
+        return make_legacy_evidence_projection(
+            **kwargs, ledger=getattr(self, "evidence_ledger", None)
+        )
 
-        detail_bits = [f"Type: {item['source_type']}"]
-        if item.get("author"):
-            detail_bits.append(f"From: {item['author']}")
-        if item.get("date"):
-            detail_bits.append(f"Date: {item['date']}")
-        lines.append(" | ".join(detail_bits))
-
-        lines.append("")
-        lines.append(item.get("content") or "")
-
-        if item.get("source_locator"):
-            lines.append("")
-            lines.append(f"Link: {item['source_locator']}")
-
-        return "\n".join(lines).strip()
-
-    @classmethod
-    def _make_evidence_item(
-        cls,
-        *,
-        source_type: str,
-        source_id: Optional[str] = None,
-        title: Optional[str] = None,
-        content: str = "",
-        author: Optional[str] = None,
-        date: Optional[str] = None,
-        source_locator: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        max_content_chars: int,
-    ) -> Dict[str, Any]:
-        """The one canonical evidence-item shape every producer below
-        normalizes into - source_type/source_id/title/content/author/
-        date/source_locator/metadata/markdown/provenance/truncated,
-        stable regardless of which tool produced it. A field a tool's
-        real output does not carry stays None here - never guessed,
-        never fabricated (see each producer branch below for exactly
-        which fields each real tool shape is honestly missing today).
-        `provenance` is filled in by the caller (_resolve_step_decision_
-        context), which alone knows the source_step/source_capability
-        this item came from within THIS workflow run."""
-        content = str(content or "")
-        truncated = len(content) > max_content_chars
-        item = {
-            "source_type": source_type,
-            "source_id": source_id,
-            "title": title,
-            "content": content[:max_content_chars],
-            "author": author,
-            "date": date,
-            "source_locator": source_locator,
-            "metadata": metadata or {},
-            "truncated": truncated,
-            "provenance": None,
-        }
-        item["markdown"] = cls._render_evidence_markdown(item)
-        return item
-
-    @classmethod
     def _evidence_items_from_list(
-        cls,
+        self,
         items: Any,
         *,
         source_type: str,
@@ -2379,7 +2321,7 @@ class UriOrchestrator:
             if not isinstance(raw, dict):
                 continue
             promoted = {id_field, author_field, date_field, locator_field, title_field, content_field}
-            out.append(cls._make_evidence_item(
+            out.append(self._make_evidence_item(
                 source_type=source_type,
                 source_id=raw.get(id_field) if id_field else None,
                 title=raw.get(title_field),
@@ -2547,14 +2489,40 @@ class UriOrchestrator:
         collected = []
         provenance = []
 
+        # A claimed durable completion is already a ledger-backed projection.
+        # Consume it through the same verified_evidence context used for
+        # ordinary workflow evidence, exactly once and never by resubmission.
+        completion_items = getattr(self, "pending_completion_evidence", [])
+        if isinstance(completion_items, list) and completion_items:
+            collected.extend(completion_items[:self._MAX_EVIDENCE_ITEMS_TOTAL])
+            self.pending_completion_evidence = []
+
         for dep_id in depends_on:
             dep_step = steps_by_id.get(dep_id)
             if not isinstance(dep_step, dict) or dep_step.get("status") != "completed":
                 continue
             dep_capability = dep_step.get("capability")
-            items = self._extract_evidence_items_from_step_output(
-                dep_capability, dep_step.get("output")
-            )
+            items = dep_step.get("evidence_projection")
+            if not isinstance(items, list):
+                items = self._extract_evidence_items_from_step_output(
+                    dep_capability, dep_step.get("output")
+                )
+                # A projection is a cache of ledger-backed records, not an
+                # authority: it prevents repeat dependent steps from writing
+                # the same source evidence again.
+                dep_step["evidence_projection"] = items
+            elif getattr(self, "evidence_ledger", None) is not None:
+                # A later/follow-up turn resolves the persisted identity again
+                # rather than trusting its cached compatibility dict.
+                items = [
+                    resolve_legacy_evidence_projection(
+                        ledger=self.evidence_ledger,
+                        item=item,
+                        max_content_chars=self._MAX_EVIDENCE_CONTENT_CHARS,
+                    )
+                    for item in items
+                ]
+                dep_step["evidence_projection"] = items
             for item in items:
                 if len(collected) >= self._MAX_EVIDENCE_ITEMS_TOTAL:
                     break
