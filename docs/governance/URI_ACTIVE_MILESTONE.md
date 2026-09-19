@@ -206,14 +206,46 @@ its own new tests) was fixed, reverified, and included in the same
 commit; a full `pytest -q` regression (2134 passed, 14 failed, 7
 skipped, 40 subtests passed) was independently cross-checked against
 unmodified `HEAD` and all 14 failures reproduced identically pre-batch,
-confirming zero regressions attributable to Batch C. Batch D (CLI/HTTP
-transports, `remember_fact` pilot) remains **NOT STARTED** — this
-correction closes Batch C only, not M33 as a whole, and authorizes no
-further implementation beyond what is already committed.
+confirming zero regressions attributable to Batch C.
+
+**Further correction, 2026-09-19, same day (additive, preserving the
+paragraph above rather than editing it):** Batch D (CLI/HTTP/in-process
+transports, `remember_fact` common-path migration) is now also
+**CLOSED: CLAUDE VERIFIED — ACCEPTED (2026-09-19)**, committed as
+`8008ab6`. Verified by Claude's independent audit: all three transport
+adapters resolve through `registry_bridge.py`'s single
+`transport_handler()` seam with input/output validated by
+`ExternalActionValidator`; the CLI adapter cannot be shell-injected
+(fixed argv list, `shell=False`, user data only on stdin); the HTTP
+adapter's loopback check (`ipaddress.ip_address(...).is_loopback`) was
+independently probed against `localhost`, decimal/octal/shorthand
+IPv4, `0.0.0.0`, and the IPv4-mapped-IPv6 bypass form
+`::ffff:127.0.0.1`, and behaves correctly in every case;
+`canonical_execution.py`'s hardcoded `remember_fact` branch and its
+`_execute_remember_fact` helper are genuinely deleted, with
+`remember_fact` now dispatched as a real `Capability` through the same
+path Gmail uses, its authorization boundary traced and confirmed
+identical to the pre-migration `CapabilityResolver.is_allowed(...)`
+check `ApprovalGate.execute_tool` already used. One bounded defect was
+found and fixed in the same commit: a pre-existing M34 test
+(`test_m34_c3_3_heterogeneous_routing.py`) mocked the now-deleted
+`_execute_remember_fact` symbol as one of three guarded execution
+boundaries; updated to the two boundaries that still exist, with the
+underlying safety property unchanged. A full `pytest -q` regression
+(2140 passed, 14 failed, 7 skipped, 40 subtests passed) shows the
+identical pre-existing 14-failure set from the Batch C audit above,
+with the one new failure this batch introduced (an `AttributeError`
+from the same deleted-symbol mock) root-caused and fixed rather than
+merely compared away. Disclosed, non-blocking residual: the HTTP
+fixture adapter does not re-validate a redirect's `Location` host
+against loopback — not exploitable today (no live untrusted endpoint
+exists yet), but must be closed before any M33.1 live HTTP vendor
+work. M33.1 (vendor integrations, credential store, Tools & Skills UI)
+remains **NOT STARTED**; this correction closes Batch D only.
 
 **LOOP_STATE:**  
-IDLE (M32 COMPLETE, M34 COMPLETE, M33 Batches A/P1/P2/B/C COMPLETE —
-awaiting explicit User instruction before Batch D)
+IDLE (M32 COMPLETE, M34 COMPLETE, M33 Batches A/P1/P2/B/C/D COMPLETE —
+awaiting explicit User instruction before M33.1)
 
 **M31 OBJECTIVE (achieved, preserved for reference):**  
 Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).
