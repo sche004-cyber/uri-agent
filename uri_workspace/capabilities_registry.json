@@ -105,7 +105,14 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Only ever writes with consent='user_provided' (the user's own explicit request) - never guesses or auto-captures from ordinary conversation.",
-      "interface": null,
+      "interface": {
+        "parameters": {
+          "request_text": {"type": "string", "minLength": 3}
+        },
+        "required": [],
+        "returns": {"type": "object"}
+      },
+      "foundational": true,
       "effect_type": "local_write"
     },
     "recall_memory": {

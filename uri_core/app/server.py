@@ -512,14 +512,17 @@ def _build_user_context(user_id: str) -> _UserContext:
     #     executions land in the one audit trail their approvals do.
     from uri_core.capabilities.discovery import CapabilityDiscoveryEngine
     from uri_core.capabilities.gmail import GmailCapability
+    from uri_core.external.adapters.in_process import remember_fact_capability
     from uri_core.external.permission_binding import (
         external_permission_resolver as _external_permission_resolver,
     )
     from uri_core.external.registry_bridge import ExternalCapabilityPublisher
 
-    _publish_result = ExternalCapabilityPublisher().publish(
-        user_id, base_capabilities=[GmailCapability()]
-    )
+    _remember_descriptor = _capability_registry.describe_status("remember_fact")
+    _base_capabilities = [GmailCapability()]
+    if _remember_descriptor is not None:
+        _base_capabilities.append(remember_fact_capability(_remember_descriptor, principal=principal))
+    _publish_result = ExternalCapabilityPublisher().publish(user_id, base_capabilities=_base_capabilities)
     orchestrator.multi_action_dispatch.registry = _publish_result.registry
     orchestrator.multi_action_dispatch.discovery = CapabilityDiscoveryEngine(
         orchestrator.multi_action_dispatch.registry

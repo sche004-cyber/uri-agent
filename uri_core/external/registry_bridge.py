@@ -49,6 +49,7 @@ from uri_core.capabilities.base import (
 from uri_core.capabilities.registry import MultiActionCapabilityRegistry
 from uri_core.external.lifecycle import LifecycleState
 from uri_core.external.store import ExternalCapabilityStore
+from uri_core.external.adapters import transport_handler
 
 # Signature: (descriptor_id, action_name) -> real handler, or None if this
 # action has no real handler yet (falls back to the honest stub below).
@@ -79,7 +80,8 @@ def _record_enabled_and_qualified(record: Mapping[str, Any]) -> bool:
 
 
 def _action_to_capability_action(
-    descriptor_id: str, action_name: str, action_data: Mapping[str, Any], handler_resolver: Optional[HandlerResolver]
+    descriptor_id: str, action_name: str, action_data: Mapping[str, Any], handler_resolver: Optional[HandlerResolver],
+    descriptor: Mapping[str, Any],
 ) -> Action:
     interface = action_data.get("interface") or {}
     handler = None
@@ -88,6 +90,8 @@ def _action_to_capability_action(
             handler = handler_resolver(descriptor_id, action_name)
         except Exception:
             handler = None
+    if handler is None:
+        handler = transport_handler(descriptor, action_name)
     if handler is None:
         handler = _stub_handler(descriptor_id, action_name)
     effect_raw = action_data.get("effect_type", EffectType.READ_ONLY.value)
@@ -129,7 +133,7 @@ def descriptor_record_to_capability(
     for action_name, action_data in raw_actions.items():
         if not isinstance(action_data, Mapping):
             continue
-        action = _action_to_capability_action(descriptor_id, action_name, action_data, handler_resolver)
+        action = _action_to_capability_action(descriptor_id, action_name, action_data, handler_resolver, descriptor)
         actions[action.name] = action
     if not actions:
         return None

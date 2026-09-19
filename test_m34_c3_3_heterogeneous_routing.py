@@ -613,20 +613,20 @@ class RunCanonicalForAskMixedRegistryFallbackTests(unittest.TestCase):
              patch.object(ce, "propose_decision", return_value=fake_decision), \
              patch("uri_core.core.decision_gates.evaluate_gates", return_value=fake_gate_result), \
              patch.object(ce, "_execute_multi_action") as mocked_multi_action, \
-             patch.object(ce, "_execute_remember_fact") as mocked_remember_fact, \
              patch.object(ce, "_execute_legacy_capability") as mocked_legacy:
             result = ce.run_canonical_for_ask(
                 orchestrator=orchestrator, session_id="s1", user_text="t", principal=None,
             )
 
-        # No execution boundary ran at all - not the multi-action chain,
-        # not a lone remember_fact call, not the legacy single-tool
-        # boundary. The heterogeneous proposal was never flattened into
-        # executing ONE of its two actions with the other silently
-        # dropped, and never routed through legacy AS IF it had been a
-        # single-capability proposal.
+        # No execution boundary ran at all - not the multi-action chain
+        # (remember_fact's own special case was folded into this same
+        # boundary by M33 Batch D and no longer exists separately - see
+        # canonical_execution.py's deleted _execute_remember_fact), not
+        # the legacy single-tool boundary. The heterogeneous proposal
+        # was never flattened into executing ONE of its two actions
+        # with the other silently dropped, and never routed through
+        # legacy AS IF it had been a single-capability proposal.
         mocked_multi_action.assert_not_called()
-        mocked_remember_fact.assert_not_called()
         mocked_legacy.assert_not_called()
 
         self.assertTrue(result.get("_canonical_fallback"))

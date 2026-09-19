@@ -211,8 +211,17 @@ def _execute_multi_action(
         return None
     if len(actions) == 1:
         action_name = actions[0]["name"]
+        # A typed action may explicitly declare that it needs the current
+        # user utterance. Bind that runtime-owned value generically; the
+        # model cannot replace it by omitting the field and no action that
+        # did not opt in receives an extra schema key.
+        inputs = dict(actions[0].get("inputs") or {})
+        capability = getattr(getattr(dispatch, "registry", None), "get_capability", lambda _n: None)(capability_id)
+        selected_action = capability.get_action(action_name) if capability is not None else None
+        if selected_action is not None and "request_text" in selected_action.parameters.parameters and "request_text" not in inputs:
+            inputs["request_text"] = user_text
         envelope = dispatch.dispatch_explicit(
-            capability_id, action_name, actions[0].get("inputs") or {},
+            capability_id, action_name, inputs,
             session_id=session_id, user_text=user_text, principal=principal,
         )
         # M32.1: a single-action awaiting_approval result is the ONLY
@@ -268,44 +277,6 @@ def _execute_multi_action(
     envelope = dict(envelope)
     envelope.pop("handled", None)
     return envelope
-
-
-def _execute_remember_fact(
-    *,
-    orchestrator: Any,
-    session_id: Optional[str],
-    user_text: str,
-    principal: Any,
-) -> Optional[Dict[str, Any]]:
-    approval_gate = getattr(orchestrator, "approval_gate", None)
-    if approval_gate is None:
-        return None
-    from uri_core.core.dispatcher import real_tool_status
-
-    dispatch_result = approval_gate.execute_tool(
-        "remember_fact", session_id=session_id, request_text=user_text, principal=principal,
-    )
-    outer_status = dispatch_result.get("status")
-    if outer_status == "awaiting_approval":
-        # Structurally unreachable today (remember_fact's registry
-        # entry declares approval_requirement="none", and the gate
-        # would have already returned APPROVAL_REQUIRED, never READY,
-        # for a capability that did require it) - handled honestly
-        # anyway rather than assumed impossible.
-        return {
-            "status": "success",
-            "plan": {"status": "capability_selected", "capability": "remember_fact", "action": "remember_fact", "source": "legacy"},
-            "execution": {"status": "awaiting_approval", "capability": "remember_fact", "action": "remember_fact"},
-            "response": dispatch_result,
-        }
-    tool_status = real_tool_status(dispatch_result)
-    envelope_status = "success" if tool_status in {"success", "ok"} else "unavailable"
-    return {
-        "status": envelope_status,
-        "plan": {"status": "capability_selected", "capability": "remember_fact", "action": "remember_fact", "source": "legacy"},
-        "execution": {"status": tool_status, "capability": "remember_fact", "action": "remember_fact", "raw_status": outer_status},
-        "response": dispatch_result.get("data", dispatch_result),
-    }
 
 
 def _execute_legacy_capability(
@@ -553,11 +524,6 @@ def _execute_canonical(
         return _execute_multi_action(
             contract, capability_id=capability_id, orchestrator=orchestrator,
             session_id=session_id, user_text=user_text, principal=principal,
-        )
-    if capability_id == "remember_fact":
-        return _execute_remember_fact(
-            orchestrator=orchestrator, session_id=session_id,
-            user_text=user_text, principal=principal,
         )
     return _execute_legacy_capability(
         contract, orchestrator=orchestrator, session_id=session_id,

@@ -477,42 +477,20 @@ class RememberFactExecutionTests(unittest.TestCase):
     not a fake, since remember_fact has no external network dependency
     in this environment."""
 
-    def _orchestrator_with_real_approval_gate(self, registry_path):
-        dispatcher = ToolDispatcher(registry_path=registry_path)
-        approval_gate = ApprovalGate(dispatcher=dispatcher)
-        return _FakeOrchestrator(approval_gate=approval_gate)
-
-    def _write_registry(self, path):
-        with open(path, "w", encoding="utf-8") as handle:
-            json.dump(
-                {
-                    "active_tools": {
-                        "remember_fact": {
-                            "file_path": "uri_core/tools/remember_fact.py",
-                            "class_name": "RememberFactTool",
-                            "method": "remember",
-                            "description": "test",
-                            "status": "implemented",
-                            "availability": "available",
-                            "permissions": [],
-                            "approval_requirement": "none",
-                            "risk": "controlled",
-                        }
-                    }
-                },
-                handle,
-            )
+    def _dispatch(self):
+        from uri_core.core.capability_registry import CapabilityRegistry
+        from uri_core.external.adapters.in_process import remember_fact_capability
+        descriptor = CapabilityRegistry().describe_status("remember_fact")
+        return MultiActionDispatch(
+            registry=MultiActionCapabilityRegistry([remember_fact_capability(descriptor)]),
+            permission_checker=lambda *_: True,
+        )
 
     def test_disclosure_saves_to_real_memory_and_returns_evidence(self):
-        from uri_core.core.canonical_execution import _execute_remember_fact
-
-        tmp_dir = tempfile.mkdtemp()
-        registry_path = os.path.join(tmp_dir, "registry.json")
-        self._write_registry(registry_path)
-        orchestrator = self._orchestrator_with_real_approval_gate(registry_path)
-
-        envelope = _execute_remember_fact(
-            orchestrator=orchestrator, session_id="s1",
+        from uri_core.core.canonical_execution import _execute_canonical
+        envelope = _execute_canonical(
+            {"capability": "remember_fact", "actions": [{"name": "remember_fact", "inputs": {}}]},
+            orchestrator=_FakeOrchestrator(multi_action_dispatch=self._dispatch()), session_id="s1",
             user_text="I work at NIT Sikkim.", principal=None,
         )
         self.assertIsNotNone(envelope)
@@ -520,17 +498,13 @@ class RememberFactExecutionTests(unittest.TestCase):
         self.assertEqual(envelope["response"]["status"], "success")
         self.assertIn("NIT Sikkim", envelope["response"]["content"])
 
-    def test_never_routed_to_web_search(self):
-        # Structural proof: _execute_remember_fact only ever calls
-        # approval_gate.execute_tool("remember_fact", ...) - there is no
-        # code path here that could reach web_search regardless of the
-        # disclosure's wording.
+    def test_legacy_special_case_is_deleted(self):
         import inspect
         from uri_core.core import canonical_execution
 
-        source = inspect.getsource(canonical_execution._execute_remember_fact)
-        self.assertNotIn("web_search", source)
-        self.assertIn('"remember_fact"', source)
+        source = inspect.getsource(canonical_execution._execute_canonical)
+        self.assertNotIn('capability_id == "remember_fact"', source)
+        self.assertNotIn("_execute_remember_fact", source)
 
 
 class NarrativeAndPersistenceTests(unittest.TestCase):

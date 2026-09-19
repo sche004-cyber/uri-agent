@@ -30,6 +30,10 @@ _ACTION_GRANT_CAPABILITY = {
     "create_draft": "gmail_create_draft",
     "apply_label": "gmail_search",
     "archive_message": "gmail_search",
+    # Batch D pilot: preserve remember_fact's existing CapabilityResolver
+    # authorization boundary while moving its execution to the common
+    # executor.  The action still carries its own approval requirement.
+    "remember_fact": "remember_fact",
 }
 
 # M33 P1: the CAPABILITY-level counterpart of the action-level table
