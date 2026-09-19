@@ -315,6 +315,7 @@ def _execute_legacy_capability(
     session_id: Optional[str],
     user_text: str,
     principal: Any,
+    current_turn_attachment_ids: Optional[Sequence[str]] = None,
 ) -> Optional[Dict[str, Any]]:
     """Canonical entry to the existing legacy ToolDispatcher boundary.
 
@@ -334,9 +335,17 @@ def _execute_legacy_capability(
     approval_gate = getattr(orchestrator, "approval_gate", None)
     if approval_gate is None:
         return None
-    result = approval_gate.execute_tool(
-        capability_id, session_id=session_id, request_text=user_text, principal=principal,
-    )
+    runtime_context: Dict[str, Any] = {
+        "session_id": session_id,
+        "request_text": user_text,
+        "principal": principal,
+    }
+    # This is runtime-owned context derived from the validated Turn State,
+    # never an action input proposed by the model.  Omit it entirely for
+    # legacy turns so read_attached_file retains its historic session scan.
+    if current_turn_attachment_ids is not None:
+        runtime_context["current_turn_attachment_ids"] = current_turn_attachment_ids
+    result = approval_gate.execute_tool(capability_id, **runtime_context)
     status = result.get("status")
     if status == "awaiting_approval":
         execution_status = "awaiting_approval"
@@ -503,6 +512,7 @@ def _execute_canonical(
     session_id: Optional[str],
     user_text: str,
     principal: Any,
+    current_turn_attachment_ids: Optional[Sequence[str]] = None,
 ) -> Optional[Dict[str, Any]]:
     capability_id = contract.get("capability")
     # M33 Batch B: registry lookup, not a `capability_id == "Gmail"`
@@ -552,6 +562,7 @@ def _execute_canonical(
     return _execute_legacy_capability(
         contract, orchestrator=orchestrator, session_id=session_id,
         user_text=user_text, principal=principal,
+        current_turn_attachment_ids=current_turn_attachment_ids,
     )
 
 
@@ -632,6 +643,7 @@ def run_canonical_for_ask(
     personalization_context: Any = None,
     log_path: str = DEFAULT_TELEMETRY_LOG_PATH,
     decision_observer: Any = None,
+    current_turn_attachments: Optional[List[Dict[str, Any]]] = None,
 ) -> Optional[Dict[str, Any]]:
     """The single M30.6 entry point for a live `/ask` call site
     (`server.py`). Returns a full `{"status", "session_id", "execution",
@@ -656,6 +668,7 @@ def run_canonical_for_ask(
         turn_state_result, directory = build_turn_state_and_directory(
             orchestrator=orchestrator, session_id=session_id,
             user_text=user_text, principal=principal,
+            current_turn_attachments=current_turn_attachments,
         )
 
         decision = propose_decision(
@@ -718,9 +731,22 @@ def run_canonical_for_ask(
                 and mode in EXECUTABLE_MODES
             ):
                 canonical_attempted = True
+                # /ask supplied this list only after resolving the explicit
+                # handles against the authenticated user's FileStore and the
+                # request session.  Preserve an explicit-but-malformed list
+                # as an empty explicit context (fail closed at the tool),
+                # never as permission to scan older session files.
+                attachment_ids = None
+                if current_turn_attachments:
+                    attachment_ids = [
+                        item.get("file_id")
+                        for item in current_turn_attachments
+                        if isinstance(item, dict) and isinstance(item.get("file_id"), str)
+                    ]
                 envelope = _execute_canonical(
                     contract, orchestrator=orchestrator, session_id=session_id,
                     user_text=user_text, principal=principal,
+                    current_turn_attachment_ids=attachment_ids,
                 )
                 if envelope is None:
                     fallback_reason = "execution_dispatch_returned_none"

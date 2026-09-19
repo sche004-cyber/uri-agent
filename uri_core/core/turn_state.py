@@ -362,6 +362,7 @@ def assemble_turn_state(
     durable_memory_relevant: Optional[List[Dict[str, Any]]] = None,
     graph_context: Optional[Dict[str, Any]] = None,
     capability_index_hint: Optional[List[Dict[str, Any]]] = None,
+    current_turn_attachments: Optional[List[Dict[str, Any]]] = None,
     recent_conversation_limit: int = DEFAULT_RECENT_CONVERSATION_LIMIT,
 ) -> TurnStateResult:
     """Pure, read-only projection. Never raises: every collaborator read
@@ -445,5 +446,9 @@ def assemble_turn_state(
         "graph_context": graph_context or {},
         "capability_index_hint": capability_index_hint or [],
     }
+    # Omit rather than send an empty attachment field: zero prompt/schema
+    # delta for ordinary turns and no stale session-file implication.
+    if current_turn_attachments:
+        data["current_turn_attachments"] = list(current_turn_attachments)
 
     return TurnStateResult(data=data, unavailable_fields=unavailable)

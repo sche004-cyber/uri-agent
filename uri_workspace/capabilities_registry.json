@@ -142,7 +142,8 @@
       "file_path": "uri_core/tools/read_attached_file.py",
       "class_name": "ReadAttachedFileTool",
       "method": "execute",
-      "description": "Read the text of a file the user attached to this conversation (PDF including scanned/OCR, plain text, CSV, JSON, spreadsheet, image, or Word document), returning the extracted text as evidence for the Brain to reason from - never an answer URI composes itself.",
+      "description": "Read the text of a current-turn attachment the user attached to this conversation (PDF including scanned/OCR, plain text, CSV, JSON, spreadsheet, image, or Word document), returning the extracted text as evidence for the Brain to reason from - never an answer URI composes itself.",
+      "reads_current_attachments": true,
       "status": "implemented",
       "availability": "available",
       "permissions": [

@@ -386,6 +386,19 @@ def preselect_candidate_ids(
         if foundational_id not in ids:
             ids.append(foundational_id)
 
+    # M34: attachment metadata is explicit current-turn evidence, not a
+    # lexical routing command. Surface capabilities that declare they read
+    # it even for ambiguous wording; the Brain still selects (or ignores)
+    # them alongside normal candidates such as Gmail.
+    if turn_state_data.get("current_turn_attachments"):
+        try:
+            for entry in capability_directory.summaries():
+                capability_id = entry.get("capability_id")
+                if entry.get("reads_current_attachments") and capability_id not in ids:
+                    ids.append(capability_id)
+        except Exception:
+            pass
+
     return ids or None
 
 
@@ -450,6 +463,12 @@ def build_decision_request(
         "session_facts": turn_state_data["session_facts"],
         "attempt_history": turn_state_data["attempt_history"],
     }
+
+    # This field is deliberately absent for ordinary turns so their
+    # decision payload remains unchanged.  The values have already been
+    # projected from explicit, request-scoped file handles by /ask.
+    if turn_state_data.get("current_turn_attachments"):
+        request["current_turn_attachments"] = turn_state_data["current_turn_attachments"]
 
     hint = turn_state_data.get("capability_index_hint")
     if hint:
@@ -1013,6 +1032,7 @@ def build_turn_state_and_directory(
     session_id: Optional[str],
     user_text: str,
     principal: Any,
+    current_turn_attachments: Optional[List[Dict[str, Any]]] = None,
 ) -> Any:
     """Shared setup, extracted from `run_shadow_for_ask` (M30.3) so
     M30.6's canonical execution path reuses the exact same Turn
@@ -1057,6 +1077,7 @@ def build_turn_state_and_directory(
         conversation_history_store=getattr(orchestrator, "conversation_history", None),
         capability_directory=directory,
         capability_index_hint=capability_index_hint,
+        current_turn_attachments=current_turn_attachments,
     )
     return turn_state_result, directory
 

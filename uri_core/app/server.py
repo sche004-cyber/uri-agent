@@ -842,6 +842,10 @@ class AskRequest(BaseModel):
     # before this field is ever parsed - see that module's docstring.
     text: str = Field(..., max_length=65536)
     model_override: Optional[object] = None
+    # M34: explicit request-scoped attachment handles.  Omission remains
+    # the historical no-current-attachment shape; never infer from files
+    # persisted earlier in the session.
+    attached_file_ids: List[str] = Field(default_factory=list)
 
 
 class FallbackRoutingRequest(BaseModel):
@@ -1382,6 +1386,25 @@ def _resolve_ask_context(payload: "AskRequest", user_id: Optional[str]):
     return context, principal, personalization_context
 
 
+def _current_turn_attachment_references(context, payload: "AskRequest") -> List[dict]:
+    """Validate and project only attachment handles named by THIS /ask.
+
+    File stores are user-scoped through ``context``; session ownership is
+    additionally checked here.  Unknown, cross-session, or malformed ids
+    are rejected rather than silently exposed or treated as an attachment.
+    """
+    file_ids = payload.attached_file_ids or []
+    if len(file_ids) > 20 or any(not isinstance(file_id, str) or not file_id for file_id in file_ids):
+        raise HTTPException(status_code=400, detail="attached_file_ids must contain at most 20 non-empty file ids.")
+    references = []
+    for file_id in dict.fromkeys(file_ids):
+        record = context.file_store.get(file_id)
+        if record is None or record.session_id != payload.session_id:
+            raise HTTPException(status_code=400, detail="Attached file is unavailable for this session.")
+        references.append(record.to_reference())
+    return references
+
+
 @app.post("/ask")
 def ask(
     payload: AskRequest,
@@ -1389,6 +1412,7 @@ def ask(
     _size_check: None = Depends(enforce_ask_content_length),
 ) -> dict:
     context, principal, personalization_context = _resolve_ask_context(payload, user_id)
+    current_turn_attachments = _current_turn_attachment_references(context, payload)
 
     # M32.1: a durable, pending approval-required action (see
     # approval_resumption.py) gets first chance at this turn, before
@@ -1453,6 +1477,7 @@ def ask(
                         principal=principal,
                         personalization_context=personalization_context,
                         decision_observer=_observe_decision,
+                        current_turn_attachments=current_turn_attachments,
                     )
                     if observed.get("mode") == "workflow_continuation" and early_result is not None:
                         if early_result.get("_canonical_fallback"):
@@ -1491,6 +1516,7 @@ def ask(
                     user_text=payload.text,
                     principal=principal,
                     model_callable=default_model_callable(principal),
+                    current_turn_attachments=current_turn_attachments,
                 )
                 if native_result is not None:
                     result = native_result
@@ -1524,6 +1550,7 @@ def ask(
                         user_text=payload.text,
                         principal=principal,
                         personalization_context=personalization_context,
+                        current_turn_attachments=current_turn_attachments,
                     )
                     if canonical_result.get("_canonical_fallback"):
                         legacy_fallback = canonical_result
@@ -1729,6 +1756,7 @@ async def ask_stream(
     truth for what actually happened and what was persisted.
     """
     context, principal, personalization_context = _resolve_ask_context(payload, user_id)
+    current_turn_attachments = _current_turn_attachment_references(context, payload)
 
     async def _fallback_to_ask():
         loop = asyncio.get_event_loop()
@@ -1739,7 +1767,11 @@ async def ask_stream(
         yield _sse_event("done", {"narrative_interrupted": False})
 
     async def _generate():
-        if not _ask_stream_eligible(context, payload):
+        # Streaming Tier 0 has no Turn State payload seam.  Attachment
+        # turns therefore use the ordinary /ask path, which passes the
+        # one validated structured signal to canonical/native routing;
+        # do not create a second stream-only attachment mechanism.
+        if current_turn_attachments or not _ask_stream_eligible(context, payload):
             async for chunk in _fallback_to_ask():
                 yield chunk
             return

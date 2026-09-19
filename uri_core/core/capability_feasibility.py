@@ -151,6 +151,7 @@ def _feasibility_entry(
     return {
         "id": descriptor.id,
         "description": descriptor.description,
+        "reads_current_attachments": descriptor.reads_current_attachments,
         "usable": usable,
         "gap_reason": (
             None if usable else (descriptor.gap_reason or "blocked_by_permission")

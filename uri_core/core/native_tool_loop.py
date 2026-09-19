@@ -29,6 +29,7 @@ production - gives branch preservation (C3.5) and mixed-approval handling
 from __future__ import annotations
 
 import concurrent.futures
+import json
 import os
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
 
@@ -171,6 +172,7 @@ def _execute_one_branch(
     tool_call_id: str,
     executed_signatures: Set[Tuple[Any, ...]],
     effect_type_is_read_only: bool,
+    current_turn_attachment_ids: Optional[Sequence[str]] = None,
 ) -> Dict[str, Any]:
     """Gate + execute exactly one translated action. Never raises - any
     internal failure degrades to an honest per-branch error result, never
@@ -222,6 +224,7 @@ def _execute_one_branch(
         envelope = _execute_canonical(
             single_action_contract, orchestrator=orchestrator, session_id=session_id,
             user_text=user_text, principal=principal,
+            current_turn_attachment_ids=current_turn_attachment_ids,
         )
     except Exception as exc:
         return {
@@ -273,6 +276,14 @@ def execute_translated_batch(
     capability_id = contract["capability"]
     actions = contract["actions"]
     call_ids = [meta["tool_call_id"] for meta in results_meta]
+    attachments = turn_state_data.get("current_turn_attachments")
+    current_turn_attachment_ids = None
+    if attachments:
+        current_turn_attachment_ids = [
+            item.get("file_id")
+            for item in attachments
+            if isinstance(item, dict) and isinstance(item.get("file_id"), str)
+        ]
 
     # M34 C3.3: a translated native batch can now carry more than one
     # capability. It must traverse the aggregate contract gate exactly once:
@@ -307,6 +318,7 @@ def execute_translated_batch(
         envelope = _execute_canonical(
             contract, orchestrator=orchestrator, session_id=session_id,
             user_text=user_text, principal=principal,
+            current_turn_attachment_ids=current_turn_attachment_ids,
         )
         if envelope is None:
             return [
@@ -355,6 +367,7 @@ def execute_translated_batch(
             orchestrator=orchestrator, session_id=session_id, user_text=user_text, principal=principal,
             directory=directory, turn_state_data=turn_state_data, tool_call_id=call_ids[index],
             executed_signatures=executed_signatures, effect_type_is_read_only=(index in eligible),
+            current_turn_attachment_ids=current_turn_attachment_ids,
         )
 
     if len(eligible) > 1:
@@ -401,6 +414,7 @@ def run_native_tool_loop(
     model_callable: Callable[..., Any],
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
     capability_registry: Optional[CapabilityRegistry] = None,
+    current_turn_attachments: Optional[List[Dict[str, Any]]] = None,
 ) -> Optional[Dict[str, Any]]:
     """The single Tier-0/Tier-1 entry point. `model_callable` is an
     injectable `(*, system, user, tools) -> ModelResponse` seam (the
@@ -417,6 +431,7 @@ def run_native_tool_loop(
     try:
         turn_state_result, directory = build_turn_state_and_directory(
             orchestrator=orchestrator, session_id=session_id, user_text=user_text, principal=principal,
+            current_turn_attachments=current_turn_attachments,
         )
     except Exception:
         return None
@@ -436,7 +451,16 @@ def run_native_tool_loop(
 
     all_branch_results: List[Dict[str, Any]] = []
     executed_signatures: Set[Tuple[Any, ...]] = set()
+    # Native and canonical paths consume the same Turn State projection.
+    # Keep the ordinary prompt byte-for-byte equivalent when no attachment
+    # was explicitly referenced on this request.
+    attachments = turn_state_result.data.get("current_turn_attachments")
     conversation_note = user_text
+    if attachments:
+        conversation_note = (
+            f"{user_text}\n\n[Current-turn attachments: "
+            f"{json.dumps(attachments, ensure_ascii=False)}]"
+        )
 
     for iteration in range(1, max_iterations + 1):
         try:

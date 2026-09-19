@@ -91,6 +91,7 @@ class CapabilityDescriptor:
     limitations: str = ""
     interface: Optional[Dict[str, Any]] = None
     effect_type: str = "read_only"
+    reads_current_attachments: bool = False
 
     @property
     def is_executable(self) -> bool:
@@ -191,6 +192,7 @@ def _descriptor_from_entry(
             {"read_only", "local_write", "external_write"},
             "read_only",
         ),
+        reads_current_attachments=entry.get("reads_current_attachments") is True,
     )
 
 

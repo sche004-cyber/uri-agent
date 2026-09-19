@@ -27,6 +27,7 @@ from uri_core.services.file_extraction import extract_file_text
 # How many of a session's attachments one call will read. Bounded so a
 # session with many files can never produce an unbounded result.
 MAX_FILES_PER_CALL = 3
+MAX_CURRENT_TURN_FILES = 20
 
 
 class ReadAttachedFileTool:
@@ -48,7 +49,36 @@ class ReadAttachedFileTool:
                 ),
             }
 
-        attachments = self._file_store.list_for_session(session_id)
+        current_turn_ids = kwargs.get("current_turn_attachment_ids")
+        if current_turn_ids is not None:
+            # Explicit mode is only entered by URI runtime context, after
+            # /ask has validated every handle.  Do not accept model action
+            # inputs and do not fall back to session history on any error.
+            if (
+                not isinstance(current_turn_ids, (list, tuple))
+                or not current_turn_ids
+                or len(current_turn_ids) > MAX_CURRENT_TURN_FILES
+                or any(not isinstance(file_id, str) or not file_id for file_id in current_turn_ids)
+            ):
+                return {
+                    "status": "invalid_attachment_context",
+                    "message": "The current-turn attachment reference is invalid.",
+                }
+            attachments = []
+            seen_ids = set()
+            for file_id in current_turn_ids:
+                if file_id in seen_ids:
+                    continue
+                seen_ids.add(file_id)
+                record = self._file_store.get(file_id)
+                if record is None or record.session_id != session_id:
+                    return {
+                        "status": "invalid_attachment_context",
+                        "message": "The current-turn attachment is unavailable for this session.",
+                    }
+                attachments.append(record)
+        else:
+            attachments = self._file_store.list_for_session(session_id)
 
         if not attachments:
             return {
@@ -58,9 +88,10 @@ class ReadAttachedFileTool:
                 ),
             }
 
-        # Most recently attached first - the file the user most likely
-        # means when they refer to "the attachment".
-        attachments = list(reversed(attachments))[:MAX_FILES_PER_CALL]
+        if current_turn_ids is None:
+            # Most recently attached first - the file the user most likely
+            # means when they refer to "the attachment".
+            attachments = list(reversed(attachments))[:MAX_FILES_PER_CALL]
 
         documents = []
 

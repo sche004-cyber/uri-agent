@@ -101,6 +101,7 @@ class CapabilityDirectoryEntry:
     # _FOUNDATIONAL_CAPABILITY_IDS below for the reasoned, short list
     # this applies to.
     foundational: bool = False
+    reads_current_attachments: bool = False
 
     def to_summary_dict(self) -> Dict[str, Any]:
         """Level 1 - compact, Turn-State-safe. No action schemas."""
@@ -122,6 +123,7 @@ class CapabilityDirectoryEntry:
             "action_descriptions": dict(self.action_descriptions),
             "intent_signals": list(self.intent_signals),
             "category": self.category,
+            "reads_current_attachments": self.reads_current_attachments,
         }
 
     def to_detail_dict(self, action_schemas: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -221,6 +223,7 @@ def _legacy_entries(
             deprecated=False,
             foundational=_is_foundational(capability_id, feasibility_entry),
             category=feasibility_entry.get("category"),
+            reads_current_attachments=bool(feasibility_entry.get("reads_current_attachments")),
         )
 
     return entries
