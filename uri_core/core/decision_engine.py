@@ -62,6 +62,10 @@ def decision_engine_shadow_enabled() -> bool:
     return os.environ.get(SHADOW_ENV_VAR) == "1"
 
 
+def graphify_hint_enabled() -> bool:
+    return os.environ.get("GRAPHIFY_HINT_ENABLED", "1") != "0"
+
+
 # ---------------------------------------------------------------------
 # Decision Contract - frozen Stage 2 §5 schema.
 # ---------------------------------------------------------------------
@@ -439,6 +443,10 @@ def build_decision_request(
         "session_facts": turn_state_data["session_facts"],
         "attempt_history": turn_state_data["attempt_history"],
     }
+
+    hint = turn_state_data.get("capability_index_hint")
+    if hint:
+        request["capability_index_hint"] = hint
 
     if preselected_ids is not None and capability_directory is not None:
         affordances: Dict[str, Any] = {}
@@ -968,6 +976,18 @@ def build_turn_state_and_directory(
         multi_action_registry=multi_action_registry,
     )
 
+    capability_index_hint = None
+    if graphify_hint_enabled():
+        graphify_index = getattr(orchestrator, "graphify_index", None)
+        if graphify_index is not None:
+            try:
+                subset = graphify_index.relevant_subset(user_text, limit=5)
+                capability_index_hint = [
+                    r for r in subset if r.get("kind") in ("skill", "memory_pointer")
+                ] or None
+            except Exception:
+                capability_index_hint = None
+
     turn_state_result = assemble_turn_state(
         user_text=user_text,
         session_id=session_id,
@@ -975,6 +995,7 @@ def build_turn_state_and_directory(
         session=session,
         conversation_history_store=getattr(orchestrator, "conversation_history", None),
         capability_directory=directory,
+        capability_index_hint=capability_index_hint,
     )
     return turn_state_result, directory
 

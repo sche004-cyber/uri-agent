@@ -26,11 +26,13 @@ from uri_core.core.capability_registry import CapabilityRegistry
 from uri_core.core.decision_engine import (
     build_decision_request,
     build_shadow_trace,
+    build_turn_state_and_directory,
     candidate_recall_at_k,
     classify_agreement,
     decision_engine_shadow_enabled,
     detect_over_tooling,
     evaluate_against_golden,
+    graphify_hint_enabled,
     preselect_candidate_ids,
     propose_decision,
     record_shadow_trace,
@@ -631,6 +633,145 @@ class TurnStateAndDirectoryCompatibilityTests(unittest.TestCase):
         registry = MultiActionCapabilityRegistry([GmailCapability()])
         directory = CapabilityDirectory(multi_action_registry=registry)
         self.assertTrue(any(e["capability_id"] == "Gmail" for e in directory.summaries()))
+
+
+class GraphifyHintActivationTests(unittest.TestCase):
+    class _FakeOrchestrator:
+        def __init__(self, graphify_index=None):
+            self.session_manager = None
+            self.capability_registry = None
+            self.conversation_history = None
+            self.multi_action_dispatch = None
+            self.graphify_index = graphify_index
+
+    class _FakeGraphifyIndex:
+        def __init__(self, records=None, raise_error=False):
+            self.records = records or []
+            self.raise_error = raise_error
+            self.call_count = 0
+            self.last_goal_text = None
+
+        def relevant_subset(self, goal_text, limit=5):
+            self.call_count += 1
+            self.last_goal_text = goal_text
+            if self.raise_error:
+                raise RuntimeError("index failure")
+            return self.records
+
+    def test_build_turn_state_populates_hint_filtered_to_skills_and_memory(self):
+        sample_records = [
+            {"id": "skill:remember_fact:disclosure:profile", "kind": "skill", "summary": "remember fact"},
+            {"id": "capability:Gmail", "kind": "capability", "summary": "search emails"},
+            {"id": "memory_pointer:m1", "kind": "memory_pointer", "summary": "user preference"},
+            {"id": "workflow:onboarding", "kind": "workflow", "summary": "onboarding flow"},
+        ]
+        index = self._FakeGraphifyIndex(records=sample_records)
+        orch = self._FakeOrchestrator(graphify_index=index)
+
+        state_result, directory = build_turn_state_and_directory(
+            orchestrator=orch, session_id="s1", user_text="what do you know?", principal=None
+        )
+
+        self.assertEqual(index.call_count, 1)
+        self.assertEqual(index.last_goal_text, "what do you know?")
+        self.assertNotIn("capability_index_hint", state_result.unavailable_fields)
+        hint = state_result.data["capability_index_hint"]
+        self.assertEqual(len(hint), 2)
+        kinds = {r["kind"] for r in hint}
+        self.assertEqual(kinds, {"skill", "memory_pointer"})
+        ids = [r["id"] for r in hint]
+        self.assertEqual(ids, ["skill:remember_fact:disclosure:profile", "memory_pointer:m1"])
+
+    def test_build_turn_state_excludes_when_only_capability_or_workflow_returned(self):
+        sample_records = [
+            {"id": "capability:Gmail", "kind": "capability", "summary": "search emails"},
+            {"id": "workflow:onboarding", "kind": "workflow", "summary": "onboarding flow"},
+        ]
+        index = self._FakeGraphifyIndex(records=sample_records)
+        orch = self._FakeOrchestrator(graphify_index=index)
+
+        state_result, directory = build_turn_state_and_directory(
+            orchestrator=orch, session_id="s1", user_text="check mail", principal=None
+        )
+
+        self.assertEqual(index.call_count, 1)
+        self.assertIn("capability_index_hint", state_result.unavailable_fields)
+        self.assertEqual(state_result.data["capability_index_hint"], [])
+
+    def test_build_turn_state_graphify_index_missing_or_none(self):
+        orch = self._FakeOrchestrator(graphify_index=None)
+
+        state_result, directory = build_turn_state_and_directory(
+            orchestrator=orch, session_id="s1", user_text="hello", principal=None
+        )
+
+        self.assertIn("capability_index_hint", state_result.unavailable_fields)
+        self.assertEqual(state_result.data["capability_index_hint"], [])
+
+        state_result2, _ = build_turn_state_and_directory(
+            orchestrator=object(), session_id="s1", user_text="hello", principal=None
+        )
+        self.assertIn("capability_index_hint", state_result2.unavailable_fields)
+        self.assertEqual(state_result2.data["capability_index_hint"], [])
+
+    def test_build_turn_state_graphify_index_raising_never_raises_fail_open(self):
+        index = self._FakeGraphifyIndex(raise_error=True)
+        orch = self._FakeOrchestrator(graphify_index=index)
+
+        state_result, directory = build_turn_state_and_directory(
+            orchestrator=orch, session_id="s1", user_text="hello", principal=None
+        )
+
+        self.assertEqual(index.call_count, 1)
+        self.assertIn("capability_index_hint", state_result.unavailable_fields)
+        self.assertEqual(state_result.data["capability_index_hint"], [])
+
+    def test_build_turn_state_killswitch_disabled(self):
+        os.environ["GRAPHIFY_HINT_ENABLED"] = "0"
+        self.addCleanup(lambda: os.environ.pop("GRAPHIFY_HINT_ENABLED", None))
+
+        index = self._FakeGraphifyIndex(records=[{"id": "skill:1", "kind": "skill"}])
+        orch = self._FakeOrchestrator(graphify_index=index)
+
+        state_result, directory = build_turn_state_and_directory(
+            orchestrator=orch, session_id="s1", user_text="hello", principal=None
+        )
+
+        self.assertEqual(index.call_count, 0)
+        self.assertIn("capability_index_hint", state_result.unavailable_fields)
+        self.assertEqual(state_result.data["capability_index_hint"], [])
+
+    def test_graphify_hint_enabled_toggle(self):
+        os.environ.pop("GRAPHIFY_HINT_ENABLED", None)
+        self.assertTrue(graphify_hint_enabled())
+
+        os.environ["GRAPHIFY_HINT_ENABLED"] = "1"
+        self.assertTrue(graphify_hint_enabled())
+
+        os.environ["GRAPHIFY_HINT_ENABLED"] = "0"
+        self.assertFalse(graphify_hint_enabled())
+
+        os.environ.pop("GRAPHIFY_HINT_ENABLED", None)
+
+    def test_build_decision_request_surfaces_hint_only_when_non_empty(self):
+        base_state = _turn_state()
+
+        state_with_hint = dict(base_state)
+        sample_hint = [{"id": "skill:1", "kind": "skill", "summary": "remember"}]
+        state_with_hint["capability_index_hint"] = sample_hint
+        req = build_decision_request(state_with_hint)
+        self.assertIn("capability_index_hint", req)
+        self.assertEqual(req["capability_index_hint"], sample_hint)
+
+        state_empty_hint = dict(base_state)
+        state_empty_hint["capability_index_hint"] = []
+        req_empty = build_decision_request(state_empty_hint)
+        self.assertNotIn("capability_index_hint", req_empty)
+
+        state_none_hint = dict(base_state)
+        state_none_hint["capability_index_hint"] = None
+        req_none = build_decision_request(state_none_hint)
+        self.assertNotIn("capability_index_hint", req_none)
 
 
 if __name__ == "__main__":

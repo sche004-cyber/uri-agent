@@ -1,0 +1,98 @@
+{
+  "verdict": "ACCEPT",
+  "lookup_metrics": {
+    "count": 220,
+    "min_ms": 0.99,
+    "max_ms": 1.908,
+    "avg_ms": 1.156,
+    "p50_ms": 1.122,
+    "p95_ms": 1.429
+  },
+  "size_recall_metrics": {
+    "golden_avg_prompt_size_before": 4801.8,
+    "golden_avg_prompt_size_after": 4801.8,
+    "golden_avg_prompt_delta_chars": 0.0,
+    "candidate_recall_at_3_before": 0.556,
+    "candidate_recall_at_3_after": 0.556,
+    "candidate_recall_at_5_before": 0.593,
+    "candidate_recall_at_5_after": 0.593,
+    "hint_cases_avg_prompt_size_before": 12545.2,
+    "hint_cases_avg_prompt_size_after": 13052.2,
+    "hint_cases_avg_prompt_delta_chars": 507.0,
+    "hints_populated_count": 4,
+    "hint_cases_total": 4
+  },
+  "relevance_metrics": {
+    "queries_tested": 4,
+    "relevance_hits": 4,
+    "details": [
+      {
+        "id": "skill_hostel",
+        "query": "Draft a hostel administration note for the warden",
+        "expected_type": "skill",
+        "filtered_hint_records": [
+          {
+            "id": "skill:draft_institutional_note:Document drafting:Hostel administration",
+            "kind": "skill",
+            "summary": "Learned skill for task_type='Document drafting'/domain='Host"
+          }
+        ],
+        "hit": true
+      },
+      {
+        "id": "skill_insurance",
+        "query": "Health insurance policy documentation for student affairs",
+        "expected_type": "skill",
+        "filtered_hint_records": [
+          {
+            "id": "skill:draft_institutional_note:Document Drafting:Student Affairs / Health Services",
+            "kind": "skill",
+            "summary": "Learned skill for task_type='Document Drafting'/domain='Stud"
+          }
+        ],
+        "hit": true
+      },
+      {
+        "id": "skill_library",
+        "query": "Library operations memo regarding book borrowing",
+        "expected_type": "skill",
+        "filtered_hint_records": [
+          {
+            "id": "skill:draft_institutional_note:Document drafting:Library operations",
+            "kind": "skill",
+            "summary": "Learned skill for task_type='Document drafting'/domain='Libr"
+          }
+        ],
+        "hit": true
+      },
+      {
+        "id": "memory_interest",
+        "query": "What is my registered interest?",
+        "expected_type": "memory_pointer",
+        "filtered_hint_records": [
+          {
+            "id": "memory:bf9cd9a3-056d-45c9-8603-b7749cff7460",
+            "kind": "memory_pointer",
+            "summary": "interest (user_provided)"
+          }
+        ],
+        "hit": true
+      }
+    ]
+  },
+  "live_metrics": {
+    "discovery_calls_per_turn_off": 1.0,
+    "discovery_calls_per_turn_on": 1.0,
+    "turn_latency_ms_off": 12.92,
+    "turn_latency_ms_on": 14.86,
+    "turn_latency_delta_ms": 1.93
+  },
+  "live_verify": {
+    "ask_status_code": 200,
+    "index_attached_to_orchestrator": true,
+    "relevant_filtered_records_found": 1,
+    "hint_in_turn_state_count": 1,
+    "hint_surfaced_in_decision_request": true,
+    "hint_first_id": "skill:draft_institutional_note:Document drafting:Hostel administration"
+  }
+}

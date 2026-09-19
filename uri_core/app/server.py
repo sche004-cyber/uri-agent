@@ -215,6 +215,7 @@ _orchestrator.graph_store = _graph_store
 # TestClient(app) (every existing test's own convention) never
 # populates this beyond empty, which is always a safe, valid state.
 _graphify_index = GraphifyIndex()
+_orchestrator.graphify_index = _graphify_index
 
 # Growth ledger: see growth_ledger.py. Every event is recorded only as
 # a side effect of a real, already-succeeded user-driven write below
@@ -756,6 +757,7 @@ class _GraphifyIndexLoader:
             save_index(index, DEFAULT_INDEX_PATH)
 
         _graphify_index = index
+        _orchestrator.graphify_index = index
 
 
 @asynccontextmanager
