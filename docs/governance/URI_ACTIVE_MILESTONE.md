@@ -289,9 +289,48 @@ Tools & Skills settings-surface collision), remain NOT STARTED** —
 this correction closes Batch 1 only.
 
 **LOOP_STATE:**  
-IDLE (M32 COMPLETE, M34 COMPLETE, M33 COMPLETE (A/P1/P2/B/C/D), M33.1
-Batch 1 COMPLETE — awaiting explicit User instruction before M33.1
-Batch 2)
+IDLE (M33.1 Batch 2 bounded pinned-`yt-dlp` CLI-Skill acceptance case CLOSED / ACCEPTED, 2026-09-19; Batch 3 is NOT STARTED)
+
+**M33.1 planning correction, 2026-09-19 (additive):**
+`docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` is now the
+authoritative frozen execution plan and Batch 2 entry gate for the remainder
+of M33.1. Batch 1 remains **CLOSED / ACCEPTED** (`d78366d`, governance
+`0558a99`). User authorization was granted 2026-09-19 for the corrected bounded
+**Batch 2 entry slice** (status: `READY_WITH_BOUNDED_ENTRY`): the three §4 residual
+corrections (store-root consistency, immediate live removal propagation, and
+deletion of `LifecycleController.remove()`) plus the developer-authored,
+committed descriptor for pinned `yt-dlp` (`--dump-json`) executing through the
+unchanged generic CLI adapter on a stable public URL. Agent-Reach, browser
+automation, MCP dependencies, Firecrawl, Batches 3–5, and M33.2 remain excluded.
+
+**M33.1 Batch 2 final independent audit, 2026-09-19 (additive):**
+the bounded pinned-`yt-dlp` CLI-Skill acceptance case is **CLOSED / ACCEPTED**
+at implementation commit `dd4863a`. The audit verified one configured
+user-state root across all three external stores; synchronous full-dispatch
+generation replacement on register/configure/enable/disable/remove; immediate
+registry, discovery, permission-resolver, execution, and derived-Graphify
+retirement; strict per-user isolation; and deletion of the duplicate
+`LifecycleController.remove()` authority. The committed developer-authored
+descriptor permits only `dump_json`, uses fixed argv with `shell=False`, exact
+`yt-dlp==2026.08.19` dependency pin/version enforcement, strict JSON
+input/output, bounded timeout/error handling, no credentials, and a
+Wikimedia-Commons-only HTTPS URL contract that rejects arbitrary,
+loopback/private, userinfo, port, query, and fragment targets. The unchanged
+generic descriptor → qualification → registry → CLI adapter → dispatch →
+canonical-result/evidence path was exercised; no Agent-Reach, Firecrawl,
+browser automation, M33.2 work, `cli.py`, or `orchestrator.py` change entered
+the slice.
+
+Focused evidence: 41 passed. Full regression: 2,218 passed, 16 failed, 7
+skipped. An independently recreated `0558a99` worktree yielded 2,211 passed,
+15 failed, 7 skipped; 14 failure names were identical. The two current-only
+M19 failures require an ambient `credentials.json` that pre-dated this slice
+(17 Sep) in the main working tree; both pass directly in the isolated baseline
+worktree, and the accepted diff does not change Google/Drive code. The one
+baseline-only privacy failure likewise follows the isolated worktree's missing
+credentials. This is environment-state drift, not a Batch 2 regression.
+Batch 3 (Firecrawl) and all later M33.1 batches remain **NOT STARTED**; M33.2
+remains reserved only.
 
 **M31 OBJECTIVE (achieved, preserved for reference):**  
 Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).
