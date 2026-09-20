@@ -152,8 +152,9 @@ umbrella plan/state pair was created for the C3.3 or attachment-turn
 slices — see §6g below for the consolidated closure record).
 
 **CURRENT MILESTONE:**  
-None active — M33.2 Batch B.3 is CLOSED / ACCEPTED (B.2 is also CLOSED /
-ACCEPTED, see below). No Batch C or M31 UI work is authorized.
+M33.2 Batch B.4 — Real Edge-Model Qualification (B.3 is CLOSED / ACCEPTED,
+see below). Qualification-only: no new architecture layer, no Batch C, no
+M31 UI work is authorized by this scope.
 **Prior M33.1 closure correction, 2026-09-20:** M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**.
 None active — M32, M31, and M34 are all CLOSED. Per §1a, the Hybrid UI
 initiative's own hard-dependency gate was already opened by M31's own
@@ -227,6 +228,8 @@ BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10, §15.14.
 **CURRENT STATE:**  
 M33.2 Batch B.3 — CLOSED / ACCEPT (Claude independent audit, 2026-09-20).
 `INFRASTRUCTURE_VALIDATION_COMPLETE` / `REAL_MODEL_QUALIFICATION_PARTIAL`.
+M33.2 Batch B.4 — Real Edge-Model Qualification — **ACCEPTED** (planning
+only; awaiting Antigravity-routed implementation; see below).
 
 **M33.2 Batch B.1 closure, 2026-09-20 (additive):** Codex completed the
 accepted benchmark-only scope and stopped at `VERIFICATION_READY` without
@@ -419,6 +422,33 @@ real tool-use qualification for one candidate; every Edge-pack model
 remains otherwise unqualified). No model is promoted, `EDGE_ONLY`/`enabled`
 defaults are unchanged, and no Batch C or M31 UI work is authorized by this
 closure. Committed and pushed at `d395c1c`.
+
+**M33.2 Batch B.4 — Real Edge-Model Qualification, ACCEPTED, 2026-09-20
+(additive):** authorized as the next scope by direct User instruction
+immediately following the B.3 ACCEPT verdict — qualification only, no new
+architecture layer, no Batch C, no M31 UI. Reuses B.1's ensemble harness
+(configurations A-D), B.2's vision/speech harness, and B.3's lifecycle
+sourcing/state infrastructure exactly as they already exist; no new
+benchmark/scoring/sourcing mechanism is authorized. Covers Needle 3
+(real, already manually demonstrated by the User), a lightweight language
+worker (SmolLM2-135M-Instruct), a bounded local reasoner
+(DeepSeek-R1-Distill-Qwen-1.5B or Qwen2.5-1.5B-Instruct), speech/STT
+(faster-whisper), OCR (local Tesseract), and a small VLM (best-effort — may
+truthfully remain `UNAVAILABLE`), plus a comparison matrix producing
+resident/`ON_DEMAND`/bypass recommendations using `qwen3.5:9b`/`gemma4:12b`
+via the existing Main-Brain `OllamaProvider` as the stronger-model control.
+During drafting, Claude found and self-corrected a boundary gap before
+acceptance: sourcing tiny language/reasoner weights via a new `ollama pull`
+would write outside URI-controlled storage and exceed B.3's own frozen
+Ollama-adoption scope; repaired to source exclusively through B.3's own
+checksum-verified `edge_lifecycle` download/import path, with a local GGUF
+inference runtime (e.g. `llama-cpp-python`) added to the plan as an
+explicitly flagged new dependency. Full plan in
+`docs/plans/M33_2_BATCH_B4_REAL_MODEL_QUALIFICATION_PLAN.md`; state in
+`docs/plans/M33_2_BATCH_B4_STATE.md`. Status: **ACCEPTED** (planning only).
+No implementation performed by Claude; Antigravity routes implementation to
+Codex per standing AO-4 routing. No Batch C work is authorized. No M31 UI
+work is authorized.
 
 **Correction, 2026-09-19 (auditable, preserving history rather than
 silently rewriting it):** the text immediately below this note

@@ -4,6 +4,60 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
+## CURRENT HANDOFF
+
+**FROM:**
+Claude
+
+**TO:**
+Antigravity
+
+**MILESTONE:**
+M33.2 Batch B.4 — Real Edge-Model Qualification
+
+**HANDOFF TYPE:**
+PLANNING → ACCEPTED (standing auto-approval, `ORCHESTRATION.md` §1.5,
+direct User authorization immediately following B.3's ACCEPT verdict)
+
+**STATUS:**
+ACCEPTED — awaiting Antigravity-routed implementation
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/M33_2_BATCH_B4_REAL_MODEL_QUALIFICATION_PLAN.md
+- docs/plans/M33_2_BATCH_B4_STATE.md
+- docs/plans/M33_2_BATCH_B3_STATE.md (B.3 closure record)
+- docs/plans/M33_2_BATCH_B3_COMPLETION_REPORT.md (User's real Needle
+  evidence addendum)
+- docs/governance/URI_ACTIVE_MILESTONE.md
+
+**SUMMARY:**
+Qualification-only extension: run the User's requested real qualification
+of Needle 3, a lightweight language worker, a bounded local reasoner,
+speech/STT, OCR, and a small VLM (best-effort), then produce a comparison
+matrix (configurations A-D, Edge+speech, Edge+vision, and a Main-Brain
+`qwen3.5:9b`/`gemma4:12b` bypass control) with resident/`ON_DEMAND`/bypass
+recommendations. Reuses B.1's ensemble harness, B.2's vision/speech
+harness, and B.3's lifecycle sourcing/state infrastructure exactly as they
+already exist — no new architecture layer, no new benchmark/sourcing
+mechanism. During drafting, Claude self-corrected one boundary gap before
+acceptance: tiny language/reasoner weights must be sourced only through
+B.3's own checksum-verified `edge_lifecycle` download/import path, never by
+instructing Ollama to pull a new model (that would exceed B.3's own frozen
+adoption-only scope). Full detail in
+`docs/plans/M33_2_BATCH_B4_REAL_MODEL_QUALIFICATION_PLAN.md`.
+
+**REQUIRED NEXT ACTION:**
+Antigravity routes B.4 implementation to Codex (real-model-integration
+work, same "complex/precision-critical" routing rationale as B.1/B.2/B.3),
+explicitly quoting this plan's Ollama-sourcing boundary and its
+"no forced result" rule (VLM, and possibly OCR, may truthfully end
+`UNAVAILABLE`) in the implementation task package. One consolidated
+implementation/qualification run, not a model-by-model series of separate
+handoffs. Claude does not implement B.4 in this session. No Batch C work.
+No M31 UI work.
+
+---
+
 ## PREVIOUS HANDOFF (CLOSED: M33.2 Batch B.3 — CLAUDE ACCEPT)
 
 **FROM:**
