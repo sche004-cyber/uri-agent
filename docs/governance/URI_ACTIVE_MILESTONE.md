@@ -226,8 +226,8 @@ BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10, §15.14.
 
 **CURRENT STATE:**  
 M33.2 Batch B.2 — CLOSED / ACCEPT (Claude independent audit, 2026-09-20).
-M33.2 Batch B.3 — Local Model Runtime & Installation Lifecycle is the next
-additive planning scope (see below).
+M33.2 Batch B.3 — Local Model Runtime & Installation Lifecycle — ACCEPTED
+(planning only; awaiting Antigravity-routed implementation; see below).
 
 **M33.2 Batch B.1 closure, 2026-09-20 (additive):** Codex completed the
 accepted benchmark-only scope and stopped at `VERIFICATION_READY` without
@@ -315,6 +315,43 @@ existed). Not remediated under B.2's bounded-fix authority — entirely
 outside B.2's scope. **Verdict: ACCEPT — `HARNESS_COMPLETE` /
 `REAL_PERCEPTION_CANDIDATE_QUALIFICATION_PENDING`.** No candidate is
 promoted and no Batch C work is authorized by this closure.
+
+**Architecture amendment + M33.2 Batch B.3 planning, 2026-09-20
+(additive):** after closing B.2, Claude began drafting Batch B.3 (Local
+Model Runtime & Installation Lifecycle) per the User's original scope and,
+per this project's Verification-First standard, checked the frozen
+`docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md` §13
+non-goals before returning a plan. Found a direct contradiction: §13
+excluded "runtime installation; OS-permission changes" as one
+undifferentiated item, which the requested B.3 scope conflicts with.
+Claude stopped and asked the User to resolve it rather than silently
+planning around it or auto-approving past it. The User authorized a narrow
+architecture amendment, applied to §13 with full auditable correction
+history (original line preserved, not overwritten): the single excluded
+item is split into (a) still-excluded, unconditional — privileged/
+administrator/elevated installation, OS permission changes, system-wide
+package/runtime installation, GPU/driver/CUDA installation, system PATH/
+environment/registry/service modification, arbitrary third-party
+executable installation, and installation outside URI-controlled storage;
+and (b) newly permitted, additive — URI-managed, user-space model and
+portable-runtime lifecycle (detect/adopt existing runtimes, discover/
+import/download/install/update/remove models and portable runtime
+components inside URI-controlled storage, checksum/integrity verification,
+source/version/license metadata, capability/hardware probing, lazy-load
+registration and state management, dev Edge-pack provisioning, safe
+recovery/rollback) under deterministic validation and integrity controls.
+Claude separately identified (not User-raised) that URI-managed download
+requires network egress, which would violate the existing recursive
+zero-egress AST tests covering `uri_core/core/edge/` if lifecycle code
+were placed inside that tree; resolved by scoping lifecycle code to a new
+sibling package outside `uri_core/core/edge/`, leaving the existing
+zero-egress tests unweakened, with a new test proving network calls are
+reachable only from a named, explicit set of install/update/download entry
+points. Full plan in
+`docs/plans/M33_2_BATCH_B3_LOCAL_MODEL_RUNTIME_LIFECYCLE_PLAN.md`; state in
+`docs/plans/M33_2_BATCH_B3_STATE.md`. Status: **ACCEPTED** (planning only).
+No implementation performed by Claude; Antigravity routes implementation to
+Codex per standing AO-4 routing. No Batch C work is authorized.
 
 **Correction, 2026-09-19 (auditable, preserving history rather than
 silently rewriting it):** the text immediately below this note

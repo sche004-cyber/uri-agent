@@ -4,7 +4,62 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
-## CURRENT HANDOFF (CLOSED: M33.2 Batch B.2 — CLAUDE ACCEPT)
+## CURRENT HANDOFF
+
+**FROM:**
+Claude
+
+**TO:**
+Antigravity
+
+**MILESTONE:**
+M33.2 Batch B.3 — Local Model Runtime & Installation Lifecycle
+
+**HANDOFF TYPE:**
+PLANNING → ACCEPTED (standing auto-approval, `ORCHESTRATION.md` §1.5, after
+an explicit User-authorized architecture amendment)
+
+**STATUS:**
+ACCEPTED — awaiting Antigravity-routed implementation
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/M33_2_BATCH_B3_LOCAL_MODEL_RUNTIME_LIFECYCLE_PLAN.md
+- docs/plans/M33_2_BATCH_B3_STATE.md
+- docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md (§13
+  amendment, 2026-09-20)
+- docs/plans/M33_2_BATCH_B2_STATE.md (B.2 closure record)
+- docs/governance/URI_ACTIVE_MILESTONE.md
+
+**SUMMARY:**
+While drafting B.3 per the User's original request, Claude found the
+requested scope directly conflicted with the frozen architecture's §13
+exclusion of "runtime installation; OS-permission changes." Claude stopped
+and asked the User to resolve it rather than planning around it. The User
+authorized a narrow amendment: privileged/OS-level/system-wide
+installation remains excluded unconditionally; URI-managed, user-space
+model and portable-runtime lifecycle (detect/adopt, import, download/
+install/update/remove inside URI-controlled storage, checksum/integrity,
+metadata, hardware probing, registration, lazy state management, dev
+Edge-pack, recovery/rollback) is newly permitted. Claude applied this to
+the architecture doc with full auditable correction history, then also
+resolved a self-identified conflict: URI-managed download needs network
+egress, which would violate the existing `uri_core/core/edge/` zero-egress
+tests if placed inside that tree — resolved by scoping lifecycle code to a
+new sibling package with its own, separately-tested, narrowly-scoped
+egress boundary. Full detail in
+`docs/plans/M33_2_BATCH_B3_LOCAL_MODEL_RUNTIME_LIFECYCLE_PLAN.md`.
+
+**REQUIRED NEXT ACTION:**
+Antigravity routes B.3 implementation to Codex (multi-file, new-package,
+precision-critical, security-boundary-adjacent work, same rationale as
+B.1/B.2's routing), explicitly quoting the plan's still-excluded/
+unconditional list in the implementation task package so Codex stops and
+escalates rather than working around it if elevated/OS-level access would
+otherwise be needed. Claude does not implement B.3 in this session.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: M33.2 Batch B.2 — CLAUDE ACCEPT)
 
 **FROM:**
 Antigravity

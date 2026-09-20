@@ -442,7 +442,59 @@ Text models may be resident; vision/VLM models normally load on demand; inactive
 
 ## 13. Non-goals and unresolved decisions
 
-**Excluded:** M33.3 UI redesign; Knowledge Fabric/Sources/Watches; Companion personality/animation; full reconstruction/DOCX engine; autonomous execution; model-controlled settings/permissions/credentials; adaptive thresholds; Needle/Cactus lock-in; runtime installation; OS-permission changes; cross-device settings sync; unrelated integrations.
+**Amendment, 2026-09-20 (auditable, preserving history rather than silently
+rewriting it):** the line below originally excluded "runtime installation;
+OS-permission changes" as two unqualified, undifferentiated items. Per
+direct User instruction, the product requirement has evolved: URI should
+eventually provide a working local Edge Brain without requiring users to
+manually install every model/runtime first, while preserving the security
+intent the original exclusion protected (no privileged, system-level, or
+OS-modifying installation performed by URI). The single undifferentiated
+line is therefore split into two, effective from this date:
+
+- **Still excluded, unconditionally (the original security intent,
+  unchanged):** privileged/administrator/elevated installation; OS
+  permission changes; system-wide package/runtime installation; GPU/driver/
+  CUDA installation; system PATH/environment modification; registry or
+  system-service modification; arbitrary third-party executable
+  installation; installing anything outside URI-controlled storage. If a
+  model needs an external/system runtime URI cannot safely provision in
+  user space, URI may only: detect whether it already exists, report the
+  dependency truthfully, offer installation guidance or manual adoption,
+  and never modify the operating system itself.
+- **Newly permitted, additive (2026-09-20):** URI-managed, user-space model
+  and portable-runtime lifecycle, under deterministic validation and
+  integrity controls — detecting/adopting already-installed Ollama, LM
+  Studio, and compatible runtimes; discovering already-downloaded models;
+  manual model-file import; URI-managed download/install/update/removal of
+  model weights and assets inside URI-controlled user storage;
+  URI-managed installation of self-contained/portable runtime components
+  inside URI-controlled storage where licensing and platform support
+  permit; checksum/signature/integrity verification; source/version/license
+  metadata; capability and hardware probing; model/runtime registration;
+  lazy loading/unloading; runtime state management; development Edge-pack
+  provisioning; and safe recovery/rollback for URI-managed assets. This
+  remains proposal/observation-tier infrastructure — it grants no
+  execution, approval, or authority change, and does not touch
+  `orchestrator.py`, `server.py`, the dispatcher, approval, credential, or
+  capability-registry systems (§12 compatibility invariants are unchanged
+  by this amendment).
+
+The original, now-superseded line (kept for audit trail, not enforced as
+written): ~~runtime installation; OS-permission changes~~ (from: "Excluded:
+M33.3 UI redesign; Knowledge Fabric/Sources/Watches; Companion personality/
+animation; full reconstruction/DOCX engine; autonomous execution;
+model-controlled settings/permissions/credentials; adaptive thresholds;
+Needle/Cactus lock-in; runtime installation; OS-permission changes;
+cross-device settings sync; unrelated integrations.").
+
+**Excluded (current, post-amendment):** M33.3 UI redesign; Knowledge
+Fabric/Sources/Watches; Companion personality/animation; full
+reconstruction/DOCX engine; autonomous execution; model-controlled
+settings/permissions/credentials; adaptive thresholds; Needle/Cactus
+lock-in; privileged/system-level runtime installation and OS-permission
+changes (see split above — URI-managed user-space lifecycle is now
+permitted); cross-device settings sync; unrelated integrations.
 
 **Need independent review, not a user decision yet:** whether `EDGE_ONLY` ships enabled by default; exact initial fixture corpus/data-retention period; first eligible Windows and Android candidates; local-only process-level egress enforcement mechanism; and whether a future companion/trace consumer adopts this trace DTO unchanged or versions it. None justifies implementation before benchmark evidence.
 

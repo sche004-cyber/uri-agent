@@ -118,9 +118,13 @@ classification and residual environment nondeterminism in the authoritative
 plan §13.H. Firecrawl remains optional future Connected-Service work, not an
 M33.1 closure requirement.
 M33.2 Batch B.2 is **CLOSED / ACCEPTED** for Edge Perception Qualification
-(Claude independent audit, 2026-09-20); M33.3 is reserved for
-Unified URI Interaction & Capability UI; M33.4 is reserved for Knowledge
-Fabric / Sources / Watches. No B.2 perception candidate is promoted.
+(Claude independent audit, 2026-09-20); Batch B.3 (Local Model Runtime &
+Installation Lifecycle) is **ACCEPTED, planning-only**, awaiting
+Antigravity-routed implementation, per a narrow, User-authorized amendment
+to the canonical architecture's §13 runtime-installation exclusion. M33.3
+is reserved for Unified URI Interaction & Capability UI; M33.4 is reserved
+for Knowledge Fabric / Sources / Watches. No B.2 perception candidate is
+promoted; no B.3 code has been implemented.
 
 ---
 

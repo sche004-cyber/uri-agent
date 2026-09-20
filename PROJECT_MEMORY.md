@@ -30,7 +30,17 @@
   failures caused by real local Gmail/Drive OAuth credentials present on
   this machine, unrelated to B.1/B.2 code. See
   `docs/plans/M33_2_BATCH_B2_COMPLETION_REPORT.md` and
-  `docs/plans/M33_2_BATCH_B2_STATE.md`.
+  `docs/plans/M33_2_BATCH_B2_STATE.md`. Batch B.3 (Local Model Runtime &
+  Installation Lifecycle) is **ACCEPTED, planning-only** (2026-09-20),
+  awaiting Antigravity-routed implementation, after an explicit
+  User-authorized narrow amendment to
+  `docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md` §13
+  splitting its prior undifferentiated "runtime installation; OS-permission
+  changes" exclusion into a still-excluded, unconditional privileged/
+  OS-level half and a newly-permitted URI-managed, user-space model/
+  portable-runtime lifecycle half. See
+  `docs/plans/M33_2_BATCH_B3_LOCAL_MODEL_RUNTIME_LIFECYCLE_PLAN.md` and
+  `docs/plans/M33_2_BATCH_B3_STATE.md`.
 
 - **Completed baseline:** M23 — URI-native Graph Intelligence foundation
   (commit `dfee5a8`), implemented directly by Claude under explicit User
