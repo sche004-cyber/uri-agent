@@ -160,6 +160,16 @@ initiative's own separate role set and status before any implementation
 work begins on it. Neither M32's nor M34's closure opens or affects
 that gate.
 
+**M33.2 planning checkpoint, 2026-09-20:** M33.2 — Edge / Second Brain
+Foundation is **FROZEN / IMPLEMENTATION-READY; IMPLEMENTATION NOT STARTED**.
+The four-stage package is:
+`docs/research/M33_2_EDGE_SECOND_BRAIN_ROOT_CAUSE_AUDIT.md`,
+`docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md`, and
+`docs/plans/M33_2_EDGE_SECOND_BRAIN_MIGRATION_PLAN.md`. Its frozen scope is
+proposal/observation intelligence only; URI remains the sole authority for
+permissions, approvals, credentials, dispatch, evidence, and execution.
+This checkpoint authorizes no Batch A work or production-code change.
+
 **M32 residual items, carried forward (NOT resolved by this closure):**
 1. **Resumed approval across turns** (durable cross-turn pending-
    approval state + natural-language resumption recognition) —
@@ -612,7 +622,7 @@ only, carrying two items forward —
 Both items' underlying code was untouched from Batch B/C's own
 disclosure until this M34 closure implemented and resolved them.
 
-### M35 — URI Companion Experience & Mini AI
+### M35 — URI Companion Experience
 **Status:** NOT STARTED. Net-new concept — no prior documentation
 existed anywhere in this repository before the 2026-09-18 roadmap
 audit confirmed a zero-match search. **Scope direction (not yet a
@@ -621,12 +631,14 @@ detailed plan):**
   states/expressions. Distinct from, and must not be confused with,
   the existing **Compact Chat Mode** (§1a) — same repository, same
   Flutter app, different feature, different name.
-- Lightweight/local **Mini AI** complementing (never replacing) URI's
-  main Brain.
-- Brain ↔ Mini-AI task escalation/delegation.
-- Shared context/state boundaries between Brain and Mini AI.
-- Resource/fallback policy.
 - Integration with Compact Chat Mode and the full URI UI.
+
+**Scope correction, 2026-09-20:** M33.2 owns URI's sole Edge / Second-Brain
+intelligence architecture, including any bounded Main-Brain preparation,
+resource/fallback policy, and its context boundaries. M35 must not create,
+rename, or retain a competing Mini-AI architecture, delegation path, or
+resource policy. It is limited to Companion Experience presentation and
+consumes M33.2's URI-owned contracts when that later milestone is planned.
 
 **Dependency, recorded explicitly:** the last bullet implies M35
 integration work has a prerequisite on Hybrid UI (Compact Chat Mode's
@@ -635,12 +647,9 @@ paused, not accepted (§1a). This is a sequencing note, not a hard gate
 recorded here the way M31→Hybrid UI's gate was — M35 has no detailed
 plan yet for such a gate to attach to.
 
-**Relationship to M34, disclosed as an open question, not resolved:**
-M34's name ("Model-Native Capability Preservation & Adaptive
-Scaffolding") and M35's "Mini AI" are suggestively similar but nothing
-in either's current scope record confirms or rules out that they are
-the same underlying idea under two different working names. Left
-open for whoever plans either milestone to resolve, not assumed here.
+**Relationship to M34:** M34's model-native capability preservation remains
+compatible with this presentation-only M35 scope. M35 does not own a separate
+model or intelligence architecture.
 
 ---
 

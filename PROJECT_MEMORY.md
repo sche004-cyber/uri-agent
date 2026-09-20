@@ -14,8 +14,19 @@
   Batch 4 paths. No bounded fix required. `URI_ENABLE_LIFECYCLE_INTENT_SEAM=1`
   remains opt-in; M33.3 graphical lifecycle management remains out of scope.
   Do not double-count arbitrary `SKILL.md` prose as a distinct mechanism, and
-  do not start or absorb M33.2 planning/implementation. Full record:
+  do not start or absorb M33.2 implementation. Full record:
   `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` §13.H.
+
+- **M33.2 — Edge / Second Brain Foundation:** **FROZEN /
+  IMPLEMENTATION-READY; IMPLEMENTATION NOT STARTED** (2026-09-20 planning
+  checkpoint). The evidence audit, canonical architecture, and migration plan
+  are frozen together at `docs/research/M33_2_EDGE_SECOND_BRAIN_ROOT_CAUSE_AUDIT.md`,
+  `docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md`, and
+  `docs/plans/M33_2_EDGE_SECOND_BRAIN_MIGRATION_PLAN.md`. Edge is proposal /
+  observation intelligence only; URI retains all authority and execution.
+  M33.3 UI is not a closure dependency; M35 Companion Experience consumes,
+  rather than duplicates, this intelligence architecture. Do not start Batch A
+  without a separate implementation instruction.
 
 - **Completed baseline:** M23 — URI-native Graph Intelligence foundation
   (commit `dfee5a8`), implemented directly by Claude under explicit User

@@ -52,8 +52,9 @@ starting with M30); M33 and M33.1 are tracked there. M33 and M33.1 are
 CLOSED / ACCEPTED. M33.1's final Batch 4 closure accepted the extension matrix,
 natural-language/UI lifecycle seam, live `/ask` wiring, and compatibility
 evidence; see `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md`
-§13.H. M33.2 is reserved for Edge /
-Second Brain Foundation; M33.3 is reserved for Unified URI Interaction &
+§13.H. M33.2 is **FROZEN / IMPLEMENTATION-READY** for Edge /
+Second Brain Foundation (implementation not started; its separate planning
+checkpoint records the three four-stage artifacts); M33.3 is reserved for Unified URI Interaction &
 Capability UI; M33.4 is reserved for Knowledge Fabric / Sources / Watches.
 M32.1/M35 remain
 reserved/NOT STARTED and none of these records block M34's closure.
@@ -115,7 +116,8 @@ isolated Batch 2–4 lifecycle/live tests passing, with the full-regression
 classification and residual environment nondeterminism in the authoritative
 plan §13.H. Firecrawl remains optional future Connected-Service work, not an
 M33.1 closure requirement.
-M33.2 is reserved for Edge / Second Brain Foundation; M33.3 is reserved for
+M33.2 is **FROZEN / IMPLEMENTATION-READY** for Edge / Second Brain Foundation
+(implementation not started); M33.3 is reserved for
 Unified URI Interaction & Capability UI; M33.4 is reserved for Knowledge
 Fabric / Sources / Watches. None is implemented.
 
