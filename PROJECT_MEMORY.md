@@ -17,30 +17,50 @@
   do not start or absorb M33.2 implementation. Full record:
   `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` §13.H.
 
-- **M33.2 — Edge / Second Brain Foundation:** Batch A/B/B.1/B.2 are **CLOSED
-  / ACCEPTED** (B.2 Edge Perception Qualification closed 2026-09-20, Claude
-  independent audit). Focused B.2 tests passed 45/45 after one bounded audit
-  fix. Fixture vision/STT results validate the harness only. Actual
-  OCR/VLM/hybrid and faster-whisper candidates were unavailable; the
-  installed Needle probe correctly reports `PACKAGE_NOT_INSTALLED` (Claude's
-  audit corrected an initial `NOT_SUPPORTED` misclassification) and
-  automatically fell through to the alternative STT path. No candidate is
-  promoted and no Batch C work is authorized. A disclosed, out-of-scope,
-  non-blocking full-suite finding: `test_m19_office_readiness.py` has 2
-  failures caused by real local Gmail/Drive OAuth credentials present on
-  this machine, unrelated to B.1/B.2 code. See
-  `docs/plans/M33_2_BATCH_B2_COMPLETION_REPORT.md` and
-  `docs/plans/M33_2_BATCH_B2_STATE.md`. Batch B.3 (Local Model Runtime &
-  Installation Lifecycle) is **ACCEPTED, planning-only** (2026-09-20),
-  awaiting Antigravity-routed implementation, after an explicit
-  User-authorized narrow amendment to
-  `docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md` §13
-  splitting its prior undifferentiated "runtime installation; OS-permission
-  changes" exclusion into a still-excluded, unconditional privileged/
-  OS-level half and a newly-permitted URI-managed, user-space model/
-  portable-runtime lifecycle half. See
-  `docs/plans/M33_2_BATCH_B3_LOCAL_MODEL_RUNTIME_LIFECYCLE_PLAN.md` and
-  `docs/plans/M33_2_BATCH_B3_STATE.md`.
+- **M33.2 — Edge / Second Brain Foundation: CLOSED / VERIFIED** (final
+  closure review, 2026-09-20, Claude independent audit of the complete
+  Batch A -> B -> B.1 -> B.2 -> B.3 -> B.4 chain against primary evidence,
+  fresh 60/60 regression reconfirmed this session). Final state: Edge/
+  Second Brain remains optional and provider-agnostic; URI deterministic
+  authority remains the sole execution boundary (confirmed by
+  `test_edge_has_no_static_authority_or_execution_imports` and
+  `test_authority_modules_do_not_read_edge_preference`); **Needle 3** is
+  the only qualified `RESIDENT` worker, scope-limited to reflex tool
+  routing and structured extraction — its 50% normalized-argument-
+  extraction rate means it is explicitly **not** trusted for unrestricted
+  argument extraction, which must stay an untrusted, validated proposal;
+  **SmolLM2-135M-Instruct** and **Qwen2.5-0.5B-Instruct** are both
+  `BYPASS / REDUNDANT` (stronger already-installed Main Brains
+  `qwen3.5:9b`/`gemma4:12b` materially outperform the 0.5B reasoner and
+  correctly bypass it); **STT/OCR/VLM** remain truthfully `UNQUALIFIED /
+  UNAVAILABLE`; the B.3 user-space model/runtime lifecycle infrastructure
+  (`uri_core/core/edge_lifecycle/`) is accepted; zero-egress Edge Core is
+  intact (lifecycle code deliberately kept outside `uri_core/core/edge/`
+  to avoid weakening the existing zero-egress AST tests); `installed !=
+  resident != qualified` holds as a real distinction, not merely
+  asserted, across this chain. No Batch C was opened — no direct evidence
+  of a missing contractual requirement from the original four-stage
+  package was found. Full item-by-item evidence trail: the "M33.2 — Edge
+  / Second Brain Foundation — FINAL CLOSURE" entry in
+  `docs/governance/URI_ACTIVE_MILESTONE.md`. Batch-level records remain at
+  `docs/plans/M33_2_BATCH_{A,B,B1,B2,B3,B4}_STATE.md` and their sibling
+  completion reports.
+
+- **ARN — Adaptive Retrieval Narrowing & Task Recovery:** next capability,
+  **plan ACCEPTED, planning-only** (2026-09-20, direct User instruction
+  immediately following M33.2's final closure). Turns `NOT_FOUND` into a
+  recovery trigger rather than a terminal answer, progressively narrows
+  search space using deterministic structure/index results/working
+  memory/metadata/prior failed paths/Edge intelligence/user clues/
+  Main-Brain evidence requests, asks at most one high-information
+  clarification question when it can materially shrink a large candidate
+  set, and works without Graphify (Graphify is an optional accelerator,
+  not a dependency). Explicitly does not assume Qwen2.5-0.5B is a
+  suitable ARN search-strategist reasoner, given its M33.2 Batch B.4
+  `BYPASS/REDUNDANT` verdict above — qualifying a better small-reasoner
+  candidate on ARN/search-planning tasks specifically is part of the
+  plan. No implementation authorized this session. See
+  `docs/plans/ARN_ADAPTIVE_RETRIEVAL_NARROWING_PLAN.md`.
 
 - **Completed baseline:** M23 — URI-native Graph Intelligence foundation
   (commit `dfee5a8`), implemented directly by Claude under explicit User

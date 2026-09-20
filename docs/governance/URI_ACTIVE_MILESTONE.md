@@ -152,11 +152,14 @@ umbrella plan/state pair was created for the C3.3 or attachment-turn
 slices — see §6g below for the consolidated closure record).
 
 **CURRENT MILESTONE:**  
-M33.2 Batch B.4 — Real Edge-Model Qualification (B.3 is CLOSED / ACCEPTED,
-see below). Qualification-only: no new architecture layer, no Batch C, no
-M31 UI work is authorized by this scope.
+None active. **M33.2 — Edge / Second Brain Foundation is CLOSED / VERIFIED**
+(2026-09-20 final closure review, see the "M33.2 — Edge / Second Brain
+Foundation — FINAL CLOSURE" entry below for the full Batch A -> B.4 chain
+verdict). Next planning scope: **ARN — Adaptive Retrieval Narrowing & Task
+Recovery** (see `docs/plans/ARN_ADAPTIVE_RETRIEVAL_NARROWING_PLAN.md`),
+planning-only, not yet implemented.
 **Prior M33.1 closure correction, 2026-09-20:** M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**.
-None active — M32, M31, and M34 are all CLOSED. Per §1a, the Hybrid UI
+None active — M32, M31, M33.2, and M34 are all CLOSED. Per §1a, the Hybrid UI
 initiative's own hard-dependency gate was already opened by M31's own
 earlier closure, independently of M32/M34 — see that section for the
 initiative's own separate role set and status before any implementation
@@ -233,6 +236,9 @@ M33.2 Batch B.4 — Real Edge-Model Qualification — **CLOSED / ACCEPT**
 routing/structured extraction only, argument extraction excluded pending
 further evidence); SmolLM2-135M-Instruct and Qwen2.5-0.5B-Instruct →
 `BYPASS / REDUNDANT`; STT/OCR/VLM → `UNQUALIFIED / UNAVAILABLE`.
+**M33.2 — Edge / Second Brain Foundation — CLOSED / VERIFIED** (Claude
+independent final closure review, 2026-09-20, chain Batch A through B.4).
+No Batch C opened. Next planning scope: ARN (planning-only).
 
 **M33.2 Batch B.1 closure, 2026-09-20 (additive):** Codex completed the
 accepted benchmark-only scope and stopped at `VERIFICATION_READY` without
@@ -487,6 +493,79 @@ suite failures (exactly 16 failed reproduced, names matching 1:1, none
 touching any B.4-changed file). See
 `docs/plans/M33_2_BATCH_B4_STATE.md` for the full audit trail. Verdict:
 ACCEPT, no bounded defects found, no fix required. Release commit follows.
+
+**M33.2 — Edge / Second Brain Foundation — FINAL CLOSURE, 2026-09-20
+(Claude independent final closure review, User instruction: "final
+closure review for URI M33.2"):** reviewed the complete accepted chain
+Batch A (`bf177a5`) -> B (`906c527`) -> B.1 (`a792a8c`) -> B.2 (`b98620a`)
+-> B.3 (`d395c1c`) -> B.4 (`eaf97c5`/`340a009`) directly against primary
+evidence, not against any batch's own report alone: re-read every
+batch's STATE/completion-report closure trail above; confirmed
+`master` == `origin/master` at `340a009` (fetched, compared); confirmed
+no `M33_2_*BATCH_C*` artifact exists anywhere in the repository;
+independently re-ran the required six-file M33.2 regression set fresh
+in this session and reproduced **60/60 passed**, matching every prior
+batch's own independent reproduction. Final architecture/state, each
+item checked against primary evidence, not asserted:
+- **Edge/Second Brain optional, provider-agnostic:** confirmed —
+  `EdgeSettingsTests`/`EdgePolicyAndProviderTests`
+  (`test_null_provider_and_assistance_contract_are_truthful`,
+  `test_threshold_and_preflight_decisions`) pass; `EDGE_ONLY`/`enabled`
+  defaults unchanged by any batch (no batch promoted a default).
+- **URI deterministic authority is the execution boundary:** confirmed
+  — `test_edge_has_no_static_authority_or_execution_imports` and
+  `test_authority_modules_do_not_read_edge_preference` both pass; every
+  batch's own closure independently confirmed no
+  routing/approval/dispatcher/registry/orchestrator/server/credential/
+  UI code was touched (`git diff --stat` checked each time, not
+  trusted from a report).
+- **Needle 3 is the only currently qualified RESIDENT worker**, scope-
+  limited to reflex/tool routing and structured extraction; its
+  measured 50% normalized-argument-extraction rate means it is
+  explicitly **not** trusted for unrestricted argument extraction —
+  values remain an untrusted proposal requiring validation before use.
+  Per `M33_2_BATCH_B4_STATE.md`.
+- **SmolLM2-135M-Instruct -> `BYPASS / REDUNDANT`** and
+  **Qwen2.5-0.5B-Instruct -> `BYPASS / REDUNDANT`**, both re-confirmed;
+  stronger already-installed local Main Brains
+  (`qwen3.5:9b`/`gemma4:12b` via `OllamaProvider`) materially
+  outperform the 0.5B reasoner and correctly bypass it — the
+  stronger-Main-Brain-bypasses-weaker-Edge-worker principle is real,
+  measured behavior, not an assumption.
+- **STT/OCR/VLM remain truthfully `UNQUALIFIED / UNAVAILABLE`** —
+  confirmed no forced result, no workaround, perception adapter files
+  byte-unchanged since B.2.
+- **Model lifecycle/user-space installation infrastructure is
+  accepted** — B.3 (`d395c1c`) CLOSED/ACCEPTED, sibling
+  `uri_core/core/edge_lifecycle/` package, redirect-confinement defect
+  found and fixed in that batch's own audit.
+- **Zero-egress Edge Core intact** — B.3 placed lifecycle code outside
+  `uri_core/core/edge/` specifically to avoid weakening the existing
+  recursive zero-egress AST tests; those tests and the lifecycle
+  network-entry-point boundary test both pass in this session's fresh
+  60/60 run.
+- **Provider-specific capabilities/limitations and confidence
+  semantics preserved** — the real Needle test's `confidence = null`
+  finding (B.3) was disclosed, not normalized away or hidden by any
+  later batch.
+- **`installed != resident != qualified`** holds as a real, not merely
+  asserted, distinction across this chain: B.3 established *installed/
+  adopted* (runtime + downloaded assets, checksum-verified, nothing
+  promoted); B.4 established *qualified* (measured evaluation per
+  candidate); only Needle 3 crossed into *resident*, and only for its
+  scope-limited capabilities — SmolLM2 and Qwen2.5-0.5B are installed
+  and qualified but explicitly not resident (`BYPASS`).
+- **No Batch C required:** no direct evidence surfaced during this
+  review of a missing contractual requirement from the original
+  four-stage M33.2 package (root-cause audit, canonical architecture,
+  migration plan) that Batches A-B.4 left unaddressed; every truthful
+  `UNAVAILABLE`/`BYPASS` outcome is a valid, disclosed closure state,
+  not an unmet requirement.
+
+**Verdict: VERIFIED / CLOSED.** M33.2 — Edge / Second Brain Foundation
+is CLOSED. Nothing unverifiable found that affects this verdict. No
+Batch C is opened by this closure. No M31 UI work is authorized by
+this closure.
 
 **Correction, 2026-09-19 (auditable, preserving history rather than
 silently rewriting it):** the text immediately below this note
