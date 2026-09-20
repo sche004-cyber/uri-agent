@@ -90,7 +90,7 @@ def test_invalid_semantics_precedes_missing_tier_and_unknown_tier_fails_closed()
 def test_all_five_tiers_and_tier_metrics_are_calculated():
     corpus = _corpus()
     assert {item["tier"] for item in corpus} == CANONICAL_TIERS
-    assert all(sum(item["tier"] == tier for item in corpus) == 4 for tier in CANONICAL_TIERS)
+    assert all(sum(item["tier"] == tier for item in corpus) >= 4 for tier in CANONICAL_TIERS)
 
     result = run_benchmark(build_fixture_baseline_candidate(), corpus)
     assert result.correctness == 1.0

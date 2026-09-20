@@ -4,57 +4,80 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
-## CURRENT HANDOFF
+## CURRENT HANDOFF (CLOSED: M33.2 Batch B.4 — CLAUDE ACCEPT)
 
 **FROM:**
-Claude
+Antigravity
 
 **TO:**
-Antigravity
+Claude
 
 **MILESTONE:**
 M33.2 Batch B.4 — Real Edge-Model Qualification
 
 **HANDOFF TYPE:**
-PLANNING → ACCEPTED (standing auto-approval, `ORCHESTRATION.md` §1.5,
-direct User authorization immediately following B.3's ACCEPT verdict)
+AUDIT
 
 **STATUS:**
-ACCEPTED — awaiting Antigravity-routed implementation
+CLOSED — CLAUDE ACCEPT (`RESIDENT`: Needle 3, reflex routing/structured
+extraction only; `BYPASS / REDUNDANT`: SmolLM2-135M-Instruct,
+Qwen2.5-0.5B-Instruct; `UNQUALIFIED / UNAVAILABLE`: STT, OCR, VLM)
 
 **AUTHORITATIVE ARTIFACTS:**
-- docs/plans/M33_2_BATCH_B4_REAL_MODEL_QUALIFICATION_PLAN.md
+- docs/plans/M33_2_BATCH_B4_COMPLETION_REPORT.md
 - docs/plans/M33_2_BATCH_B4_STATE.md
-- docs/plans/M33_2_BATCH_B3_STATE.md (B.3 closure record)
-- docs/plans/M33_2_BATCH_B3_COMPLETION_REPORT.md (User's real Needle
-  evidence addendum)
+- docs/plans/M33_2_BATCH_B4_REAL_MODEL_QUALIFICATION_PLAN.md
+- scripts/m33_2_batch_b4_live_qualification_runner.py
+- scripts/m33_2_needle_bridge.py
+- temp_evidence/m33_2_batch_b4/consolidated_results.json
+- test_m33_2_batch_b4_real_model_qualification.py
 - docs/governance/URI_ACTIVE_MILESTONE.md
 
 **SUMMARY:**
-Qualification-only extension: run the User's requested real qualification
-of Needle 3, a lightweight language worker, a bounded local reasoner,
-speech/STT, OCR, and a small VLM (best-effort), then produce a comparison
-matrix (configurations A-D, Edge+speech, Edge+vision, and a Main-Brain
-`qwen3.5:9b`/`gemma4:12b` bypass control) with resident/`ON_DEMAND`/bypass
-recommendations. Reuses B.1's ensemble harness, B.2's vision/speech
-harness, and B.3's lifecycle sourcing/state infrastructure exactly as they
-already exist — no new architecture layer, no new benchmark/sourcing
-mechanism. During drafting, Claude self-corrected one boundary gap before
-acceptance: tiny language/reasoner weights must be sourced only through
-B.3's own checksum-verified `edge_lifecycle` download/import path, never by
-instructing Ollama to pull a new model (that would exceed B.3's own frozen
-adoption-only scope). Full detail in
-`docs/plans/M33_2_BATCH_B4_REAL_MODEL_QUALIFICATION_PLAN.md`.
+Codex has completed the implementation and qualification battery for M33.2 Batch B.4:
+1. Real qualification of Needle 3 executed via proposal-only stdio bridge to `.venv-needle`:
+   - 100% tool routing / competing-tool selection (8/8)
+   - 100% structured record extraction (4/4)
+   - 50% argument extraction (2/4 normalized exact)
+   - ~101.6 MB provider peak RAM, ~159 ms p50 provider latency
+   - Verdict: `RESIDENT` for reflex routing and structured extraction
+2. Real qualification of SmolLM2-135M-Instruct Q3_K_M via portable user-space llama.cpp CPU runtime:
+   - 0.625 language rubric score vs 0.333 baseline escalation
+   - 0/4 exact answers; ~203.8 MB peak RSS; ~100 ms p50 latency
+   - Verdict: `BYPASS / REDUNDANT` (quality gain does not justify memory footprint)
+3. Real qualification of Qwen2.5-0.5B-Instruct Q4_K_M via portable user-space llama.cpp CPU runtime:
+   - 50% bounded-reasoning accuracy (2/4) vs 0% baseline escalation
+   - ~494 MB peak RSS; ~192 ms p50 latency
+   - Substantive reasoning errors on constraints and set intersections
+   - Installed Ollama controls (`qwen3.5:9b`, `gemma4:12b`) achieved 100% (4/4) on the same tier at 130–160 ms warm latency
+   - Verdict: `BYPASS / REDUNDANT` (bypass to Main Brain on bounded reasoning)
+4. Perception workers (STT, OCR, VLM) evaluated and truthfully recorded as `UNQUALIFIED / UNAVAILABLE` with documented constraints (missing published multi-file SHA-256 manifests, no portable Windows Tesseract binary, no <=1B VLM without heavy secondary framework).
+5. Verification:
+   - Required M33.2 suites: 60/60 passing (re-verified independently by Antigravity in 2.33s).
+   - Full regression suite: 2,249 passed, 16 classified baseline failures (0 new attributable to B.4), 40 subtests passed.
+   - All 32 `test_m19_office_readiness.py` tests passed cleanly.
+   - Zero production routing, authority, or UI paths modified. Zero OS/privileged modifications. Zero network egress from `uri_core/core/edge/`.
+   - Stopped at `VERIFICATION_READY` without commit or push.
+
+**DIRECTIVE (original, Antigravity → Claude):**
+Claude conducts the independent final audit of M33.2 Batch B.4, inspecting source diffs, qualification evidence, and test suites, returning ACCEPT or REPAIR REQUIRED, and executing release commit/push if verified.
+
+**RESOLVED (Claude independent audit, 2026-09-20):**
+Independently re-verified primary evidence rather than trusting the
+completion report: recomputed SHA-256 for all three downloaded assets
+directly against disk (all match); read the Needle bridge script and
+confirmed proposal-only behavior and zero-egress posture; traced the
+Configuration D 94.64 ms matrix-p50 figure to a real, disclosed cause;
+independently reran the 60-test regression set (60/60 reproduced) and the
+eleven files containing the reported 16 full-suite failures (exactly 16
+reproduced, names matching 1:1, none touching a B.4-changed file). No
+bounded defects found; no fix required. Full audit trail:
+`docs/plans/M33_2_BATCH_B4_STATE.md`.
 
 **REQUIRED NEXT ACTION:**
-Antigravity routes B.4 implementation to Codex (real-model-integration
-work, same "complex/precision-critical" routing rationale as B.1/B.2/B.3),
-explicitly quoting this plan's Ollama-sourcing boundary and its
-"no forced result" rule (VLM, and possibly OCR, may truthfully end
-`UNAVAILABLE`) in the implementation task package. One consolidated
-implementation/qualification run, not a model-by-model series of separate
-handoffs. Claude does not implement B.4 in this session. No Batch C work.
-No M31 UI work.
+None for B.4 — CLOSED. Claude prepares the final M33.2 closure handoff next
+(no Batch C, no M31 UI, no ARN implementation this session, per direct User
+scope boundary).
 
 ---
 

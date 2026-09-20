@@ -1,7 +1,7 @@
 {
   "schema_version": "1.1",
   "corpus": "fixtures/m33_2_edge_benchmark/corpus.json",
-  "corpus_item_count": 20,
+  "corpus_item_count": 24,
   "corpus_tiers": [
     "deterministic",
     "reflex",
@@ -9,7 +9,13 @@
     "bounded-reasoning",
     "escalate"
   ],
-  "items_per_tier": 4,
+  "items_per_tier": {
+    "deterministic": 4,
+    "reflex": 8,
+    "language-only": 4,
+    "bounded-reasoning": 4,
+    "escalate": 4
+  },
   "privacy": "synthetic-only",
   "provenance": "URI-owned frozen fixture",
   "outbound_deny_required": true,

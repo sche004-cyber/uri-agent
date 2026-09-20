@@ -228,8 +228,11 @@ BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10, §15.14.
 **CURRENT STATE:**  
 M33.2 Batch B.3 — CLOSED / ACCEPT (Claude independent audit, 2026-09-20).
 `INFRASTRUCTURE_VALIDATION_COMPLETE` / `REAL_MODEL_QUALIFICATION_PARTIAL`.
-M33.2 Batch B.4 — Real Edge-Model Qualification — **ACCEPTED** (planning
-only; awaiting Antigravity-routed implementation; see below).
+M33.2 Batch B.4 — Real Edge-Model Qualification — **CLOSED / ACCEPT**
+(Claude independent audit, 2026-09-20). Needle 3 → `RESIDENT` (reflex
+routing/structured extraction only, argument extraction excluded pending
+further evidence); SmolLM2-135M-Instruct and Qwen2.5-0.5B-Instruct →
+`BYPASS / REDUNDANT`; STT/OCR/VLM → `UNQUALIFIED / UNAVAILABLE`.
 
 **M33.2 Batch B.1 closure, 2026-09-20 (additive):** Codex completed the
 accepted benchmark-only scope and stopped at `VERIFICATION_READY` without
@@ -449,6 +452,41 @@ explicitly flagged new dependency. Full plan in
 No implementation performed by Claude; Antigravity routes implementation to
 Codex per standing AO-4 routing. No Batch C work is authorized. No M31 UI
 work is authorized.
+
+**M33.2 Batch B.4 implementation checkpoint, 2026-09-20 (additive):** Codex
+completed the accepted real-model qualification scope on disk and stopped at
+`VERIFICATION_READY` without commit or push. Needle 3 was qualified via a
+proposal-only stdio bridge to `.venv-needle` (100% routing/tool selection,
+100% structured record extraction, 50% normalized argument extraction,
+~101.6 MB peak RAM, recommended `RESIDENT` for reflex/structured tasks).
+SmolLM2-135M-Instruct and Qwen2.5-0.5B-Instruct were sourced through B.3's
+`edge_lifecycle` into URI user-space storage and evaluated via a pinned portable
+CPU llama.cpp runtime; both were determined `BYPASS / REDUNDANT` (insufficient
+quality gain over no-worker baseline to justify memory footprint, and materially
+outperformed on bounded reasoning by the existing `qwen3.5:9b`/`gemma4:12b`
+Ollama controls). Perception workers (STT, OCR, VLM) remain truthfully
+`UNQUALIFIED / UNAVAILABLE` due to documented sourcing/runtime/fixture
+constraints. Focused and regression M33.2 suites passed 60/60; full pytest
+regression returned 2,249 passed / 16 classified baseline failures (0 new).
+All 32 `test_m19_office_readiness.py` tests passed. No privileged installation,
+no system PATH/OS changes, no model promotion, no Batch C, and no M31 UI work
+occurred. Full evidence in `docs/plans/M33_2_BATCH_B4_COMPLETION_REPORT.md` and
+`temp_evidence/m33_2_batch_b4/`.
+
+**M33.2 Batch B.4 CLOSED / ACCEPT, 2026-09-20 (additive, Claude independent
+audit):** Claude independently re-verified primary evidence rather than
+trusting Codex's report: recomputed SHA-256 for all three downloaded model/
+runtime assets directly against disk (all match); read the Needle bridge
+script and confirmed proposal-only behavior (`tools=[]`, `Needle.complete()`
+only, never `Needle.run()`) and zero-egress posture; traced Configuration
+D's 94.64 ms matrix p50 to a real, disclosed distributional cause (more
+tiers make real model calls once all three components are wired), not a
+fabricated number; independently reran the 60-test M33.2 regression set
+(60/60 reproduced) and the eleven files containing the reported 16 full-
+suite failures (exactly 16 failed reproduced, names matching 1:1, none
+touching any B.4-changed file). See
+`docs/plans/M33_2_BATCH_B4_STATE.md` for the full audit trail. Verdict:
+ACCEPT, no bounded defects found, no fix required. Release commit follows.
 
 **Correction, 2026-09-19 (auditable, preserving history rather than
 silently rewriting it):** the text immediately below this note
@@ -1432,4 +1470,3 @@ After EVERY agent handoff, Antigravity must automatically monitor the handoff to
 - Antigravity must not sit idle, wait for manual prompts, or create duplicate runner processes while a bridge is active.
 - Default loop behavior is always:
   `handoff sent → monitor → collect → continue`
-

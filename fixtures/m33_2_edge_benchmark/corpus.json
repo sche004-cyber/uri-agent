@@ -40,6 +40,7 @@
     "tier": "reflex",
     "input": "What is tomorrow's weather?",
     "expected": {"intent": "weather", "capability_id": "weather.lookup"},
+    "expected_arguments": {"date": "2026-09-21"},
     "offered_capabilities": ["weather.lookup", "Gmail.search_messages"]
   },
   {
@@ -47,6 +48,7 @@
     "tier": "reflex",
     "input": "Find my unread email.",
     "expected": {"intent": "email_search", "capability_id": "Gmail.search_messages"},
+    "expected_arguments": {"unread": true},
     "offered_capabilities": ["Gmail.search_messages", "weather.lookup"]
   },
   {
@@ -54,6 +56,7 @@
     "tier": "reflex",
     "input": "Read the attached invoice.",
     "expected": {"intent": "read_file", "capability_id": "read_attached_file"},
+    "expected_arguments": {"filename": "invoice"},
     "offered_capabilities": ["read_attached_file", "Gmail.search_messages"]
   },
   {
@@ -61,7 +64,84 @@
     "tier": "reflex",
     "input": "Show today's calendar events.",
     "expected": {"intent": "calendar_list", "capability_id": "calendar.list_events"},
+    "expected_arguments": {"date": "2026-09-20"},
     "offered_capabilities": ["calendar.list_events", "weather.lookup"]
+  },
+  {
+    "id": "reflex-structured-contact",
+    "tier": "reflex",
+    "operation": "structured_extract",
+    "input": "Contact: Leena Shah, email leena@example.org, department Finance.",
+    "expected": {"name": "Leena Shah", "email": "leena@example.org", "department": "Finance"},
+    "expected_record": {"name": "Leena Shah", "email": "leena@example.org", "department": "Finance"},
+    "structured_schema": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "email": {"type": "string"},
+        "department": {"type": "string"}
+      },
+      "required": ["name", "email", "department"],
+      "additionalProperties": false
+    },
+    "offered_capabilities": ["record.extract"]
+  },
+  {
+    "id": "reflex-structured-invoice",
+    "tier": "reflex",
+    "operation": "structured_extract",
+    "input": "Invoice URI-7719 from Northwind Labs totals 1250 rupees.",
+    "expected": {"reference": "URI-7719", "vendor": "Northwind Labs", "amount": 1250},
+    "expected_record": {"reference": "URI-7719", "vendor": "Northwind Labs", "amount": 1250},
+    "structured_schema": {
+      "type": "object",
+      "properties": {
+        "reference": {"type": "string"},
+        "vendor": {"type": "string"},
+        "amount": {"type": "integer"}
+      },
+      "required": ["reference", "vendor", "amount"],
+      "additionalProperties": false
+    },
+    "offered_capabilities": ["record.extract"]
+  },
+  {
+    "id": "reflex-structured-meeting",
+    "tier": "reflex",
+    "operation": "structured_extract",
+    "input": "Meeting: Budget Review on 2026-09-22 at 14:30.",
+    "expected": {"title": "Budget Review", "date": "2026-09-22", "time": "14:30"},
+    "expected_record": {"title": "Budget Review", "date": "2026-09-22", "time": "14:30"},
+    "structured_schema": {
+      "type": "object",
+      "properties": {
+        "title": {"type": "string"},
+        "date": {"type": "string"},
+        "time": {"type": "string"}
+      },
+      "required": ["title", "date", "time"],
+      "additionalProperties": false
+    },
+    "offered_capabilities": ["record.extract"]
+  },
+  {
+    "id": "reflex-structured-task",
+    "tier": "reflex",
+    "operation": "structured_extract",
+    "input": "Task owner is Mira, due 2026-09-25, priority high.",
+    "expected": {"owner": "Mira", "due": "2026-09-25", "priority": "high"},
+    "expected_record": {"owner": "Mira", "due": "2026-09-25", "priority": "high"},
+    "structured_schema": {
+      "type": "object",
+      "properties": {
+        "owner": {"type": "string"},
+        "due": {"type": "string"},
+        "priority": {"type": "string"}
+      },
+      "required": ["owner", "due", "priority"],
+      "additionalProperties": false
+    },
+    "offered_capabilities": ["record.extract"]
   },
   {
     "id": "language-polite-decline",

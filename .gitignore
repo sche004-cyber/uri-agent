@@ -50,6 +50,10 @@ uri_workspace/installed_skills.json
 # output, never source, never part of the URI runtime.
 uri_workspace/dev_workflow/
 
+# M33.2 B.3/B.4 URI-managed Edge weights and portable runtimes. These are
+# checksum-verified local assets, not source-control artifacts.
+uri_workspace/edge_models/
+
 # Large institutional data directories, excluded by explicit decision
 # (uri_workspace/linked_documents/ contains real student PDF/xlsx records
 # with roll numbers; institutional_library/ and knowledge/ are large
