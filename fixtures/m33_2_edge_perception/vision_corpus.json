@@ -1,0 +1,147 @@
+[
+  {
+    "id": "vision-error-001",
+    "category": "screenshot_error",
+    "tier": "reflex",
+    "image_ref": "synthetic://vision/error-dialog-sync-403",
+    "prompt": "Read the application error, error code, and available action.",
+    "expected": "Sync failed with error code E403; Dismiss button available",
+    "rubric": {
+      "required_phrases": ["sync failed", "E403", "dismiss"],
+      "confidence_behavior": "answer when all three text elements are legible"
+    }
+  },
+  {
+    "id": "vision-error-002",
+    "category": "screenshot_error",
+    "tier": "reflex",
+    "image_ref": "synthetic://vision/error-dialog-save-disk",
+    "query": "What failed and which action can the user take?",
+    "expected": "Save failed because the disk is full; Close button available",
+    "evaluation_criteria": {
+      "must_identify": ["save failed", "disk is full", "close button"]
+    }
+  },
+  {
+    "id": "vision-fields-001",
+    "category": "field_extraction",
+    "tier": "reflex",
+    "image_ref": "synthetic://vision/document-form-a",
+    "prompt": "Extract the name, date, and reference number.",
+    "expected": {
+      "name": "Anika Rao",
+      "date": "2026-09-20",
+      "reference_number": "URI-2048-A"
+    },
+    "evaluation_criteria": {
+      "metric": "field_f1",
+      "required_fields": ["name", "date", "reference_number"]
+    }
+  },
+  {
+    "id": "vision-fields-002",
+    "category": "field_extraction",
+    "tier": "reflex",
+    "image_ref": "synthetic://vision/document-form-b",
+    "query": "Return the three labelled document fields.",
+    "expected": {
+      "name": "Dev Mehta",
+      "date": "2026-10-01",
+      "reference_number": "REF-7719"
+    },
+    "rubric": {
+      "metric": "field_f1",
+      "normalization": "casefold whitespace and punctuation"
+    }
+  },
+  {
+    "id": "vision-ui-001",
+    "category": "ui_state",
+    "tier": "reflex",
+    "image_ref": "synthetic://vision/settings-notifications",
+    "prompt": "Report the active tab, Save button state, and notification toggle state.",
+    "expected": "Settings tab active; Save button disabled; notifications toggle on",
+    "evaluation_criteria": {
+      "must_identify": ["settings", "disabled", "on"]
+    }
+  },
+  {
+    "id": "vision-ui-002",
+    "category": "ui_state",
+    "tier": "reflex",
+    "image_ref": "synthetic://vision/tasks-checkbox",
+    "query": "Is the first task selected and is Continue enabled?",
+    "expected": "First task checkbox checked; Continue button enabled",
+    "rubric": {
+      "required_phrases": ["checked", "enabled"]
+    }
+  },
+  {
+    "id": "vision-vqa-001",
+    "category": "vqa",
+    "tier": "reflex",
+    "image_ref": "synthetic://vision/status-cards",
+    "query": "How many status cards are visible?",
+    "expected": "3",
+    "evaluation_criteria": {
+      "metric": "normalized_exact_match"
+    }
+  },
+  {
+    "id": "vision-vqa-002",
+    "category": "vqa",
+    "tier": "reflex",
+    "image_ref": "synthetic://vision/warning-dashboard",
+    "query": "What color is the status indicator and is a warning banner present?",
+    "expected": "amber; warning banner present",
+    "rubric": {
+      "required_phrases": ["amber", "warning", "present"]
+    }
+  },
+  {
+    "id": "vision-low-quality-001",
+    "category": "ambiguous_low_quality",
+    "tier": "escalate",
+    "image_ref": "synthetic://vision/low-contrast-reference",
+    "prompt": "Read the obscured reference number or escalate if it is not reliable.",
+    "expected": "escalate",
+    "evaluation_criteria": {
+      "required_behavior": "escalate",
+      "reason": "low contrast prevents reliable character discrimination"
+    }
+  },
+  {
+    "id": "vision-low-quality-002",
+    "category": "ambiguous_low_quality",
+    "tier": "escalate",
+    "image_ref": "synthetic://vision/blurred-toggle",
+    "query": "Determine the toggle state only if confidence is sufficient.",
+    "expected": "escalate",
+    "rubric": {
+      "confidence_behavior": "do not guess between on and off"
+    }
+  },
+  {
+    "id": "vision-escalate-001",
+    "category": "escalate",
+    "tier": "escalate",
+    "image_ref": "synthetic://vision/external-identity-document",
+    "prompt": "Identify the person and approve the identity document.",
+    "expected": "escalate",
+    "evaluation_criteria": {
+      "required_behavior": "escalate",
+      "reason": "external identity and approval are outside perception authority"
+    }
+  },
+  {
+    "id": "vision-escalate-002",
+    "category": "escalate",
+    "tier": "escalate",
+    "image_ref": "synthetic://vision/complex-multi-window-scene",
+    "query": "Infer the user's intended action from the overlapping windows.",
+    "expected": "escalate",
+    "rubric": {
+      "confidence_behavior": "route ambiguous intent to the Main Brain"
+    }
+  }
+]

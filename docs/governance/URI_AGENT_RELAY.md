@@ -4,54 +4,85 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
-## CURRENT HANDOFF
+## CURRENT HANDOFF (CLOSED: M33.2 Batch B.2 — CLAUDE ACCEPT)
 
 **FROM:**
-Claude
+Antigravity
 
 **TO:**
-Antigravity
+Claude
 
 **MILESTONE:**
 M33.2 Batch B.2 — Edge Perception Qualification
 
 **HANDOFF TYPE:**
-PLANNING → ACCEPTED (standing auto-approval, `ORCHESTRATION.md` §1.5)
+AUDIT
 
 **STATUS:**
-ACCEPTED — awaiting Antigravity-routed implementation
+CLOSED — CLAUDE ACCEPT (`HARNESS_COMPLETE` / `REAL_PERCEPTION_CANDIDATE_QUALIFICATION_PENDING`)
 
 **AUTHORITATIVE ARTIFACTS:**
+- uri_workspace/dev_workflow/tasks/m33_2_batch_b2_codex_implementation_task.txt
 - docs/plans/M33_2_BATCH_B2_EDGE_PERCEPTION_PLAN.md
 - docs/plans/M33_2_BATCH_B2_STATE.md
-- docs/plans/M33_2_BATCH_B1_STATE.md (B.1 closure record)
-- docs/plans/M33_2_BATCH_B1_COMPLETION_REPORT.md (B.1 audit addendum)
+- docs/plans/M33_2_BATCH_B1_STATE.md
+- docs/plans/M33_2_BATCH_B1_COMPLETION_REPORT.md
+- docs/plans/M33_2_BATCH_B2_COMPLETION_REPORT.md
 - docs/governance/URI_ACTIVE_MILESTONE.md
 
-**SUMMARY:**
-Claude's independent audit closed M33.2 Batch B.1 as ACCEPT —
-`HARNESS_COMPLETE` / `REAL_CANDIDATE_QUALIFICATION_PENDING` (full detail in
-the B.1 completion report addendum). Per direct User instruction, Claude
-then planned an additive extension of the same benchmark-only harness
-pattern to Vision and Audio/Transcription qualification, reusing the
-frozen Batch A `EdgeVisionProvider`/`EdgeSpeechProvider` contract stubs and
-`vision`/`speech` settings slots as the target shape. Needle 3's documented
-audio/transcription capability is recorded as a genuine, unresolved
-documentation conflict (`NEEDLE_AUDIO_DOCUMENTATION_CONFLICT /
-RUNTIME_UNVERIFIED` — direct GitHub/tag inspection found no audio API
-surface anywhere in the live repository, contradicting indexed upstream
-evidence the User separately identified); B.2's own empirical probe is the
-tie-breaker, classified into `AVAILABLE_SUPPORTED` /
-`API_PRESENT_RUNTIME_UNAVAILABLE` / `NOT_SUPPORTED` / `FAILED_QUALIFICATION`,
-with automatic fallthrough to a provider-agnostic alternative STT
-candidate on any non-`AVAILABLE_SUPPORTED` result. Full plan detail,
-non-goals, and acceptance criteria are in
-`docs/plans/M33_2_BATCH_B2_EDGE_PERCEPTION_PLAN.md`.
+**DIRECTIVE (original, Codex → Claude):**
+Package the B.2 source diff, nine generated evidence bundles, focused 44/44
+result, full regression result (2,232 passed / 10 failed / 7 skipped / 40
+subtests; exact accepted failure set), and
+`docs/plans/M33_2_BATCH_B2_COMPLETION_REPORT.md` for Claude's independent
+audit. Fixture results are HARNESS VALIDATION only. Actual vision and
+faster-whisper candidates are UNAVAILABLE; the installed Needle probe is
+`NOT_SUPPORTED`. No candidate is promoted. No Batch C work is authorized.
+Codex performed no commit or push.
 
-**REQUIRED NEXT ACTION:**
-Antigravity routes B.2 implementation to Codex (multi-file,
-new-dependency-bearing, precision-critical work, same rationale as B.1's
-routing). Claude does not implement B.2 in this session.
+**RESOLVED (Claude independent audit, 2026-09-20):**
+Re-inspected the plan, completion report, STATE, governance records, and
+every changed/new source/fixture/script/test file directly; re-executed
+evidence rather than trusting the report (re-ran the focused suite, the
+live runner, and two independent full-suite regressions). Found and
+bounded-fixed one genuine defect: `probe_needle_audio()` classified an
+un-importable needle/cactus_needle module as `NOT_SUPPORTED`, conflating
+"package not installed" with the frozen plan's actual `NOT_SUPPORTED`
+definition (an installed, introspected API confirmed to lack audio
+capability). Added one additive `PACKAGE_NOT_INSTALLED` sub-state to
+`NeedleAudioClassification` (speech.py only), one locking test, and
+regenerated the Needle evidence artifact under the corrected classification
+— confirmed reproducible. The fixture-overclaim concern raised alongside
+it was checked directly against the report's actual text and found already
+correctly hedged; no correction needed there. Focused suite re-run: 45/45
+(44 original + 1 new). Live runner re-executed independently: all 9
+evidence bundles regenerated, every fixture number reproduced bit-for-bit.
+No production routing/approval/dispatcher/registry/orchestrator/server/
+credential/UI code touched, confirmed against the full working tree.
+
+**Disclosed, out-of-scope, non-blocking:** two independent full-suite runs
+did not reproduce the claimed 10-failure shape. Pre-fix run: 12 failed /
+2230 passed / 7 skipped / 40 subtests (2,249-item total). Post-fix run: 12
+failed / 2231 passed / 7 skipped / 40 subtests (2,250-item total) —
+identical failure names both times, pass count differing by exactly the 1
+new locking test. The 10 originally-claimed failures reproduced exactly
+both times. Two
+additional failures — `test_m19_office_readiness.py::
+GmailDraftAndDriveUploadSafetyTests::test_drive_upload_resolves_most_recent_session_file`
+and `::test_no_credentials_reports_unavailable_honestly` — are caused by
+real, gitignored `token.json`/`credentials.json` OAuth files present on
+this machine (the tests assume no credentials; with real credentials the
+Gmail/Drive tools genuinely succeed). Confirmed unrelated to B.2 (neither
+file is touched by this batch) and unrelated to B.1 (B.1's own audit
+reproduced the clean 10-failure shape earlier the same day, before this
+credential state existed). Environment state, not a code regression; not
+remediated under B.2's bounded-fix authority since it is entirely outside
+B.2's scope. Full detail in `docs/plans/M33_2_BATCH_B2_COMPLETION_REPORT.md`
+and `docs/plans/M33_2_BATCH_B2_STATE.md`.
+
+**Verdict: ACCEPT.** No candidate promoted, no Batch C work authorized.
+Claude performs the release commit/push per standing authority, then drafts
+the M33.2 Batch B.3 planning handoff.
 
 ---
 

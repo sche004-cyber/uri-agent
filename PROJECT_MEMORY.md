@@ -17,16 +17,20 @@
   do not start or absorb M33.2 implementation. Full record:
   `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` §13.H.
 
-- **M33.2 — Edge / Second Brain Foundation:** **FROZEN /
-  IMPLEMENTATION-READY; IMPLEMENTATION NOT STARTED** (2026-09-20 planning
-  checkpoint). The evidence audit, canonical architecture, and migration plan
-  are frozen together at `docs/research/M33_2_EDGE_SECOND_BRAIN_ROOT_CAUSE_AUDIT.md`,
-  `docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md`, and
-  `docs/plans/M33_2_EDGE_SECOND_BRAIN_MIGRATION_PLAN.md`. Edge is proposal /
-  observation intelligence only; URI retains all authority and execution.
-  M33.3 UI is not a closure dependency; M35 Companion Experience consumes,
-  rather than duplicates, this intelligence architecture. Do not start Batch A
-  without a separate implementation instruction.
+- **M33.2 — Edge / Second Brain Foundation:** Batch A/B/B.1/B.2 are **CLOSED
+  / ACCEPTED** (B.2 Edge Perception Qualification closed 2026-09-20, Claude
+  independent audit). Focused B.2 tests passed 45/45 after one bounded audit
+  fix. Fixture vision/STT results validate the harness only. Actual
+  OCR/VLM/hybrid and faster-whisper candidates were unavailable; the
+  installed Needle probe correctly reports `PACKAGE_NOT_INSTALLED` (Claude's
+  audit corrected an initial `NOT_SUPPORTED` misclassification) and
+  automatically fell through to the alternative STT path. No candidate is
+  promoted and no Batch C work is authorized. A disclosed, out-of-scope,
+  non-blocking full-suite finding: `test_m19_office_readiness.py` has 2
+  failures caused by real local Gmail/Drive OAuth credentials present on
+  this machine, unrelated to B.1/B.2 code. See
+  `docs/plans/M33_2_BATCH_B2_COMPLETION_REPORT.md` and
+  `docs/plans/M33_2_BATCH_B2_STATE.md`.
 
 - **Completed baseline:** M23 — URI-native Graph Intelligence foundation
   (commit `dfee5a8`), implemented directly by Claude under explicit User

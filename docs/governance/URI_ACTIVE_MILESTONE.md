@@ -225,9 +225,9 @@ destination milestone number. Full detail: `docs/plans/M32_POST_
 BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10, §15.14.
 
 **CURRENT STATE:**  
-M33.2 Batch B.1 — CLOSED / ACCEPTED (Claude independent audit, 2026-09-20).
-M33.2 Batch B.2 — Edge Perception Qualification is the next additive
-planning scope (see below).
+M33.2 Batch B.2 — CLOSED / ACCEPT (Claude independent audit, 2026-09-20).
+M33.2 Batch B.3 — Local Model Runtime & Installation Lifecycle is the next
+additive planning scope (see below).
 
 **M33.2 Batch B.1 closure, 2026-09-20 (additive):** Codex completed the
 accepted benchmark-only scope and stopped at `VERIFICATION_READY` without
@@ -274,6 +274,47 @@ in `docs/plans/M33_2_BATCH_B2_EDGE_PERCEPTION_PLAN.md`; state in
 `docs/plans/M33_2_BATCH_B2_STATE.md`. No candidate is promoted, no Batch C
 work is authorized, and Claude does not implement B.2 — implementation
 routes through Antigravity to Codex/Gemma.
+
+**M33.2 Batch B.2 implementation checkpoint, 2026-09-20 (additive):**
+Codex completed the accepted benchmark-only scope and stopped at
+`VERIFICATION_READY` without commit or push. Focused verification passed
+44/44. The runner wrote nine evidence bundles; deterministic fixtures validate
+the harness only, while all actual vision candidates and the faster-whisper
+fallback remained truthfully unavailable. The installed-environment Needle
+probe classified `NOT_SUPPORTED` (corrected by Claude's audit below to
+`PACKAGE_NOT_INSTALLED`) and automatically continued to the alternative STT
+path. Full regression: 2,232 passed / 10 failed / 7 skipped / 40 subtests,
+the exact accepted B.1 failure set with 15 new B.2 passes and no new
+regression. See `docs/plans/M33_2_BATCH_B2_COMPLETION_REPORT.md` and
+`docs/plans/M33_2_BATCH_B2_STATE.md`.
+
+**M33.2 Batch B.2 closure, 2026-09-20 (additive):** Claude's independent
+audit re-inspected the plan, completion report, governance records, and all
+changed/new files directly, re-executing evidence (focused suite, live
+runner, two full-suite regressions) rather than trusting the report alone.
+Found and bounded-fixed one genuine defect: `probe_needle_audio()` classified
+an un-importable needle/cactus_needle module as `NOT_SUPPORTED`, conflating
+"package not installed" with the frozen plan's actual `NOT_SUPPORTED`
+definition (an installed, introspected API confirmed to lack audio
+capability). Added one additive `PACKAGE_NOT_INSTALLED` sub-state to
+`NeedleAudioClassification` (speech.py only) plus one locking test;
+regenerated the Needle evidence artifact under the corrected classification,
+confirmed reproducible. Focused suite: 45/45 (44 + 1 new). Live runner
+re-executed independently, reproducing every fixture number bit-for-bit. No
+production routing/approval/dispatcher/registry/orchestrator/server/
+credential/UI code touched, confirmed against the full working tree.
+**Disclosed, out-of-scope, non-blocking:** independent full-suite runs
+returned (across two independent runs, pre-fix and post-fix) 12 failed /
+2230-then-2231 passed / 7 skipped / 40 subtests, not the claimed
+10-failure shape — 2 extra failures in `test_m19_office_readiness.py`
+(Gmail/Drive), root-caused to real, gitignored `token.json`/
+`credentials.json` OAuth files present on this machine (an environment
+state unrelated to B.2's or B.1's code; B.1's own audit reproduced the clean
+10-failure shape earlier the same day, before this credential state
+existed). Not remediated under B.2's bounded-fix authority — entirely
+outside B.2's scope. **Verdict: ACCEPT — `HARNESS_COMPLETE` /
+`REAL_PERCEPTION_CANDIDATE_QUALIFICATION_PENDING`.** No candidate is
+promoted and no Batch C work is authorized by this closure.
 
 **Correction, 2026-09-19 (auditable, preserving history rather than
 silently rewriting it):** the text immediately below this note
@@ -1257,5 +1298,4 @@ After EVERY agent handoff, Antigravity must automatically monitor the handoff to
 - Antigravity must not sit idle, wait for manual prompts, or create duplicate runner processes while a bridge is active.
 - Default loop behavior is always:
   `handoff sent → monitor → collect → continue`
-
 

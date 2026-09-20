@@ -1,0 +1,70 @@
+[
+  {
+    "id": "audio-command-001",
+    "category": "short_command",
+    "tier": "reflex",
+    "audio_ref": "synthetic://audio/open-calendar",
+    "expected_transcript": "open calendar",
+    "reference_tokens": ["open", "calendar"]
+  },
+  {
+    "id": "audio-command-002",
+    "category": "short_command",
+    "tier": "reflex",
+    "audio_ref": "synthetic://audio/check-unread-email",
+    "expected_transcript": "check unread email",
+    "reference_tokens": ["check", "unread", "email"]
+  },
+  {
+    "id": "audio-command-003",
+    "category": "short_command",
+    "tier": "reflex",
+    "audio_ref": "synthetic://audio/mute-notifications",
+    "expected_transcript": "mute notifications",
+    "reference_tokens": ["mute", "notifications"]
+  },
+  {
+    "id": "audio-dictation-001",
+    "category": "dictation",
+    "tier": "language-only",
+    "audio_ref": "synthetic://audio/review-update-today",
+    "expected_transcript": "thanks for the update I will review it today",
+    "reference_tokens": ["thanks", "for", "the", "update", "i", "will", "review", "it", "today"]
+  },
+  {
+    "id": "audio-dictation-002",
+    "category": "dictation",
+    "tier": "language-only",
+    "audio_ref": "synthetic://audio/send-draft-tomorrow",
+    "expected_transcript": "please send the revised draft tomorrow morning",
+    "reference_tokens": ["please", "send", "the", "revised", "draft", "tomorrow", "morning"]
+  },
+  {
+    "id": "audio-noisy-001",
+    "category": "noisy_ambiguous",
+    "tier": "reflex",
+    "audio_ref": "synthetic://audio/noisy-check-schedule",
+    "expected_transcript": "um hello can you check the schedule",
+    "reference_tokens": ["um", "hello", "can", "you", "check", "the", "schedule"]
+  },
+  {
+    "id": "audio-noisy-002",
+    "category": "noisy_ambiguous",
+    "tier": "reflex",
+    "audio_ref": "synthetic://audio/noisy-move-meeting",
+    "expected_transcript": "could you move the meeting to three",
+    "reference_tokens": ["could", "you", "move", "the", "meeting", "to", "three"]
+  },
+  {
+    "id": "audio-escalate-001",
+    "category": "escalate",
+    "tier": "escalate",
+    "audio_ref": "synthetic://audio/ambiguous-sensitive-send",
+    "expected_transcript": "send it to them now",
+    "reference_tokens": ["send", "it", "to", "them", "now"],
+    "evaluation_criteria": {
+      "perception_only": true,
+      "required_follow_up": "Main Brain confirmation of recipient and content"
+    }
+  }
+]

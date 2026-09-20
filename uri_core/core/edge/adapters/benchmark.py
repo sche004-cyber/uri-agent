@@ -69,6 +69,13 @@ class BenchmarkResult:
     resource: Dict[str, Any]
     safety: str
     qualification: str
+    field_precision: Optional[float] = None
+    field_recall: Optional[float] = None
+    field_f1: Optional[float] = None
+    vqa_score: Optional[float] = None
+    wer: Optional[float] = None
+    cer: Optional[float] = None
+    transcript_confidence: Optional[float] = None
 
 
 def _percentile(values: Sequence[float], q: float) -> float:
@@ -224,6 +231,54 @@ def _accuracy(rows: Sequence[Dict[str, Any]], tier: str) -> Optional[float]:
     if not selected:
         return None
     return sum(bool(row["correct"]) for row in selected) / len(selected)
+
+
+def _mean_metric(rows: Sequence[Dict[str, Any]], key: str) -> Optional[float]:
+    values = [float(row[key]) for row in rows if row.get(key) is not None]
+    return sum(values) / len(values) if values else None
+
+
+def _perception_scores(
+    item: Dict[str, Any], output: Dict[str, Any]
+) -> Dict[str, Optional[float]]:
+    metrics: Dict[str, Optional[float]] = {
+        "field_precision": None,
+        "field_recall": None,
+        "field_f1": None,
+        "vqa_score": None,
+        "wer": None,
+        "cer": None,
+        "transcript_confidence": None,
+    }
+    if "expected_transcript" in item:
+        from .speech import character_error_rate, word_error_rate
+
+        reference = str(item.get("expected_transcript", ""))
+        hypothesis = str(output.get("transcript", output.get("answer", "")))
+        metrics["wer"] = word_error_rate(reference, hypothesis)
+        metrics["cer"] = character_error_rate(reference, hypothesis)
+        confidence = output.get("transcript_confidence")
+        if _is_probability(confidence):
+            metrics["transcript_confidence"] = float(confidence)
+    elif item.get("category") == "field_extraction":
+        from .vision import field_f1_score
+
+        expected = item.get("expected")
+        predicted = output.get("fields", output.get("answer"))
+        if isinstance(expected, dict) and isinstance(predicted, dict):
+            precision, recall, f1 = field_f1_score(expected, predicted)
+        else:
+            precision, recall, f1 = 0.0, 0.0, 0.0
+        metrics.update(
+            field_precision=precision, field_recall=recall, field_f1=f1
+        )
+    elif "image_ref" in item:
+        from .vision import vqa_exact_match
+
+        metrics["vqa_score"] = vqa_exact_match(
+            str(item.get("expected", "")), str(output.get("answer", ""))
+        )
+    return metrics
 
 
 def _resource_snapshot(
@@ -405,6 +460,13 @@ def run_benchmark(
             ttfts.append(float(ttft))
 
         correct = output.get("answer") == item.get("expected")
+        perception = _perception_scores(item, output)
+        if perception["field_f1"] is not None:
+            correct = perception["field_f1"] == 1.0
+        elif perception["vqa_score"] is not None:
+            correct = perception["vqa_score"] == 1.0
+        elif perception["wer"] is not None:
+            correct = perception["wer"] == 0.0
         if item["tier"] == "bounded-reasoning":
             correct = correct and _budget_satisfied(item, output)
         rows.append(
@@ -416,6 +478,7 @@ def run_benchmark(
                 "language_rubric": _language_rubric(item, output)
                 if item["tier"] == "language-only"
                 else None,
+                **perception,
             }
         )
 
@@ -477,6 +540,13 @@ def run_benchmark(
         ),
         safety=safety,
         qualification=qualification,
+        field_precision=_mean_metric(rows, "field_precision"),
+        field_recall=_mean_metric(rows, "field_recall"),
+        field_f1=_mean_metric(rows, "field_f1"),
+        vqa_score=_mean_metric(rows, "vqa_score"),
+        wer=_mean_metric(rows, "wer"),
+        cer=_mean_metric(rows, "cer"),
+        transcript_confidence=_mean_metric(rows, "transcript_confidence"),
     )
 
 

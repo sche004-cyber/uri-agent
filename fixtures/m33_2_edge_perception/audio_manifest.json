@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "modality": "audio",
+  "corpus": "fixtures/m33_2_edge_perception/audio_corpus.json",
+  "corpus_sha256": "e457ab641d0fb58c6eee2c5712893fc5d71fd263570ac12a5ab7a736437f1087",
+  "privacy": "synthetic-only",
+  "provenance": "URI-owned frozen fixture",
+  "outbound_deny_required": true
+}

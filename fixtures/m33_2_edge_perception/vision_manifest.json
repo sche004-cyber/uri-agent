@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "modality": "vision",
+  "corpus": "fixtures/m33_2_edge_perception/vision_corpus.json",
+  "corpus_sha256": "0e8143395bab304249cf77ecbaa508bab8eb4bd69b16eab7b6a5e33d2a6aa452",
+  "privacy": "synthetic-only",
+  "provenance": "URI-owned frozen fixture",
+  "outbound_deny_required": true
+}
