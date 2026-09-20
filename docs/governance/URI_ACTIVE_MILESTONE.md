@@ -245,6 +245,36 @@ failure set, no new regression. See
 `docs/plans/M33_2_BATCH_B1_COMPLETION_REPORT.md` and
 `docs/plans/M33_2_BATCH_B1_STATE.md`. No candidate is promoted and no Batch C
 work is authorized by this closure.
+
+**M33.2 Batch B.2 — Edge Perception Qualification, ACCEPTED, 2026-09-20
+(additive):** authorized as the next planning scope by direct User
+instruction immediately following the Batch B.1 ACCEPT verdict — an
+additive extension of the same benchmark-only harness pattern to Vision
+and Audio/Transcription qualification, reusing the frozen Batch A
+`EdgeVisionProvider`/`EdgeSpeechProvider` contract stubs and
+`vision`/`speech` settings slots as the target shape. During planning,
+Claude found genuinely conflicting evidence on Needle 3's documented
+audio/transcription capability: direct GitHub/tag inspection (full
+recursive tree of `main` and the latest release tag `v3.0.2`, raw
+`llms.txt` byte content, `README.md`, and the product page) found no audio
+API surface anywhere in the live repository, contradicting indexed
+upstream evidence the User separately identified citing a `doc/apis.md`
+path with `audio=`/`sample_rate`/`channels` parameters that does not exist
+at that path in either inspected ref. Per direct User instruction, this is
+recorded as a neutral planning state — `NEEDLE_AUDIO_DOCUMENTATION_CONFLICT
+/ RUNTIME_UNVERIFIED` — rather than resolved by assertion in either
+direction. Batch B.2's own empirical probe is the tie-breaker: a four-state
+classification (`AVAILABLE_SUPPORTED` / `API_PRESENT_RUNTIME_UNAVAILABLE` /
+`NOT_SUPPORTED` / `FAILED_QUALIFICATION`) with mandatory reproducibility
+recording (installed package version, commit/tag, inspected API
+signature), and automatic fallthrough to a provider-agnostic alternative
+STT candidate on any non-`AVAILABLE_SUPPORTED` result — the documentation
+conflict must never block or manually gate the batch's progress. Full plan
+in `docs/plans/M33_2_BATCH_B2_EDGE_PERCEPTION_PLAN.md`; state in
+`docs/plans/M33_2_BATCH_B2_STATE.md`. No candidate is promoted, no Batch C
+work is authorized, and Claude does not implement B.2 — implementation
+routes through Antigravity to Codex/Gemma.
+
 **Correction, 2026-09-19 (auditable, preserving history rather than
 silently rewriting it):** the text immediately below this note
 previously said "M33 — External Capability Bridge is explicitly NOT
