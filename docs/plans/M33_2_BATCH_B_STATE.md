@@ -2,6 +2,7 @@
 
 **Status:** ACCEPTED (independent review)
 **Baseline before this batch:** `bf177a5` — `feat(m33.2): close accepted Batch A foundation`
+**Committed and pushed at:** `906c527` — `feat(m33.2): close accepted Batch B benchmark/qualification harness`
 **Recorded:** 2026-09-20
 
 ## Accepted implementation

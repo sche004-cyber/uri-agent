@@ -185,8 +185,7 @@ re-verified clean. Full state, evidence, and three disclosed mandatory
 carry-forward residuals (unbinned ECE/MCE, presence-only `score_semantics`
 validation, 2-item corpus) are recorded in
 `docs/plans/M33_2_BATCH_B_STATE.md`. Committed and pushed at
-`<M33_2_BATCH_B_COMMIT_HASH>` (superseded immediately below once the
-release commit exists). No candidate is promoted; no Batch C work is
+`906c527`. No candidate is promoted; no Batch C work is
 authorized. **M33.2 Batch B.1 — Micro-Model Ensemble Qualification** is
 authorized as the next active implementation scope by direct User
 instruction, 2026-09-20: a further benchmark/qualification-only extension
