@@ -174,6 +174,28 @@ proposal/observation intelligence only; URI remains the sole authority for
 permissions, approvals, credentials, dispatch, evidence, and execution.
 This checkpoint authorizes no Batch A work or production-code change.
 
+**M33.2 Batch B closure, 2026-09-20 (additive):** Batch B — the reversible
+URI-owned benchmark and qualification harness — is **CLOSED / ACCEPTED**
+after Claude's independent audit (source, diff, live end-to-end run, and a
+fresh full-suite re-run, not the prior invalid Windows-temp-ACL
+`WinError 5` run). One in-scope defect was found and bounded-fixed: the
+Batch A static import-boundary test used a non-recursive glob and never
+scanned the new `adapters/` subdirectory; repaired to a recursive scan and
+re-verified clean. Full state, evidence, and three disclosed mandatory
+carry-forward residuals (unbinned ECE/MCE, presence-only `score_semantics`
+validation, 2-item corpus) are recorded in
+`docs/plans/M33_2_BATCH_B_STATE.md`. Committed and pushed at
+`<M33_2_BATCH_B_COMMIT_HASH>` (superseded immediately below once the
+release commit exists). No candidate is promoted; no Batch C work is
+authorized. **M33.2 Batch B.1 — Micro-Model Ensemble Qualification** is
+authorized as the next active implementation scope by direct User
+instruction, 2026-09-20: a further benchmark/qualification-only extension
+evaluating non-production Needle 3 / language-generation / tiny-reasoner
+configurations. It must not create production language or reasoning
+provider contracts (no `EdgeLanguageProvider`, no `EdgeReasoningProvider`),
+must not wire any ensemble into production routing, and must not begin
+Batch C.
+
 **M32 residual items, carried forward (NOT resolved by this closure):**
 1. **Resumed approval across turns** (durable cross-turn pending-
    approval state + natural-language resumption recognition) —

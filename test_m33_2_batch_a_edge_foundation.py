@@ -111,7 +111,7 @@ class TraceAndBoundaryTests(unittest.TestCase):
     def test_edge_has_no_static_authority_or_execution_imports(self):
         forbidden = ("approval", "dispatcher", "credential", "provider_keys", "capability_registry", "canonical_execution", "orchestrator", "graphify")
         root = pathlib.Path(__file__).parent / "uri_core" / "core" / "edge"
-        for path in root.glob("*.py"):
+        for path in root.rglob("*.py"):
             tree = ast.parse(path.read_text(encoding="utf-8"))
             imports = []
             for node in ast.walk(tree):
@@ -121,7 +121,7 @@ class TraceAndBoundaryTests(unittest.TestCase):
 
     def test_runtime_dynamic_import_residue_is_absent(self):
         root = pathlib.Path(__file__).parent / "uri_core" / "core" / "edge"
-        source = "\n".join(path.read_text(encoding="utf-8") for path in root.glob("*.py"))
+        source = "\n".join(path.read_text(encoding="utf-8") for path in root.rglob("*.py"))
         self.assertNotIn("importlib", source)
         self.assertNotIn("__import__", source)
 
