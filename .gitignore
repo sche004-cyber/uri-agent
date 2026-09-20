@@ -62,6 +62,14 @@ knowledge/
 cache/
 temp_evidence/
 
+# Historical test/worktree residue.  These directories contain local runner
+# outputs or disposable baseline worktrees; the source evidence is captured in
+# the committed milestone state reports, never by tracking the worktree copy.
+.tmp_m33_1_batch4_*/
+.tmp_m33_c2_pytest/
+.tmp_m33_2_batch_a_pytest/
+.pytest_cache/
+
 # Claude Code harness runtime state (not a URI project file)
 .claude/
 

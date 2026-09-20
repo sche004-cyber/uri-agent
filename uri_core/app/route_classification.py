@@ -87,6 +87,7 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("GET", "/auth/devices"): USER,
     ("DELETE", "/auth/devices/{device_id}"): USER,
     ("POST", "/ask"): USER,
+    ("POST", "/ask/stream"): USER,
     ("POST", "/approve"): USER,
     ("POST", "/cancel"): USER,
     ("GET", "/tasks"): USER,
@@ -100,6 +101,13 @@ ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("GET", "/memory"): USER,
     ("GET", "/memory/settings"): USER,
     ("PUT", "/memory/settings"): USER,
+    # M33.2 Batch A: authenticated, self-scoped Edge routing preferences
+    # and redacted observational projections; no authority is granted here.
+    ("GET", "/intelligence/settings"): USER,
+    ("PUT", "/intelligence/settings"): USER,
+    ("GET", "/intelligence/status"): USER,
+    ("GET", "/intelligence/routing/latest"): USER,
+    ("GET", "/intelligence/trace"): USER,
     ("POST", "/memory"): USER,
     ("PUT", "/memory/{memory_id}"): USER,
     ("DELETE", "/memory/{memory_id}"): USER,
@@ -161,6 +169,6 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 67 application routes + 4 FastAPI routes.
+# 73 application routes + 4 FastAPI routes.
 # auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 71
+EXPECTED_ROUTE_COUNT = 77

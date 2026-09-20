@@ -107,6 +107,14 @@ from uri_core.core.memory_settings import (
     MemorySettingsStore,
     MemorySettingsValidationError,
 )
+from uri_core.core.edge.runtime_inventory import DEFAULT_EDGE_RUNTIME_INVENTORY
+from uri_core.core.edge.settings import (
+    EdgeSettingsConflictError,
+    EdgeSettingsStore,
+    EdgeSettingsValidationError,
+    VALID_INTELLIGENCE_MODES,
+)
+from uri_core.core.edge.trace import EdgeRoutingTraceStore
 from uri_core.core.user_profile import (
     UserProfile,
     UserProfileStore,
@@ -1150,6 +1158,23 @@ class MemorySettingsPayload(BaseModel):
 
     def supplied(self) -> dict:
         return self.model_dump(exclude_none=True)
+
+
+class IntelligenceSettingsPayload(BaseModel):
+    """User preference only; deployment policy is intentionally absent."""
+    revision: StrictInt
+    enabled: Optional[bool] = None
+    intelligence_mode: Optional[str] = None
+    reply_confidence_threshold_percent: Optional[StrictInt] = None
+    edge: Optional[Dict[str, Optional[str]]] = None
+    vision: Optional[Dict[str, Any]] = None
+    speech: Optional[Dict[str, Any]] = None
+    assistance: Optional[Dict[str, Any]] = None
+
+    model_config = {"extra": "forbid"}
+
+    def supplied(self) -> dict:
+        return self.model_dump(exclude_none=True, exclude={"revision"})
 
 
 def _memory_entry_to_dict(entry: MemoryEntry) -> dict:
@@ -2997,6 +3022,75 @@ def update_memory_settings(
         ).__dict__
     except MemorySettingsValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+def _edge_settings_for_principal(principal: PrincipalContext) -> EdgeSettingsStore:
+    """Intelligence preferences are authenticated and always self-scoped."""
+    if principal.user_id is None:
+        raise HTTPException(status_code=401, detail="Login is required for intelligence settings.")
+    return EdgeSettingsStore(principal.user_id)
+
+
+def _edge_effective_status(settings) -> dict:
+    runtime_id = settings.edge["runtime_id"]
+    model_id = settings.edge["model_id"]
+    selected_status = DEFAULT_EDGE_RUNTIME_INVENTORY.selection_status(runtime_id, model_id)
+    if not settings.enabled and selected_status == "ready":
+        selected_status = "disabled_by_policy"
+    return {
+        "status": selected_status,
+        "enabled": settings.enabled,
+        "runtime_id": runtime_id,
+        "model_id": model_id,
+        "deployment_enabled": DEFAULT_EDGE_RUNTIME_INVENTORY.enabled,
+        "effective_edge_enabled": bool(settings.enabled and selected_status == "ready"),
+    }
+
+
+@app.get("/intelligence/settings")
+def get_intelligence_settings(principal: PrincipalContext = Depends(_resolve_principal)) -> dict:
+    store = _edge_settings_for_principal(principal)
+    try:
+        settings = store.load()
+    except EdgeSettingsValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"settings": settings.__dict__, "effective": _edge_effective_status(settings), "valid_intelligence_modes": sorted(VALID_INTELLIGENCE_MODES)}
+
+
+@app.put("/intelligence/settings")
+def update_intelligence_settings(payload: IntelligenceSettingsPayload, principal: PrincipalContext = Depends(_resolve_principal)) -> dict:
+    store = _edge_settings_for_principal(principal)
+    try:
+        settings = store.update(payload.supplied(), expected_revision=payload.revision, inventory=DEFAULT_EDGE_RUNTIME_INVENTORY)
+    except EdgeSettingsConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except (EdgeSettingsValidationError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"settings": settings.__dict__, "effective": _edge_effective_status(settings)}
+
+
+@app.get("/intelligence/status")
+def get_intelligence_status(principal: PrincipalContext = Depends(_resolve_principal)) -> dict:
+    store = _edge_settings_for_principal(principal)
+    try:
+        return _edge_effective_status(store.load())
+    except EdgeSettingsValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/intelligence/routing/latest")
+def get_latest_intelligence_routing(principal: PrincipalContext = Depends(_resolve_principal)) -> dict:
+    store = _edge_settings_for_principal(principal)
+    return {"routing": EdgeRoutingTraceStore(store.user_id).latest()}
+
+
+@app.get("/intelligence/trace")
+def get_intelligence_trace(limit: int = 50, principal: PrincipalContext = Depends(_resolve_principal)) -> dict:
+    store = _edge_settings_for_principal(principal)
+    try:
+        return {"events": EdgeRoutingTraceStore(store.user_id).list_events(limit=limit)}
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @app.post("/files")

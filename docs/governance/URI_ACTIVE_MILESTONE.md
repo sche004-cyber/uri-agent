@@ -160,8 +160,12 @@ initiative's own separate role set and status before any implementation
 work begins on it. Neither M32's nor M34's closure opens or affects
 that gate.
 
-**M33.2 planning checkpoint, 2026-09-20:** M33.2 — Edge / Second Brain
-Foundation is **FROZEN / IMPLEMENTATION-READY; IMPLEMENTATION NOT STARTED**.
+**M33.2 implementation checkpoint, 2026-09-20:** M33.2 — Edge / Second Brain
+Foundation Batch A is **CLOSED / ACCEPTED** at baseline `7e2e093`; its state
+and independent-review evidence are in `docs/plans/M33_2_BATCH_A_STATE.md`.
+Batch B — the reversible URI-owned benchmark and qualification harness — is
+the authorized active implementation scope. No candidate is promoted, and no
+Batch C work is authorized by this checkpoint.
 The four-stage package is:
 `docs/research/M33_2_EDGE_SECOND_BRAIN_ROOT_CAUSE_AUDIT.md`,
 `docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md`, and
