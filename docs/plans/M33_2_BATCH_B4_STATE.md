@@ -1,6 +1,7 @@
 # M33.2 Batch B.4 — State
 
 **Status:** CLOSED / ACCEPT (Claude independent audit, 2026-09-20)
+**Release commit:** `eaf97c5`
 **Plan:** `docs/plans/M33_2_BATCH_B4_REAL_MODEL_QUALIFICATION_PLAN.md`
 **Depends on:** Batch B `906c527`, Batch B.1 `a792a8c`, Batch B.2 `b98620a`,
 Batch B.3 `d395c1c` (all CLOSED/ACCEPTED).
