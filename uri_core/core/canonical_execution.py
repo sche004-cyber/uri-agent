@@ -610,6 +610,7 @@ def run_canonical_for_ask(
     log_path: str = DEFAULT_TELEMETRY_LOG_PATH,
     decision_observer: Any = None,
     current_turn_attachments: Optional[List[Dict[str, Any]]] = None,
+    arn_state: Optional[Any] = None,
 ) -> Optional[Dict[str, Any]]:
     """The single M30.6 entry point for a live `/ask` call site
     (`server.py`). Returns a full `{"status", "session_id", "execution",
@@ -635,6 +636,7 @@ def run_canonical_for_ask(
             orchestrator=orchestrator, session_id=session_id,
             user_text=user_text, principal=principal,
             current_turn_attachments=current_turn_attachments,
+            arn_state=arn_state,
         )
 
         decision = propose_decision(
@@ -716,6 +718,16 @@ def run_canonical_for_ask(
                 )
                 if envelope is None:
                     fallback_reason = "execution_dispatch_returned_none"
+                else:
+                    from uri_core.core.arn import attach_not_found_recovery
+
+                    envelope = attach_not_found_recovery(
+                        envelope,
+                        goal=user_text,
+                        source=str(capability_id or "capability_lookup"),
+                        query=user_text,
+                        state=arn_state,
+                    )
             elif fallback_reason is None:
                 envelope = _canonical_nonexecution_envelope(contract, gate_result)
     except Exception as exc:

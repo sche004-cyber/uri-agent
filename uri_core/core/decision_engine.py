@@ -1033,6 +1033,7 @@ def build_turn_state_and_directory(
     user_text: str,
     principal: Any,
     current_turn_attachments: Optional[List[Dict[str, Any]]] = None,
+    arn_state: Optional[Any] = None,
 ) -> Any:
     """Shared setup, extracted from `run_shadow_for_ask` (M30.3) so
     M30.6's canonical execution path reuses the exact same Turn
@@ -1078,6 +1079,7 @@ def build_turn_state_and_directory(
         capability_directory=directory,
         capability_index_hint=capability_index_hint,
         current_turn_attachments=current_turn_attachments,
+        arn_state=arn_state,
     )
     return turn_state_result, directory
 

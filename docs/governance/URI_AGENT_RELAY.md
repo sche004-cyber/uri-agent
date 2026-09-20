@@ -4,52 +4,51 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
-## CURRENT HANDOFF (CLOSED: M33.2 FINAL CLOSURE; ARN PLAN ACCEPTED)
+## CURRENT HANDOFF (CLOSED: ARN.1 DETERMINISTIC NARROWING CORE — VERIFIED)
 
 **FROM:**
-Claude
+Gemini (Independent Final Auditor)
 
 **TO:**
-Antigravity
+User / Antigravity
 
 **MILESTONE:**
-M33.2 — Edge / Second Brain Foundation (final closure) /
-ARN — Adaptive Retrieval Narrowing & Task Recovery (new planning artifact)
+ARN.1 — Adaptive Retrieval Narrowing & Task Recovery: Batch ARN.1 — Deterministic Narrowing Core
 
 **HANDOFF TYPE:**
-CLOSURE + PLANNING
+CLOSURE + MILESTONE PAUSE
 
 **STATUS:**
-M33.2: CLOSED / VERIFIED. ARN: plan drafted and self-reviewed, ACCEPTED
-(planning only — no implementation this session).
+CLOSED / VERIFIED
 
 **AUTHORITATIVE ARTIFACTS:**
-- docs/governance/URI_ACTIVE_MILESTONE.md ("M33.2 — Edge / Second Brain
-  Foundation — FINAL CLOSURE" entry, 2026-09-20)
 - docs/plans/ARN_ADAPTIVE_RETRIEVAL_NARROWING_PLAN.md
+- docs/plans/ARN_1_STATE.md
+- docs/plans/ARN_1_COMPLETION_REPORT.md
+- docs/governance/URI_ACTIVE_MILESTONE.md
 
 **SUMMARY:**
-Per direct User instruction, Claude reviewed the complete accepted M33.2
-chain (Batch A -> B -> B.1 -> B.2 -> B.3 -> B.4) against primary evidence:
-confirmed `master` == `origin/master`, no Batch C artifact exists, and
-independently re-ran the six-file M33.2 regression set fresh this session
-(60/60 reproduced). All closure criteria in the User's checklist were
-independently verified true (see the FINAL CLOSURE entry in
-`URI_ACTIVE_MILESTONE.md` for the item-by-item evidence trail). No
-closure blocker found; no Batch C opened. Claude then drafted the ARN
-plan per the User's detailed specification (progressive retrieval
-narrowing, NOT_FOUND-as-recovery-trigger, single high-information
-clarification questions, Edge case-packet contract, small-reasoner
-qualification requirement — explicitly not assuming Qwen2.5-0.5B given
-its B.4 `BYPASS/REDUNDANT` verdict — and measurable success metrics), and
-self-reviewed it before acceptance.
+Gemini performed the independent final audit of ARN.1 per direct User instruction. Verified:
+1. `NOT_FOUND` empty result triggers recovery without raising; raw `execution.status == "not_found"` is preserved for auditability while envelope becomes `status: "recovery_required"`.
+2. `EvidenceCategory` implements all 6 types; `EDGE_DEDUCTION` cannot be promoted to `VERIFIED_FACT` (`EvidencePromotionError` raised).
+3. Candidate tracking, normalized repeated-search avoidance, reasoned elimination, and clue filtering work deterministically without loops.
+4. Clarification recommendations provide axes and non-degenerate candidate groups without authoring question text (canonical Brain loop retains authoring authority).
+5. Configurable cost ceilings enforce clean transition to `EXHAUSTED` with `termination_reason="cost_ceiling_reached"`.
+6. Zero Graphify imports; operates cleanly in environments without `graphify-out/`.
+7. Additive, task-local integration into `canonical_execution.py`, `turn_state.py`, and `decision_engine.py` with no authority regressions.
+8. Deterministic core: 0 model calls, no new execution authority, no M31 UI, no ARN.2+ code.
 
-**DIRECTIVE (Claude → Antigravity):**
-No implementation action required. ARN remains planning-only until a
-future session authorizes an implementation batch. Do not begin M31 UI.
+Independently reproduced test evidence:
+- Focused ARN.1: 10/10 passed.
+- M33.2 predecessor: 60/60 passed.
+- Core orchestration/turn/execution: 130 passed, 13 subtests passed.
+- Full regression: 2,259 passed, 16 failed (10 historical baseline, 6 Ollama environment-specific, 0 ARN.1 regressions).
 
-**REQUIRED NEXT ACTION:**
-None. IDLE until the User authorizes ARN Batch 1 or another milestone.
+Verdict: ACCEPT — VERIFIED / CLOSED.
+
+**DIRECTIVE / NEXT AUTHORIZED DIRECTION:**
+ARN milestone is PAUSED after ARN.1. Do NOT start ARN.2. Do NOT implement M31. Do NOT use Claude/Codex.
+Next authorized direction: **Resume M31 Hybrid UI after ARN.1 closure**.
 
 ---
 

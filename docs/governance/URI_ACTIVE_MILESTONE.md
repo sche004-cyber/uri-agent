@@ -152,12 +152,7 @@ umbrella plan/state pair was created for the C3.3 or attachment-turn
 slices — see §6g below for the consolidated closure record).
 
 **CURRENT MILESTONE:**  
-None active. **M33.2 — Edge / Second Brain Foundation is CLOSED / VERIFIED**
-(2026-09-20 final closure review, see the "M33.2 — Edge / Second Brain
-Foundation — FINAL CLOSURE" entry below for the full Batch A -> B.4 chain
-verdict). Next planning scope: **ARN — Adaptive Retrieval Narrowing & Task
-Recovery** (see `docs/plans/ARN_ADAPTIVE_RETRIEVAL_NARROWING_PLAN.md`),
-planning-only, not yet implemented.
+PAUSED. **ARN.1 — Adaptive Retrieval Narrowing: Batch ARN.1 — Deterministic Narrowing Core is CLOSED / VERIFIED** (Gemini independent final audit per direct User instruction, 2026-09-20). The ARN milestone is PAUSED after ARN.1. No ARN.2 work is authorized. Next authorized direction: **Resume M31 Hybrid UI after ARN.1 closure**.
 **Prior M33.1 closure correction, 2026-09-20:** M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**.
 None active — M32, M31, M33.2, and M34 are all CLOSED. Per §1a, the Hybrid UI
 initiative's own hard-dependency gate was already opened by M31's own
@@ -229,16 +224,29 @@ destination milestone number. Full detail: `docs/plans/M32_POST_
 BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10, §15.14.
 
 **CURRENT STATE:**  
-M33.2 Batch B.3 — CLOSED / ACCEPT (Claude independent audit, 2026-09-20).
-`INFRASTRUCTURE_VALIDATION_COMPLETE` / `REAL_MODEL_QUALIFICATION_PARTIAL`.
-M33.2 Batch B.4 — Real Edge-Model Qualification — **CLOSED / ACCEPT**
-(Claude independent audit, 2026-09-20). Needle 3 → `RESIDENT` (reflex
-routing/structured extraction only, argument extraction excluded pending
-further evidence); SmolLM2-135M-Instruct and Qwen2.5-0.5B-Instruct →
-`BYPASS / REDUNDANT`; STT/OCR/VLM → `UNQUALIFIED / UNAVAILABLE`.
-**M33.2 — Edge / Second Brain Foundation — CLOSED / VERIFIED** (Claude
-independent final closure review, 2026-09-20, chain Batch A through B.4).
-No Batch C opened. Next planning scope: ARN (planning-only).
+**ARN.1 — Deterministic Narrowing Core — CLOSED / VERIFIED** (Gemini
+independent final audit per direct User instruction, 2026-09-20). Focused suite
+10/10 passed, M33.2 predecessor suite 60/60 passed, core orchestration/turn/execution
+130 passed + 13 subtests passed, full regression: 2,259 passed, 16 failed (all
+16 verified historical/environmental, 0 ARN.1 regressions). ARN milestone paused
+after ARN.1. Next authorized direction: **Resume M31 Hybrid UI after ARN.1 closure**.
+
+**ARN.1 Batch closure, 2026-09-20 (additive):** Codex completed the accepted
+deterministic-only narrowing scope; Gemini performed the independent final audit
+per direct User instruction, re-verifying primary code, diffs, contracts, and test
+runs. Verified: (1) `NOT_FOUND` empty result triggers ARN recovery via
+`attach_not_found_recovery()` without raising, preserving `execution.status == "not_found"`
+for auditability; (2) `EvidenceCategory` implements the 6 distinct types and enforces
+the invariant that `EDGE_DEDUCTION` cannot be promoted to `VERIFIED_FACT` (`EvidencePromotionError`);
+(3) Candidate tracking, normalized repeated-search avoidance, reasoned elimination,
+and clue filtering function deterministically without loops; (4) Clarification gating
+suggests axes and non-degenerate candidate groups without authoring literal question text
+(Brain loop retains wording authority); (5) `CostCeiling` bounds enforce genuine
+`EXHAUSTED` termination semantics with explicit `termination_reason`; (6) Operates 100%
+without Graphify; (7) Integration safety confirmed in `canonical_execution.py`,
+`turn_state.py`, `decision_engine.py`; (8) Deterministic core has zero model calls and
+no new execution authority. All 16 full-suite failures independently confirmed pre-existing/environmental.
+ARN milestone paused after ARN.1. Next authorized direction: Resume M31 Hybrid UI after ARN.1 closure.
 
 **M33.2 Batch B.1 closure, 2026-09-20 (additive):** Codex completed the
 accepted benchmark-only scope and stopped at `VERIFICATION_READY` without

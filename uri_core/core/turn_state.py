@@ -363,6 +363,7 @@ def assemble_turn_state(
     graph_context: Optional[Dict[str, Any]] = None,
     capability_index_hint: Optional[List[Dict[str, Any]]] = None,
     current_turn_attachments: Optional[List[Dict[str, Any]]] = None,
+    arn_state: Optional[Any] = None,
     recent_conversation_limit: int = DEFAULT_RECENT_CONVERSATION_LIMIT,
 ) -> TurnStateResult:
     """Pure, read-only projection. Never raises: every collaborator read
@@ -450,5 +451,11 @@ def assemble_turn_state(
     # delta for ordinary turns and no stale session-file implication.
     if current_turn_attachments:
         data["current_turn_attachments"] = list(current_turn_attachments)
+    # ARN.1: task-local bookkeeping follows the same caller-supplied,
+    # non-persistent projection pattern as current_turn_attachments.  It
+    # grants no authority and is omitted entirely for ordinary turns.
+    if arn_state is not None:
+        to_dict = getattr(arn_state, "to_dict", None)
+        data["arn_state"] = to_dict() if callable(to_dict) else arn_state
 
     return TurnStateResult(data=data, unavailable_fields=unavailable)

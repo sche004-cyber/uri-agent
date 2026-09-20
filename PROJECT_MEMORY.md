@@ -46,21 +46,21 @@
   `docs/plans/M33_2_BATCH_{A,B,B1,B2,B3,B4}_STATE.md` and their sibling
   completion reports.
 
-- **ARN — Adaptive Retrieval Narrowing & Task Recovery:** next capability,
-  **plan ACCEPTED, planning-only** (2026-09-20, direct User instruction
-  immediately following M33.2's final closure). Turns `NOT_FOUND` into a
-  recovery trigger rather than a terminal answer, progressively narrows
-  search space using deterministic structure/index results/working
-  memory/metadata/prior failed paths/Edge intelligence/user clues/
-  Main-Brain evidence requests, asks at most one high-information
-  clarification question when it can materially shrink a large candidate
-  set, and works without Graphify (Graphify is an optional accelerator,
-  not a dependency). Explicitly does not assume Qwen2.5-0.5B is a
-  suitable ARN search-strategist reasoner, given its M33.2 Batch B.4
-  `BYPASS/REDUNDANT` verdict above — qualifying a better small-reasoner
-  candidate on ARN/search-planning tasks specifically is part of the
-  plan. No implementation authorized this session. See
-  `docs/plans/ARN_ADAPTIVE_RETRIEVAL_NARROWING_PLAN.md`.
+- **ARN — Adaptive Retrieval Narrowing & Task Recovery:** parent plan
+  accepted; **Batch ARN.1 — Deterministic Narrowing Core is
+  `CLOSED / VERIFIED`** (2026-09-20, independent final audit by Gemini per
+  direct User instruction). Codex implemented the deterministic task-local
+  state/evidence taxonomy, candidate and repeated-search tracking, cost
+  ceilings and genuine terminal states, optional Turn State projection, and the
+  canonical first-`NOT_FOUND` recovery seam. Independently reproduced evidence:
+  10/10 focused ARN.1 passed, 60/60 predecessor M33.2 passed, 130/130
+  relevant dispatch/decision/Turn State/orchestrator recovery tests plus 13
+  subtests passed, and full regression 2,259 passed, 16 failed (all 16 verified
+  historical baseline/environmental, zero ARN.1 regressions). ARN milestone is
+  now PAUSED after ARN.1. Do NOT start ARN.2. Next authorized direction:
+  **Resume M31 Hybrid UI after ARN.1 closure**. See
+  `docs/plans/ARN_1_COMPLETION_REPORT.md` and
+  `docs/plans/ARN_1_STATE.md`.
 
 - **Completed baseline:** M23 — URI-native Graph Intelligence foundation
   (commit `dfee5a8`), implemented directly by Claude under explicit User

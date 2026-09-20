@@ -60,6 +60,13 @@ Capability UI; M33.4 is reserved for Knowledge Fabric / Sources / Watches.
 M32.1/M35 remain
 reserved/NOT STARTED and none of these records block M34's closure.
 
+**Current documented baseline (20 Sep 2026): ARN.1 — Deterministic Narrowing Core — DONE, VERIFIED.**
+Independently audited by Gemini per direct User instruction. 10/10 focused tests passed,
+60/60 M33.2 predecessor regressions passed, 130 passed + 13 subtests passed on core suite,
+full regression: 2,259 passed, 16 failed (all 16 verified historical/environmental, 0 ARN.1 regressions).
+Full evidence: `docs/plans/ARN_1_COMPLETION_REPORT.md` and `docs/plans/ARN_1_STATE.md`.
+ARN milestone paused after ARN.1. Next authorized direction: **Resume M31 Hybrid UI after ARN.1 closure**.
+
 ## Relationship to the older Phase 0–4 checklist
 
 This tracker does **not** replace, relabel, or rewrite the earlier
