@@ -110,6 +110,23 @@ class ExternalCapabilityStore:
             return _empty_document()
         return data
 
+    def state_is_readable(self, user_id: str) -> bool:
+        """Whether this user's existing document can be safely mutated.
+
+        Existing read-only callers retain the historical empty-on-corruption
+        behavior of ``_load``.  A new mutation boundary, however, must not
+        treat a malformed pre-existing file as an empty state and overwrite it.
+        """
+        path = self._path(user_id)
+        if not os.path.exists(path):
+            return True
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                data = json.load(handle)
+        except (json.JSONDecodeError, OSError):
+            return False
+        return isinstance(data, dict) and isinstance(data.get("capabilities"), dict)
+
     def _save(self, user_id: str, data: Mapping[str, Any]) -> None:
         _atomic_write_json(self._path(user_id), data)
 

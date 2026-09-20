@@ -29,7 +29,7 @@ import threading
 import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 # Direct ``uvicorn uri_core.app.server:app`` development starts do not pass
 # through scripts/run_uri_server.py, which otherwise supplies this local
@@ -1547,6 +1547,62 @@ def _current_turn_attachment_references(context, payload: "AskRequest") -> List[
     return references
 
 
+def _lifecycle_intent_ask_envelope(
+    session_id: Optional[str], lifecycle_result: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Project `execute_lifecycle_intent`'s own result dict into the exact
+    `{"status", "session_id", "execution", "response"}` shape `/ask` already
+    relays - the same "deterministic status message" convention canonical_
+    execution.py's own `_canonical_nonexecution_envelope` already uses for
+    every other non-execution outcome (approval_required/disconnected/
+    unsupported/clarification), not a new one invented for this seam."""
+    status = lifecycle_result.get("status", "unavailable")
+    operation = lifecycle_result.get("operation")
+    target_id = lifecycle_result.get("target_id")
+    messages = {
+        "success": f"'{operation}' on '{target_id}' completed.",
+        "not_installed": f"'{target_id}' is not installed, so '{operation}' has nothing to do.",
+        "unknown_target": f"'{target_id}' is not a recognized skill or service.",
+        "unsupported_operation": f"'{operation}' is not a supported lifecycle operation.",
+        "invalid_intent": "That lifecycle request could not be understood.",
+        "credentials_required": (
+            f"Connecting '{target_id}' requires credentials; use the connect flow to provide them."
+        ),
+        "rejected": f"'{operation}' on '{target_id}' was rejected.",
+    }
+    message = messages.get(status, f"'{operation}' on '{target_id}' returned '{status}'.")
+    response: Dict[str, Any] = {"message": message}
+    if "state" in lifecycle_result:
+        response["state"] = lifecycle_result["state"]
+    return {
+        "status": "success" if status == "success" else "unavailable",
+        "session_id": session_id,
+        "execution": {"status": status, "operation": operation, "target_id": target_id},
+        "response": response,
+    }
+
+
+def _record_lifecycle_intent_audit(
+    context, user_id: str, session_id: Optional[str], lifecycle_result: Dict[str, Any]
+) -> None:
+    """Record structured lifecycle evidence without retaining prompt text or secrets."""
+    try:
+        context.orchestrator.audit_trail.record(
+            event_type="lifecycle_intent",
+            status=str(lifecycle_result.get("status", "unavailable")),
+            session_id=session_id,
+            metadata={
+                "user_id": user_id,
+                "operation": lifecycle_result.get("operation"),
+                "target_id": lifecycle_result.get("target_id"),
+            },
+        )
+    except Exception:
+        # Audit persistence must not turn a completed state transition into a
+        # fabricated failure; the runtime result remains authoritative.
+        pass
+
+
 @app.post("/ask")
 def ask(
     payload: AskRequest,
@@ -1582,6 +1638,44 @@ def ask(
     except Exception:
         result = None
         early_executed = False
+
+    # M33.1 Batch 4: a bounded, deterministic (model-free) lifecycle-intent
+    # seam - "enable skill yt_dlp", "connect service github", etc. Isolated
+    # and additive exactly like the approval-resumption block above: any
+    # failure, or a `None` interpretation (every ordinary conversational
+    # message), falls straight through to the unchanged chain below. The
+    # executor is a narrow closure bound to THIS request's already-
+    # authenticated `context`/`user_id` - the interpreter never supplies or
+    # chooses a user_id, and the seam never runs at all for the
+    # unauthenticated/legacy-ambient path (`user_id is None`). All real
+    # authority (catalog membership, state-machine legality, isolation)
+    # remains `execute_lifecycle_intent`'s - the exact same function
+    # Batch 4's standalone acceptance tests already exercise; this block
+    # only ever decides WHETHER to call it, never what it is allowed to do.
+    if not early_executed:
+        try:
+            from uri_core.core.lifecycle_intent_interpreter import (
+                interpret as interpret_lifecycle_intent,
+                lifecycle_intent_seam_enabled,
+            )
+
+            if lifecycle_intent_seam_enabled() and user_id is not None:
+                intent = interpret_lifecycle_intent(payload.text)
+                if intent is not None:
+                    from uri_core.external.lifecycle_intent import execute_lifecycle_intent
+
+                    lifecycle_result = execute_lifecycle_intent(
+                        context, user_id,
+                        operation=intent["operation"], target_id=intent["target_id"],
+                    )
+                    _record_lifecycle_intent_audit(
+                        context, user_id, payload.session_id, lifecycle_result
+                    )
+                    result = _lifecycle_intent_ask_envelope(payload.session_id, lifecycle_result)
+                    early_executed = True
+        except Exception:
+            result = None
+            early_executed = False
 
     # M30.7: pending WorkflowExecutor pauses otherwise resume inside the
     # legacy orchestrator before the Decision Contract can judge whether this

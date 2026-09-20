@@ -2,6 +2,21 @@
 
 ## Resume point
 
+- **M33.1 — Real Integrations / Acquire & Manage Abilities:** **CLOSED /
+  ACCEPTED** (2026-09-20). Batches 1–3 retain their accepted commits
+  (`d78366d`/`0558a99`, `dd4863a`, `0fcdf29`); Batch 4 closes the materially
+  distinct extension matrix and the opt-in natural-language `/ask` lifecycle
+  seam. Independent closure review: 35/35 isolated Batch 2–4 lifecycle/live
+  tests passed; recovered-tree full regression 2,175 passed / 23 failed / 7
+  skipped / 40 subtests versus clean `5973f6d` baseline 2,165 / 15 / 7 / 40.
+  Fourteen failures overlapped; seven external DNS/npm/yt-dlp failures passed
+  on isolated rerun; two Drive tests are environment-sensitive and outside
+  Batch 4 paths. No bounded fix required. `URI_ENABLE_LIFECYCLE_INTENT_SEAM=1`
+  remains opt-in; M33.3 graphical lifecycle management remains out of scope.
+  Do not double-count arbitrary `SKILL.md` prose as a distinct mechanism, and
+  do not start or absorb M33.2 planning/implementation. Full record:
+  `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` §13.H.
+
 - **Completed baseline:** M23 — URI-native Graph Intelligence foundation
   (commit `dfee5a8`), implemented directly by Claude under explicit User
   authorization (no Antigravity/Codex/Gemma session reachable) and

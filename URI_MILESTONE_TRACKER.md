@@ -48,11 +48,11 @@ and residuals: `docs/governance/URI_ACTIVE_MILESTONE.md` §1/§1c/§6g. See the
 M34 row below. **Note on numbering gap:** milestones M24–M33 are tracked in
 `docs/governance/URI_ACTIVE_MILESTONE.md` rather than backfilled into this
 table (that file became this repository's active per-milestone record
-starting with M30); M33 and M33.1 are tracked there. M33 is CLOSED; M33.1
-Batch 1 is CLOSED / ACCEPTED and its remaining work is governed by
-`docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md`, with its
-bounded pinned-`yt-dlp` Batch 2 CLOSED / ACCEPTED at `dd4863a`. Batch 3 remains
-NOT STARTED as GitHub Skill / Package Lifecycle. M33.2 is reserved for Edge /
+starting with M30); M33 and M33.1 are tracked there. M33 and M33.1 are
+CLOSED / ACCEPTED. M33.1's final Batch 4 closure accepted the extension matrix,
+natural-language/UI lifecycle seam, live `/ask` wiring, and compatibility
+evidence; see `docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md`
+§13.H. M33.2 is reserved for Edge /
 Second Brain Foundation; M33.3 is reserved for Unified URI Interaction &
 Capability UI; M33.4 is reserved for Knowledge Fabric / Sources / Watches.
 M32.1/M35 remain
@@ -107,12 +107,14 @@ by the M-numbered milestones below.
 | M23 | URI-native Graph Intelligence foundation (structured entities, typed relationships, bounded query/path/explain/impact primitives, provenance) | **DONE, VERIFIED** | `dfee5a8` | **Independently self-audited by Claude Code 12 Sep 2026 (Claude implemented this milestone directly under explicit User authorization — no Antigravity/Codex/Gemma session reachable; see `docs/plans/M23_STATE.md` for the full account, including two design mistakes and one standing "orchestrator.py must never grow" rule violation this same session found and corrected before commit). Full regression: 1,401/1,401 tests run, the same single pre-existing, unrelated failure as the pre-M23 baseline (independently confirmed via `git stash` bisection), zero new failures — 91 net new tests (75 across 8 new graph-specific test files). `wc -l uri_core/core/orchestrator.py`: 5,460 before and after — exactly flat. `flutter analyze`/`flutter test`: zero diff (no `uri_ui/` file touched).** Plan: `docs/plans/M23_GRAPH_INTELLIGENCE_PLAN.md`, state/evidence: `docs/plans/M23_STATE.md`. | New per-user SQLite-backed `GraphStore` (nodes/edges, provenance, dedup, extensible type registry), bounded read-only traversal primitives (`graph_get_entity`/`graph_query`/`graph_neighbors`/`graph_path`/`graph_explain`/`graph_impact`), narrow deterministic ingestion from existing `VERIFIED` facts and consent-eligible memory only (no bulk extraction, no Gmail/Drive), one new optional `graph_context` section in `query_context.py` — proven, not merely documented, to be non-authoritative (new AST import-boundary test). Explicitly **M23**, not "M22.10" — see plan §0 for why that number stays reserved for the separate, still-unbuilt `M22_MEMORY_CONTEXT_RETRIEVAL_ARCHITECTURE.md` proposal. | Automatic entity extraction, entity resolution, contradiction detection, vector/embedding retrieval, Gmail/Drive ingestion, knowledge visualization, MCP exposure, and any write route exposed to a client are all explicitly deferred (plan §14/§19) — the design does not block any of them. `Fact.verify()`/`fact_manager.update_evidence_fact()` have no live caller in the current runtime, so `ingest_fact()`'s wiring is correct but currently dormant in production use — a pre-existing gap this milestone found and named, not caused or fixed (see M23_STATE.md). This is the third recorded instance of the Claude-implements-directly exception — standing role separation resumes for the next milestone. |
 | M24–M33 | *(not backfilled into this table — see note above)* | — | — | Tracked in `docs/governance/URI_ACTIVE_MILESTONE.md` (the active per-milestone governance record from M30 onward: M30/M30.x, M31, M32, M33 planning). | — | M33 — External Capability Bridge and M33.1 — Real Integrations + Tools & Skills UI remain **NOT STARTED**; M32.1 — Execution Continuation Residual Hardening remains **NOT STARTED**. None block M34's closure below. |
 
-**M33.1 correction, 2026-09-19:** the M24–M33 row above is preserved as
-historical text but is stale. M33 is CLOSED; M33.1 Batch 1 is CLOSED / ACCEPTED.
-`docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` is the
-authoritative frozen remaining plan. Batch 2 is CLOSED / ACCEPTED at `dd4863a`;
-Batch 3 is GitHub Skill / Package Lifecycle and is NOT STARTED. Firecrawl is
-optional future Connected-Service work, not an M33.1 closure requirement.
+**M33.1 closure correction, 2026-09-20:** the M24–M33 row above and prior
+Batch-specific text are preserved as history. M33.1 is now **CLOSED / ACCEPTED**:
+Batch 1 (`d78366d`/`0558a99`), Batch 2 (`dd4863a`), Batch 3 (`0fcdf29`), and
+Batch 4 closure are all accepted. The final independent review recorded 35/35
+isolated Batch 2–4 lifecycle/live tests passing, with the full-regression
+classification and residual environment nondeterminism in the authoritative
+plan §13.H. Firecrawl remains optional future Connected-Service work, not an
+M33.1 closure requirement.
 M33.2 is reserved for Edge / Second Brain Foundation; M33.3 is reserved for
 Unified URI Interaction & Capability UI; M33.4 is reserved for Knowledge
 Fabric / Sources / Watches. None is implemented.

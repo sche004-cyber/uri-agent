@@ -152,6 +152,7 @@ umbrella plan/state pair was created for the C3.3 or attachment-turn
 slices — see §6g below for the consolidated closure record).
 
 **CURRENT MILESTONE:**  
+**M33.1 closure correction, 2026-09-20:** M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**. No milestone is active; this additive record supersedes earlier M33.1 Batch-4-pending statements below.
 None active — M32, M31, and M34 are all CLOSED. Per §1a, the Hybrid UI
 initiative's own hard-dependency gate was already opened by M31's own
 earlier closure, independently of M32/M34 — see that section for the
@@ -399,6 +400,36 @@ the same environment-drift pattern already recorded for Batch 2 above, and
 not on any code in this commit. Zero regressions attributable to Batch 3.
 The M33.1 closure batch (extension-matrix proof, natural-language/UI
 lifecycle seam, final regression/live evidence) remains **NOT STARTED**.
+
+**M33.1 Batch 4 final independent closure review, 2026-09-20 (additive):**
+M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**.
+The recovered, uncommitted Batch 4 implementation was reviewed exactly as
+survived the power interruption: generic lifecycle catalog/sanitization seam,
+deterministic opt-in `/ask` interpreter and authenticated executor closure,
+mutation-boundary fail-closed guards, and two acceptance suites. No bounded
+production-code fix was required. The accepted matrix is four materially
+distinct mechanisms: pinned `yt-dlp` CLI, Gmail OAuth Connected Service,
+`remember_fact` in-process capability, and reviewed lockfile-installed
+`strip-json-comments-cli` package. Arbitrary `SKILL.md` prose is neither
+executed as authority nor double-counted as a fifth mechanism.
+
+Independent isolated Batch 2–4 lifecycle/live evidence: **35/35 passed**.
+That includes real `yt-dlp`, real reviewed npm-package lifecycle, and live
+`/ask` install/enable/disable/remove, credential-required, isolation and
+fail-closed cases. Full recovered-tree regression: **2,175 passed / 23 failed
+/ 7 skipped / 40 subtests**. Clean detached `5973f6d` baseline: **2,165 passed
+/ 15 failed / 7 skipped / 40 subtests**. Fourteen recovered failures overlap
+the baseline; seven transient external DNS/npm/yt-dlp failures later passed in
+the isolated rerun; two Drive tests are environment-sensitive and outside all
+Batch 4 paths. This is documented test-environment nondeterminism, not an
+M33.1 regression.
+
+The lifecycle-intent seam remains opt-in only through
+`URI_ENABLE_LIFECYCLE_INTENT_SEAM=1`. M33.3 graphical lifecycle management
+remains out of scope. M33.2 planning artifacts remain unrelated, unmodified,
+and do not authorize M33.2 implementation. See
+`docs/plans/M33_1_REAL_INTEGRATIONS_EXTENSION_VALIDATION_PLAN.md` §13.H for
+the binding closure record.
 
 **M31 OBJECTIVE (achieved, preserved for reference):**  
 Implement M31 Model & Brain UX per approved Figma frames 02 (node 1:71 — Connect Provider) and 04 (node 1:201 — Chat Model Selector) — API-key + local provider functionality, dynamic model discovery, verified-model inventory, `/providers/{id}/verify`, fallback routing, conversation-level model override, and the two Flutter screens. All items delivered and independently verified per `docs/plans/M31_STATE.md`. `orchestrator.py`-must-never-grow and `/ask`-unchanged-when-override-omitted regression guards both hold (confirmed by this audit's own full regression, not merely re-asserted).

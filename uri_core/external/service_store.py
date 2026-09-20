@@ -114,6 +114,22 @@ class ConnectedServiceStore:
     def _save(self, user_id: str, data: Mapping[str, Any]) -> None:
         _atomic_write_json(self._path(user_id), data)
 
+    def state_is_readable(self, user_id: str) -> bool:
+        """Whether this user's existing connection document can be mutated.
+
+        A malformed document is not an empty document at a lifecycle mutation
+        boundary: callers must fail closed rather than overwrite it.
+        """
+        path = self._path(user_id)
+        if not os.path.exists(path):
+            return True
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                data = json.load(handle)
+        except (json.JSONDecodeError, OSError):
+            return False
+        return isinstance(data, dict) and isinstance(data.get("services"), dict)
+
     def connect(
         self,
         user_id: str,
@@ -126,9 +142,8 @@ class ConnectedServiceStore:
         if descriptor is None:
             raise ValueError(f"Unknown service: {service_id}")
 
-        self.credential_store.set_credential(user_id, service_id, credentials)
-
         document = self._load(user_id)
+        self.credential_store.set_credential(user_id, service_id, credentials)
         effective_scopes = list(scopes) if scopes is not None else list(descriptor.scopes)
         state = {
             "id": service_id,
@@ -142,9 +157,8 @@ class ConnectedServiceStore:
         return dict(state)
 
     def disconnect(self, user_id: str, service_id: str) -> Dict[str, Any]:
-        self.credential_store.delete_credential(user_id, service_id)
-
         document = self._load(user_id)
+        self.credential_store.delete_credential(user_id, service_id)
         state = {
             "id": service_id,
             "status": STATUS_NOT_CONNECTED,
