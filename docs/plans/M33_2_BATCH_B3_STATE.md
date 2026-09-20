@@ -73,7 +73,7 @@ amendment to `docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.m
   because of the User's manual Needle evidence above). No model is
   promoted, `EDGE_ONLY`/`enabled` defaults are unchanged, and no Batch C or
   M31 UI work is authorized by this closure. Committed and pushed at
-  `<pending>`.
+  `d395c1c`.
 
 - **2026-09-20 — ACCEPTED → VERIFICATION_READY (Codex):** Implemented the
   accepted B.3 lifecycle substrate in the new sibling package

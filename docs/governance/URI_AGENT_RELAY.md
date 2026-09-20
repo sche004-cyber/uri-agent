@@ -75,7 +75,7 @@ surface, classified conservatively as installed-API/version mismatch, not
 universal unsupported. **Verdict: VERIFIED — ACCEPT —
 `INFRASTRUCTURE_VALIDATION_COMPLETE` / `REAL_MODEL_QUALIFICATION_PARTIAL`.**
 No model promoted, no Batch C or M31 UI work authorized. Committed and
-pushed at `<pending>`.
+pushed at `d395c1c`.
 
 ---
 

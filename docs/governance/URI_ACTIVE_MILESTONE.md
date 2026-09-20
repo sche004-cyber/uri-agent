@@ -418,7 +418,7 @@ change B.3's own infrastructure-only scope.
 real tool-use qualification for one candidate; every Edge-pack model
 remains otherwise unqualified). No model is promoted, `EDGE_ONLY`/`enabled`
 defaults are unchanged, and no Batch C or M31 UI work is authorized by this
-closure. Committed and pushed at `<pending>`.
+closure. Committed and pushed at `d395c1c`.
 
 **Correction, 2026-09-19 (auditable, preserving history rather than
 silently rewriting it):** the text immediately below this note
