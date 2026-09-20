@@ -152,8 +152,8 @@ umbrella plan/state pair was created for the C3.3 or attachment-turn
 slices — see §6g below for the consolidated closure record).
 
 **CURRENT MILESTONE:**  
-M33.2 Batch B.2 — Edge Perception Qualification (planning scope; B.1 is
-CLOSED / ACCEPTED, see below).
+None active — M33.2 Batch B.3 is CLOSED / ACCEPTED (B.2 is also CLOSED /
+ACCEPTED, see below). No Batch C or M31 UI work is authorized.
 **Prior M33.1 closure correction, 2026-09-20:** M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**.
 None active — M32, M31, and M34 are all CLOSED. Per §1a, the Hybrid UI
 initiative's own hard-dependency gate was already opened by M31's own
@@ -225,9 +225,8 @@ destination milestone number. Full detail: `docs/plans/M32_POST_
 BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10, §15.14.
 
 **CURRENT STATE:**  
-M33.2 Batch B.2 — CLOSED / ACCEPT (Claude independent audit, 2026-09-20).
-M33.2 Batch B.3 — Local Model Runtime & Installation Lifecycle — ACCEPTED
-(planning only; awaiting Antigravity-routed implementation; see below).
+M33.2 Batch B.3 — CLOSED / ACCEPT (Claude independent audit, 2026-09-20).
+`INFRASTRUCTURE_VALIDATION_COMPLETE` / `REAL_MODEL_QUALIFICATION_PARTIAL`.
 
 **M33.2 Batch B.1 closure, 2026-09-20 (additive):** Codex completed the
 accepted benchmark-only scope and stopped at `VERIFICATION_READY` without
@@ -352,6 +351,74 @@ points. Full plan in
 `docs/plans/M33_2_BATCH_B3_STATE.md`. Status: **ACCEPTED** (planning only).
 No implementation performed by Claude; Antigravity routes implementation to
 Codex per standing AO-4 routing. No Batch C work is authorized.
+
+**M33.2 Batch B.3 implementation checkpoint, 2026-09-20 (additive):** Codex
+completed the accepted scope in the new sibling package
+`uri_core/core/edge_lifecycle/` and stopped at `VERIFICATION_READY` without
+commit or push. Focused verification passed 9/9. Active-environment
+detection found Ollama `found_unreachable` then `found_reachable` between
+probes (installed `qwen3.5:9b`/`gemma4:12b`), LM Studio `found_unreachable`
+throughout; no model was imported, downloaded, or promoted. Full regression:
+2,242 passed / 10 failed / 7 skipped, then 2,243 passed / 16 failed / 0
+skipped after Ollama became reachable mid-session (six additional failures
+all reference the unrelated, hardcoded `qwen3:14b` live-test fixture, not
+installed on this machine). See
+`docs/plans/M33_2_BATCH_B3_COMPLETION_REPORT.md` and
+`docs/plans/M33_2_BATCH_B3_STATE.md`.
+
+**M33.2 Batch B.3 closure, 2026-09-20 (additive):** Claude's independent
+audit re-inspected the plan, completion report, governance records, and
+every source/test file directly, re-executing evidence (focused suite,
+predecessor suites, two independent full-suite regressions, and a live
+`curl` probe of the Ollama loopback API) rather than trusting the report
+alone. Found and bounded-fixed one genuine defect: `detect_ollama_runtime`/
+`detect_lmstudio_runtime` in `detection.py` validated only the *request*
+URL as loopback via `assert_loopback_url`, but called `requests.get` with
+its default `allow_redirects=True` — a compromised or malicious process
+bound to the loopback detection port could respond with a 3xx redirect to
+an arbitrary non-loopback host, and the confinement would be silently
+bypassed. Fixed by passing `allow_redirects=False` and explicitly rejecting
+any 3xx/redirect response in both functions before it is trusted; added one
+locking regression test (`test_runtime_detection_refuses_to_follow_redirect_off_loopback`,
+reproduced failing pre-fix, passing post-fix). No other file was touched.
+Focused suite: 10/10 (9 + 1 new). Predecessor suite: 45/45, unaffected.
+Independently re-ran the full regression twice: the first run overlapped
+with the fix being applied mid-run and is discarded as contaminated (one
+false failure traced to the file being edited during collection, not a
+real defect); the clean rerun on the final, stable code returned **2,244
+passed / 16 failed / 0 skipped / 40 subtests**, the exact same 16 failures
+independently reproduced by name (10 pre-existing baseline failures +
+6 tests hardcoded to the absent `qwen3:14b` model), with zero B.3-attributable
+failures. Live `curl http://127.0.0.1:11434/api/tags` independently confirmed
+Ollama reachable with `qwen3.5:9b`/`gemma4:12b` installed and `qwen3:14b`
+absent, corroborating the environmental-failure characterization rather than
+trusting it. No production routing/approval/dispatcher/registry/orchestrator/
+server/credential/provider-catalogue/UI code was touched by B.3, confirmed
+against the full working tree (`git diff --stat`), not just the files Codex
+listed. Scope stayed inside the accepted B.3 boundary; no still-excluded
+(privileged/OS-level) operation exists anywhere in the new package.
+
+Also recorded, separately and without backdating (the User performed this
+real-world testing after `VERIFICATION_READY`, not before, and it was not
+produced by Codex/Antigravity's automated report): the User's manual,
+real-environment Needle test — `cactus-needle` 3.0.2, native engine 3.0.1 —
+found real tool routing PASS, competing-tool selection PASS, argument
+extraction PASS, structured record extraction PASS, peak RAM ~108-109 MB,
+`confidence = null` for the tuned checkpoint, the `extract()` helper
+returning `null` once while raw tool-schema extraction passed, and the
+installed public API exposing no obvious audio/STT surface — classified
+conservatively as an installed-API/version mismatch, not a universal
+unsupported finding. This is real evidence for one candidate's tool-use
+behavior; it does not qualify any Edge-pack model end-to-end and does not
+change B.3's own infrastructure-only scope.
+
+**Verdict: VERIFIED — ACCEPT.** **Designation:
+`INFRASTRUCTURE_VALIDATION_COMPLETE` / `REAL_MODEL_QUALIFICATION_PARTIAL`**
+(partial, not pending, because the User's manual Needle evidence above is
+real tool-use qualification for one candidate; every Edge-pack model
+remains otherwise unqualified). No model is promoted, `EDGE_ONLY`/`enabled`
+defaults are unchanged, and no Batch C or M31 UI work is authorized by this
+closure. Committed and pushed at `<pending>`.
 
 **Correction, 2026-09-19 (auditable, preserving history rather than
 silently rewriting it):** the text immediately below this note

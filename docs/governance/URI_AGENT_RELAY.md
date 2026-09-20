@@ -4,58 +4,78 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
-## CURRENT HANDOFF
+## PREVIOUS HANDOFF (CLOSED: M33.2 Batch B.3 — CLAUDE ACCEPT)
 
 **FROM:**
-Claude
+Antigravity
 
 **TO:**
-Antigravity
+Claude
 
 **MILESTONE:**
 M33.2 Batch B.3 — Local Model Runtime & Installation Lifecycle
 
 **HANDOFF TYPE:**
-PLANNING → ACCEPTED (standing auto-approval, `ORCHESTRATION.md` §1.5, after
-an explicit User-authorized architecture amendment)
+AUDIT
 
 **STATUS:**
-ACCEPTED — awaiting Antigravity-routed implementation
+CLOSED — CLAUDE ACCEPT (`INFRASTRUCTURE_VALIDATION_COMPLETE` /
+`REAL_MODEL_QUALIFICATION_PARTIAL`)
 
 **AUTHORITATIVE ARTIFACTS:**
+- uri_workspace/dev_workflow/tasks/m33_2_batch_b3_codex_implementation_task.txt
 - docs/plans/M33_2_BATCH_B3_LOCAL_MODEL_RUNTIME_LIFECYCLE_PLAN.md
 - docs/plans/M33_2_BATCH_B3_STATE.md
-- docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md (§13
-  amendment, 2026-09-20)
-- docs/plans/M33_2_BATCH_B2_STATE.md (B.2 closure record)
+- docs/plans/M33_2_BATCH_B3_COMPLETION_REPORT.md
+- docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md (§13 amendment, 2026-09-20)
+- docs/plans/M33_2_BATCH_B2_STATE.md
+- docs/plans/M33_2_BATCH_B2_COMPLETION_REPORT.md
 - docs/governance/URI_ACTIVE_MILESTONE.md
 
-**SUMMARY:**
-While drafting B.3 per the User's original request, Claude found the
-requested scope directly conflicted with the frozen architecture's §13
-exclusion of "runtime installation; OS-permission changes." Claude stopped
-and asked the User to resolve it rather than planning around it. The User
-authorized a narrow amendment: privileged/OS-level/system-wide
-installation remains excluded unconditionally; URI-managed, user-space
-model and portable-runtime lifecycle (detect/adopt, import, download/
-install/update/remove inside URI-controlled storage, checksum/integrity,
-metadata, hardware probing, registration, lazy state management, dev
-Edge-pack, recovery/rollback) is newly permitted. Claude applied this to
-the architecture doc with full auditable correction history, then also
-resolved a self-identified conflict: URI-managed download needs network
-egress, which would violate the existing `uri_core/core/edge/` zero-egress
-tests if placed inside that tree — resolved by scoping lifecycle code to a
-new sibling package with its own, separately-tested, narrowly-scoped
-egress boundary. Full detail in
-`docs/plans/M33_2_BATCH_B3_LOCAL_MODEL_RUNTIME_LIFECYCLE_PLAN.md`.
+**DIRECTIVE (original, Antigravity → Claude):**
+Package the B.3 implementation, focused 9/9 test result, 45/45 predecessor result, full regression evidence, and `docs/plans/M33_2_BATCH_B3_COMPLETION_REPORT.md` for Claude's independent audit:
+1. Sibling package architecture: `uri_core/core/edge_lifecycle/` implemented; zero-egress of `uri_core/core/edge/` unweakened.
+2. Still-excluded boundaries verified: zero privileged/OS-level/system-wide operations.
+3. Confined user-space storage in `uri_workspace/edge_models/` with SHA-256 verification and atomic rollback.
+4. Loopback-only detection for Ollama and LM Studio.
+5. Hardware probing (CPU/RAM/storage) with truthful unavailable GPU fallback.
+6. Lazy lifecycle state management using frozen §10 vocabulary.
+7. Telemetry foundation for developer log UI without chain-of-thought leakage.
+8. No model promoted; no Batch C work started; no commit or push performed.
 
-**REQUIRED NEXT ACTION:**
-Antigravity routes B.3 implementation to Codex (multi-file, new-package,
-precision-critical, security-boundary-adjacent work, same rationale as
-B.1/B.2's routing), explicitly quoting the plan's still-excluded/
-unconditional list in the implementation task package so Codex stops and
-escalates rather than working around it if elevated/OS-level access would
-otherwise be needed. Claude does not implement B.3 in this session.
+**RESOLVED (Claude independent audit, 2026-09-20):**
+Re-inspected the plan, completion report, STATE, governance records, and
+every source/test file in `uri_core/core/edge_lifecycle/` directly, and
+re-executed evidence rather than trusting the report: reran the focused
+9-test suite, all 45 predecessor tests, and the full-suite regression twice
+(discarding one run that overlapped with the fix itself being applied
+mid-run). Found and bounded-fixed one genuine defect: `detect_ollama_runtime`/
+`detect_lmstudio_runtime` validated only the request URL as loopback but let
+`requests.get` follow redirects by default, so a compromised loopback
+service could redirect detection to an arbitrary external host. Fixed with
+`allow_redirects=False` plus an explicit redirect rejection in `detection.py`
+only; added one locking test (reproduced failing pre-fix, passing post-fix).
+Focused suite: 10/10 (9 + 1 new). Clean full regression on the final code:
+2,244 passed / 16 failed / 0 skipped / 40 subtests — the same 16 failures
+independently reproduced by name (10 pre-existing baseline + 6 tests
+hardcoded to the absent `qwen3:14b` model), none attributable to B.3.
+Independently confirmed via a live `curl` probe of `127.0.0.1:11434/api/tags`
+that Ollama is reachable with `qwen3.5:9b`/`gemma4:12b` installed and
+`qwen3:14b` absent. No production routing/approval/dispatcher/registry/
+orchestrator/server/credential/provider-catalogue/UI file was touched,
+confirmed against the full working tree, not just the files Codex listed.
+Separately recorded (not backdated, not produced by this automated report):
+the User's own post-`VERIFICATION_READY` manual real-environment Needle
+test (`cactus-needle` 3.0.2 / native engine 3.0.1) — real tool routing,
+competing-tool selection, argument extraction, and structured record
+extraction all PASS; peak RAM ~108-109 MB; `confidence = null` for the tuned
+checkpoint; `extract()` returned `null` once while raw tool-schema
+extraction passed; installed public API exposes no obvious audio/STT
+surface, classified conservatively as installed-API/version mismatch, not
+universal unsupported. **Verdict: VERIFIED — ACCEPT —
+`INFRASTRUCTURE_VALIDATION_COMPLETE` / `REAL_MODEL_QUALIFICATION_PARTIAL`.**
+No model promoted, no Batch C or M31 UI work authorized. Committed and
+pushed at `<pending>`.
 
 ---
 
