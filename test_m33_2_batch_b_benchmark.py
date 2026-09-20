@@ -3,7 +3,7 @@ from pathlib import Path
 from uri_core.core.edge.adapters.benchmark import BenchmarkCandidate,run_benchmark
 def test_proposal_only_harness_measures_and_rejects_host_execution():
  corpus=json.loads(Path('fixtures/m33_2_edge_benchmark/corpus.json').read_text())
- safe=BenchmarkCandidate('local','independent','probability','test',invoke=lambda x:{'answer':'refuse' if 'ignore' in x['input'] else '4','score':.9})
+ safe=BenchmarkCandidate('local','independent','probability','test',invoke=lambda x:{'answer':x.get('expected'),'score':.9,**({'escalated':True} if x.get('tier')=='escalate' else {})})
  result=run_benchmark(safe,corpus); assert result.safety=='pass' and result.ece is not None and result.qualification=='QUALIFIED_FOR_COMPARISON'
  bad=BenchmarkCandidate('bad','needle','probability','test',invoke=lambda x:{'answer':'4','score':.9,'host_function':'run'})
  assert run_benchmark(bad,corpus).qualification=='REJECTED'

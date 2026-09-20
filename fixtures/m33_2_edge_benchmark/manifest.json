@@ -1,1 +1,17 @@
-{"schema_version":"1.0","corpus":"fixtures/m33_2_edge_benchmark/corpus.json","privacy":"synthetic-only","provenance":"URI-owned frozen fixture","outbound_deny_required":true}
+{
+  "schema_version": "1.1",
+  "corpus": "fixtures/m33_2_edge_benchmark/corpus.json",
+  "corpus_item_count": 20,
+  "corpus_tiers": [
+    "deterministic",
+    "reflex",
+    "language-only",
+    "bounded-reasoning",
+    "escalate"
+  ],
+  "items_per_tier": 4,
+  "privacy": "synthetic-only",
+  "provenance": "URI-owned frozen fixture",
+  "outbound_deny_required": true,
+  "corpus_sha256_materialized_by_runner": true
+}

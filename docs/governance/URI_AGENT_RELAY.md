@@ -4,7 +4,105 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
-## CURRENT HANDOFF (CLOSED: M31 COMPLETE — CLAUDE VERIFIED)
+## CURRENT HANDOFF
+
+**FROM:**
+Claude
+
+**TO:**
+Antigravity
+
+**MILESTONE:**
+M33.2 Batch B.2 — Edge Perception Qualification
+
+**HANDOFF TYPE:**
+PLANNING → ACCEPTED (standing auto-approval, `ORCHESTRATION.md` §1.5)
+
+**STATUS:**
+ACCEPTED — awaiting Antigravity-routed implementation
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/M33_2_BATCH_B2_EDGE_PERCEPTION_PLAN.md
+- docs/plans/M33_2_BATCH_B2_STATE.md
+- docs/plans/M33_2_BATCH_B1_STATE.md (B.1 closure record)
+- docs/plans/M33_2_BATCH_B1_COMPLETION_REPORT.md (B.1 audit addendum)
+- docs/governance/URI_ACTIVE_MILESTONE.md
+
+**SUMMARY:**
+Claude's independent audit closed M33.2 Batch B.1 as ACCEPT —
+`HARNESS_COMPLETE` / `REAL_CANDIDATE_QUALIFICATION_PENDING` (full detail in
+the B.1 completion report addendum). Per direct User instruction, Claude
+then planned an additive extension of the same benchmark-only harness
+pattern to Vision and Audio/Transcription qualification, reusing the
+frozen Batch A `EdgeVisionProvider`/`EdgeSpeechProvider` contract stubs and
+`vision`/`speech` settings slots as the target shape. Needle 3's documented
+audio/transcription capability is recorded as a genuine, unresolved
+documentation conflict (`NEEDLE_AUDIO_DOCUMENTATION_CONFLICT /
+RUNTIME_UNVERIFIED` — direct GitHub/tag inspection found no audio API
+surface anywhere in the live repository, contradicting indexed upstream
+evidence the User separately identified); B.2's own empirical probe is the
+tie-breaker, classified into `AVAILABLE_SUPPORTED` /
+`API_PRESENT_RUNTIME_UNAVAILABLE` / `NOT_SUPPORTED` / `FAILED_QUALIFICATION`,
+with automatic fallthrough to a provider-agnostic alternative STT
+candidate on any non-`AVAILABLE_SUPPORTED` result. Full plan detail,
+non-goals, and acceptance criteria are in
+`docs/plans/M33_2_BATCH_B2_EDGE_PERCEPTION_PLAN.md`.
+
+**REQUIRED NEXT ACTION:**
+Antigravity routes B.2 implementation to Codex (multi-file,
+new-dependency-bearing, precision-critical work, same rationale as B.1's
+routing). Claude does not implement B.2 in this session.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: M33.2 Batch B.1 — CLAUDE ACCEPT)
+
+**FROM:**
+Codex
+
+**TO:**
+Antigravity
+
+**MILESTONE:**
+M33.2 Batch B.1 — Micro-Model Ensemble Qualification
+
+**HANDOFF TYPE:**
+IMPLEMENTATION
+
+**STATUS:**
+CLOSED — CLAUDE ACCEPT (`HARNESS_COMPLETE` / `REAL_CANDIDATE_QUALIFICATION_PENDING`)
+
+**AUTHORITATIVE ARTIFACTS:**
+- uri_workspace/dev_workflow/tasks/m33_2_batch_b1_codex_implementation_task.txt
+- docs/plans/M33_2_BATCH_B1_MICRO_MODEL_ENSEMBLE_PLAN.md
+- docs/plans/M33_2_BATCH_B1_STATE.md
+- docs/plans/M33_2_BATCH_B_STATE.md
+- docs/governance/URI_ACTIVE_MILESTONE.md
+- uri_core/core/edge/adapters/benchmark.py
+- fixtures/m33_2_edge_benchmark/corpus.json
+- fixtures/m33_2_edge_benchmark/manifest.json
+- scripts/m33_2_edge_benchmark.py
+
+**SUMMARY:**
+Codex completed the accepted Batch B.1 benchmark-only scope after recovery.
+The harness now has fail-closed score/tier validation, binned calibration,
+five-tier metrics, resource instrumentation, A–D ensemble adapters, a 20-item
+frozen corpus, and a nine-run artifact generator. Focused verification passed
+29/29. Full regression: 2,217 passed / 10 failed / 7 skipped / 40 subtests;
+the 10 failures exactly match Batch B's accepted baseline. Actual A–D
+runtimes are truthfully `UNAVAILABLE`; fixture comparison results are not
+presented as real-model qualification. Full evidence:
+`docs/plans/M33_2_BATCH_B1_COMPLETION_REPORT.md`.
+
+**RESOLVED:**
+Claude's independent audit re-verified every claim above against primary
+evidence and returned ACCEPT with one disclosed non-blocking limitation
+(`reflex_accuracy` is generic, not bespoke). Full audit addendum in
+`docs/plans/M33_2_BATCH_B1_COMPLETION_REPORT.md`.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: M31 COMPLETE — CLAUDE VERIFIED)
 
 **FROM:**
 Antigravity

@@ -152,7 +152,9 @@ umbrella plan/state pair was created for the C3.3 or attachment-turn
 slices — see §6g below for the consolidated closure record).
 
 **CURRENT MILESTONE:**  
-**M33.1 closure correction, 2026-09-20:** M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**. No milestone is active; this additive record supersedes earlier M33.1 Batch-4-pending statements below.
+M33.2 Batch B.2 — Edge Perception Qualification (planning scope; B.1 is
+CLOSED / ACCEPTED, see below).
+**Prior M33.1 closure correction, 2026-09-20:** M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**.
 None active — M32, M31, and M34 are all CLOSED. Per §1a, the Hybrid UI
 initiative's own hard-dependency gate was already opened by M31's own
 earlier closure, independently of M32/M34 — see that section for the
@@ -223,6 +225,26 @@ destination milestone number. Full detail: `docs/plans/M32_POST_
 BATCH_C_LATENCY_ARCHITECTURE_PLAN.md` §15.9–§15.10, §15.14.
 
 **CURRENT STATE:**  
+M33.2 Batch B.1 — CLOSED / ACCEPTED (Claude independent audit, 2026-09-20).
+M33.2 Batch B.2 — Edge Perception Qualification is the next additive
+planning scope (see below).
+
+**M33.2 Batch B.1 closure, 2026-09-20 (additive):** Codex completed the
+accepted benchmark-only scope and stopped at `VERIFICATION_READY` without
+commit or push. Claude's independent audit re-verified every claim against
+primary evidence (source reads, a hand-computed ECE/MCE check, independent
+focused-suite re-execution, a from-bytes corpus hash recomputation, on-disk
+evidence spot-checks, and two independent full-suite regression runs) and
+returned **ACCEPT — `HARNESS_COMPLETE` / `REAL_CANDIDATE_QUALIFICATION_PENDING`**,
+with one disclosed non-blocking limitation (`reflex_accuracy` is a generic,
+not bespoke, tier metric). Focused verification: 29/29. Nine-run evidence
+matrix: five qualifying deterministic fixtures, four truthfully unavailable
+actual configurations. Full regression, independently reproduced twice:
+2,217 passed / 10 failed / 7 skipped / 40 subtests, exact accepted Batch B
+failure set, no new regression. See
+`docs/plans/M33_2_BATCH_B1_COMPLETION_REPORT.md` and
+`docs/plans/M33_2_BATCH_B1_STATE.md`. No candidate is promoted and no Batch C
+work is authorized by this closure.
 **Correction, 2026-09-19 (auditable, preserving history rather than
 silently rewriting it):** the text immediately below this note
 previously said "M33 — External Capability Bridge is explicitly NOT
@@ -1205,6 +1227,5 @@ After EVERY agent handoff, Antigravity must automatically monitor the handoff to
 - Antigravity must not sit idle, wait for manual prompts, or create duplicate runner processes while a bridge is active.
 - Default loop behavior is always:
   `handoff sent → monitor → collect → continue`
-
 
 
