@@ -1,0 +1,4172 @@
+{
+  "schema": "m35.uriv1.a2_8k.r2.aggregates.v1",
+  "scoring_class_totals_by_variant": {
+    "H0": {
+      "CORRECT_RESOLUTION": 160,
+      "MISSED_RESOLVABLE_CASE": 175,
+      "CORRECT_ABSTENTION": 165,
+      "SILENT_DETECTION_MISS": 45,
+      "INCORRECT_CONFIDENT_BINDING": 26,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 33,
+      "MEASURE_ONLY": 2
+    },
+    "H1": {
+      "CORRECT_RESOLUTION": 155,
+      "MISSED_RESOLVABLE_CASE": 180,
+      "CORRECT_ABSTENTION": 171,
+      "SILENT_DETECTION_MISS": 45,
+      "INCORRECT_CONFIDENT_BINDING": 20,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 33,
+      "MEASURE_ONLY": 2
+    },
+    "H2": {
+      "CORRECT_RESOLUTION": 158,
+      "MISSED_RESOLVABLE_CASE": 177,
+      "CORRECT_ABSTENTION": 171,
+      "SILENT_DETECTION_MISS": 45,
+      "INCORRECT_CONFIDENT_BINDING": 20,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 33,
+      "MEASURE_ONLY": 2
+    },
+    "H3": {
+      "CORRECT_RESOLUTION": 149,
+      "MISSED_RESOLVABLE_CASE": 193,
+      "CORRECT_ABSTENTION": 175,
+      "SILENT_DETECTION_MISS": 45,
+      "INCORRECT_CONFIDENT_BINDING": 12,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 30,
+      "MEASURE_ONLY": 2
+    },
+    "H4": {
+      "CORRECT_RESOLUTION": 144,
+      "MISSED_RESOLVABLE_CASE": 198,
+      "CORRECT_ABSTENTION": 181,
+      "SILENT_DETECTION_MISS": 45,
+      "INCORRECT_CONFIDENT_BINDING": 6,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 30,
+      "MEASURE_ONLY": 2
+    },
+    "DX1": {
+      "CORRECT_RESOLUTION": 160,
+      "MISSED_RESOLVABLE_CASE": 175,
+      "CORRECT_ABSTENTION": 170,
+      "SILENT_DETECTION_MISS": 45,
+      "INCORRECT_CONFIDENT_BINDING": 21,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 33,
+      "MEASURE_ONLY": 2
+    }
+  },
+  "per_surface_variant_scoring_class_counts": {
+    "S-A": {
+      "H0": {
+        "CORRECT_RESOLUTION": 35,
+        "MISSED_RESOLVABLE_CASE": 70,
+        "CORRECT_ABSTENTION": 107,
+        "SILENT_DETECTION_MISS": 27,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11
+      },
+      "H1": {
+        "CORRECT_RESOLUTION": 35,
+        "MISSED_RESOLVABLE_CASE": 70,
+        "CORRECT_ABSTENTION": 107,
+        "SILENT_DETECTION_MISS": 27,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11
+      },
+      "H2": {
+        "CORRECT_RESOLUTION": 35,
+        "MISSED_RESOLVABLE_CASE": 70,
+        "CORRECT_ABSTENTION": 107,
+        "SILENT_DETECTION_MISS": 27,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11
+      },
+      "H3": {
+        "CORRECT_RESOLUTION": 35,
+        "MISSED_RESOLVABLE_CASE": 70,
+        "CORRECT_ABSTENTION": 107,
+        "SILENT_DETECTION_MISS": 27,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11
+      },
+      "H4": {
+        "CORRECT_RESOLUTION": 35,
+        "MISSED_RESOLVABLE_CASE": 70,
+        "CORRECT_ABSTENTION": 107,
+        "SILENT_DETECTION_MISS": 27,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11
+      },
+      "DX1": {
+        "CORRECT_RESOLUTION": 35,
+        "MISSED_RESOLVABLE_CASE": 70,
+        "CORRECT_ABSTENTION": 107,
+        "SILENT_DETECTION_MISS": 27,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11
+      }
+    },
+    "S-B": {
+      "H0": {
+        "CORRECT_RESOLUTION": 43,
+        "MISSED_RESOLVABLE_CASE": 57,
+        "SILENT_DETECTION_MISS": 18,
+        "INCORRECT_CONFIDENT_BINDING": 10,
+        "CORRECT_ABSTENTION": 26,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 14
+      },
+      "H1": {
+        "CORRECT_RESOLUTION": 43,
+        "MISSED_RESOLVABLE_CASE": 57,
+        "SILENT_DETECTION_MISS": 18,
+        "INCORRECT_CONFIDENT_BINDING": 10,
+        "CORRECT_ABSTENTION": 26,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 14
+      },
+      "H2": {
+        "CORRECT_RESOLUTION": 43,
+        "MISSED_RESOLVABLE_CASE": 57,
+        "SILENT_DETECTION_MISS": 18,
+        "INCORRECT_CONFIDENT_BINDING": 10,
+        "CORRECT_ABSTENTION": 26,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 14
+      },
+      "H3": {
+        "CORRECT_RESOLUTION": 40,
+        "MISSED_RESOLVABLE_CASE": 64,
+        "SILENT_DETECTION_MISS": 18,
+        "INCORRECT_CONFIDENT_BINDING": 3,
+        "CORRECT_ABSTENTION": 32,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11
+      },
+      "H4": {
+        "CORRECT_RESOLUTION": 40,
+        "MISSED_RESOLVABLE_CASE": 64,
+        "SILENT_DETECTION_MISS": 18,
+        "INCORRECT_CONFIDENT_BINDING": 3,
+        "CORRECT_ABSTENTION": 32,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11
+      },
+      "DX1": {
+        "CORRECT_RESOLUTION": 43,
+        "MISSED_RESOLVABLE_CASE": 57,
+        "SILENT_DETECTION_MISS": 18,
+        "INCORRECT_CONFIDENT_BINDING": 10,
+        "CORRECT_ABSTENTION": 26,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 14
+      }
+    },
+    "S-C": {
+      "H0": {
+        "CORRECT_RESOLUTION": 73,
+        "MISSED_RESOLVABLE_CASE": 47,
+        "INCORRECT_CONFIDENT_BINDING": 10,
+        "CORRECT_ABSTENTION": 30,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 8
+      },
+      "H1": {
+        "CORRECT_RESOLUTION": 71,
+        "MISSED_RESOLVABLE_CASE": 49,
+        "CORRECT_ABSTENTION": 34,
+        "INCORRECT_CONFIDENT_BINDING": 6,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 8
+      },
+      "H2": {
+        "CORRECT_RESOLUTION": 73,
+        "MISSED_RESOLVABLE_CASE": 47,
+        "CORRECT_ABSTENTION": 34,
+        "INCORRECT_CONFIDENT_BINDING": 6,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 8
+      },
+      "H3": {
+        "CORRECT_RESOLUTION": 65,
+        "MISSED_RESOLVABLE_CASE": 57,
+        "INCORRECT_CONFIDENT_BINDING": 5,
+        "CORRECT_ABSTENTION": 33,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 8
+      },
+      "H4": {
+        "CORRECT_RESOLUTION": 63,
+        "MISSED_RESOLVABLE_CASE": 59,
+        "CORRECT_ABSTENTION": 37,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 8,
+        "INCORRECT_CONFIDENT_BINDING": 1
+      },
+      "DX1": {
+        "CORRECT_RESOLUTION": 73,
+        "MISSED_RESOLVABLE_CASE": 47,
+        "CORRECT_ABSTENTION": 33,
+        "INCORRECT_CONFIDENT_BINDING": 7,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 8
+      }
+    },
+    "S-D": {
+      "H0": {
+        "CORRECT_RESOLUTION": 9,
+        "CORRECT_ABSTENTION": 2,
+        "INCORRECT_CONFIDENT_BINDING": 4,
+        "MISSED_RESOLVABLE_CASE": 1,
+        "MEASURE_ONLY": 2
+      },
+      "H1": {
+        "CORRECT_RESOLUTION": 6,
+        "CORRECT_ABSTENTION": 4,
+        "MISSED_RESOLVABLE_CASE": 4,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "MEASURE_ONLY": 2
+      },
+      "H2": {
+        "CORRECT_RESOLUTION": 7,
+        "CORRECT_ABSTENTION": 4,
+        "MISSED_RESOLVABLE_CASE": 3,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "MEASURE_ONLY": 2
+      },
+      "H3": {
+        "CORRECT_RESOLUTION": 9,
+        "CORRECT_ABSTENTION": 3,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "MISSED_RESOLVABLE_CASE": 2,
+        "MEASURE_ONLY": 2
+      },
+      "H4": {
+        "CORRECT_RESOLUTION": 6,
+        "CORRECT_ABSTENTION": 5,
+        "MISSED_RESOLVABLE_CASE": 5,
+        "MEASURE_ONLY": 2
+      },
+      "DX1": {
+        "CORRECT_RESOLUTION": 9,
+        "CORRECT_ABSTENTION": 4,
+        "MISSED_RESOLVABLE_CASE": 1,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "MEASURE_ONLY": 2
+      }
+    }
+  },
+  "per_level_breakdown_s_a_b_c": {
+    "H0": {
+      "L6": {
+        "CORRECT_RESOLUTION": 74,
+        "MISSED_RESOLVABLE_CASE": 150,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 23,
+        "CORRECT_ABSTENTION": 68
+      },
+      "L1_or_L2": {
+        "CORRECT_RESOLUTION": 12
+      },
+      "L4b": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 4,
+        "CORRECT_RESOLUTION": 42,
+        "CORRECT_ABSTENTION": 3
+      },
+      "L1_or_L5_5": {
+        "CORRECT_ABSTENTION": 14
+      },
+      "L5": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "CORRECT_RESOLUTION": 22,
+        "INCORRECT_CONFIDENT_BINDING": 17,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 6,
+        "CORRECT_ABSTENTION": 3
+      },
+      "L4a_or_L4b": {
+        "INCORRECT_CONFIDENT_BINDING": 3,
+        "CORRECT_RESOLUTION": 1
+      }
+    },
+    "H1": {
+      "L6": {
+        "CORRECT_RESOLUTION": 74,
+        "MISSED_RESOLVABLE_CASE": 152,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 23,
+        "CORRECT_ABSTENTION": 68
+      },
+      "L1_or_L2": {
+        "CORRECT_RESOLUTION": 12
+      },
+      "L4b": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 4,
+        "CORRECT_RESOLUTION": 42,
+        "CORRECT_ABSTENTION": 3
+      },
+      "L1_or_L5_5": {
+        "CORRECT_ABSTENTION": 18
+      },
+      "L5": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "CORRECT_RESOLUTION": 20,
+        "INCORRECT_CONFIDENT_BINDING": 13,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 6,
+        "CORRECT_ABSTENTION": 3
+      },
+      "L4a_or_L4b": {
+        "INCORRECT_CONFIDENT_BINDING": 3,
+        "CORRECT_RESOLUTION": 1
+      }
+    },
+    "H2": {
+      "L6": {
+        "CORRECT_RESOLUTION": 74,
+        "MISSED_RESOLVABLE_CASE": 150,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 23,
+        "CORRECT_ABSTENTION": 68
+      },
+      "L1_or_L2": {
+        "CORRECT_RESOLUTION": 12
+      },
+      "L4b": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 4,
+        "CORRECT_RESOLUTION": 42,
+        "CORRECT_ABSTENTION": 3
+      },
+      "L1_or_L5_5": {
+        "CORRECT_ABSTENTION": 18
+      },
+      "L5": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "CORRECT_RESOLUTION": 22,
+        "INCORRECT_CONFIDENT_BINDING": 13,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 6,
+        "CORRECT_ABSTENTION": 3
+      },
+      "L4a_or_L4b": {
+        "INCORRECT_CONFIDENT_BINDING": 3,
+        "CORRECT_RESOLUTION": 1
+      }
+    },
+    "H3": {
+      "L6": {
+        "CORRECT_RESOLUTION": 74,
+        "MISSED_RESOLVABLE_CASE": 174,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 26,
+        "CORRECT_ABSTENTION": 80
+      },
+      "L1_or_L2": {
+        "CORRECT_RESOLUTION": 12
+      },
+      "L4b": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 4,
+        "CORRECT_RESOLUTION": 42,
+        "CORRECT_ABSTENTION": 3
+      },
+      "L1_or_L5_5": {
+        "CORRECT_ABSTENTION": 14
+      },
+      "L5": {
+        "MISSED_RESOLVABLE_CASE": 5,
+        "CORRECT_RESOLUTION": 11,
+        "INCORRECT_CONFIDENT_BINDING": 5
+      },
+      "L4a_or_L4b": {
+        "INCORRECT_CONFIDENT_BINDING": 3,
+        "CORRECT_RESOLUTION": 1
+      }
+    },
+    "H4": {
+      "L6": {
+        "CORRECT_RESOLUTION": 74,
+        "MISSED_RESOLVABLE_CASE": 176,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 26,
+        "CORRECT_ABSTENTION": 80
+      },
+      "L1_or_L2": {
+        "CORRECT_RESOLUTION": 12
+      },
+      "L4b": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 4,
+        "CORRECT_RESOLUTION": 42,
+        "CORRECT_ABSTENTION": 3
+      },
+      "L1_or_L5_5": {
+        "CORRECT_ABSTENTION": 18
+      },
+      "L5": {
+        "MISSED_RESOLVABLE_CASE": 5,
+        "CORRECT_RESOLUTION": 9,
+        "INCORRECT_CONFIDENT_BINDING": 1
+      },
+      "L4a_or_L4b": {
+        "INCORRECT_CONFIDENT_BINDING": 3,
+        "CORRECT_RESOLUTION": 1
+      }
+    },
+    "DX1": {
+      "L6": {
+        "CORRECT_RESOLUTION": 74,
+        "MISSED_RESOLVABLE_CASE": 150,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 23,
+        "CORRECT_ABSTENTION": 68
+      },
+      "L1_or_L2": {
+        "CORRECT_RESOLUTION": 12
+      },
+      "L4b": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "INCORRECT_CONFIDENT_BINDING": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 4,
+        "CORRECT_RESOLUTION": 42,
+        "CORRECT_ABSTENTION": 3
+      },
+      "L1_or_L5_5": {
+        "CORRECT_ABSTENTION": 14
+      },
+      "L5": {
+        "MISSED_RESOLVABLE_CASE": 12,
+        "CORRECT_RESOLUTION": 22,
+        "INCORRECT_CONFIDENT_BINDING": 14,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 6,
+        "CORRECT_ABSTENTION": 6
+      },
+      "L4a_or_L4b": {
+        "INCORRECT_CONFIDENT_BINDING": 3,
+        "CORRECT_RESOLUTION": 1
+      }
+    }
+  },
+  "changed_rows_vs_h0": {
+    "H1": [
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-03",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+          "0b7e4f1c-2a93-4d58-8e61-3c9a5f02d101"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-04",
+        "ref_key": "SD-A-04",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a4-new",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a4-new",
+          "sd-a4-old"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-05",
+        "ref_key": "SD-A-05",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a5-x",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a5-x",
+          "sd-a5-y"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-06",
+        "ref_key": "SD-A-06",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a6-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a6-early",
+          "sd-a6-late"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-07",
+        "ref_key": "SD-A-07",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a7-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a7-early",
+          "sd-a7-late"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-N-03",
+        "ref_key": "SD-N-03",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-n3-current",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "H2": [
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-04",
+        "ref_key": "SD-A-04",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a4-new",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a4-new",
+          "sd-a4-old"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-05",
+        "ref_key": "SD-A-05",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a5-x",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a5-x",
+          "sd-a5-y"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-06",
+        "ref_key": "SD-A-06",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a6-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a6-early",
+          "sd-a6-late"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-07",
+        "ref_key": "SD-A-07",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a7-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a7-early",
+          "sd-a7-late"
+        ]
+      }
+    ],
+    "H3": [
+      {
+        "surface": "S-A",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b3905d"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b3905d"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-b0c63d",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-26e8a1",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "obj-26e8a1",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+          "c2f81d57-6e49-4a0b-8f3c-2b95e7a1d104"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-H-06",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+          "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-7c21e4",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b0c63d"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-09",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-09",
+        "ref_key": "r2",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_ABSTENTION",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "b94c1e62-3d07-4a8f-9b56-e7a20c48d112",
+          "71a6d39e-f24b-4c80-8d13-5b9e0a67d113"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "b94c1e62-3d07-4a8f-9b56-e7a20c48d112",
+          "71a6d39e-f24b-4c80-8d13-5b9e0a67d113"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-b0c63d",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-26e8a1",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-26e8a1",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-05",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-06",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-06",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "18d9c6f3-b57a-4e12-9d40-af73e5c8d106",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+          "obj-b0c63d"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-H-06",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+          "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-7c21e4",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b0c63d"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-09",
+        "ref_key": "r2",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-B-02",
+        "ref_key": "SD-B-02",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-b2-notice",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-C-02",
+        "ref_key": "SD-C-02",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-c2-agenda",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "sd-c2-minutes",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-C-03",
+        "ref_key": "SD-C-03",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-c3-street",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "H4": [
+      {
+        "surface": "S-A",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b3905d"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b3905d"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-b0c63d",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-26e8a1",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "obj-26e8a1",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+          "c2f81d57-6e49-4a0b-8f3c-2b95e7a1d104"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-H-06",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+          "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-7c21e4",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b0c63d"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-09",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-09",
+        "ref_key": "r2",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_ABSTENTION",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "b94c1e62-3d07-4a8f-9b56-e7a20c48d112",
+          "71a6d39e-f24b-4c80-8d13-5b9e0a67d113"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "b94c1e62-3d07-4a8f-9b56-e7a20c48d112",
+          "71a6d39e-f24b-4c80-8d13-5b9e0a67d113"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-b0c63d",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-26e8a1",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-26e8a1",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-05",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-06",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-06",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "18d9c6f3-b57a-4e12-9d40-af73e5c8d106",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+          "obj-b0c63d"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-H-06",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+          "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-7c21e4",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b0c63d"
+        ],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-03",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+          "0b7e4f1c-2a93-4d58-8e61-3c9a5f02d101"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-09",
+        "ref_key": "r2",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-04",
+        "ref_key": "SD-A-04",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a4-new",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a4-new",
+          "sd-a4-old"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-05",
+        "ref_key": "SD-A-05",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a5-x",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a5-x",
+          "sd-a5-y"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-06",
+        "ref_key": "SD-A-06",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a6-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a6-early",
+          "sd-a6-late"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-07",
+        "ref_key": "SD-A-07",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a7-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a7-early",
+          "sd-a7-late"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-B-02",
+        "ref_key": "SD-B-02",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-b2-notice",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-C-02",
+        "ref_key": "SD-C-02",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-c2-agenda",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "sd-c2-minutes",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-C-03",
+        "ref_key": "SD-C-03",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-c3-street",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-N-03",
+        "ref_key": "SD-N-03",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-n3-current",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "DX1": [
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-05",
+        "ref_key": "SD-A-05",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a5-x",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a5-x",
+          "sd-a5-y"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-07",
+        "ref_key": "SD-A-07",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a7-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a7-early",
+          "sd-a7-late"
+        ]
+      }
+    ]
+  },
+  "new_icb_vs_h0": {
+    "H1": [],
+    "H2": [],
+    "H3": [],
+    "H4": [],
+    "DX1": []
+  },
+  "closed_icb_vs_h0": {
+    "H1": [
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-05",
+        "ref_key": "SD-A-05",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a5-x",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a5-x",
+          "sd-a5-y"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-07",
+        "ref_key": "SD-A-07",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a7-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a7-early",
+          "sd-a7-late"
+        ]
+      }
+    ],
+    "H2": [
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-05",
+        "ref_key": "SD-A-05",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a5-x",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a5-x",
+          "sd-a5-y"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-07",
+        "ref_key": "SD-A-07",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a7-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a7-early",
+          "sd-a7-late"
+        ]
+      }
+    ],
+    "H3": [
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-b0c63d",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-7c21e4",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-09",
+        "ref_key": "r2",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-b0c63d",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-7c21e4",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-09",
+        "ref_key": "r2",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-B-02",
+        "ref_key": "SD-B-02",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-b2-notice",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-C-02",
+        "ref_key": "SD-C-02",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-c2-agenda",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "sd-c2-minutes",
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "H4": [
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-b0c63d",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-7c21e4",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-09",
+        "ref_key": "r2",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-b0c63d",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-J-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-7c21e4",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-09",
+        "ref_key": "r2",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-05",
+        "ref_key": "SD-A-05",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a5-x",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a5-x",
+          "sd-a5-y"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-07",
+        "ref_key": "SD-A-07",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a7-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a7-early",
+          "sd-a7-late"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-B-02",
+        "ref_key": "SD-B-02",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-b2-notice",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-C-02",
+        "ref_key": "SD-C-02",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-c2-agenda",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_RESOLUTION",
+        "variant_outcome": "RESOLVED",
+        "variant_candidate_id": "sd-c2-minutes",
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "DX1": [
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108",
+          "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+          "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-05",
+        "ref_key": "SD-A-05",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a5-x",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a5-x",
+          "sd-a5-y"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-07",
+        "ref_key": "SD-A-07",
+        "c_axis": "SD",
+        "h0_scoring_class": "INCORRECT_CONFIDENT_BINDING",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a7-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "CORRECT_ABSTENTION",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a7-early",
+          "sd-a7-late"
+        ]
+      }
+    ]
+  },
+  "lost_correct_resolutions_vs_h0": {
+    "H1": [
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-03",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+          "0b7e4f1c-2a93-4d58-8e61-3c9a5f02d101"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-04",
+        "ref_key": "SD-A-04",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a4-new",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a4-new",
+          "sd-a4-old"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-06",
+        "ref_key": "SD-A-06",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a6-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a6-early",
+          "sd-a6-late"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-N-03",
+        "ref_key": "SD-N-03",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-n3-current",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "H2": [
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-04",
+        "ref_key": "SD-A-04",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a4-new",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a4-new",
+          "sd-a4-old"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-06",
+        "ref_key": "SD-A-06",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a6-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a6-early",
+          "sd-a6-late"
+        ]
+      }
+    ],
+    "H3": [
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-09",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-26e8a1",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-06",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-06",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "18d9c6f3-b57a-4e12-9d40-af73e5c8d106",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+          "obj-b0c63d"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-C-03",
+        "ref_key": "SD-C-03",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-c3-street",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "H4": [
+      {
+        "surface": "S-B",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-B",
+        "case_id": "NB-L-09",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-C-02",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+          "a85f2c19-0e7d-4c3b-b691-d24a8e67d108"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-02",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-26e8a1",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-05",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-06",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-06",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-8b2e41",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "18d9c6f3-b57a-4e12-9d40-af73e5c8d106",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-H-01",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+          "obj-b0c63d"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-03",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+          "0b7e4f1c-2a93-4d58-8e61-3c9a5f02d101"
+        ]
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-C",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "obj-6e7d50",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-04",
+        "ref_key": "SD-A-04",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a4-new",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a4-new",
+          "sd-a4-old"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-A-06",
+        "ref_key": "SD-A-06",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-a6-early",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "AMBIGUOUS",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": [
+          "sd-a6-early",
+          "sd-a6-late"
+        ]
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-C-03",
+        "ref_key": "SD-C-03",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-c3-street",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-D",
+        "case_id": "SD-N-03",
+        "ref_key": "SD-N-03",
+        "c_axis": "SD",
+        "h0_scoring_class": "CORRECT_RESOLUTION",
+        "h0_outcome": "RESOLVED",
+        "h0_candidate_id": "sd-n3-current",
+        "h0_ambiguous_ids": [],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "DX1": []
+  },
+  "s_a_regression_check_diffs": {
+    "H1": [],
+    "H2": [],
+    "H3": [
+      {
+        "surface": "S-A",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b3905d"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b3905d"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "H4": [
+      {
+        "surface": "S-A",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-D-07",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+          "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C1",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b3905d"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      },
+      {
+        "surface": "S-A",
+        "case_id": "NB-L-04",
+        "ref_key": "r1",
+        "c_axis": "C2",
+        "h0_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "h0_outcome": "AMBIGUOUS",
+        "h0_candidate_id": null,
+        "h0_ambiguous_ids": [
+          "obj-7c21e4",
+          "obj-b3905d"
+        ],
+        "variant_scoring_class": "MISSED_RESOLVABLE_CASE",
+        "variant_outcome": "UNKNOWN",
+        "variant_candidate_id": null,
+        "variant_ambiguous_ids": []
+      }
+    ],
+    "DX1": []
+  },
+  "s_a_regression_check_passed": {
+    "H1": true,
+    "H2": true,
+    "H3": false,
+    "H4": false,
+    "DX1": true
+  },
+  "se_conflicts_by_variant": {
+    "H0": {
+      "test_m35_uriv1_a2_5_deterministic_rar": {
+        "tests_run": 19,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      },
+      "test_m35_uriv1_a2_5_rar_adversarial_safety": {
+        "tests_run": 1,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      },
+      "test_m35_uriv1_a2_5_rar_stage4_refinements": {
+        "tests_run": 30,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      }
+    },
+    "H1": {
+      "test_m35_uriv1_a2_5_deterministic_rar": {
+        "tests_run": 19,
+        "failures": 4,
+        "errors": 0,
+        "conflicting_tests": [
+          "test_all_24_diagnostic_fixtures_pass (test_m35_uriv1_a2_5_deterministic_rar.RARDiagnosticFixturesRegressionTests.test_all_24_diagnostic_fixtures_pass) (fixture_id='RAR-FIX-11', name='The previous email in active thread')",
+          "test_all_24_diagnostic_fixtures_pass (test_m35_uriv1_a2_5_deterministic_rar.RARDiagnosticFixturesRegressionTests.test_all_24_diagnostic_fixtures_pass) (fixture_id='RAR-FIX-13', name='The earlier version of the proposal')",
+          "test_level_5_revision_relation (test_m35_uriv1_a2_5_deterministic_rar.RARLevelRuleMechanicsTests.test_level_5_revision_relation)",
+          "test_level_5_temporal_previous_rank (test_m35_uriv1_a2_5_deterministic_rar.RARLevelRuleMechanicsTests.test_level_5_temporal_previous_rank)"
+        ]
+      },
+      "test_m35_uriv1_a2_5_rar_adversarial_safety": {
+        "tests_run": 1,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      },
+      "test_m35_uriv1_a2_5_rar_stage4_refinements": {
+        "tests_run": 30,
+        "failures": 1,
+        "errors": 0,
+        "conflicting_tests": [
+          "test_rc1_current_unique_recency_resolves (test_m35_uriv1_a2_5_rar_stage4_refinements.RC1LatestCurrentTemporalTests.test_rc1_current_unique_recency_resolves)"
+        ]
+      }
+    },
+    "H2": {
+      "test_m35_uriv1_a2_5_deterministic_rar": {
+        "tests_run": 19,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      },
+      "test_m35_uriv1_a2_5_rar_adversarial_safety": {
+        "tests_run": 1,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      },
+      "test_m35_uriv1_a2_5_rar_stage4_refinements": {
+        "tests_run": 30,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      }
+    },
+    "H3": {
+      "test_m35_uriv1_a2_5_deterministic_rar": {
+        "tests_run": 19,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      },
+      "test_m35_uriv1_a2_5_rar_adversarial_safety": {
+        "tests_run": 1,
+        "failures": 1,
+        "errors": 0,
+        "conflicting_tests": [
+          "test_all_24_adversarial_fixtures_zero_wrong_bindings (test_m35_uriv1_a2_5_rar_adversarial_safety.RARAdversarialSafetyGateTests.test_all_24_adversarial_fixtures_zero_wrong_bindings) (fixture_id='ADV-06', name='Missing timestamps when querying latest')"
+        ]
+      },
+      "test_m35_uriv1_a2_5_rar_stage4_refinements": {
+        "tests_run": 30,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      }
+    },
+    "H4": {
+      "test_m35_uriv1_a2_5_deterministic_rar": {
+        "tests_run": 19,
+        "failures": 4,
+        "errors": 0,
+        "conflicting_tests": [
+          "test_all_24_diagnostic_fixtures_pass (test_m35_uriv1_a2_5_deterministic_rar.RARDiagnosticFixturesRegressionTests.test_all_24_diagnostic_fixtures_pass) (fixture_id='RAR-FIX-11', name='The previous email in active thread')",
+          "test_all_24_diagnostic_fixtures_pass (test_m35_uriv1_a2_5_deterministic_rar.RARDiagnosticFixturesRegressionTests.test_all_24_diagnostic_fixtures_pass) (fixture_id='RAR-FIX-13', name='The earlier version of the proposal')",
+          "test_level_5_revision_relation (test_m35_uriv1_a2_5_deterministic_rar.RARLevelRuleMechanicsTests.test_level_5_revision_relation)",
+          "test_level_5_temporal_previous_rank (test_m35_uriv1_a2_5_deterministic_rar.RARLevelRuleMechanicsTests.test_level_5_temporal_previous_rank)"
+        ]
+      },
+      "test_m35_uriv1_a2_5_rar_adversarial_safety": {
+        "tests_run": 1,
+        "failures": 1,
+        "errors": 0,
+        "conflicting_tests": [
+          "test_all_24_adversarial_fixtures_zero_wrong_bindings (test_m35_uriv1_a2_5_rar_adversarial_safety.RARAdversarialSafetyGateTests.test_all_24_adversarial_fixtures_zero_wrong_bindings) (fixture_id='ADV-06', name='Missing timestamps when querying latest')"
+        ]
+      },
+      "test_m35_uriv1_a2_5_rar_stage4_refinements": {
+        "tests_run": 30,
+        "failures": 1,
+        "errors": 0,
+        "conflicting_tests": [
+          "test_rc1_current_unique_recency_resolves (test_m35_uriv1_a2_5_rar_stage4_refinements.RC1LatestCurrentTemporalTests.test_rc1_current_unique_recency_resolves)"
+        ]
+      }
+    },
+    "DX1": {
+      "test_m35_uriv1_a2_5_deterministic_rar": {
+        "tests_run": 19,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      },
+      "test_m35_uriv1_a2_5_rar_adversarial_safety": {
+        "tests_run": 1,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      },
+      "test_m35_uriv1_a2_5_rar_stage4_refinements": {
+        "tests_run": 30,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      }
+    },
+    "N/A": {
+      "test_m35_uriv1_a2_5_rar_contracts": {
+        "tests_run": 0,
+        "failures": 0,
+        "errors": 0,
+        "conflicting_tests": []
+      }
+    }
+  },
+  "reconciliation_check": {
+    "H1": {
+      "aggregate_changed_row_count": 11,
+      "raw_decision_diff_count": 11,
+      "reconciled": true
+    },
+    "H2": {
+      "aggregate_changed_row_count": 8,
+      "raw_decision_diff_count": 8,
+      "reconciled": true
+    },
+    "H3": {
+      "aggregate_changed_row_count": 45,
+      "raw_decision_diff_count": 45,
+      "reconciled": true
+    },
+    "H4": {
+      "aggregate_changed_row_count": 56,
+      "raw_decision_diff_count": 56,
+      "reconciled": true
+    },
+    "DX1": {
+      "aggregate_changed_row_count": 5,
+      "raw_decision_diff_count": 5,
+      "reconciled": true
+    }
+  },
+  "determinism_check_passed": true
+}
