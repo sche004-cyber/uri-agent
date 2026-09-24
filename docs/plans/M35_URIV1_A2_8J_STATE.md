@@ -30,10 +30,10 @@ task: A2.8J RAR-SAFE evidence-safety hardening qualification (experimental, no p
 completed_steps: evidence recovery, plan draft, acceptance criteria definition, implementation routing substitution recorded, RAR-SAFE module implemented, corpus battery + counterfactual probes executed, telemetry/aggregates written, existing RAR regression suite passed, execution report written, independent final audit performed (verdict REPAIR_REQUIRED), User selected repair option R3(a), bounded repair implemented (R1 Probe A disclosure, R2 test-conflict classification, R3(a) S2 vocabulary correction derived from baseline RAR's own revision_words/temporal_words/attachment-trigger sets, R4 hypothesis conclusion corrected, R5 4b residual reclassified as safety, R6 factual errors corrected), full measurement surface regenerated (natural corpus, Probe A, Probe B, Probe C, existing-test conflict rerun, protected-file hash re-verification)
 remaining_steps: none for A2.8J; A2.8K planning (planning only, stop at PLAN_READY_FOR_USER_APPROVAL); no promotion of RAR-SAFE or S3 authorized
 changed_files: uri_v1/turn/rar_safe_experimental.py (`_RECENCY_VOCABULARY` widened 9→19 words, baseline-derived, no other line changed), docs/plans/M35_URIV1_A2_8J_TELEMETRY.json (regenerated, natural-corpus decision fields unchanged), docs/plans/M35_URIV1_A2_8J_AGGREGATES.json (regenerated, natural-corpus unchanged; counterfactual_probes block updated — Probe A ICB 3→5, correct unchanged at 9; Probe B/C unchanged), docs/plans/M35_URIV1_A2_8J_EXECUTION_REPORT.md (R3(a) REPAIR ADDENDUM appended; 3 inline factual-typo corrections marked; original body preserved), docs/plans/M35_URIV1_A2_8J_REPAIR_REPORT.md (new, standalone bounded repair report), docs/plans/M35_URIV1_A2_8J_STATE.md (this file) — `rar_deterministic.py`, `rar_contracts.py`, D1RQ, the corpus fixture, and all five existing test files remain byte-unmodified (SHA-256 re-verified post-repair)
-git_state: release authorized by User 2026-09-24; see Release section (baseline-dependency commit 5a8e2448da410c67601c3d57da129dcedaa36ebf, A2.8J closure commit recorded after it is created)
+git_state: released — baseline-dependency commit 5a8e2448da410c67601c3d57da129dcedaa36ebf, closure commit 247265f733a4f199153089837c471f29b3725885, pushed to origin/m35-uri-v1-parallel-architecture (see Release section)
 test_state: existing RAR suite vs baseline RAR — 75 passed, 48 subtests passed, 0 failed (reconfirmed post-repair); same suite vs RAR-SAFE (swap-only, no files edited) — post-repair 4 failed (1 test + 3 subtests, all S1, classified as intentional consequences of the frozen invariant), down from 7 pre-repair (3 S2 conflicts fixed by R3(a))
 audit_state: independent final audit complete (REPAIR_REQUIRED) → bounded repair complete (R1–R6) → bounded re-audit complete (ACCEPTED, errata E1–E5 recorded non-blocking)
-last_successful_checkpoint: bounded re-audit report written (docs/plans/M35_URIV1_A2_8J_BOUNDED_REAUDIT.md), no commit/push performed
+last_successful_checkpoint: A2.8J closure commit 247265f7 pushed to origin; release hashes recorded
 retry_metadata: n/a
 
 ### History
@@ -47,5 +47,6 @@ retry_metadata: n/a
 
 ### Release
 - Baseline-dependency commit: 5a8e2448da410c67601c3d57da129dcedaa36ebf (chore(m35): track URIv1 baseline required by A2.8J)
-- A2.8J closure commit: recorded in a follow-up governance commit
-- Push: recorded in a follow-up governance commit
+- A2.8J closure commit: 247265f733a4f199153089837c471f29b3725885 (M35 A2.8J: close RAR-SAFE qualification)
+- Clean-checkout verification before push (temporary detached worktree at 247265f, removed afterwards): existing RAR suite 75 passed / 48 subtests; 900/900 telemetry rows and all three probe blocks regenerate identical to the committed files.
+- Push: SUCCESS, 2026-09-24, `git push -u origin m35-uri-v1-parallel-architecture` created new remote branch; `git ls-remote` confirms refs/heads/m35-uri-v1-parallel-architecture = 247265f733a4f199153089837c471f29b3725885. Not merged into master. No PR opened.
