@@ -1,6 +1,6 @@
 # M35 URIv1 — A2.8L: Trustworthy Attachment-Order Evidence Transport Factorial (FROZEN PLAN)
 
-**Status:** `FROZEN — PLAN ONLY — IMPLEMENTATION AND EXECUTION NOT AUTHORIZED`
+**Status:** `FROZEN — PLAN ONLY — IMPLEMENTATION AND EXECUTION NOT AUTHORIZED` (A1–A8: `804d68e`, historical); **amended by A9 (§16) — `FROZEN_READY_FOR_RERUN` — rerun not yet authorized**
 
 **Date:** 2026-09-24  
 **Branch:** `m35-uri-v1-parallel-architecture`  
@@ -46,6 +46,15 @@ not a delta against a previously frozen state. The amendments applied are:
 - **A8** — required the immutable plan-plus-overlay-manifest freeze checkpoint
   to exist and be hash-recorded before any mechanism code may be written
   (§5.4, §14).
+- **A9** — post-audit amendment (frozen checkpoint `804d68e`; independent
+  audit verdict `REPAIR_REQUIRED`), registering five corrections the audit
+  found undisclosed-at-freeze or ambiguous in A1–A8: the
+  `C-LEXICAL-ATTACHMENT` qualification-gate exclusion, the D/M-to-Level-5.5
+  extension, an explicit `"earlier"` A3 trigger value, H3 as a frozen
+  always-on substrate, and R's domain-wide tie / overlay-presence activation
+  semantics — plus a corrected rerun protocol and corrected interpretation
+  rules. See §16. No mechanism code, execution, or production change is
+  authorized by A9.
 
 ---
 
@@ -749,4 +758,294 @@ direct follow-up that can separate membership, grouping, provenance, domain,
 rank frame, and precedence while testing—rather than assuming—the need for a
 new transport contract.
 
-`FROZEN_READY_FOR_IMPLEMENTATION`
+---
+
+## 16. A9 — Post-audit amendment (pre-rerun freeze)
+
+**Basis.** The first A2.8L run (frozen checkpoint `804d68e`, execution report
+`docs/plans/M35_URIV1_A2_8L_EXECUTION_REPORT.md`) reached `VERIFICATION_READY`
+and reported one qualifying cell (`M=1,G=1,P=1,D=1,R=1,Q=0`). An independent
+audit of that run returned verdict `REPAIR_REQUIRED`: three of the report's
+own disclosed "interpretive extensions" (A3 hint/token reading, H3-as-
+substrate, D/M extended to Level 5.5) and one disclosed control exclusion
+(`C-LEXICAL-ATTACHMENT`) were applied during implementation without being
+frozen in this plan's own text at freeze time (`804d68e` records only A1–A8).
+Under this plan's **literal** §4.1/§4.2.1/§7 text — none of the four
+extensions applied — no cell qualifies: `B-DISTRACTOR` and
+`C-NATURAL-PHOTOS` C2 are unreachable without the D/M-to-Level-5.5 extension,
+and `C-LEXICAL-ATTACHMENT` is unreachable by any of the six factors under any
+reading, so criterion §7.3 ("passes every control") is never satisfied
+literally. The audit also found two undisclosed factor couplings (§16.5) that
+make the first run's necessity/interaction labels for G and R
+interpretively unsafe as stated.
+
+A9 freezes the corrections the audit requires before any rerun, per the
+task's role restriction: **plan and manifest amendment only.** No mechanism
+code is changed by A9, no rerun occurs under A9, and no prior numeric result
+is reproduced or assumed to still hold.
+
+### 16.1 Amendments frozen
+
+**A9-1 — `C-LEXICAL-ATTACHMENT` qualification-gate exclusion (frozen, not
+merely disclosed).** §7 criterion 3 ("passes every control") is amended: the
+control `C-LEXICAL-ATTACHMENT` (`SD-A-08`, manifest `A2L-OV-10`) is excluded
+from the qualification gate for every cell, because Level 5.5's
+`is_attachment` counting has no lexical consumer reachable by any combination
+of M/G/P/D/R/Q as frozen in §4.1 — this is a structural property of the
+factor set, not a per-cell outcome. The row remains mandatory: it must be
+scored and reported for all 64 cells (`reachable_by_factors: false`), and a
+cell that would otherwise qualify is not disqualified by this row's
+`AMBIGUOUS` outcome. No cell may claim to resolve `C-LEXICAL-ATTACHMENT`;
+doing so is `HARNESS_OR_FIXTURE_INVALID` (§8), not a valid `RESOLVED` row.
+
+**A9-2 — D/M extended to Level 5.5 attachment-identity counting (frozen,
+not merely disclosed).** §4.1's D and M rows are amended: whenever
+`candidate.is_attachment is True` for the pool member under evaluation, D
+restricts Level 5.5's attachment-identity counting to M's transported
+current-turn membership set, in addition to D's existing Level-5 ordinal-
+domain restriction (§4.1, §4.3.1's A3 conjunction still governs the Level-5
+ordinal branch only). This is the same two named factors (D consuming M),
+applied at the sibling cascade level, not a seventh factor. It is required
+because `B-DISTRACTOR` (§5.1, a causal target) has no ordinal wording — A3
+never fires for it — yet its frozen expected outcome depends on excluding a
+non-turn distractor from Level 5.5's counting. If M is absent, this
+extension is a recorded no-op, exactly as D's existing Level-5 no-op rule
+requires.
+
+**A9-3 — A3 ordinal trigger extended to include `"earlier"` (frozen,
+not merely disclosed).** §4.1's A3 trigger definition
+(`query.recency_hint in {"latest", "first"}`) is amended to
+`query.recency_hint in {"latest", "first", "earlier"}`, **or** a literal
+`"latest"`/`"first"` token in the reference expression (the existing
+baseline `hint == X or X in ref_tokens` convention, unchanged). This
+replaces the first run's undisclosed reliance on the token-match path alone
+to cover `A-FIRST-2` (`SD-A-06`, whose `recency_hint` is `"earlier"`, not a
+literal `"latest"`/`"first"` token match on the hint field). Freezing
+`"earlier"` directly in the hint set removes the dependency on the token
+fallback for this specific frozen case and states the trigger condition
+A2.8L actually requires, rather than leaving it to be discovered as an
+implementation-time reading. No other hint value is added; `"earlier"` is
+added because it is the literal `recency_hint` of a fixture this plan's own
+§5.1 table (`SD-A-06`) already froze as a causal target.
+
+**A9-4 — H3 frozen as an always-on experimental substrate.** §4.1 and §4.2
+are amended: A2.8K's H3 lexical-compatibility/domain-relative-rank mechanism
+(`rar_l5_experimental._h3_domain` / `_domain_relative_ranks`, imported
+unmodified, not reimplemented) is frozen as an always-on substrate beneath
+the six A2.8L factors for every cell, including the all-off (`M0G0P0D0R0Q0`)
+cell. It is not one of the six ablatable factors and is not itself toggled
+by the factorial. This is required because §5.2's `C-DOMAIN-RANK-SYNTH` and
+`C-DOMAIN-RANK-NATURAL` controls are unreachable by raw baseline in any of
+the six factors' configurations (verified directly in the first run) and
+this plan's own §5.2 table requires them to resolve. **§7's "flag-off
+equivalence to baseline" (criterion 8) is amended accordingly: "baseline"
+for A2.8L means `resolve_rar_l5_experimental(h3=True)` with all six A2.8L
+factors off, not raw `resolve_rar_deterministic_extended`.** Equivalence
+against raw baseline remains a required, separately reported measurement
+(§11) but is not the criterion 8 acceptance gate.
+
+**A9-5 — R's domain-wide tie semantics, frozen.** §4.1's R row is amended
+to state explicitly what "ties remain ties" meant operationally in the
+first run: when the authorization gate (P) does not pass — P absent, or P
+present but not `CURRENT_TURN_ATTACHMENT_SEQUENCE` — R ties the **entire**
+D-restricted (post-A9-2) domain at one rank, not only members sharing a
+same-event group under G. A same-event-only tie is insufficient to make
+`B-LATEST-PROVENANCE-TWIN` abstain, because its two members are in distinct
+event groups (G would report them as ordered, not tied) and only P's
+failure makes the order untrustworthy. This is R's frozen safe-abstention
+behavior when order authorization is absent, independent of what G reports.
+See §16.5 for the disclosed coupling this creates with G's necessity claim.
+
+### 16.2 Preserved dual results
+
+Both of the following are preserved and must not be conflated:
+
+1. **Original frozen-plan (A1–A8 only) result: 0 qualifying cells.** Under
+   the plan's literal text at the `804d68e` checkpoint — without A9-1
+   through A9-5 — no cell satisfies §7 criterion 3 for every control
+   (`C-LEXICAL-ATTACHMENT` is unreachable) and no cell reaches
+   `B-DISTRACTOR`/`C-NATURAL-PHOTOS` C2 without the unfrozen D/M-to-Level-5.5
+   extension. This is the correct, literal reading of the A1–A8 checkpoint
+   and is not superseded — it is a distinct, valid finding about that
+   specific frozen text, preserved here per the Evidence Integrity Rules'
+   auditable-correction-history requirement.
+2. **A9-amended result: to be rerun.** The first run's reported single
+   qualifying cell (`M=1,G=1,P=1,D=1,R=1,Q=0`) was produced under the
+   undisclosed extensions A9 now freezes, plus the (already-disclosed) A3
+   token-match reading A9-3 tightens. **It must not be assumed to remain
+   the qualifying/minimal-sufficient cell under the A9-amended semantics.**
+   A9-2's extension changes what "necessary" means for D and M (§16.4);
+   A9-5's explicit domain-wide tie may change which ablations still qualify
+   for `B-LATEST-PROVENANCE-TWIN`; A9-3 removes a dependency the first run
+   had on token-match behavior that A9 does not otherwise alter. The rerun
+   (§16.3) determines the A9-amended qualifying set independently.
+
+### 16.3 Corrected rerun protocol
+
+If and when a rerun is separately authorized, it must satisfy all of the
+following, superseding §10.2, §11, and §14 step 10 where they conflict:
+
+1. **Two fresh-process runs**, not two in-process repeats within one
+   `main()` invocation — each run must be a separate process invocation of
+   the battery script, to detect any in-process state leakage the first
+   run's single-process two-repeat design could not.
+2. **D1RQ, natural-row, and A2.5 surfaces evaluated under every candidate
+   winning cell and its one-factor ablations** (not only the single
+   previously-reported minimal cell) — §5.3's confirmation surfaces must run
+   for the full A9-amended minimal-sufficient-set/ablation set determined by
+   §16.2 item 2, whatever that set turns out to be, not a set assumed in
+   advance from the first run.
+3. **Case-level 2×2 interaction tables** for every pairwise combination on
+   the relevant background (all other factors held at the A9-amended
+   qualifying cell's values, not all-off) — the first run's simple all-off
+   2×2 probe is disclosed (§7, execution report) as unable to detect the
+   5-way joint requirement it found; the rerun must additionally report
+   interaction tables computed on the qualifying-cell background so pairwise
+   claims are checked against the actual joint requirement, not only the
+   uninformative all-off background.
+4. **The compiler arm must receive the same G/P/D factor state as the
+   sidecar arm for every transport row**, including A9-2's D/M-to-Level-5.5
+   extension and A9-4's H3 substrate — the frozen §4.2.1 compiler algorithm
+   is not itself amended by A9 (no mechanism-code change is authorized
+   here), but the rerun's transport-comparison report must state explicitly,
+   per mismatch, whether the compiler's non-adoption of A9-2/A9-4 is the
+   cause, rather than leaving this as an aggregate "H3-absence confound"
+   footnote as the first run did. This makes each mismatch cleanly
+   attributable per §16.4's transport-conclusion-scope rule.
+5. **Full 200-warmup / 2,000-randomized/interleaved-iteration performance
+   pass**, per §10.2's original pre-registered protocol — the first run's
+   20/200 reduced sample is superseded as directional-only per its own
+   disclosure; the rerun may not reuse or extrapolate from it for any
+   threshold claim.
+6. **A CPU timer with resolution adequate to the measured durations**
+   (sub-millisecond) — `process_time_ns`/`perf_counter_ns` as §10.2 already
+   requires, with the rerun explicitly recording measured clock resolution
+   alongside the samples so a reviewer can assess measurement noise.
+7. **All of:** all-off baseline (§16.1 A9-4's H3-active definition), each
+   single factor, the A9-amended candidate winning cell(s), and the compiler
+   arm — run under the corrected protocol above, not a subset.
+8. **Environment and source metadata** — OS, Python version, CPU identifier,
+   process bitness, and source hashes (§10.2, unchanged requirement),
+   reported per fresh-process run, not once for both.
+
+No adaptive fixture change, factor redesign, threshold change, or new
+vocabulary is authorized by this protocol correction; it corrects how the
+existing frozen design must be executed and reported.
+
+### 16.4 Corrected interpretation rules
+
+The following interpretation rules are frozen for the rerun and for any
+report written from it, correcting rules the audit found the first
+execution report stated more strongly than its own evidence supported:
+
+1. **HG is not presumed supported.** The first execution report's finding
+   that "G is necessary for both Case-A and Case-B" is not carried forward
+   as established. It must be re-derived from the A9-amended rerun, and
+   must account for the §16.5 G/membership coupling before being stated as
+   a necessity finding.
+2. **HD is not presumed supported.** Likewise, D's necessity finding from
+   the first run must be re-derived under A9-2's explicit Level-5.5
+   extension, and reported as such (see rule 3) rather than reused from the
+   first run's aggregate table.
+3. **M/D necessity must be attributed to the Level-5.5 extension where that
+   is what the rerun shows.** If a rerun cell's ability to resolve
+   `B-DISTRACTOR` or `C-NATURAL-PHOTOS` C2 depends on A9-2's Level-5.5
+   extension rather than on any Level-5 ordinal-domain mechanism, the
+   necessity/sufficiency report must say so explicitly per factor per
+   target (for example: "D is necessary for `B-DISTRACTOR` via the A9-2
+   Level-5.5 extension, not via the Level-5 ordinal-domain restriction") —
+   a bare "D is necessary" label that does not distinguish which cascade
+   level and mechanism carried the effect is insufficiently attributed
+   under this rule.
+4. **Transport conclusion remains limited to the specific compiler
+   algorithm tested.** Any `EXISTING_CONTRACT_COMPILATION_INSUFFICIENT` (or
+   `_SUFFICIENT`, or `TRANSPORT_RESULT_INCONCLUSIVE`) conclusion from the
+   rerun applies only to the exact frozen §4.2.1 procedure as executed
+   under §16.3 item 4's factor-state parity requirement; it is not a claim
+   about existing-contract compilation in general, and does not license
+   dropping this qualifier in any downstream summary.
+5. **`NEW_CONTRACT_FIELD_REQUIRED` remains prohibited.** §1 and §9
+   criterion 11's prohibition is unchanged and unaffected by any A9
+   amendment; no rerun result may be labelled this way.
+
+### 16.5 Disclosed factor coupling (frozen, not resolved)
+
+The audit identified two couplings in the first run that make raw
+necessity/interaction labels for G and R interpretively unsafe without the
+caveats below. A9 does not resolve these by mechanism-code change (none is
+authorized); it freezes the disclosure and the telemetry requirement needed
+to interpret the rerun correctly.
+
+1. **G implicitly carries membership signal.** In the first run's overlay
+   structure, a case's event-group data (`G`) and its current-turn
+   membership data (`M`) are authored together per case (§5.1's frozen
+   per-case tables list membership and event groups side by side for every
+   causal target). Ablating G alone does not remove membership information
+   from the overlay the resolver can still see via M's own transported set;
+   conversely, a case's G data is only ever populated for members already in
+   the transported membership set. This means an apparent "G is necessary"
+   finding may partly reflect that G's presence in a case's overlay
+   correlates with — but is not the same as — M's own necessity, not that
+   G's ordering information is independently required beyond what M already
+   supplies. The rerun's telemetry (§10.1) must record, per row, whether G's
+   effect and M's effect are separable for that specific case (i.e., whether
+   a G-ablated/M-present cell and an M-ablated/G-present cell produce
+   different failure classes for the same row), so the necessity report can
+   state G's necessity net of this correlation rather than assuming
+   independence.
+2. **R reacts to overlay presence, not cleanly to the frozen G+P gates
+   alone.** The first run's R mechanism activates its domain-relative-rank
+   derivation (or, per A9-5, its domain-wide tie) whenever overlay data for
+   the case is present at all, rather than being cleanly gated only by the
+   G-then-P sequence §4.1's A1 amendment specifies. Because every frozen
+   §5.1/§5.2 case in this plan supplies overlay data when R is exercised at
+   all (there is no frozen case where R is ON but no overlay record exists
+   for it), this coupling could not be distinguished from the frozen G+P
+   gating in the first run's case set. The rerun must report, per row,
+   whether R's activation is attributable to overlay presence alone versus
+   to the G+P gate outcome specifically — if the existing frozen case set
+   cannot distinguish these (as appears likely, since no case tests R-on
+   with no overlay), the rerun's interpretation section must say so
+   explicitly rather than asserting R's gating is proven G+P-clean.
+
+Neither coupling is a mechanism-code defect this plan authorizes fixing; A9
+requires only that the rerun's necessity/interaction claims for G, M, and R
+are reported with these couplings disclosed, per the Verification-First
+Audit Standard's disclosure requirement, rather than stated as clean
+independent-factor findings.
+
+### 16.6 Reference and attribution corrections
+
+- The first execution report's "Interpretive notes" §1–§3 are the source
+  material A9-1 through A9-4 formalize; they are not superseded in content,
+  only elevated from implementation-time disclosure to frozen plan text.
+  The execution report itself is historical evidence of the first
+  (A1–A8-only) run and is not edited by A9.
+- §7 criterion 3 ("passes every control") and criterion 8 ("flag-off
+  behavior is decision-identical to baseline") are the two acceptance
+  criteria A9-1 and A9-4 amend; no other §9 criterion is changed.
+- §4.2.1's frozen compiler algorithm text is unchanged by A9 (no
+  mechanism-code change is authorized); §16.3 item 4 corrects only how the
+  rerun must report the compiler arm's behavior relative to A9-2/A9-4, not
+  the algorithm itself.
+- All file paths named in §13.1 and the first execution report's evidence
+  list remain correct and unchanged by A9; no path was found misattributed.
+
+### 16.7 Scope limits carried forward and reaffirmed
+
+- No mechanism code, fixture, script, test, or production file is created,
+  modified, or executed by A9.
+- No factorial cell is (re)run by A9.
+- No corpus or S-D fixture is changed by A9.
+- No RAR contract field is added or proposed by A9.
+- No semantic is tuned to fit the first run's observed results; A9-1
+  through A9-5 are frozen as general rules independent of any specific
+  cell's outcome, and §16.2 explicitly preserves the first run's literal-
+  reading result (0 qualifying cells) rather than discarding it.
+- No new experiment is started by A9.
+
+**A9 status:** `FROZEN_READY_FOR_RERUN`. Implementation/execution of the
+rerun requires separate explicit authorization, exactly as the original
+freeze required for the first run (§5.4, §14).
+
+`FROZEN_READY_FOR_IMPLEMENTATION` (A1–A8, historical); `FROZEN_READY_FOR_RERUN` (A1–A9, current)
