@@ -125,3 +125,36 @@ must be reopened before mechanism code is written.
   manifest row annotation is required for them beyond the `B-LATEST-
   PROVENANCE-TWIN` note above (§1.2), which documents why A9-5 matters for
   that specific case's expected abstention.
+
+---
+
+## 6. R2 governance correction (dated note, §5 wording preserved unedited above)
+
+**Date:** 2026-09-24 (A2.8L-A9-R2, authorized as a bounded, report/governance-
+only correction; §5's original text above is left unedited so the freeze
+history stays auditable, per this repository's Evidence Integrity Rules —
+this section adds a correction, it does not overwrite or delete §5).
+
+**§5 correction (post-A9-R1 re-audit):** the A2.8L mechanism and fixture
+modules already existed, untracked, in the working tree at the A9 freeze.
+Neither they nor any §3 file was modified by the A9 amendment pass. The §3
+hashes remain valid.
+
+This corrects §5's first bullet, which stated "no mechanism code exists" —
+that clause was already false at the moment §5 was written (the mechanism
+module `uri_v1/turn/rar_attachment_order_experimental.py` and fixture
+module `uri_v1/turn/rar_attachment_order_factorial_fixtures.py` were
+created during the original A1–A8 implementation pass, `804d68e`, well
+before the A9 amendment pass this manifest's §5 documents). §5's
+substantive claim — that A9 itself touched no mechanism code and that the
+§3 hashes are unaffected — remains true and is not disputed by this note;
+only the "no mechanism code exists" clause was inaccurate as a statement
+about repository state at the time A9 was written. Identified by the
+independent audit of A2.8L-A9 (`docs/plans/M35_URIV1_A2_8L_A9_INDEPENDENT_AUDIT_REPORT.md`
+§1) and confirmed by the A9-R1 independent re-audit
+(`docs/plans/M35_URIV1_A2_8L_A9_R1_INDEPENDENT_REAUDIT_REPORT.md` §12,
+disposition `NON_BLOCKING_GOVERNANCE_DOC_CORRECTION`); corrected here under
+the R2-9 bounded governance-correction authorization
+(`docs/plans/M35_URIV1_A2_8L_A9_R2_TELEMETRY.json` records the R2 evidence
+round this correction accompanies). No overlay field value, hash, or
+mechanism/fixture file is changed by this note.

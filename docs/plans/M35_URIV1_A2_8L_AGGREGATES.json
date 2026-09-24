@@ -1,0 +1,964 @@
+{
+  "schema": "m35.uriv1.a2_8l.aggregates.v1",
+  "qualifying_analysis": {
+    "cell_reports": {
+      "M0G0P0D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D1R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D1R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D1R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D0R1Q0": {
+        "failing_case_ids": [
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D1R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D1R1Q0": {
+        "failing_case_ids": [
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D1R0Q0": {
+        "failing_case_ids": [
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D1R0Q0": {
+        "failing_case_ids": [
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D1R0Q0": {
+        "failing_case_ids": [
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D0R1Q0": {
+        "failing_case_ids": [
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D1R0Q0": {
+        "failing_case_ids": [
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D1R1Q0": {
+        "failing_case_ids": [],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": true
+      },
+      "M1G1P1D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      }
+    },
+    "qualifying_cells": [
+      "M1G1P1D1R1Q0"
+    ],
+    "qualifying_cell_count": 1,
+    "minimal_sufficient_sets": [
+      "M1G1P1D1R1Q0"
+    ],
+    "single_factor_sufficient": [],
+    "necessary_factors_if_any_qualifying": [
+      "M",
+      "G",
+      "P",
+      "D",
+      "R"
+    ],
+    "all_off_qualifies": false
+  },
+  "pairwise_interactions": {
+    "MxG": {
+      "table": {
+        "M=0,G=0": false,
+        "M=0,G=1": false,
+        "M=1,G=0": false,
+        "M=1,G=1": false
+      },
+      "interacting_pair": false
+    },
+    "MxP": {
+      "table": {
+        "M=0,P=0": false,
+        "M=0,P=1": false,
+        "M=1,P=0": false,
+        "M=1,P=1": false
+      },
+      "interacting_pair": false
+    },
+    "MxD": {
+      "table": {
+        "M=0,D=0": false,
+        "M=0,D=1": false,
+        "M=1,D=0": false,
+        "M=1,D=1": false
+      },
+      "interacting_pair": false
+    },
+    "MxR": {
+      "table": {
+        "M=0,R=0": false,
+        "M=0,R=1": false,
+        "M=1,R=0": false,
+        "M=1,R=1": false
+      },
+      "interacting_pair": false
+    },
+    "MxQ": {
+      "table": {
+        "M=0,Q=0": false,
+        "M=0,Q=1": false,
+        "M=1,Q=0": false,
+        "M=1,Q=1": false
+      },
+      "interacting_pair": false
+    },
+    "GxP": {
+      "table": {
+        "G=0,P=0": false,
+        "G=0,P=1": false,
+        "G=1,P=0": false,
+        "G=1,P=1": false
+      },
+      "interacting_pair": false
+    },
+    "GxD": {
+      "table": {
+        "G=0,D=0": false,
+        "G=0,D=1": false,
+        "G=1,D=0": false,
+        "G=1,D=1": false
+      },
+      "interacting_pair": false
+    },
+    "GxR": {
+      "table": {
+        "G=0,R=0": false,
+        "G=0,R=1": false,
+        "G=1,R=0": false,
+        "G=1,R=1": false
+      },
+      "interacting_pair": false
+    },
+    "GxQ": {
+      "table": {
+        "G=0,Q=0": false,
+        "G=0,Q=1": false,
+        "G=1,Q=0": false,
+        "G=1,Q=1": false
+      },
+      "interacting_pair": false
+    },
+    "PxD": {
+      "table": {
+        "P=0,D=0": false,
+        "P=0,D=1": false,
+        "P=1,D=0": false,
+        "P=1,D=1": false
+      },
+      "interacting_pair": false
+    },
+    "PxR": {
+      "table": {
+        "P=0,R=0": false,
+        "P=0,R=1": false,
+        "P=1,R=0": false,
+        "P=1,R=1": false
+      },
+      "interacting_pair": false
+    },
+    "PxQ": {
+      "table": {
+        "P=0,Q=0": false,
+        "P=0,Q=1": false,
+        "P=1,Q=0": false,
+        "P=1,Q=1": false
+      },
+      "interacting_pair": false
+    },
+    "DxR": {
+      "table": {
+        "D=0,R=0": false,
+        "D=0,R=1": false,
+        "D=1,R=0": false,
+        "D=1,R=1": false
+      },
+      "interacting_pair": false
+    },
+    "DxQ": {
+      "table": {
+        "D=0,Q=0": false,
+        "D=0,Q=1": false,
+        "D=1,Q=0": false,
+        "D=1,Q=1": false
+      },
+      "interacting_pair": false
+    },
+    "RxQ": {
+      "table": {
+        "R=0,Q=0": false,
+        "R=0,Q=1": false,
+        "R=1,Q=0": false,
+        "R=1,Q=1": false
+      },
+      "interacting_pair": false
+    }
+  },
+  "transport_conclusion": "EXISTING_CONTRACT_COMPILATION_INSUFFICIENT",
+  "transport_mismatch_count": 90,
+  "determinism_check_passed": true,
+  "repeat_reconciliation_passed": true,
+  "protected_hashes_unchanged": true
+}

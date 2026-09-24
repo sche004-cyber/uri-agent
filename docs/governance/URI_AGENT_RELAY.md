@@ -4,7 +4,83 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
-## CURRENT HANDOFF (CLOSED: ARN.1 DETERMINISTIC NARROWING CORE — VERIFIED)
+## CURRENT HANDOFF (CLOSED: A2.8L-A9 RAR Evidence-Transport Factorial — ACCEPT_WITH_DOCUMENTED_LIMITATIONS)
+
+**FROM:**
+Claude Sonnet 5 (Release Authority / Final Auditor)
+
+**TO:**
+User / Antigravity
+
+**MILESTONE:**
+M35 URI v1 — A2.8L-A9: RAR Evidence-Transport Factorial (attachment-order
+resolver qualification, compiler-transport gap characterization)
+
+**HANDOFF TYPE:**
+CLOSURE + FREEZE
+
+**STATUS:**
+CLOSED / ACCEPT_WITH_DOCUMENTED_LIMITATIONS
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M35_URIV1_A2_8L_A9_CLOSURE_REPORT.md` (closure record)
+- `docs/plans/M35_URIV1_A2_8L_A9_R2_INDEPENDENT_REAUDIT_REPORT.md` (final
+  independent re-audit; externally supplied verdict, provenance recorded
+  in §0, reconciliation check in §10)
+- `docs/plans/M35_URIV1_A2_8L_A9_R2_CORRECTION_REPORT.md` (implementer
+  self-report, unchanged, status `VERIFICATION_READY_FOR_REAUDIT`)
+- `docs/plans/M35_URIV1_A2_8L_OVERLAY_MANIFEST.md` (§3 protected hashes,
+  §6 ER-9 closure)
+
+**SUMMARY:**
+A2.8L-A9 (RAR attachment-order resolver factorial qualification) is
+closed with verdict `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`. Mechanism
+(`90d89c37…`) and fixture (`36570706…`) hashes unchanged since A9-R1;
+protected/reference hashes independently re-verified against the overlay
+manifest. Transport conclusion `EXISTING_CONTRACT_COMPILATION_INSUFFICIENT`
+(scoped to the tested §4.2.1 compiler algorithm; `NEW_CONTRACT_FIELD_
+REQUIRED` remains `NOT_ESTABLISHED`). Nine documented limitations carried
+forward unresolved (see closure report §8). **A9 is frozen: no further A9
+mechanism repair, factorial expansion, or causal experimentation is
+authorized by this closure; work on the documented limitations requires a
+separately authorized batch.**
+
+---
+
+## PREVIOUS HANDOFF (A2.8J: RAR-SAFE Evidence-Safety Hardening Qualification — IMPLEMENTING)
+
+**FROM:**
+Antigravity (Development Loop Manager)
+
+**TO:**
+Claude Sonnet (Implementer; fallback: Gemini 3.8)
+
+**MILESTONE:**
+M35 URI v1 — A2.8J: RAR-SAFE Evidence-Safety Hardening Qualification
+
+**HANDOFF TYPE:**
+IMPLEMENTATION_DIRECTIVE
+
+**STATUS:**
+IMPLEMENTING
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/M35_URIV1_A2_8J_RAR_SAFE_QUALIFICATION_PLAN.md
+- docs/plans/M35_URIV1_A2_8J_STATE.md
+- docs/plans/M35_URIV1_A2_8H_EXECUTION_REPORT.md
+- docs/plans/M35_URIV1_A2_8I_POST_REPAIR_END_TO_END_RESIDUAL_AUDIT.md
+- uri_v1/turn/rar_deterministic.py
+- uri_v1/turn/rar_contracts.py
+- scripts/m35_a2_8h_detector_d1rq.py
+- scripts/m35_a2_8h_run.py
+- scripts/m35_rar_natural_boundary_harness.py
+
+**ROUTING SUBSTITUTION DIRECTIVE:**
+Codex quota is currently unavailable. Implementation routing for A2.8J is substituted to Claude Sonnet as preferred implementer (Gemini 3.8 as fallback). Codex is prohibited; Opus is prohibited unless a genuine blocker arises. The accepted plan, scope, acceptance criteria, architecture, and experimental design remain strictly frozen. The implementer must execute M35_URIV1_A2_8J_RAR_SAFE_QUALIFICATION_PLAN.md exactly as frozen and stop at VERIFICATION_READY. No commit or push.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: ARN.1 DETERMINISTIC NARROWING CORE — VERIFIED)
 
 **FROM:**
 Gemini (Independent Final Auditor)

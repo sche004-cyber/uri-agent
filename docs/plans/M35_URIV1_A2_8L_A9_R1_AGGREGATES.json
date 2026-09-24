@@ -1,0 +1,5776 @@
+{
+  "schema": "m35.uriv1.a2_8l.a9r1.aggregates.v1",
+  "qualifying_analysis": {
+    "cell_reports": {
+      "M0G0P0D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D1R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P0D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D1R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G0P1D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D1R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P0D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D0R1Q0": {
+        "failing_case_ids": [
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D1R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D1R1Q0": {
+        "failing_case_ids": [
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M0G1P1D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D1R0Q0": {
+        "failing_case_ids": [
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P0D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D1R0Q0": {
+        "failing_case_ids": [
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G0P1D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D0R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D1R0Q0": {
+        "failing_case_ids": [
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D1R1Q0": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P0D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D0R0Q0": {
+        "failing_case_ids": [
+          "A-LATEST-DISTRACTOR",
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D0R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D0R1Q0": {
+        "failing_case_ids": [
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D0R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR",
+          "B-DISTRACTOR",
+          "C-NATURAL-PHOTOS-C2"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D1R0Q0": {
+        "failing_case_ids": [
+          "B-LATEST-WRONG-CLOCK",
+          "B-FIRST-WRONG-CLOCK",
+          "B-LATEST-PROVENANCE-TWIN"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D1R0Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      },
+      "M1G1P1D1R1Q0": {
+        "failing_case_ids": [],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": true
+      },
+      "M1G1P1D1R1Q1": {
+        "failing_case_ids": [
+          "A-LATEST-2",
+          "A-FIRST-2",
+          "A-LATEST-DISTRACTOR"
+        ],
+        "excluded_unreachable_case_ids": [
+          "C-LEXICAL-ATTACHMENT"
+        ],
+        "qualifies": false
+      }
+    },
+    "qualifying_cells": [
+      "M1G1P1D1R1Q0"
+    ],
+    "qualifying_cell_count": 1,
+    "minimal_sufficient_sets": [
+      "M1G1P1D1R1Q0"
+    ],
+    "single_factor_sufficient": [],
+    "necessary_factors_if_any_qualifying": [
+      "M",
+      "G",
+      "P",
+      "D",
+      "R"
+    ],
+    "all_off_qualifies": false
+  },
+  "per_case_minimal_sets": {
+    "A-LATEST-2": {
+      "pass_count_of_64": 20,
+      "minimal_passing_sets": [
+        "{}"
+      ]
+    },
+    "A-FIRST-2": {
+      "pass_count_of_64": 20,
+      "minimal_passing_sets": [
+        "{}"
+      ]
+    },
+    "A-LATEST-DISTRACTOR": {
+      "pass_count_of_64": 8,
+      "minimal_passing_sets": [
+        "MD",
+        "GPR"
+      ]
+    },
+    "B-LATEST-WRONG-CLOCK": {
+      "pass_count_of_64": 48,
+      "minimal_passing_sets": [
+        "Q",
+        "R"
+      ]
+    },
+    "B-FIRST-WRONG-CLOCK": {
+      "pass_count_of_64": 48,
+      "minimal_passing_sets": [
+        "Q",
+        "R"
+      ]
+    },
+    "B-LATEST-PROVENANCE-TWIN": {
+      "pass_count_of_64": 48,
+      "minimal_passing_sets": [
+        "Q",
+        "R"
+      ]
+    },
+    "B-DISTRACTOR": {
+      "pass_count_of_64": 16,
+      "minimal_passing_sets": [
+        "MD"
+      ]
+    },
+    "C-GENERIC-2": {
+      "pass_count_of_64": 64,
+      "minimal_passing_sets": [
+        "{}"
+      ]
+    },
+    "C-NATURAL-PHOTOS-C1": {
+      "pass_count_of_64": 64,
+      "minimal_passing_sets": [
+        "{}"
+      ]
+    },
+    "C-NATURAL-PHOTOS-C2": {
+      "pass_count_of_64": 16,
+      "minimal_passing_sets": [
+        "MD"
+      ]
+    },
+    "C-LEXICAL-ATTACHMENT": {
+      "pass_count_of_64": 0,
+      "minimal_passing_sets": []
+    },
+    "C-DOMAIN-RANK-SYNTH": {
+      "pass_count_of_64": 64,
+      "minimal_passing_sets": [
+        "{}"
+      ]
+    },
+    "C-DOMAIN-RANK-NATURAL": {
+      "pass_count_of_64": 64,
+      "minimal_passing_sets": [
+        "{}"
+      ]
+    },
+    "C-NO-RANK0": {
+      "pass_count_of_64": 64,
+      "minimal_passing_sets": [
+        "{}"
+      ]
+    }
+  },
+  "pairwise_interactions_all_off_background": {
+    "MxG": {
+      "table": {
+        "M=0,G=0": false,
+        "M=0,G=1": false,
+        "M=1,G=0": false,
+        "M=1,G=1": false
+      },
+      "interacting_pair": false
+    },
+    "MxP": {
+      "table": {
+        "M=0,P=0": false,
+        "M=0,P=1": false,
+        "M=1,P=0": false,
+        "M=1,P=1": false
+      },
+      "interacting_pair": false
+    },
+    "MxD": {
+      "table": {
+        "M=0,D=0": false,
+        "M=0,D=1": false,
+        "M=1,D=0": false,
+        "M=1,D=1": false
+      },
+      "interacting_pair": false
+    },
+    "MxR": {
+      "table": {
+        "M=0,R=0": false,
+        "M=0,R=1": false,
+        "M=1,R=0": false,
+        "M=1,R=1": false
+      },
+      "interacting_pair": false
+    },
+    "MxQ": {
+      "table": {
+        "M=0,Q=0": false,
+        "M=0,Q=1": false,
+        "M=1,Q=0": false,
+        "M=1,Q=1": false
+      },
+      "interacting_pair": false
+    },
+    "GxP": {
+      "table": {
+        "G=0,P=0": false,
+        "G=0,P=1": false,
+        "G=1,P=0": false,
+        "G=1,P=1": false
+      },
+      "interacting_pair": false
+    },
+    "GxD": {
+      "table": {
+        "G=0,D=0": false,
+        "G=0,D=1": false,
+        "G=1,D=0": false,
+        "G=1,D=1": false
+      },
+      "interacting_pair": false
+    },
+    "GxR": {
+      "table": {
+        "G=0,R=0": false,
+        "G=0,R=1": false,
+        "G=1,R=0": false,
+        "G=1,R=1": false
+      },
+      "interacting_pair": false
+    },
+    "GxQ": {
+      "table": {
+        "G=0,Q=0": false,
+        "G=0,Q=1": false,
+        "G=1,Q=0": false,
+        "G=1,Q=1": false
+      },
+      "interacting_pair": false
+    },
+    "PxD": {
+      "table": {
+        "P=0,D=0": false,
+        "P=0,D=1": false,
+        "P=1,D=0": false,
+        "P=1,D=1": false
+      },
+      "interacting_pair": false
+    },
+    "PxR": {
+      "table": {
+        "P=0,R=0": false,
+        "P=0,R=1": false,
+        "P=1,R=0": false,
+        "P=1,R=1": false
+      },
+      "interacting_pair": false
+    },
+    "PxQ": {
+      "table": {
+        "P=0,Q=0": false,
+        "P=0,Q=1": false,
+        "P=1,Q=0": false,
+        "P=1,Q=1": false
+      },
+      "interacting_pair": false
+    },
+    "DxR": {
+      "table": {
+        "D=0,R=0": false,
+        "D=0,R=1": false,
+        "D=1,R=0": false,
+        "D=1,R=1": false
+      },
+      "interacting_pair": false
+    },
+    "DxQ": {
+      "table": {
+        "D=0,Q=0": false,
+        "D=0,Q=1": false,
+        "D=1,Q=0": false,
+        "D=1,Q=1": false
+      },
+      "interacting_pair": false
+    },
+    "RxQ": {
+      "table": {
+        "R=0,Q=0": false,
+        "R=0,Q=1": false,
+        "R=1,Q=0": false,
+        "R=1,Q=1": false
+      },
+      "interacting_pair": false
+    }
+  },
+  "pairwise_interactions_qualifying_cell_background": {
+    "background_key": "M1G1P1D1R1Q0",
+    "background_flags": {
+      "M": true,
+      "G": true,
+      "P": true,
+      "D": true,
+      "R": true,
+      "Q": false
+    },
+    "tables": {
+      "MxG": {
+        "A-FIRST-2": {
+          "M=0,G=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=1,G=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "M=0,G=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=1,G=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "M=0,G=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "M=1,G=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "M=0,G=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "M=0,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "M=0,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "M=0,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "M=0,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "M=0,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "M=0,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "M=0,G=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "M=0,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "M=0,G=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "M=0,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=0,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,G=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,G=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "MxP": {
+        "A-FIRST-2": {
+          "M=0,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=1,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "M=0,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=1,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "M=0,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "M=1,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "M=0,P=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "M=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "M=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "M=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "M=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "M=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "M=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "M=0,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "M=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "M=0,P=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "M=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "MxD": {
+        "A-FIRST-2": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "M=0,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,D=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "M=0,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "M=0,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,D=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "M=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "MxR": {
+        "A-FIRST-2": {
+          "M=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "M=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "M=0,R=0": {
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-distractor"
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "M=0,R=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,R=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "M=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a7-early"
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a7-early"
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "M=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "M=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a5-x"
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a5-x"
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "M=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "M=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "M=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "M=0,R=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "M=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "M=0,R=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,R=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "M=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "MxQ": {
+        "A-FIRST-2": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "M=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-2": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "M=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "M=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "M=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-DISTRACTOR": {
+          "M=0,Q=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,Q=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "M=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "M=0,Q=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=0,Q=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "M=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "M=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "GxP": {
+        "A-FIRST-2": {
+          "G=0,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "G=0,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "G=0,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "G=0,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "G=0,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=0,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=1,P=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=1,P=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "GxD": {
+        "A-FIRST-2": {
+          "G=0,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "G=0,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "G=0,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "G=0,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "G=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "G=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "G=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "G=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "G=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "G=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "G=0,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "G=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "G=0,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "G=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "GxR": {
+        "A-FIRST-2": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "G=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "G=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "G=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "G=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a7-early"
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a7-early"
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "G=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "G=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a5-x"
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a5-x"
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "G=0,R=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "G=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "GxQ": {
+        "A-FIRST-2": {
+          "G=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "G=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-2": {
+          "G=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "G=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "G=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "G=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-DISTRACTOR": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "G=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "G=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "G=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "PxD": {
+        "A-FIRST-2": {
+          "P=0,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "P=0,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "P=0,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "P=0,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "P=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "P=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "P=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "P=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "P=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "P=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "P=0,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "P=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "P=0,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "P=0,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "P=0,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "P=1,D=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "P=1,D=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "PxR": {
+        "A-FIRST-2": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "P=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "P=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "P=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "P=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a7-early"
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a7-early"
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "P=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "P=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a5-x"
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a5-x"
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "P=0,R=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "P=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "P=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "P=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "P=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "PxQ": {
+        "A-FIRST-2": {
+          "P=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "P=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-2": {
+          "P=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "P=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "P=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "P=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-DISTRACTOR": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "P=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "P=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "P=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "P=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "DxR": {
+        "A-FIRST-2": {
+          "D=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          }
+        },
+        "A-LATEST-2": {
+          "D=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "D=0,R=0": {
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-distractor"
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          }
+        },
+        "B-DISTRACTOR": {
+          "D=0,R=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,R=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "D=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a7-early"
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a7-early"
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "D=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "D=0,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a5-x"
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a5-x"
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "D=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "D=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "D=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "D=0,R=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "D=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "D=0,R=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,R=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "D=0,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "D=0,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "D=1,R=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "D=1,R=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "DxQ": {
+        "A-FIRST-2": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "D=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "D=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-2": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "D=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "D=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "D=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "D=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-DISTRACTOR": {
+          "D=0,Q=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,Q=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "D=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "D=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "D=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "D=0,Q=0": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=0,Q=1": {
+            "scoring_class": "WRONG_AMBIGUITY_DOMAIN",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "D=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "D=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "D=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      },
+      "RxQ": {
+        "A-FIRST-2": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "R=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a6-early"
+          },
+          "R=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-2": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "R=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "R=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "A-LATEST-DISTRACTOR": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "R=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "a2l-ad-new"
+          },
+          "R=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-DISTRACTOR": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-FIRST-WRONG-CLOCK": {
+          "R=0,Q=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a7-early"
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-PROVENANCE-TWIN": {
+          "R=0,Q=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a4-new"
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "B-LATEST-WRONG-CLOCK": {
+          "R=0,Q=0": {
+            "scoring_class": "UNTRUSTWORTHY_ORDER_BIND",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-a5-x"
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-DOMAIN-RANK-NATURAL": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+          }
+        },
+        "C-DOMAIN-RANK-SYNTH": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "RESOLVED",
+            "actual_candidate_id": "sd-c2-minutes"
+          }
+        },
+        "C-GENERIC-2": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-LEXICAL-ATTACHMENT": {
+          "R=0,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=0,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=1": {
+            "scoring_class": "MISSED_TRUSTWORTHY_BINDING",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C1": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NATURAL-PHOTOS-C2": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "AMBIGUOUS",
+            "actual_candidate_id": null
+          }
+        },
+        "C-NO-RANK0": {
+          "R=0,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "R=0,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=0": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          },
+          "R=1,Q=1": {
+            "scoring_class": "PASS",
+            "actual_outcome": "UNKNOWN",
+            "actual_candidate_id": null
+          }
+        }
+      }
+    },
+    "interacting_pairs_detected": [
+      {
+        "pair": "MxD",
+        "case_id": "B-DISTRACTOR"
+      },
+      {
+        "pair": "MxD",
+        "case_id": "C-NATURAL-PHOTOS-C2"
+      },
+      {
+        "pair": "GxP",
+        "case_id": "A-FIRST-2"
+      },
+      {
+        "pair": "GxP",
+        "case_id": "A-LATEST-2"
+      },
+      {
+        "pair": "GxP",
+        "case_id": "A-LATEST-DISTRACTOR"
+      }
+    ]
+  },
+  "transport_conclusion": "EXISTING_CONTRACT_COMPILATION_INSUFFICIENT",
+  "transport_conclusion_scope_note": "Scoped exactly to the frozen \u00a74.2.1 compiler algorithm as executed under factor-state parity (A9 \u00a716.3 item 4, ER-5 repair); not a general claim about existing-contract compilation. Ties ARE representable in the existing recency_rank field; NEW_CONTRACT_FIELD_REQUIRED remains unestablished by this result.",
+  "transport_mismatch_count": 88,
+  "transport_mismatch_attribution_counts": {
+    "H3_ABSENCE_CONFOUND": 28,
+    "COMPILER_UNSAFE_BIND_NO_TIE_REPRESENTATION": 38,
+    "D_M_LEVEL_5_5_EXTENSION_NOT_COMPILED": 16,
+    "COMPILER_M_OR_D_GATED_NO_R_EVENT_FALLBACK": 4,
+    "COMPILER_RANK_NOT_DENSIFIED_WITHOUT_R": 2
+  },
+  "transport_factor_state_parity_applied": true,
+  "nb_d02_unauthorized_new_bind_count": 0,
+  "natural_expected_outcome_mismatch_count": 54,
+  "natural_unexplained_expected_outcome_mismatch_count": 0,
+  "natural_expected_outcome_mismatch_reason_counts": {
+    "ABLATION_EXPECTED_A9_2_REQUIRES_M_AND_D": 12,
+    "PRE_EXISTING_NON_ORACLE_RANK_SCOPE_LIMITATION": 14,
+    "DISCLOSED_CAPABILITY_GAP_NB_D_02": 28
+  },
+  "natural_changed_rows_by_case_and_pool_condition": {
+    "NB-C-04 C2": 8,
+    "NB-C-05 C2": 8
+  },
+  "sd_raw_baseline_diff_count": 3,
+  "natural_raw_baseline_diff_count": 3,
+  "fresh_process_determinism_passed": true,
+  "repeat_reconciliation_passed": true,
+  "protected_hashes_unchanged": true,
+  "q_characterization": {
+    "q_alone_cell": "M0G0P0D0R0Q1",
+    "q_alone_qualifies_globally": false,
+    "q_alone_failing_case_ids": [
+      "A-FIRST-2",
+      "A-LATEST-2",
+      "A-LATEST-DISTRACTOR",
+      "B-DISTRACTOR",
+      "C-NATURAL-PHOTOS-C2"
+    ],
+    "q_alone_resolves_all_case_b_ordinal_targets": false,
+    "interpretation": "Q alone (M0G0P0D0R0Q1) is sufficient for the three ordinal Case-B targets (B-LATEST-WRONG-CLOCK, B-FIRST-WRONG-CLOCK, B-LATEST-PROVENANCE-TWIN) because unconditional Level-5.5 precedence abstains on any multi-attachment pool before the ordinal branch runs at all. It fails the qualification gate globally because the SAME unconditional precedence also preempts the three Case-A ordinal targets, which need the ordinal branch to run. Q is therefore INCOMPATIBLE WITH CASE-A under this tested construction, not globally useless: it is a correct, narrower mechanism for Case-B-only abstention, and the qualifying cell's Q=0 setting exists specifically to let the ordinal branch run for Case-A.",
+    "q_alone_resolves_case_b_ordinal_only": true
+  },
+  "cpu_evaluable": true,
+  "measured_process_time_granularity_ns": 15625000
+}
