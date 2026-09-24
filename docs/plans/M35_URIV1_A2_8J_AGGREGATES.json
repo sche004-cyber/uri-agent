@@ -1,0 +1,2129 @@
+{
+  "schema": "m35.uriv1.a2_8j.aggregates.v1",
+  "pre_run_sha256": "0ea5447354481041181538244ef70b6dc58a72267dd95263d61dbdb55ab07380",
+  "post_run_sha256": "0ea5447354481041181538244ef70b6dc58a72267dd95263d61dbdb55ab07380",
+  "n_ground_truth_rows_per_variant_per_c": 84,
+  "scoring_class_totals_by_variant": {
+    "RAR": {
+      "CORRECT_RESOLUTION": 35,
+      "UNATTRIBUTED_DETECTOR_FIND": 174,
+      "MISSED_RESOLVABLE_CASE": 70,
+      "CORRECT_ABSTENTION": 107,
+      "SILENT_DETECTION_MISS": 30,
+      "INCORRECT_CONFIDENT_BINDING": 2,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11,
+      "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 21
+    },
+    "RAR-SAFE": {
+      "CORRECT_RESOLUTION": 31,
+      "UNATTRIBUTED_DETECTOR_FIND": 174,
+      "MISSED_RESOLVABLE_CASE": 75,
+      "CORRECT_ABSTENTION": 108,
+      "SILENT_DETECTION_MISS": 30,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 11,
+      "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 21
+    }
+  },
+  "per_cell_scoring_class_counts": {
+    "RARxC1": {
+      "CORRECT_RESOLUTION": 22,
+      "UNATTRIBUTED_DETECTOR_FIND": 58,
+      "MISSED_RESOLVABLE_CASE": 34,
+      "SILENT_DETECTION_MISS": 10,
+      "CORRECT_ABSTENTION": 15,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 3,
+      "INCORRECT_CONFIDENT_BINDING": 1,
+      "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 7
+    },
+    "RARxC2": {
+      "MISSED_RESOLVABLE_CASE": 36,
+      "UNATTRIBUTED_DETECTOR_FIND": 58,
+      "CORRECT_RESOLUTION": 13,
+      "SILENT_DETECTION_MISS": 10,
+      "INCORRECT_CONFIDENT_BINDING": 1,
+      "CORRECT_ABSTENTION": 17,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 8,
+      "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 7
+    },
+    "RARxC3": {
+      "CORRECT_ABSTENTION": 75,
+      "UNATTRIBUTED_DETECTOR_FIND": 58,
+      "SILENT_DETECTION_MISS": 10,
+      "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 7
+    },
+    "RAR-SAFExC1": {
+      "CORRECT_RESOLUTION": 18,
+      "UNATTRIBUTED_DETECTOR_FIND": 58,
+      "MISSED_RESOLVABLE_CASE": 38,
+      "SILENT_DETECTION_MISS": 10,
+      "CORRECT_ABSTENTION": 16,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 3,
+      "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 7
+    },
+    "RAR-SAFExC2": {
+      "MISSED_RESOLVABLE_CASE": 37,
+      "UNATTRIBUTED_DETECTOR_FIND": 58,
+      "CORRECT_RESOLUTION": 13,
+      "SILENT_DETECTION_MISS": 10,
+      "CORRECT_ABSTENTION": 17,
+      "CORRECT_ABSTENTION_FAMILY_MISMATCH": 8,
+      "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 7
+    },
+    "RAR-SAFExC3": {
+      "CORRECT_ABSTENTION": 75,
+      "UNATTRIBUTED_DETECTOR_FIND": 58,
+      "SILENT_DETECTION_MISS": 10,
+      "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 7
+    }
+  },
+  "per_level_breakdown": {
+    "RAR": {
+      "L6": {
+        "CORRECT_RESOLUTION": 27,
+        "MISSED_RESOLVABLE_CASE": 60,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 9,
+        "CORRECT_ABSTENTION": 26,
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 14
+      },
+      "L1_or_L2": {
+        "CORRECT_RESOLUTION": 4
+      },
+      "L4b": {
+        "MISSED_RESOLVABLE_CASE": 2,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 2,
+        "CORRECT_RESOLUTION": 4
+      },
+      "L1_or_L5_5": {
+        "CORRECT_ABSTENTION": 6
+      },
+      "L5": {
+        "MISSED_RESOLVABLE_CASE": 8
+      },
+      "L4a_or_L4b": {
+        "INCORRECT_CONFIDENT_BINDING": 1
+      }
+    },
+    "RAR-SAFE": {
+      "L6": {
+        "CORRECT_RESOLUTION": 27,
+        "MISSED_RESOLVABLE_CASE": 65,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 9,
+        "CORRECT_ABSTENTION": 27,
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 14
+      },
+      "L1_or_L2": {
+        "CORRECT_RESOLUTION": 4
+      },
+      "L4b": {
+        "MISSED_RESOLVABLE_CASE": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 2
+      },
+      "L1_or_L5_5": {
+        "CORRECT_ABSTENTION": 6
+      },
+      "L5": {
+        "MISSED_RESOLVABLE_CASE": 8
+      }
+    }
+  },
+  "per_level_before_after": {
+    "L1_or_L2": {
+      "RAR": {
+        "CORRECT_RESOLUTION": 4
+      },
+      "RAR-SAFE": {
+        "CORRECT_RESOLUTION": 4
+      },
+      "correct_before": 4,
+      "correct_after": 4,
+      "unsafe_before": 0,
+      "unsafe_after": 0
+    },
+    "L1_or_L5_5": {
+      "RAR": {
+        "CORRECT_ABSTENTION": 6
+      },
+      "RAR-SAFE": {
+        "CORRECT_ABSTENTION": 6
+      },
+      "correct_before": 0,
+      "correct_after": 0,
+      "unsafe_before": 0,
+      "unsafe_after": 0
+    },
+    "L4a_or_L4b": {
+      "RAR": {
+        "INCORRECT_CONFIDENT_BINDING": 1
+      },
+      "RAR-SAFE": {},
+      "correct_before": 0,
+      "correct_after": 0,
+      "unsafe_before": 1,
+      "unsafe_after": 0
+    },
+    "L4b": {
+      "RAR": {
+        "MISSED_RESOLVABLE_CASE": 2,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 2,
+        "CORRECT_RESOLUTION": 4
+      },
+      "RAR-SAFE": {
+        "MISSED_RESOLVABLE_CASE": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 2
+      },
+      "correct_before": 4,
+      "correct_after": 0,
+      "unsafe_before": 1,
+      "unsafe_after": 0
+    },
+    "L5": {
+      "RAR": {
+        "MISSED_RESOLVABLE_CASE": 8
+      },
+      "RAR-SAFE": {
+        "MISSED_RESOLVABLE_CASE": 8
+      },
+      "correct_before": 0,
+      "correct_after": 0,
+      "unsafe_before": 0,
+      "unsafe_after": 0
+    },
+    "L6": {
+      "RAR": {
+        "CORRECT_RESOLUTION": 27,
+        "MISSED_RESOLVABLE_CASE": 60,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 9,
+        "CORRECT_ABSTENTION": 26,
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 14
+      },
+      "RAR-SAFE": {
+        "CORRECT_RESOLUTION": 27,
+        "MISSED_RESOLVABLE_CASE": 65,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 9,
+        "CORRECT_ABSTENTION": 27,
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 14
+      },
+      "correct_before": 27,
+      "correct_after": 27,
+      "unsafe_before": 0,
+      "unsafe_after": 0
+    }
+  },
+  "coverage_losses_correct_to_abstention": [
+    {
+      "case_id": "NB-E-01",
+      "ref_key": "r1",
+      "c_axis": "C1",
+      "rar_outcome": "RESOLVED",
+      "rar_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+      "safe_outcome": "UNKNOWN",
+      "safe_scoring_class": "MISSED_RESOLVABLE_CASE"
+    },
+    {
+      "case_id": "NB-E-02",
+      "ref_key": "r1",
+      "c_axis": "C1",
+      "rar_outcome": "RESOLVED",
+      "rar_candidate_id": "c2f81d57-6e49-4a0b-8f3c-2b95e7a1d104",
+      "safe_outcome": "UNKNOWN",
+      "safe_scoring_class": "MISSED_RESOLVABLE_CASE"
+    },
+    {
+      "case_id": "NB-E-03",
+      "ref_key": "r1",
+      "c_axis": "C1",
+      "rar_outcome": "RESOLVED",
+      "rar_candidate_id": "obj-5a8b13",
+      "safe_outcome": "UNKNOWN",
+      "safe_scoring_class": "MISSED_RESOLVABLE_CASE"
+    },
+    {
+      "case_id": "NB-L-03",
+      "ref_key": "r1",
+      "c_axis": "C1",
+      "rar_outcome": "RESOLVED",
+      "rar_candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+      "safe_outcome": "UNKNOWN",
+      "safe_scoring_class": "MISSED_RESOLVABLE_CASE"
+    }
+  ],
+  "new_safety_gains_icb_to_safe": [
+    {
+      "case_id": "NB-B-05",
+      "ref_key": "r1",
+      "c_axis": "C2",
+      "rar_outcome": "RESOLVED",
+      "rar_candidate_id": "obj-c06f97",
+      "safe_outcome": "UNKNOWN",
+      "safe_scoring_class": "MISSED_RESOLVABLE_CASE"
+    },
+    {
+      "case_id": "NB-H-06",
+      "ref_key": "r1",
+      "c_axis": "C1",
+      "rar_outcome": "RESOLVED",
+      "rar_candidate_id": "38e1b5c4-a97d-4f26-b0e8-12c6d3f9d115",
+      "safe_outcome": "UNKNOWN",
+      "safe_scoring_class": "CORRECT_ABSTENTION"
+    }
+  ],
+  "regressions_new_icb_under_safe": [],
+  "invented_candidate_count": 0,
+  "boundary_violation_count": 0,
+  "counterfactual_probes": {
+    "recency_truthful_rank": {
+      "description": "Oracle temporal query (s2_query_for_reference) + real created_at-derived recency_rank (build_candidate_pool(oracle_recency=True)), all references with temporal_meaning != none, C1+C2.",
+      "n_probed": 60,
+      "icb_before_RAR": 10,
+      "icb_after_RAR_SAFE": 5,
+      "correct_before_RAR": 23,
+      "correct_after_RAR_SAFE": 9,
+      "records": [
+        {
+          "case_id": "NB-B-01",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-7c21e4",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-B-01",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-19fa6c"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-19fa6c"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-B-02",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+              "obj-3a7d95"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+              "obj-3a7d95"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-B-02",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+              "obj-3a7d95"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+              "obj-3a7d95"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-B-03",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-b0c63d",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-b0c63d",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-B-03",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-B-04",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-91e35f",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-B-04",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-91e35f",
+              "obj-f7a260"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-91e35f",
+              "obj-f7a260"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-B-05",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-d58a27",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-B-05",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-d58a27",
+              "obj-63f0b9"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-d58a27",
+              "obj-63f0b9"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-C-01",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "cc02f7a8-61e5-4b39-a70d-3f8e94b1d114",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "cc02f7a8-61e5-4b39-a70d-3f8e94b1d114",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-C-01",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "cc02f7a8-61e5-4b39-a70d-3f8e94b1d114",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "cc02f7a8-61e5-4b39-a70d-3f8e94b1d114",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-C-02",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-C-02",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "8e2a5c71-0f96-4b4d-a3e8-6c17b9d2d117",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-C-04",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          }
+        },
+        {
+          "case_id": "NB-C-04",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "47b0e3d6-9a18-4f5c-8e27-c1f64a05d109",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          }
+        },
+        {
+          "case_id": "NB-C-05",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          }
+        },
+        {
+          "case_id": "NB-C-05",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          }
+        },
+        {
+          "case_id": "NB-C-07",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "earliest",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "b94c1e62-3d07-4a8f-9b56-e7a20c48d112",
+              "71a6d39e-f24b-4c80-8d13-5b9e0a67d113"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "b94c1e62-3d07-4a8f-9b56-e7a20c48d112",
+              "71a6d39e-f24b-4c80-8d13-5b9e0a67d113"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-C-07",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "earliest",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "b94c1e62-3d07-4a8f-9b56-e7a20c48d112",
+              "71a6d39e-f24b-4c80-8d13-5b9e0a67d113"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "b94c1e62-3d07-4a8f-9b56-e7a20c48d112",
+              "71a6d39e-f24b-4c80-8d13-5b9e0a67d113"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-D-01",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-D-01",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-b0c63d",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-02",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "one_before_last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "d3e96a41-5b82-4c0d-9f17-8a2c6e3bd110",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-02",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "one_before_last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-03",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "5d21c8a4-7f06-4b3e-9c12-e84b6a90d102",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "5d21c8a4-7f06-4b3e-9c12-e84b6a90d102",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-D-03",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "0b7e4f1c-2a93-4d58-8e61-3c9a5f02d101",
+              "5d21c8a4-7f06-4b3e-9c12-e84b6a90d102"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "0b7e4f1c-2a93-4d58-8e61-3c9a5f02d101",
+              "5d21c8a4-7f06-4b3e-9c12-e84b6a90d102"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-04",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-26e8a1",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-04",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-26e8a1",
+              "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-26e8a1",
+              "2f58b7c0-e6a3-4d91-a4c5-09d7e1f2d111"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-05",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-05",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+              "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+              "4b7f9e03-c2d8-4a61-b5f4-e30a8c15d118"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-D-06",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-8b2e41",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-06",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-8b2e41",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-07",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "one_before_most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "18d9c6f3-b57a-4e12-9d40-af73e5c8d106",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-D-07",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "one_before_most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-G-01",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-2b8e6d",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-G-01",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-2b8e6d",
+              "obj-f4a31b"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-2b8e6d",
+              "obj-f4a31b"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-G-05",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-48cd0e",
+              "obj-a6b1f4"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-48cd0e",
+              "obj-a6b1f4"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-G-05",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-48cd0e",
+              "obj-a6b1f4"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-48cd0e",
+              "obj-a6b1f4"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-H-04",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-H-04",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "0b7e4f1c-2a93-4d58-8e61-3c9a5f02d101",
+              "5d21c8a4-7f06-4b3e-9c12-e84b6a90d102"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "0b7e4f1c-2a93-4d58-8e61-3c9a5f02d101",
+              "5d21c8a4-7f06-4b3e-9c12-e84b6a90d102"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-H-06",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "38e1b5c4-a97d-4f26-b0e8-12c6d3f9d115",
+            "ambiguous_ids": [],
+            "rule_used": "CONTRAST_FILTER",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "38e1b5c4-a97d-4f26-b0e8-12c6d3f9d115",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          }
+        },
+        {
+          "case_id": "NB-H-06",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116",
+              "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116",
+              "18d9c6f3-b57a-4e12-9d40-af73e5c8d106"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH"
+          }
+        },
+        {
+          "case_id": "NB-I-02",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-d58a27"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-d58a27"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-I-02",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-d58a27"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-d58a27"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-J-02",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-J-02",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+              "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "9a4e6b20-13c7-4f85-b2d9-71fe0c34d103",
+              "f60d4a7b-8c35-4e9a-91b2-7d0e5a36d116"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH"
+          }
+        },
+        {
+          "case_id": "NB-J-04",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-7c21e4",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-J-04",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "earlier_not_latest",
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-b0c63d"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-b0c63d"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_ABSTENTION_FAMILY_MISMATCH"
+          }
+        },
+        {
+          "case_id": "NB-L-02",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-L-02",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "last_discussed",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-L-03",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-L-03",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-L-04",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-6e7d50",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-L-04",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-6e7d50",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-L-06",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "e71b3a98-4c26-4d0f-a5e8-60c9f2b4d105",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-L-06",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-L-09",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-L-09",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "temporal_meaning": "most_recent",
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-L-09",
+          "ref_key": "r2",
+          "c_axis": "C1",
+          "temporal_meaning": "one_before_most_recent",
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TYPE_FILTER",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-L-09",
+          "ref_key": "r2",
+          "c_axis": "C2",
+          "temporal_meaning": "one_before_most_recent",
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "6c3a0e85-d19f-4b67-8a24-5e0b1f93d107",
+            "ambiguous_ids": [],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        }
+      ]
+    },
+    "t2_perfect_span": {
+      "description": "Ground-truth span substituted directly as reference_expression; D1RQ's own unmodified signal-extraction helpers applied to the span's home clause (as if D1RQ had detected it); recency_rank=0 (oracle_recency=False), C1+C2. 7 known T2 bare-proper-name silent misses.",
+      "n_probed": 14,
+      "icb_before_RAR": 3,
+      "icb_after_RAR_SAFE": 3,
+      "correct_before_RAR": 7,
+      "correct_after_RAR_SAFE": 7,
+      "records": [
+        {
+          "case_id": "NB-B-05",
+          "ref_key": "r2",
+          "c_axis": "C1",
+          "span": "Priya",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-0e93c8",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-0e93c8",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-B-05",
+          "ref_key": "r2",
+          "c_axis": "C2",
+          "span": "Priya",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-0e93c8",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-0e93c8",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-G-04",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "span": "Marcus Hale",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-48cd0e",
+              "obj-a6b1f4"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-48cd0e",
+              "obj-a6b1f4"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-G-04",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "span": "Marcus Hale",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "AMBIGUOUS",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-c06f97",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-c06f97",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          }
+        },
+        {
+          "case_id": "NB-I-02",
+          "ref_key": "r2",
+          "c_axis": "C1",
+          "span": "Priya",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-0e93c8",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-0e93c8",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-I-02",
+          "ref_key": "r2",
+          "c_axis": "C2",
+          "span": "Priya",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-5a8b13",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-5a8b13",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          }
+        },
+        {
+          "case_id": "NB-I-06",
+          "ref_key": "r2",
+          "c_axis": "C1",
+          "span": "Priya",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-0e93c8",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-0e93c8",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-I-06",
+          "ref_key": "r2",
+          "c_axis": "C2",
+          "span": "Priya",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-e4d072",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-e4d072",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          }
+        },
+        {
+          "case_id": "NB-L-01",
+          "ref_key": "r2",
+          "c_axis": "C1",
+          "span": "Marcus at Northwind",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": [
+              "not"
+            ]
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-48cd0e",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-48cd0e",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-L-01",
+          "ref_key": "r2",
+          "c_axis": "C2",
+          "span": "Marcus at Northwind",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": [
+              "not"
+            ]
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-48cd0e",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-48cd0e",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-L-02",
+          "ref_key": "r2",
+          "c_axis": "C1",
+          "span": "Marcus",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-48cd0e",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "RESOLVED",
+            "candidate_id": "obj-48cd0e",
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_RESOLUTION"
+          }
+        },
+        {
+          "case_id": "NB-L-02",
+          "ref_key": "r2",
+          "c_axis": "C2",
+          "span": "Marcus",
+          "signals": {
+            "recency_hint": null,
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-48cd0e",
+              "obj-a6b1f4"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-48cd0e",
+              "obj-a6b1f4"
+            ],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-L-04",
+          "ref_key": "r2",
+          "c_axis": "C1",
+          "span": "Priya",
+          "signals": {
+            "recency_hint": "latest",
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-b3905d"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-b3905d"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        },
+        {
+          "case_id": "NB-L-04",
+          "ref_key": "r2",
+          "c_axis": "C2",
+          "span": "Priya",
+          "signals": {
+            "recency_hint": "latest",
+            "coarse_type": null,
+            "negation_spans": []
+          },
+          "expected_outcome": "RESOLVED",
+          "RAR": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-b3905d"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          },
+          "RAR-SAFE": {
+            "outcome": "AMBIGUOUS",
+            "candidate_id": null,
+            "ambiguous_ids": [
+              "obj-7c21e4",
+              "obj-b3905d"
+            ],
+            "rule_used": "TEMPORAL_RELATION",
+            "scoring_class": "MISSED_RESOLVABLE_CASE"
+          }
+        }
+      ]
+    },
+    "exclusion_contrast_nb_h_06": {
+      "description": "Real D1RQ-detected span/signals for NB-H-06:r1 (live detector output, no reconstruction), C1+C2.",
+      "n_probed": 2,
+      "icb_before_RAR": 1,
+      "icb_after_RAR_SAFE": 0,
+      "records": [
+        {
+          "case_id": "NB-H-06",
+          "ref_key": "r1",
+          "c_axis": "C1",
+          "detected_span": "the other scan",
+          "signals": {
+            "recency_hint": "earlier",
+            "coarse_type": null,
+            "negation_spans": [
+              "no",
+              "the other"
+            ]
+          },
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "RESOLVED",
+            "candidate_id": "38e1b5c4-a97d-4f26-b0e8-12c6d3f9d115",
+            "ambiguous_ids": [],
+            "rule_used": "CONTRAST_FILTER",
+            "scoring_class": "INCORRECT_CONFIDENT_BINDING"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        },
+        {
+          "case_id": "NB-H-06",
+          "ref_key": "r1",
+          "c_axis": "C2",
+          "detected_span": "the other scan",
+          "signals": {
+            "recency_hint": "earlier",
+            "coarse_type": null,
+            "negation_spans": [
+              "no",
+              "the other"
+            ]
+          },
+          "expected_outcome": "UNKNOWN",
+          "RAR": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          },
+          "RAR-SAFE": {
+            "outcome": "UNKNOWN",
+            "candidate_id": null,
+            "ambiguous_ids": [],
+            "rule_used": "TERM_DISCRIMINATION",
+            "scoring_class": "CORRECT_ABSTENTION"
+          }
+        }
+      ]
+    }
+  }
+}

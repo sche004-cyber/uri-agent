@@ -1,0 +1,73 @@
+# M35 URI v1 — A2.8J: RAR-SAFE Evidence-Safety Hardening Qualification Task
+
+ROLE: Claude Sonnet (Implementer)
+DELEGATION CONTEXT: Codex quota is currently unavailable. Per explicit User directive, A2.8J implementation routing is substituted to Claude Sonnet as the preferred implementer (Gemini 3.8 as fallback). Opus is prohibited unless a genuine blocker arises. Codex is prohibited.
+SCOPE STATUS: Plan, scope, acceptance criteria, architecture, and experimental design remain frozen and unchanged.
+
+GOVERNING DOCUMENTS:
+- docs/plans/M35_URIV1_A2_8J_RAR_SAFE_QUALIFICATION_PLAN.md (authoritative accepted plan)
+- docs/plans/M35_URIV1_A2_8J_STATE.md
+- docs/plans/M35_URIV1_A2_8H_EXECUTION_REPORT.md
+- docs/plans/M35_URIV1_A2_8I_POST_REPAIR_END_TO_END_RESIDUAL_AUDIT.md
+- docs/governance/URI_AGENT_RELAY.md
+
+FROZEN SCOPE BOUNDARIES (NON-NEGOTIABLE):
+- Do NOT modify existing uri_v1/turn/rar_deterministic.py or uri_v1/turn/rar_contracts.py. They must remain byte-identical!
+- Do NOT modify scripts/m35_a2_8h_detector_d1rq.py or any detector.
+- Do NOT wire recency into production.
+- Do NOT implement T2 bare-name detection.
+- Do NOT add session state, aliases, morphology/stemming, or semantic knowledge.
+- Do NOT repair Known C/D (partial-credit, plural/stemming, abbreviation normalization).
+- Do NOT integrate RAR-SAFE into production.
+- Do NOT commit or push to git.
+- Stop condition: VERIFICATION_READY.
+
+DELIVERABLES:
+1. `uri_v1/turn/rar_safe_experimental.py`:
+   - The RAR-SAFE variant implementing the candidate evidence-sufficiency invariant:
+     "No level may commit a binding that the resolver's own Level-6 lexical/absent-entity evidence contradicts, and no binding may be committed on zero substantive evidence."
+   - Retain identical cascade order (Levels 0 through 7) and identical contracts (RARQuery, RAREvidence, RARCandidate, RARDeterministicAnchor) as existing RAR.
+   - S1 (zero-substantive-evidence binding): In Level 4b (type filter), tighten the substantive-token check in the 1-match branch (around lines 526-558) so singleton type match does not bind when substantive query evidence is zero (e.g. `NB-B-05:r1`@C2 query "that in an email").
+   - S2 (commit against contradictory lexical evidence): In Level 5 (temporal/version), consult Level 6's absent-entity check / lexical overlap before committing, without reordering the cascade and without special-casing recency. (Extract Level 6's absent-entity check as a reusable pre-commit check callable from Level 5 and any other commit point).
+   - S3 (contrast/exclusion must demonstrate actual exclusion): In Level 4a (negation/contrast elimination), gate the contrast shortcut on the elimination step having actually removed >= 1 candidate from the pool, preventing binding a survivor when elimination matched nothing (e.g. `NB-H-06`). Do not special-case "the other" string literal.
+
+2. `scripts/m35_a2_8j_rar_safe_battery.py`:
+   - Natural-boundary corpus runner against both existing RAR (`resolve_rar_deterministic_extended` from `uri_v1.turn.rar_deterministic`) and RAR-SAFE (`resolve_rar_safe_experimental` from `uri_v1.turn.rar_safe_experimental`).
+   - Run the 79-case frozen corpus (`fixtures/m35_rar_natural_boundary/corpus.json`) across all three candidate-pool conditions (C1, C2, C3) using D1RQ (`scripts/m35_a2_8h_detector_d1rq.py`).
+   - Measure per-level: correct before -> correct after -> unsafe before -> unsafe after -> new abstentions.
+
+3. `scripts/m35_a2_8j_counterfactual_battery.py`:
+   - The three probe batteries run against both existing RAR and RAR-SAFE:
+     a) Recency truthful-rank probe (counterfactual oracle recency via `build_candidate_pool(oracle_recency=True)` from `scripts/m35_rar_natural_boundary_harness.py`).
+     b) T2 perfect-span diagnostic probe.
+     c) Exclusion/contrast probe (`NB-H-06`).
+   - Report before/after ICB counts for all three hazards without wiring recency, T2, or D1RQ changes into production.
+
+4. `docs/plans/M35_URIV1_A2_8J_TELEMETRY.json` & `docs/plans/M35_URIV1_A2_8J_AGGREGATES.json`:
+   - Telemetry schema compatible with A2.8H/A2.8I (add `variant: "RAR"|"RAR-SAFE"`).
+
+5. `docs/plans/M35_URIV1_A2_8J_EXECUTION_REPORT.md`:
+   - Comprehensive 17-point report covering:
+     1. Evidence recovered & verified.
+     2. Hypothesis verification.
+     3. Exact invariant implemented in RAR-SAFE.
+     4. Diff boundaries (isolated experimental module).
+     5. Before/after comparisons on the 79-case corpus across C1, C2, C3.
+     6. Before/after tables for recency counterfactual probe.
+     7. Before/after tables for T2 diagnostic probe.
+     8. Before/after tables for exclusion/contrast probe.
+     9. Per-level resolution breakdown (Levels 0-7).
+     10. Mechanical answers to the 7 questions for every RESOLVED outcome under RAR-SAFE.
+     11. Individual audit of any coverage loss (abstentions).
+     12. Results of existing RAR test regression suite (must pass 100% on existing RAR).
+     13. Resource impact / latency overhead.
+     14. Corpus hashes and verification metadata (use UNMEASURED where applicable).
+     15. Unresolved mechanisms / residuals.
+     16. Files created/touched.
+     17. Explicit recommendation on whether RAR is safe enough to qualify recency wiring and/or T2 detection.
+
+6. Verification & State Update:
+   - Run pytest on all existing RAR test files to prove existing RAR is unmodified and regression-free:
+     `pytest test_m35_uriv1_a2_5_deterministic_rar.py test_m35_uriv1_a2_5_rar_adversarial_safety.py test_m35_uriv1_a2_5_candidate_invention_fix.py test_m35_uriv1_a2_5_rar_contracts.py test_m35_uriv1_a2_5_rar_stage4_refinements.py`
+   - Update `docs/plans/M35_URIV1_A2_8J_STATE.md` to state: `VERIFICATION_READY` (ready for Claude independent final audit).
+   - STOP condition: STOP at VERIFICATION_READY. Do NOT commit. Do NOT push.
