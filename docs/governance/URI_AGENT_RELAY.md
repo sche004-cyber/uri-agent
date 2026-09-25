@@ -4,6 +4,14 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
+**Canonical current-state authority note (added 2026-09-25, Development
+Control Layer Normalization, additive):** canonical current development
+state is defined by `docs/governance/URI_STATE.yaml`. The entries below are
+historical/handoff context and must not override canonical state. Where
+this file and `URI_STATE.yaml` conflict on what is current, `URI_STATE.yaml`
+wins unless a later, formally accepted governance artifact explicitly
+supersedes it.
+
 ## CURRENT HANDOFF (CLOSED: A2.8L-A9 RAR Evidence-Transport Factorial — ACCEPT_WITH_DOCUMENTED_LIMITATIONS)
 
 **FROM:**

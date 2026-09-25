@@ -999,6 +999,19 @@ only, carrying two items forward —
 Both items' underlying code was untouched from Batch B/C's own
 disclosure until this M34 closure implemented and resolved them.
 
+**Correction, 2026-09-25 (Development Control Layer Normalization,
+additive, preserving the M33.3 wording below verbatim rather than
+editing it):** M33.3's reservation text below ("Unified URI Interaction
+& Capability UI") is superseded. Commit `47af60a` froze
+`docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md`
+as the planning basis for **M33.3 — Edge Intelligence Qualification &
+Integration**, continuing the M33.2 Edge/Second-Brain architecture
+lineage, not a UI milestone. The canonical current-state pointer for
+this and all other milestone identities is now
+`docs/governance/URI_STATE.yaml`; consult it before trusting any
+current-state prose in this file, including the M33.3 line immediately
+below.
+
 ### M35 — URI Companion Experience
 **Status:** NOT STARTED. Net-new concept — no prior documentation
 existed anywhere in this repository before the 2026-09-18 roadmap
@@ -1436,6 +1449,20 @@ When one milestone completes and another is approved:
 ### Shared Active-Milestone Invariant
 `docs/governance/URI_ACTIVE_MILESTONE.md` is the **SINGLE** canonical current-state file for URI development coordination.
 Claude, Codex, and Antigravity must all read this exact file before starting milestone work.
+
+**Reconciliation note, 2026-09-25 (Development Control Layer Normalization,
+additive, preserving the invariant above verbatim rather than editing it):**
+the "SINGLE canonical current-state file" line above predates
+`docs/governance/URI_STATE.yaml` and describes a different, still-true
+concern — that milestone state must not fork into separate per-agent copies
+of this file. It does not conflict with `URI_STATE.yaml`'s own, narrower
+authority rule: `URI_STATE.yaml` is the canonical machine-readable answer to
+"what is true right now" for milestone/experiment/component identity and
+namespace resolution specifically; this file remains the single
+narrative/handoff record every agent reads, and nothing above authorizes a
+second copy of *this* file. Where the two genuinely conflict on a specific
+current-state claim (e.g. the M33.3 identity — see §1c), `URI_STATE.yaml`
+wins, per its own stated authority rule.
 There must NOT be:
 - Separate Claude milestone files.
 - Separate Codex active-state files.

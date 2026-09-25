@@ -1,0 +1,401 @@
+# URI_STATE.yaml
+# Canonical, machine-readable current-state source for URI development governance.
+#
+# Purpose: remove ambiguity between product milestones, research experiments,
+# integration events, reusable components, historical URI generations, and
+# current active work, so future agents do not need to infer current
+# architecture ownership or milestone status from stale relay documents,
+# historical plans, or naming collisions.
+#
+# This file records CURRENT STATE ONLY. It is not a history log and does not
+# replace URI_ACTIVE_MILESTONE.md's narrative closure trail, URI_AGENT_RELAY.md's
+# handoff history, or URI_DEVELOPMENT_EVIDENCE_REGISTRY.md's epistemological
+# findings record — those remain authoritative for evidence and history. This
+# file is the answer to "what is true right now" only.
+#
+# Update discipline: update this file additively whenever a milestone/
+# experiment/integration/component status changes. Do not silently overwrite a
+# prior `updated` entry's meaning — if a correction is needed, add a note under
+# `corrections`, per this repository's auditable-correction-history convention.
+#
+# Authority rule (Development Control Layer Normalization, Phase F): this
+# file is the canonical current-state authority. URI_ACTIVE_MILESTONE.md,
+# URI_AGENT_RELAY.md, and other human-readable files remain historical
+# evidence, narrative context, and handoff summaries. Where they conflict
+# with this file on what is CURRENT, this file wins, unless a later,
+# formally accepted governance artifact explicitly supersedes it.
+#
+# Development Control Layer Normalization freeze, 2026-09-25: the
+# normalization/repair/re-audit cycle for this file and its validator
+# (scripts/governance/uri_state_validator.py,
+# scripts/governance/uri_state_yaml.py) is CLOSED at verdict
+# CONTROL_LAYER_ACCEPTED_WITH_LIMITATIONS, per independent re-audit after
+# two bounded repair rounds. Full history, the accepted documented
+# limitations, and the freeze record are in
+# docs/governance/URI_DEV_CONTROL_LAYER_NORMALIZATION_REPORT.md §19. This
+# freeze does not authorize M33.3 implementation, does not create any
+# INT-* event, and does not promote any research/component candidate.
+
+schema_version: "1.0.0"
+uri_generation: "URI v1 (parallel architecture line)"
+document_produced_by: "Claude Sonnet 5, Development Control Layer Normalization, bounded governance-engineering task"
+document_date: "2026-09-25"
+source_inventory: "docs/governance/URI_DEV_CONTROL_LAYER_NORMALIZATION_INVENTORY.md"
+
+repository:
+  remote: "https://github.com/sche004-cyber/uri-agent.git"
+  canonical_worktree:
+    path: "C:\\Users\\cheta\\Development\\Uri\\_V1"
+    branch: "m35-uri-v1-parallel-architecture"
+    role: "CURRENT_V1_URI_CORE — live production backend (uri_core/), plus uri_v1/ new parallel architecture (mixed tree: partially git-tracked, substantial untracked research code as of this normalization — see repository.uri_v1_tracking_note below; zero-imported by uri_core/)"
+    head_at_normalization: "47af60a65946e83b5fa10132b8363adfd18aca31"
+  legacy_worktree:
+    path: "C:\\Users\\cheta\\Development\\uri-agent"
+    branch: "master"
+    role: "PROTECTED_LEGACY_URI_AGENT — read-only by governance. Same repository/remote as the canonical worktree, not a separate historical generation; same tracked uri_core/ at an older commit, plus local uncommitted edits specific to that worktree."
+    head_at_normalization: "e8e3b65"
+  preserved_baselines:
+    - path: "C:\\Users\\cheta\\Development\\uri-agent\\.tmp_m33_1_batch4_baseline_5973f6d"
+      commit: "5973f6d"
+      note: "detached HEAD snapshot preserved for regression comparison; not an active line of work"
+  uri_v1_tracking_note: "Correction, 2026-09-25 (independent audit finding, repaired same day): uri_v1/ is NOT fully git-tracked. `git ls-files uri_v1 | wc -l` returns 30 tracked files; `find uri_v1 -type f` (excluding __pycache__) returns 79 total files — the remainder (mostly M35 URIv1 A2.5-A2.8x research modules) are untracked as of this normalization, consistent with docs/governance/URI_DEVELOPMENT_EVIDENCE_REGISTRY.md's own description of the research tree as untracked. The zero-import-boundary claim (uri_v1/ never imported by uri_core/) is unaffected by tracking status and remains independently verified by grep."
+
+namespaces:
+  product_milestones:
+    pattern: "Mxx"
+    description: "Governed URI product/architecture milestones. Only these carry release/architecture authority."
+  research_experiments:
+    pattern: "EXP-*"
+    description: "Research may produce evidence for product architecture but does not automatically own production architecture. Historical research artifacts already on disk keep their existing M35_URIV1_* filenames (not renamed by this normalization); EXP-* is the naming convention for future research lines going forward."
+  integration_events:
+    pattern: "INT-*"
+    description: "Explicitly authorized production-integration transitions. Research qualification does not automatically imply integration authority. No INT-* event exists yet — see integration_events below."
+  reusable_components:
+    description: "Stable component identities, not milestone identities. A component may have multiple experiments and integration events over time. None formally adopted yet — see reusable_components below."
+
+# ---------------------------------------------------------------------------
+# Product milestones (Mxx) — current status only. Full closure evidence lives
+# in URI_ACTIVE_MILESTONE.md; this block is a pointer + status snapshot.
+# ---------------------------------------------------------------------------
+product_milestones:
+  - id: "M33.2"
+    title: "Edge / Second Brain Foundation"
+    status: "CLOSED_VERIFIED"
+    closed_date: "2026-09-20"
+    owns_architecture: "Edge / Second-Brain intelligence architecture (sole owner)"
+    architecture_domain: "edge_second_brain"
+    currently_active: false
+    mutable: false
+    evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1 (FINAL CLOSURE)"
+
+  - id: "M33.3"
+    title: "Edge Intelligence Qualification & Integration"
+    status: "PLANNING_BASIS_FROZEN"
+    note: "Implementation NOT STARTED. This identity supersedes the earlier 'Unified URI Interaction & Capability UI' reservation recorded in URI_ACTIVE_MILESTONE.md §1c — that entry is stale and has not been rewritten, per governance policy against rewriting historical wording; this file is the corrected current-state pointer."
+    accepted_plan: "docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md"
+    accepted_at_commit: "47af60a65946e83b5fa10132b8363adfd18aca31"
+    terminal_audit_state: "ARCHITECTURE_PLAN_ACCEPTED_WITH_LIMITATIONS"
+    continues_architecture_of: "M33.2"
+    architecture_domain: "edge_second_brain"
+    currently_active: false
+    mutable: true
+    human_readable_pointer:
+      file: "docs/governance/URI_ACTIVE_MILESTONE.md"
+      section: "§1c"
+      claimed_status_in_prose: "Unified URI Interaction & Capability UI (stale, superseded by additive correction dated 2026-09-25 in the same section)"
+      canonical_status_here: "PLANNING_BASIS_FROZEN"
+      reconciled: true
+      superseding_commit: "47af60a65946e83b5fa10132b8363adfd18aca31"
+
+  - id: "M33.1"
+    title: "Real Integrations / Acquire & Manage Abilities"
+    status: "CLOSED_ACCEPTED"
+    closed_date: "2026-09-20"
+    evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1 (Batch 4 final independent closure review)"
+
+  - id: "M31"
+    title: "Model & Brain UX"
+    status: "CLOSED_VERIFIED"
+    evidence: "docs/plans/M31_STATE.md"
+
+  - id: "M32"
+    title: "Brain Latency / Core Execution Architecture"
+    status: "CLOSED_VERIFIED"
+    closed_date: "2026-09-18"
+    evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §6f"
+
+  - id: "M32.1"
+    title: "Execution Continuation Residual Hardening"
+    status: "RESERVED_NOT_STARTED"
+    scope_note: "durable resumed approval across turns only — deliberately narrow"
+    evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1c"
+
+  - id: "M34"
+    title: "Model-Native Capability Preservation & Adaptive Scaffolding"
+    status: "CLOSED_VERIFIED"
+    closed_date: "2026-09-19"
+    evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1, §6g"
+
+  - id: "M35"
+    title: "URI Companion Experience"
+    status: "RESERVED_NOT_STARTED"
+    scope_note: "presentation-only (robot-face Companion Mode + Compact Chat Mode integration); does not own a model or intelligence architecture; consumes M33.2's contracts"
+    collision_warning: "Do not confuse with the unrelated research line historically labeled 'M35 URIv1 A0-A9' (see research_experiments below) — same numeral, unrelated namespace, already disambiguated in prose in URI_ACTIVE_MILESTONE.md §1c."
+    evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1c"
+
+  - id: "ARN.1"
+    title: "Adaptive Retrieval Narrowing — Deterministic Narrowing Core"
+    status: "CLOSED_VERIFIED"
+    closed_date: "2026-09-20"
+    parent_milestone_status: "ARN milestone PAUSED after ARN.1; ARN.2 NOT authorized"
+    evidence: "docs/governance/URI_AGENT_RELAY.md (CLOSED: ARN.1 DETERMINISTIC NARROWING CORE — VERIFIED)"
+
+queued_initiatives:
+  - id: "hybrid_ui"
+    title: "URI Hybrid UI Implementation (\"Compact Chat Mode\")"
+    milestone_numbered: false
+    status: "FROZEN_BLUEPRINT_PAUSED"
+    note: "Planning/review complete; implementation not yet started; still paused, not accepted, not closed. Its own dependency gate (on M31) is OPEN, independent of M32/M34 closure."
+    evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1a"
+
+active_continuation:
+  status: "NONE_AUTHORIZED_TO_IMPLEMENT"
+  note: "M33.3's planning basis is frozen but implementation has not been separately authorized to begin as of this normalization. LOOP_STATE last recorded IDLE."
+
+# ---------------------------------------------------------------------------
+# Research experiments (EXP-*) — the M35 URIv1 A0-A9/A2.8x research line.
+# Existing filenames are NOT renamed by this normalization (history preserved);
+# this block gives them a namespaced identity for future cross-reference.
+# ---------------------------------------------------------------------------
+research_experiments:
+  - id: "EXP-M35-URIV1-A0-A9"
+    title: "M35 URIv1 Parallel Architecture research line (A0 through A9, incl. A2.8L)"
+    status: "CLOSED"
+    closure_note: "A9 frozen: no further A9 mechanism repair, factorial expansion, or causal experimentation is authorized by this closure."
+    lives_in: "uri_v1/ (mixed tree — partially git-tracked, substantial untracked research code, see repository.uri_v1_tracking_note above; zero import boundary with uri_core/ in either direction, independently re-verified by grep)"
+    produced_evidence_for: "M33.3 planning basis (docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md)"
+    does_not_grant: "production architecture ownership — evidence only, per this normalization's namespace separation principle"
+    promoted_to_production: false
+    architecture_domain: null
+    evidence: "docs/governance/URI_AGENT_RELAY.md (CURRENT HANDOFF: A2.8L-A9)"
+
+  - id: "EXP-M35-URIV1-A2.9"
+    title: "Native problem-solving trace pilot"
+    status: "CLOSED_ACCEPTED_AS_PILOT"
+    commit: "9e5d5e2"
+
+  - id: "EXP-M35-URIV1-A2.8K"
+    title: "Level-5 evidence sufficiency qualification"
+    status: "CLOSED_ACCEPTED"
+    commit: "2351048"
+
+  - id: "EXP-M35-URIV1-A2.8J"
+    title: "RAR-SAFE evidence-safety hardening qualification"
+    status: "COMPLETE_ACCEPTED"
+    commit: "247265f"
+    note: "bounded re-audit verdict ACCEPTED; experimental result accepted, not a promotion of RAR-SAFE or of S3"
+
+  - id: "EXP-ARN-URIV1"
+    title: "Experimental URIv1 ARN research identity"
+    status: "CLOSED"
+    lives_in: "uri_v1/arn/ (a2_8a_benchmark.py, a2_8b_benchmark.py/evaluator.py/prompts.py, a2_8c_benchmark.py/evaluator.py/prompts.py, question_framing.py, question_validator.py, resolution_contracts.py, uncertainty_contracts.py, uncertainty_discovery.py)"
+    produced_evidence_for: "M33.3 planning basis; ARN foundation/amplification/resolution-path research (A2.8A/A2.8B/A2.8C)"
+    does_not_grant: "production architecture ownership — evidence only; does not carry URI-ARN-PRODUCTION's (ARN.1) governance history"
+    promoted_to_production: false
+    architecture_domain: null
+    evidence: "docs/plans/M35_URIV1_A2_8A_ARN_FOUNDATION_REPORT.md, docs/plans/M35_URIV1_A2_8B_RAR_ARN_MODEL_AMPLIFICATION_REPORT.md, docs/plans/M35_URIV1_A2_8C_RESOLUTION_PATH_QUALIFICATION.md"
+
+  - id: "EXP-RAR-DETERMINISTIC"
+    title: "Deterministic RAR research"
+    status: "CLOSED"
+    promoted_to_production: false
+    architecture_domain: null
+    evidence: "docs/plans/M35_URIV1_A2_5_RAR_DETERMINISTIC_STAGE2_REPORT.md, uri_v1/turn/rar_deterministic.py, uri_v1/turn/rar_contracts.py"
+
+  - id: "EXP-RAR-HYBRID"
+    title: "Hybrid / blind / refinement RAR research (Stage 3-4, natural-boundary, adversarial, challenge fixtures)"
+    status: "CLOSED"
+    promoted_to_production: false
+    architecture_domain: null
+    evidence: "docs/plans/M35_URIV1_A2_5_RAR_REALISTIC_BLIND_STAGE3_REPORT.md, docs/plans/M35_URIV1_A2_5_RAR_BOUNDED_REFINEMENT_STAGE4_REPORT.md, docs/plans/M35_URIV1_RAR_NATURAL_BOUNDARY_INDEPENDENT_AUDIT.md"
+
+  - id: "EXP-RAR-A9-TRANSPORT-FACTORIAL"
+    title: "A9 evidence-transport factorial work (attachment-order resolver qualification, compiler-transport gap characterization)"
+    status: "CLOSED_FROZEN"
+    frozen: true
+    promoted_to_production: false
+    architecture_domain: null
+    evidence: "docs/plans/M35_URIV1_A2_8L_A9_CLOSURE_REPORT.md, uri_v1/turn/rar_attachment_order_factorial_fixtures.py"
+
+# ---------------------------------------------------------------------------
+# Integration events (INT-*) — none authorized yet under this namespace.
+# ---------------------------------------------------------------------------
+integration_events: []
+integration_events_note: >
+  No INT-* event exists. This namespace targets future research-to-production
+  integration transitions (e.g. an EXP-M35-URIV1-A* mechanism being promoted
+  into uri_core/ production routing). It does not retroactively label M33.1's
+  existing production capabilities (Gmail OAuth, pinned yt-dlp, GitHub package
+  lifecycle, remember_fact) — those are live under the existing Connected
+  Service / Capability lifecycle and are not research-to-production events in
+  the sense this namespace targets.
+
+# ---------------------------------------------------------------------------
+# Reusable components — none formally adopted yet. Candidate mappings only;
+# not binding by this normalization alone.
+#
+# Status vocabulary (Phase C): NOT_STARTED, EXPERIMENTAL,
+# QUALIFIED_WITH_LIMITATIONS, INTEGRATED, DISTRIBUTABLE. No component may use
+# a stronger status than evidence supports.
+#
+# Cross-agent portability rule (Phase C): a component must not be classified
+# agent-neutral, generally reusable, portable, or DISTRIBUTABLE solely
+# because its interface appears clean. General portability requires
+# successful validation through at least one non-URI agent or harness
+# adapter (cross_agent_portable: true, with portability_validated_via
+# naming that adapter/harness). URI-internal compatibility alone
+# (cross_agent_portable: false, portability_validated_via: null) is not
+# proof of agent portability and never justifies DISTRIBUTABLE by itself.
+# ---------------------------------------------------------------------------
+reusable_components:
+  - id: "URI-Edge"
+    status: "EXPERIMENTAL"
+    likely_maps_to:
+      - "uri_core/core/edge/ (zero-egress, provider-agnostic Edge/Second-Brain core)"
+      - "uri_core/core/edge_lifecycle/ (user-space model/runtime lifecycle, sibling package, M33.2 Batch B.3)"
+    cross_agent_portable: false
+    portability_validated_via: null
+    note: "M33.2 CLOSED_VERIFIED as a product milestone (see product_milestones above) with real qualified workers (Needle 3 RESIDENT) and real infrastructure (edge_lifecycle install/update/remove). Not EXPERIMENTAL in the product-milestone sense, but the *component identity* URI-Edge itself has not been formally adopted/exported as a reusable, agent-neutral component outside this repository's own uri_core/ — no non-URI agent or harness has ever consumed it. EXPERIMENTAL reflects the component-portability axis, not the milestone's own product-quality axis."
+
+  - id: "URI-RAR"
+    status: "EXPERIMENTAL"
+    likely_maps_to:
+      - "uri_v1/turn/rar_deterministic.py"
+      - "uri_v1/turn/rar_contracts.py"
+    cross_agent_portable: false
+    portability_validated_via: null
+    note: "Research evidence only (see rar_identity_map above); not integrated into uri_core/ production routing. EXPERIMENTAL, not QUALIFIED_WITH_LIMITATIONS, because the A9 evidence-transport factorial line closed with documented limitations rather than a clean qualification."
+
+  - id: "URI-Memory"
+    status: "NOT_STARTED"
+    cross_agent_portable: false
+    portability_validated_via: null
+    architecture_defined: false
+    note: "Explicitly designated a future separate reusable-subsystem track; no existing code claims this identity yet. This normalization does not define URI-Memory's architecture, per task scope."
+
+  - id: "URI-Eval"
+    status: "NOT_STARTED"
+    cross_agent_portable: false
+    portability_validated_via: null
+    note: "No existing single-module candidate identified during this inventory pass."
+
+  - id: "URI-Agent-Adapters"
+    status: "NOT_STARTED"
+    cross_agent_portable: false
+    portability_validated_via: null
+    note: "No existing single-module candidate identified during this inventory pass. Name chosen deliberately: this is the future identity that would carry cross_agent_portable: true evidence for other components, once a non-URI adapter is built and validated."
+
+# ---------------------------------------------------------------------------
+# Known aliases / naming collisions this file exists to prevent re-confusion
+# over. Full detail in the Phase 1 inventory.
+# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Alias / migration map (Development Control Layer Normalization Phase B).
+# Every alias below resolves to exactly one CURRENT canonical identity, or is
+# explicitly marked non-current (HISTORICAL_FORBIDDEN / LEGACY_REFERENCE_ONLY /
+# AMBIGUOUS_BARE_ALIAS_FORBIDDEN). No alias may resolve silently when its
+# current-state resolution is ambiguous. This section is additive to, and
+# does not replace, known_aliases_and_collisions below (which stays as
+# free-text history).
+# ---------------------------------------------------------------------------
+aliases:
+  - alias: "EXP-M35-URIV1-A0-A9"
+    resolves_to: "EXP-M35-URIV1-A0-A9"
+    resolution_status: "CURRENT"
+    kind: "research_experiment"
+    note: "Canonical research-line identity for the M35 URIv1 A0-A9 evidence line. Distinct namespace from product milestone M35. Never resolves to the product milestone."
+
+  - alias: "M35"
+    resolves_to: "M35"
+    resolution_status: "CURRENT"
+    kind: "product_milestone"
+    note: "Canonical product identity: URI Companion Experience (RESERVED_NOT_STARTED). Must never be read as the EXP-M35-URIV1-A0-A9 research line — same numeral, unrelated namespace."
+
+  - alias: "A3.1"
+    resolves_to: null
+    resolution_status: "HISTORICAL_FORBIDDEN"
+    kind: "historical_planning_proposal"
+    superseded_by: "M33.3"
+    forbidden_for_new_work: true
+    evidence: "UNRESOLVED_NOT_LOCATED"
+    note: "Recorded per task brief as an abandoned/rejected planning alias, superseded by M33.3, forbidden for new work. A repository-wide search during this normalization found no file literally named A3.1 (only the accepted docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md, which is the accepted M33.3 planning basis, not a rejected proposal). This entry is kept defensively — a future agent must not originate new active work under an 'A3.1' label — but its evidence field is honestly marked UNRESOLVED_NOT_LOCATED rather than invented. See the normalization report §15 for this disclosed limitation."
+
+  - alias: "M33.2"
+    resolves_to: "M33.2"
+    resolution_status: "CURRENT"
+    kind: "product_milestone"
+    note: "Closed foundation / ownership precedent for the Edge / Second-Brain architecture lineage."
+
+  - alias: "M33.3"
+    resolves_to: "M33.3"
+    resolution_status: "CURRENT"
+    kind: "product_milestone"
+    note: "Continuation of M33.2's architecture lineage (continues_architecture_of: M33.2). Does not reopen M33.2; M33.2 remains CLOSED_VERIFIED."
+
+  - alias: "EXP-ARN-URIV1"
+    resolves_to: "EXP-ARN-URIV1"
+    resolution_status: "CURRENT"
+    kind: "research_experiment"
+    note: "Experimental URIv1 ARN research identity, lives in uri_v1/arn/ (a2_8a/a2_8b/a2_8c benchmarks, question_framing, resolution_contracts, uncertainty_discovery). Evidence-only; does not carry production ARN's governance history and does not grant production authority."
+
+  - alias: "URI-ARN-PRODUCTION"
+    resolves_to: "ARN.1"
+    resolution_status: "CURRENT"
+    kind: "production_component_alias"
+    note: "Production ARN, tracked under uri_core/core/arn/ (engine.py, integration.py, models.py) and its accepted governance history. ARN.1 (Deterministic Narrowing Core) is CLOSED_VERIFIED; the parent ARN milestone is PAUSED after ARN.1, ARN.2 is NOT authorized."
+
+  - alias: "ARN"
+    resolves_to: null
+    resolution_status: "AMBIGUOUS_BARE_ALIAS_FORBIDDEN"
+    kind: "collision_guard"
+    note: "Bare 'ARN' must never be treated as resolving silently by any future agent. Use EXP-ARN-URIV1 (research, uri_v1/arn/) or URI-ARN-PRODUCTION (production, uri_core/core/arn/) explicitly, per the ARN identity collision this alias exists to prevent."
+
+  - alias: "LEGACY_URI"
+    resolves_to: "LEGACY_REFERENCE_ONLY"
+    resolution_status: "LEGACY_REFERENCE_ONLY"
+    kind: "legacy_repository"
+    legacy: true
+    note: "C:\\Users\\cheta\\Development\\uri-agent worktree (repository.legacy_worktree above). Read-only by governance. No alias may make legacy URI a current product/architecture owner."
+
+# ---------------------------------------------------------------------------
+# RAR identity map (Phase B). Distinguishes RAR research-line identities from
+# the not-yet-adopted URI-RAR reusable-component candidate. Experiments are
+# never collapsed into the component identity.
+# ---------------------------------------------------------------------------
+rar_identity_map:
+  reusable_component: "URI-RAR"
+  reusable_component_status: "CANDIDATE_NOT_FORMALLY_ADOPTED"
+  does_not_collapse_into_component: true
+  research_lines:
+    - id: "EXP-RAR-DETERMINISTIC"
+      title: "Deterministic RAR research"
+      evidence: "docs/plans/M35_URIV1_A2_5_RAR_DETERMINISTIC_STAGE2_REPORT.md, uri_v1/turn/rar_deterministic.py, uri_v1/turn/rar_contracts.py"
+      status: "CLOSED_EVIDENCE_ONLY"
+    - id: "EXP-RAR-HYBRID"
+      title: "Hybrid / blind / refinement RAR research (Stage 3-4, natural-boundary, adversarial, challenge fixtures)"
+      evidence: "docs/plans/M35_URIV1_A2_5_RAR_REALISTIC_BLIND_STAGE3_REPORT.md, docs/plans/M35_URIV1_A2_5_RAR_BOUNDED_REFINEMENT_STAGE4_REPORT.md, docs/plans/M35_URIV1_RAR_NATURAL_BOUNDARY_INDEPENDENT_AUDIT.md, uri_v1/turn/rar_challenge_fixtures.py, uri_v1/turn/rar_adversarial_fixtures.py"
+      status: "CLOSED_EVIDENCE_ONLY"
+    - id: "EXP-RAR-A9-TRANSPORT-FACTORIAL"
+      title: "A9 evidence-transport factorial work (attachment-order resolver qualification, compiler-transport gap characterization)"
+      evidence: "docs/plans/M35_URIV1_A2_8L_A9_CLOSURE_REPORT.md, uri_v1/turn/rar_attachment_order_factorial_fixtures.py"
+      status: "CLOSED_FROZEN"
+      frozen: true
+  note: "EXP-RAR-DETERMINISTIC, EXP-RAR-HYBRID, and EXP-RAR-A9-TRANSPORT-FACTORIAL are historical research-line identities only; none grants production authority and none is the reusable component. URI-RAR (see reusable_components) remains a not-yet-adopted candidate mapping to uri_v1/turn/rar_deterministic.py + rar_contracts.py."
+
+known_aliases_and_collisions:
+  - "M33.3 identity: URI_ACTIVE_MILESTONE.md §1c still reads 'Unified URI Interaction & Capability UI' (stale, 2026-09-18). Corrected current identity is 'Edge Intelligence Qualification & Integration' (commit 47af60a, 2026-09-25). This file is authoritative for current identity; the historical wording is preserved, not deleted."
+  - "'M35' is overloaded: (a) research line EXP-M35-URIV1-* (uri_v1/, evidence-only), (b) product milestone M35 — URI Companion Experience (presentation-only, RESERVED_NOT_STARTED). Same numeral, unrelated namespace."
+  - "M32 was renumbered to M33 for 'External Capability Bridge' (2026-09-18) while a distinct M32 ('Brain Latency / Core Execution Architecture') was separately in flight under the original number and later closed. Already reconciled in URI_ACTIVE_MILESTONE.md; no outstanding ambiguity."
+  - "'Compact Chat Mode' (Hybrid UI's existing floating-overlay presentation) vs 'Companion Mode' (M35's new robot-face concept) — already disambiguated at governance level, 2026-09-18."
+
+corrections: []
