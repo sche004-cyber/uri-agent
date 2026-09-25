@@ -1,0 +1,9 @@
+{
+  "battery_file": "battery.json",
+  "battery_lf_sha256": "06d0dfffd8ecabff8b98ea7d24c1574904aa16fa172a3956e0a5fb95d6d1c3fa",
+  "case_count": 60,
+  "hash_rule": "SHA-256 over bytes with CRLF normalized to LF",
+  "privacy": "synthetic-only",
+  "provenance": "synthetic, authored for M33.3 Batch A; no case derived from uri_v1/edge A2.8D (CONTAMINATED)",
+  "schema_version": "m33.3.batch_a.battery.v1"
+}

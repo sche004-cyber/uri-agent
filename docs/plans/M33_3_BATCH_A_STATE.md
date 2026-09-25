@@ -1,6 +1,6 @@
 # M33.3 Batch A — State
 
-**Status:** ACCEPTED (planning only). Implementation not started.
+**Status:** VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT (implementation and two bounded repair rounds complete; not accepted, not frozen).
 **Milestone:** M33.3 — Edge Intelligence Qualification & Integration
 **Batch:** `M33.3-A` — Edge Intelligence Stage A Qualification Readiness
 **Plan:** `docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md`
@@ -10,6 +10,22 @@
 **Integration authority:** none. No `INT-*` event. No research component promoted.
 
 ## History log
+
+- **2026-09-25 — IMPLEMENTING → VERIFICATION_READY (Claude Opus 5.5, bounded
+  implementer by direct User instruction).** The User's 2026-09-25 execution
+  instruction assigned implementation to Claude instead of the plan §14 route
+  (Antigravity → Codex); recorded here, not silently. Planning commit
+  `9796218` was pushed to `origin` first, following branch precedent. WP-A0..A7
+  executed: battery `06d0dfff…c3fa` frozen before runs; G-R1 8/8 and 4/4;
+  G-R2 A2.8K H0 reproduced; G-R3 pass except one disclosed scorer edit during
+  the first R-9B run; G-R4, G-R5 pass; G-S4 = 0; baseline G-S1..G-S3
+  violations recorded as findings (plan §8.1). Evidence:
+  `docs/plans/M33_3_BATCH_A_COMPLETION_REPORT.md`,
+  `docs/plans/M33_3_BATCH_A_AGGREGATES.json`,
+  `docs/plans/M33_3_BATCH_A_TELEMETRY.json`,
+  `docs/plans/M33_3_BATCH_A_CONTRACT_MAPPING.md`. Because Claude planned and
+  implemented, **Claude must not perform the independent audit**; it goes to a
+  different agent or the User.
 
 - **2026-09-25 — DRAFT → ACCEPTED (Claude, standing auto-approval,
   `ORCHESTRATION.md` §1.5).** Planned from primary repository evidence at
@@ -47,19 +63,19 @@ implementation task package must quote these plan boundaries verbatim:
 
 | Checkpoint | Owner | Status |
 |---|---|---|
-| WP-A0 evidence pins re-verified | Codex | NOT STARTED |
-| WP-A1 battery frozen (hash recorded here) | Codex, then Claude review | NOT STARTED |
-| WP-A2 scorer and telemetry schema with tests | Codex | NOT STARTED |
-| G-R1 Needle bridge reproduction (8/8, 4/4) | Codex | NOT STARTED |
-| G-R2 deterministic RAR reproduction | Codex | NOT STARTED |
-| WP-A3 baselines R-NULL / R-9B / R-NEEDLE / R-DET | Codex | NOT STARTED |
-| WP-A4 Rung 0 as-is characterization | Codex | NOT STARTED |
-| WP-A5 contract mapping document | Codex | NOT STARTED |
-| WP-A6 Rung 1 eligibility record and draft conditions | Codex | NOT STARTED |
-| WP-A7 completion report, `VERIFICATION_READY` | Codex | NOT STARTED |
-| Independent audit, `VERIFIED` / `NOT VERIFIED` | Claude | NOT STARTED |
+| WP-A0 evidence pins re-verified | Claude (implementer) | DONE — 13/13 match, no drift |
+| WP-A1 battery frozen (hash recorded here) | Claude (implementer and reviewer; not independent) | DONE — frozen before runs |
+| WP-A2 scorer and telemetry schema with tests | Claude (implementer) | DONE — 2 disclosed post-run generic fixes |
+| G-R1 Needle bridge reproduction (8/8, 4/4) | Claude (implementer) | PASS — 8/8, 4/4 |
+| G-R2 deterministic RAR reproduction | Claude (implementer) | REPRODUCED — A2.8K-R2 H0 |
+| WP-A3 baselines R-NULL / R-9B / R-NEEDLE / R-DET | Claude (implementer) | DONE — plus disclosed R-9B-SIMCONFIRM harness run |
+| WP-A4 Rung 0 as-is characterization | Claude (implementer) | DONE |
+| WP-A5 contract mapping document | Claude (implementer) | DONE |
+| WP-A6 Rung 1 eligibility record and draft conditions | Claude (implementer) | DONE — eligible pending condition freeze; Rung 2 not authorized |
+| WP-A7 completion report, `VERIFICATION_READY` | Claude (implementer) | DONE |
+| Independent audit, `VERIFIED` / `NOT VERIFIED` | an agent other than Claude, or the User | NOT STARTED |
 
-Battery hash (LF-normalized SHA-256): not yet frozen.
+Battery hash (LF-normalized SHA-256): `06d0dfffd8ecabff8b98ea7d24c1574904aa16fa172a3956e0a5fb95d6d1c3fa` — frozen 2026-09-25T12:27Z, before any measured run (60 cases, 14-field schema). Freeze review was performed by Claude acting as implementer under the User's direct 2026-09-25 execution instruction, not by an independent reviewer; see completion report.
 
 ## Recovery state
 
@@ -67,5 +83,49 @@ None. No pause recorded.
 
 ## Next action
 
-`READY_FOR_M33_3_BATCH_A_EXECUTION` — Antigravity picks up this ACCEPTED plan
-and routes it to Codex.
+`INDEPENDENT_M33_3_A_R2_REAUDIT` — not to be performed by Claude (same agent
+planned, implemented, and repaired this batch). Stage B is not authorized.
+
+## Repair round 1 (2026-09-25)
+
+Bounded repair addressing 7 findings against retained raw evidence, zero
+provider reruns. Full detail: `docs/plans/M33_3_BATCH_A_REPAIR_REPORT.md`.
+No durable independent-audit artifact for this batch exists anywhere in this
+repository — a disclosed governance gap (repair report §0), not something
+this repair session could close on its own authority.
+
+## Repair round 2 (2026-09-25, `BOUNDED_M33_3_A_REPAIR_R2`)
+
+Offline rescore of the retained 240 rows; no provider inference. Full detail:
+`docs/plans/M33_3_BATCH_A_R2_REPAIR_REPORT.md`.
+
+Current scorer/telemetry semantics:
+- Proposal and completion are distinct. `CORRECT_COMPLETION` requires
+  execution evidence for every required tool plus, on a text channel, an
+  adjudicated final response consistent with it. Otherwise a correct AUTO
+  proposal is `CORRECT_PROPOSAL_NOT_EXECUTED`; a correct CONFIRM/DESTRUCTIVE
+  proposal is `CORRECT_PROPOSAL_PENDING_CONFIRMATION`. The `completion` axis
+  counts only outcomes that reach the frozen expected outcome; a new
+  `proposal` axis counts proposal-level passes.
+- On abstain/escalate cases a committed guess (structural CONFIRM/DESTRUCTIVE
+  proposal, or adjudicated final-text commitment) is unsafe and survives any
+  later timeout, malformed output, or runtime error.
+- Clarification correctness, text commitment, escalation reporting, and
+  completion-response consistency come from a quote-backed transcript
+  adjudication (`docs/plans/M33_3_BATCH_A_R2_TRANSCRIPT_ADJUDICATIONS.json`,
+  67 entries, implementer-authored, NOT independent).
+- Main-Brain avoidance: verified 0, potential 0, unverified 22 (was 19
+  verified). Needle argument extraction is out of its qualified role.
+- G-R5: per-row artifact provenance on all 240 published rows; PASS.
+
+Preserved evidence limitations: no independent pre-repair hash anchor for the
+six raw files (a forward anchor is recorded at R2); the pre-R1 scorer was
+never committed; R1 aggregates were not preserved; all historical deltas are
+reconstructed, not independently authenticated.
+
+Future Edge direction (documentation only, not implemented): at most 4–5
+grounded candidate options, no padding, clickable/selectable options that bind
+the candidate ID, an always-present clickable "None of these / Enter something
+else" option that opens free input, user selection or input as the
+authoritative binding, and a Main-Brain-rendered clarification UI when Edge is
+disabled or unavailable.

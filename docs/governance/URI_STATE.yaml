@@ -95,8 +95,9 @@ product_milestones:
     batch_a_plan: "docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md"
     batch_a_state: "docs/plans/M33_3_BATCH_A_STATE.md"
     batch_a_baseline_commit: "1fa24fca97dec34e431e82062b27b3da222b87cd"
-    batch_a_status: "ACCEPTED_NOT_STARTED"
-    note: "Batch A implementation NOT STARTED. This identity supersedes the earlier 'Unified URI Interaction & Capability UI' reservation recorded in URI_ACTIVE_MILESTONE.md §1c — that entry is stale and has not been rewritten, per governance policy against rewriting historical wording; this file is the corrected current-state pointer."
+    batch_a_status: "VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT"
+    batch_a_status_note: "Updated 2026-09-25 (additive). History: ACCEPTED_NOT_STARTED -> VERIFICATION_READY_FOR_INDEPENDENT_AUDIT (implementation) -> VERIFICATION_READY_FOR_M33_3_A_REAUDIT (bounded repair R1) -> VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT (bounded repair R2: clarification/commitment scoring, proposal-vs-completion, Main-Brain-avoidance recompute, per-row artifact provenance; evidence docs/plans/M33_3_BATCH_A_R2_REPAIR_REPORT.md). R1 text follows: Seven scorer/provenance/governance-wording findings addressed from retained raw evidence, zero provider reruns; evidence in docs/plans/M33_3_BATCH_A_REPAIR_REPORT.md (repair) and docs/plans/M33_3_BATCH_A_COMPLETION_REPORT.md (original submission, preserved unedited). No durable independent-audit artifact for this batch exists in the repository (disclosed gap, repair report §0). Not accepted; re-audit pending (not by Claude, which planned/implemented/repaired this batch). No production integration, no INT-* event, no promotion."
+    note: "Batch A implementation and two bounded repair rounds complete; VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT, not accepted, not frozen, no Stage B authorization (see batch_a_status/batch_a_status_note above; corrected 2026-09-25, this field previously read stale 'Batch A implementation NOT STARTED' text left over from the planning freeze). This identity supersedes the earlier 'Unified URI Interaction & Capability UI' reservation recorded in URI_ACTIVE_MILESTONE.md §1c — that entry is stale and has not been rewritten, per governance policy against rewriting historical wording; this file is the corrected current-state pointer."
     accepted_plan: "docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md"
     accepted_at_commit: "47af60a65946e83b5fa10132b8363adfd18aca31"
     terminal_audit_state: "ARCHITECTURE_PLAN_ACCEPTED_WITH_LIMITATIONS"
@@ -164,7 +165,8 @@ queued_initiatives:
     evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1a"
 
 active_continuation:
-  status: "M33_3_BATCH_A_ACCEPTED_READY_FOR_EXECUTION"
+  status: "M33_3_BATCH_A_VERIFICATION_READY_AWAITING_INDEPENDENT_AUDIT"
+  previous_status: "M33_3_BATCH_A_ACCEPTED_READY_FOR_EXECUTION"
   scope: "Stage A isolated qualification readiness only (docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md). Not production integration; integration_events remains empty."
   note: "Updated 2026-09-25 (additive status change). Previous value: NONE_AUTHORIZED_TO_IMPLEMENT (M33.3 planning basis frozen, implementation not separately authorized; LOOP_STATE last recorded IDLE). M33.3 Batch A plan is now ACCEPTED under AO-4 standing auto-approval; Antigravity routes it to Codex. Implementation not started."
 

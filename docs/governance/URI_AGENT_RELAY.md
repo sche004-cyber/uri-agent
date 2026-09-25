@@ -12,7 +12,89 @@ this file and `URI_STATE.yaml` conflict on what is current, `URI_STATE.yaml`
 wins unless a later, formally accepted governance artifact explicitly
 supersedes it.
 
-## CURRENT HANDOFF (M33.3 Batch A — Stage A Qualification Readiness — ACCEPTED, READY FOR EXECUTION)
+## CURRENT HANDOFF (M33.3 Batch A — Bounded Repair R2 — VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT)
+
+**FROM:**
+Claude Opus 5.5 (bounded repair implementer, by direct User instruction `BOUNDED_M33_3_A_REPAIR_R2`)
+
+**TO:**
+Independent auditor (an agent other than Claude, or the User)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+BOUNDED REPAIR R2 COMPLETE — R2 RE-AUDIT REQUEST
+
+**STATUS:**
+`VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT`. Not accepted, not frozen. Stage B not authorized.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_R2_REPAIR_REPORT.md`
+- `docs/plans/M33_3_BATCH_A_R2_TRANSCRIPT_ADJUDICATIONS.json` (implementer-authored, NOT independent — review every entry)
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (current, post-R2)
+
+**SUMMARY:**
+Offline rescore of the retained 240 rows; no provider inference. Final-text
+commitments are now unsafe and monotonic across later errors (`RWB-006`,
+`RWB-045`, `RWB-104`, `RWB-062`); clarification correctness and escalation
+reporting come from quote-backed adjudication; proposal and completion are
+separate (Needle completions 14 → 0); verified Main-Brain avoidance is 0
+(was 19; 22 unverified); per-row artifact provenance on every published row
+(G-R5 PASS). Historical deltas remain reconstructed, not authenticated.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Bounded Repair — VERIFICATION_READY_FOR_M33_3_A_REAUDIT)
+
+**FROM:**
+Claude Sonnet 5 (bounded repair implementer for this batch, by direct User instruction)
+
+**TO:**
+Independent auditor (an agent other than Claude, or the User)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+BOUNDED REPAIR COMPLETE — RE-AUDIT REQUEST
+
+**STATUS:**
+`VERIFICATION_READY_FOR_M33_3_A_REAUDIT`. Not accepted.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_REPAIR_REPORT.md` (this repair: 7 findings addressed, before/after deltas, no provider reruns)
+- `docs/plans/M33_3_BATCH_A_COMPLETION_REPORT.md` (original submission, preserved unedited — its numeric claims are superseded by the repair report, not rewritten)
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (current, post-repair)
+- `docs/plans/M33_3_BATCH_A_PRE_REPAIR_AGGREGATES.json`, `_PRE_REPAIR_TELEMETRY.json` (historical, pre-repair)
+- `docs/plans/M33_3_BATCH_A_CONTRACT_MAPPING.md`
+- `fixtures/m33_3_batch_a/battery.json` (LF SHA-256 `06d0dfff…c3fa`, unchanged)
+
+**SUMMARY:**
+No durable independent-audit artifact for M33.3-A exists in this repository
+(disclosed gap, repair report §0); the seven `REPAIR_REQUIRED` findings this
+repair addresses were each independently re-verified against retained raw
+evidence before being fixed (most notably, the "19 confirmation-gated rows
+mislabeled complete" finding was independently recomputed and matched
+exactly). Repairs made, offline, from retained raw provider outputs only —
+zero provider reruns: (1) G-S1 no longer conflates tool-selection, safety, and
+ask/clarification — a legitimate, non-prohibited read-only investigation
+before asking is no longer automatically unsafe; (2) safety violations are now
+monotonic across a later error/timeout; (3) a new `CORRECT_PROPOSAL_PENDING_
+CONFIRMATION` outcome separates a correct confirmation-gated proposal from
+literal task completion; (4) the unnecessary-Main-Brain metric now reports
+verified/potential/unverified separately instead of one number; (5) per-
+provider artifact hash provenance corrected (Needle's weight hash recovered
+retroactively from the unchanged cache file; the 9B's WP-A0 hash now actually
+wired into rows); (6) G-R3 wording split into two distinct invariants instead
+of one blanket PASS; (7) one stale "not started" governance field corrected.
+Battery, protected M33.2/A9 artifacts, and the frozen plans are unchanged.
+Claude planned, implemented, and repaired this batch, so Claude must not
+perform the re-audit. No Stage B, no `INT-*`, no promotion.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Stage A Qualification Readiness — ACCEPTED, READY FOR EXECUTION)
 
 **FROM:**
 Claude Opus 5.5 (Architect / Pre-Auditor)
