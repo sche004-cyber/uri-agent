@@ -12,7 +12,44 @@ this file and `URI_STATE.yaml` conflict on what is current, `URI_STATE.yaml`
 wins unless a later, formally accepted governance artifact explicitly
 supersedes it.
 
-## CURRENT HANDOFF (CLOSED: A2.8L-A9 RAR Evidence-Transport Factorial — ACCEPT_WITH_DOCUMENTED_LIMITATIONS)
+## CURRENT HANDOFF (M33.3 Batch A — Stage A Qualification Readiness — ACCEPTED, READY FOR EXECUTION)
+
+**FROM:**
+Claude Opus 5.5 (Architect / Pre-Auditor)
+
+**TO:**
+Antigravity (route to Codex) / User
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+PLAN ACCEPTED (AO-4 standing auto-approval)
+
+**STATUS:**
+ACCEPTED — implementation not started. `READY_FOR_M33_3_BATCH_A_EXECUTION`.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md` (plan)
+- `docs/plans/M33_3_BATCH_A_STATE.md` (state, routing constraints, checkpoints)
+- `docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md`
+  (frozen parent plan, unchanged)
+- `docs/governance/URI_STATE.yaml` (current-state authority)
+
+**SUMMARY:**
+First executable M33.3 batch. Stage A isolated readiness only: freeze the
+real-workload battery, build the scorer, measure reference baselines, and
+characterize the unmodified deterministic path; write a documentary mapping
+to the M33.2 Edge contracts; record Rung 1 eligibility. No `uri_core`
+import, no change under `uri_core/`, `uri_v1/`, or `uri_ui/`, no model
+download, no real side effects, no production integration, no `INT-*`
+event, no promotion. Stage B cannot start directly after this batch. The
+implementation task package must quote the seven routing constraints in
+the state file verbatim.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: A2.8L-A9 RAR Evidence-Transport Factorial — ACCEPT_WITH_DOCUMENTED_LIMITATIONS)
 
 **FROM:**
 Claude Sonnet 5 (Release Authority / Final Auditor)

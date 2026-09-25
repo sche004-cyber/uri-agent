@@ -1012,6 +1012,22 @@ this and all other milestone identities is now
 current-state prose in this file, including the M33.3 line immediately
 below.
 
+**M33.3 Batch A planning, 2026-09-25 (additive, Claude, AO-4 standing
+auto-approval):** M33.3 Batch A — Edge Intelligence Stage A Qualification
+Readiness is **ACCEPTED** (planning only; implementation not started) at
+baseline `1fa24fc`. Plan:
+`docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md`; state:
+`docs/plans/M33_3_BATCH_A_STATE.md`. Scope is Stage A isolated readiness
+only: frozen real-workload battery, scorer, reference baselines (no Edge,
+resident Qwen3.5-9B, Needle 3 in its M33.2 role, unmodified deterministic
+RAR), Rung 0 as-is characterization, documentary M33.2 contract mapping,
+and a Rung 1 eligibility record. It creates no production integration, no
+`INT-*` event, and no research promotion, and changes nothing under
+`uri_core/`, `uri_v1/`, or `uri_ui/`. The M33.2 "M33.3-owned
+control-surface follow-on" item was written for the superseded UI identity
+and is not adopted by this plan; its ownership remains unresolved (plan
+§2.1 C-2). `URI_STATE.yaml` is the current-state authority.
+
 ### M35 — URI Companion Experience
 **Status:** NOT STARTED. Net-new concept — no prior documentation
 existed anywhere in this repository before the 2026-09-18 roadmap

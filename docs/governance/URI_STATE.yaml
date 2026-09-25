@@ -90,20 +90,25 @@ product_milestones:
 
   - id: "M33.3"
     title: "Edge Intelligence Qualification & Integration"
-    status: "PLANNING_BASIS_FROZEN"
-    note: "Implementation NOT STARTED. This identity supersedes the earlier 'Unified URI Interaction & Capability UI' reservation recorded in URI_ACTIVE_MILESTONE.md §1c — that entry is stale and has not been rewritten, per governance policy against rewriting historical wording; this file is the corrected current-state pointer."
+    status: "BATCH_A_PLAN_FROZEN"
+    status_history_note: "PLANNING_BASIS_FROZEN at 47af60a (A3 synthesis frozen) -> BATCH_A_PLAN_FROZEN on 2026-09-25 (M33.3 Batch A plan accepted under AO-4 standing auto-approval at baseline 1fa24fc). Batch A is Stage A isolated qualification readiness only: no production integration, no INT-* event, no research promotion, no change under uri_core/, uri_v1/, or uri_ui/."
+    batch_a_plan: "docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md"
+    batch_a_state: "docs/plans/M33_3_BATCH_A_STATE.md"
+    batch_a_baseline_commit: "1fa24fca97dec34e431e82062b27b3da222b87cd"
+    batch_a_status: "ACCEPTED_NOT_STARTED"
+    note: "Batch A implementation NOT STARTED. This identity supersedes the earlier 'Unified URI Interaction & Capability UI' reservation recorded in URI_ACTIVE_MILESTONE.md §1c — that entry is stale and has not been rewritten, per governance policy against rewriting historical wording; this file is the corrected current-state pointer."
     accepted_plan: "docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md"
     accepted_at_commit: "47af60a65946e83b5fa10132b8363adfd18aca31"
     terminal_audit_state: "ARCHITECTURE_PLAN_ACCEPTED_WITH_LIMITATIONS"
     continues_architecture_of: "M33.2"
     architecture_domain: "edge_second_brain"
-    currently_active: false
+    currently_active: true
     mutable: true
     human_readable_pointer:
       file: "docs/governance/URI_ACTIVE_MILESTONE.md"
       section: "§1c"
       claimed_status_in_prose: "Unified URI Interaction & Capability UI (stale, superseded by additive correction dated 2026-09-25 in the same section)"
-      canonical_status_here: "PLANNING_BASIS_FROZEN"
+      canonical_status_here: "BATCH_A_PLAN_FROZEN"
       reconciled: true
       superseding_commit: "47af60a65946e83b5fa10132b8363adfd18aca31"
 
@@ -159,8 +164,9 @@ queued_initiatives:
     evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1a"
 
 active_continuation:
-  status: "NONE_AUTHORIZED_TO_IMPLEMENT"
-  note: "M33.3's planning basis is frozen but implementation has not been separately authorized to begin as of this normalization. LOOP_STATE last recorded IDLE."
+  status: "M33_3_BATCH_A_ACCEPTED_READY_FOR_EXECUTION"
+  scope: "Stage A isolated qualification readiness only (docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md). Not production integration; integration_events remains empty."
+  note: "Updated 2026-09-25 (additive status change). Previous value: NONE_AUTHORIZED_TO_IMPLEMENT (M33.3 planning basis frozen, implementation not separately authorized; LOOP_STATE last recorded IDLE). M33.3 Batch A plan is now ACCEPTED under AO-4 standing auto-approval; Antigravity routes it to Codex. Implementation not started."
 
 # ---------------------------------------------------------------------------
 # Research experiments (EXP-*) — the M35 URIv1 A0-A9/A2.8x research line.
