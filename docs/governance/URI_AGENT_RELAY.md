@@ -12,7 +12,42 @@ this file and `URI_STATE.yaml` conflict on what is current, `URI_STATE.yaml`
 wins unless a later, formally accepted governance artifact explicitly
 supersedes it.
 
-## CURRENT HANDOFF (M33.3 Batch A — Bounded Repair R4 — VERIFICATION_READY_FOR_M33_3_A_R4_REAUDIT)
+## CURRENT HANDOFF (M33.3 Batch A — FROZEN, ACCEPT_WITH_DOCUMENTED_LIMITATIONS)
+
+**FROM:**
+Claude Sonnet 5 (bounded freeze implementer, by direct User instruction `FREEZE_AND_COMMIT_M33_3_BATCH_A`)
+
+**TO:**
+Whoever plans the next M33.3 workstream (ARN architecture / <=1B clarification text generator, planning only)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+FREEZE — CLOSED AS STAGE A READINESS EVIDENCE
+
+**STATUS:**
+`BATCH_A_FROZEN_ACCEPTED_WITH_LIMITATIONS`. Independent R4 re-audit verdict `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_R4_INDEPENDENT_REAUDIT_REPORT.md` (the independent verdict, preserved as a durable artifact for the first time)
+- `docs/plans/M33_3_BATCH_A_R4_REPAIR_REPORT.md`, `_R3_`, `_R2_`, and the original `M33_3_BATCH_A_REPAIR_REPORT.md` (R1), `M33_3_BATCH_A_COMPLETION_REPORT.md` (original submission)
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (final; only a `coverage_rule` metadata string changed at freeze, no score changed)
+
+**SUMMARY:**
+Frozen as Stage A readiness / methodology evidence only. No Edge candidate
+is qualified; no Stage B, `INT-*`, or ARN implementation is authorized.
+Accepted Main-Brain-avoidance result: verified 0, potential 0, unverified
+22. Safety gates G-S1 `0/7/1/1`, G-S2 `0/12/0/3`, G-S3 `0/20/0/0`, G-S4 `0`.
+G-R1..G-R5 pass. The historical text-gap limitation for 78 already-retained
+multi-step rows is preserved unresolved and unsoftened: a fresh, separately
+authorized run would be required for a stronger historical claim. Next
+authorized action is planning only, for ARN architecture and a <=1B
+clarification text generator — not implementation.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Bounded Repair R4 — VERIFICATION_READY_FOR_M33_3_A_R4_REAUDIT)
 
 **FROM:**
 Claude Sonnet 5 (bounded repair implementer, by direct User instruction `BOUNDED_M33_3_A_REPAIR_R4`)

@@ -1,6 +1,6 @@
 # M33.3 Batch A — State
 
-**Status:** VERIFICATION_READY_FOR_M33_3_A_R4_REAUDIT (implementation and four bounded repair rounds complete; not accepted, not frozen, no Stage B authorization).
+**Status:** BATCH_A_FROZEN_ACCEPTED_WITH_LIMITATIONS (independent R4 re-audit verdict `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`; frozen as Stage A readiness / methodology evidence only, no Stage B authorization).
 **Milestone:** M33.3 — Edge Intelligence Qualification & Integration
 **Batch:** `M33.3-A` — Edge Intelligence Stage A Qualification Readiness
 **Plan:** `docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md`
@@ -83,9 +83,8 @@ None. No pause recorded.
 
 ## Next action
 
-`INDEPENDENT_M33_3_A_R4_REAUDIT` — not to be performed by Claude (same agent
-planned, implemented, and repaired this batch across all four rounds). Stage
-B is not authorized.
+`PLAN_M33_3_ARN_ARCHITECTURE_AND_LT1B_TEXT_GENERATOR` (planning only). Stage
+B remains unauthorized.
 
 ## Repair round 1 (2026-09-25)
 
@@ -183,3 +182,58 @@ been affected. The R3-disclosed residual (no per-step history for the 78
 already-retained multi-step rows) is unchanged and still unresolved; a
 future authorized rerun would be needed for a clean historical
 determination.
+
+## Freeze (2026-09-25, `FREEZE_AND_COMMIT_M33_3_BATCH_A`)
+
+Independent R4 re-audit verdict: `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`.
+Preserved verbatim in `docs/plans/M33_3_BATCH_A_R4_INDEPENDENT_REAUDIT_REPORT.md`
+-- the first durable repository artifact for an independent review of this
+batch (every prior round's review was delivered only in conversation).
+
+Batch A is frozen as **Stage A readiness / methodology evidence only**. It
+does not establish Needle qualification, resident-9B Edge qualification, a
+production Edge route, end-to-end URI success, or Stage B readiness. No Edge
+candidate is qualified. No Stage B work, `INT-*` event, or ARN
+implementation is authorized by this freeze.
+
+Accepted Main-Brain-avoidance result, final: verified 0, potential 0,
+unverified 22. No earlier "19 verified" or "22 unnecessary calls" figure is
+restored.
+
+One bounded metadata correction was made as part of the freeze: the
+`coverage_rule` string `scripts/m33_3_batch_a_adjudications.py` emits into
+its output described coverage as "without error," which no longer matched
+the R3-corrected code (error rows are covered when they carry captured
+text). The description-only fix was verified to change no score, no
+adjudication-coverage decision, and no row classification -- the only diff
+in the regenerated evidence files is that one string and its cascading hash.
+
+Documented limitations carried forward unresolved, none softened:
+- **Historical text gap:** 78 retained rows had multiple model calls before
+  per-step text recording existed (R3). Missing intermediate model text
+  cannot be reconstructed from retained evidence. Published text-dependent
+  outcomes describe only the retained evidence; they cannot prove no earlier
+  model commitment was overwritten. A fresh, separately authorized run would
+  be required for that stronger historical claim.
+- No independent pre-repair raw-file hash anchor existed historically.
+- The pre-R1 scorer source was never committed; historical deltas are
+  reconstructed, not independently authenticated.
+- The Needle artifact hash was recovered post-run and relies on
+  timestamp/file identity for run-time linkage.
+- Four frozen battery cases remain over-strict: `RWB-072`, `RWB-082`,
+  `RWB-103`, `RWB-105`. Changing them needs a new battery version.
+- Future-run requirement, not implemented: before the adjudication builder
+  is reused for a future provider run, diagnostic/system/error-detail text
+  (e.g. a first-call connection exception) should be excluded from
+  model-generated text coverage unless it genuinely originated from the
+  model.
+
+Next authorized action: planning only, for ARN architecture and a ≤1B
+clarification text generator (RAR owns ambiguity detection and constructs
+the grounded ARN candidate contract; the text generator only renders
+user-facing wording and cannot invent candidates; ≤5 grounded candidates,
+fewer if fewer are plausible; clickable choices bind candidate IDs; an
+always-present "None of these / Enter something else" path; user
+selection/free input is authoritative; the Main Brain can render the
+clarification path when Edge is unavailable). Not implemented by this
+freeze.

@@ -3,7 +3,7 @@
   "adjudicator": "Claude Opus 5.5 (Batch A repair implementer, R2; NOT independent -- requires independent re-audit)",
   "entries": 67,
   "file": "docs/plans/M33_3_BATCH_A_R2_TRANSCRIPT_ADJUDICATIONS.json",
-  "sha256": "198f35bda80d20d1bc6931904ed10324a882caaf1b7b83f3f449af9cf8a40368"
+  "sha256": "b44ac23dacf6fbd921f6792b849ed8b511a70a052066853f4b47fb3fc5a65486"
  },
  "artifact_provenance": {
   "R-9B": {
