@@ -47,6 +47,63 @@ separately authorized batch.**
 
 ---
 
+## PREVIOUS HANDOFF (CLOSED: A2.9 Native Problem-Solving Trace Pilot — ACCEPTED AS PILOT)
+
+**FROM:**
+Claude Sonnet 5 (Release Authority / Final Auditor)
+
+**TO:**
+User / Antigravity
+
+**MILESTONE:**
+M35 URI v1 — A2.9: native problem-solving trace pilot
+
+**HANDOFF TYPE:**
+CLOSURE
+
+**STATUS:**
+CLOSED / ACCEPTED AS PILOT
+
+**CLOSURE COMMIT:**
+`9e5d5e2` (M35 A2.9: close native problem-solving trace pilot, ACCEPTED AS PILOT)
+
+**NOTE:**
+Added retroactively during Post-A9 governance-state reconciliation
+(2026-09-25) — this entry was missing from the relay's handoff stack
+despite being closed and pushed before A9's closure. See governing
+plan/state artifacts under `docs/plans/M35_URIV1_A2_9_*` for detail.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: A2.8K Level-5 Evidence Sufficiency Qualification — ACCEPTED)
+
+**FROM:**
+Claude Sonnet 5 (Release Authority / Final Auditor)
+
+**TO:**
+User / Antigravity
+
+**MILESTONE:**
+M35 URI v1 — A2.8K: Level-5 evidence sufficiency qualification
+
+**HANDOFF TYPE:**
+CLOSURE
+
+**STATUS:**
+CLOSED / ACCEPTED
+
+**CLOSURE COMMIT:**
+`2351048` (M35 A2.8K: close Level-5 evidence sufficiency qualification,
+ACCEPTED); hash record `9a4af95`
+
+**NOTE:**
+Added retroactively during Post-A9 governance-state reconciliation
+(2026-09-25) — this entry was missing from the relay's handoff stack
+despite being closed and pushed before A9's closure. See governing
+plan/state artifacts under `docs/plans/M35_URIV1_A2_8K_*` for detail.
+
+---
+
 ## PREVIOUS HANDOFF (A2.8J: RAR-SAFE Evidence-Safety Hardening Qualification — IMPLEMENTING)
 
 **FROM:**
@@ -77,6 +134,18 @@ IMPLEMENTING
 
 **ROUTING SUBSTITUTION DIRECTIVE:**
 Codex quota is currently unavailable. Implementation routing for A2.8J is substituted to Claude Sonnet as preferred implementer (Gemini 3.8 as fallback). Codex is prohibited; Opus is prohibited unless a genuine blocker arises. The accepted plan, scope, acceptance criteria, architecture, and experimental design remain strictly frozen. The implementer must execute M35_URIV1_A2_8J_RAR_SAFE_QUALIFICATION_PLAN.md exactly as frozen and stop at VERIFICATION_READY. No commit or push.
+
+**CLOSURE NOTE (added 2026-09-25, Post-A9 governance-state reconciliation):**
+The `IMPLEMENTING` status and routing directive above are historical —
+preserved as-is, not live. A2.8J actually closed as `COMPLETE` (bounded
+re-audit verdict `ACCEPTED`; experimental result accepted, not a
+promotion of RAR-SAFE or of S3) at commit `247265f` (M35 A2.8J: close
+RAR-SAFE qualification), closure authorized by the User on 2026-09-24,
+pushed successfully. See `docs/plans/M35_URIV1_A2_8J_STATE.md` §Release
+and `docs/plans/M35_URIV1_A2_8J_BOUNDED_REAUDIT.md`. This entry was left
+without a resolution annotation when commit `49a801f` (A9 closure)
+introduced it into the relay; no prior relay commit ever recorded this
+handoff. Do not treat this entry as an open/active task.
 
 ---
 
