@@ -458,6 +458,14 @@ def run_main_brain_case(case: Dict[str, Any], catalog: Dict[str, Any], max_steps
     proposals: List[Dict[str, Any]] = []
     calls_ms: List[float] = []
     usage: List[Dict[str, Any]] = []
+    # R3: every step's own message content is retained here, never overwritten
+    # by a later step -- a committed-guess statement made in an earlier step
+    # (even one that also issued tool calls and let the loop continue) must
+    # survive regardless of what a later step's response says or whether a
+    # later step errors.  `final_text` is kept only for backward-compatible
+    # display; adjudication must be built from `text_events`, never from
+    # `final_text` alone.
+    text_events: List[Dict[str, Any]] = []
     final_text, error, stop_reason = "", None, "no_tool_call"
     for step in range(max_steps):
         payload = {"model": MAIN_MODEL_ID, "messages": messages, "tools": tools, "temperature": 0, "max_tokens": 4096, "stream": False}
@@ -469,6 +477,7 @@ def run_main_brain_case(case: Dict[str, Any], catalog: Dict[str, Any], max_steps
             break
         except Exception as exc:
             error, final_text = "RUNTIME_UNAVAILABLE", f"{type(exc).__name__}: {exc}"
+            text_events.append({"step": step, "content": final_text, "had_tool_calls": False, "is_error_detail": True})
             break
         calls_ms.append((time.perf_counter() - started) * 1000.0)
         usage.append(resp.get("usage") or {})
@@ -476,6 +485,12 @@ def run_main_brain_case(case: Dict[str, Any], catalog: Dict[str, Any], max_steps
         msg = choice.get("message") or {}
         tool_calls = msg.get("tool_calls") or []
         final_text = msg.get("content") or ""
+        if final_text:
+            # Retained regardless of what happens afterward -- this is the
+            # fix for the defect the R2 re-audit found: a step's own text is
+            # never discarded just because a later step overwrote
+            # `final_text` or the trace subsequently errored.
+            text_events.append({"step": step, "content": final_text, "had_tool_calls": bool(tool_calls), "is_error_detail": False})
         if not tool_calls:
             if choice.get("finish_reason") == "length":
                 error = "MALFORMED_OUTPUT"
@@ -509,7 +524,8 @@ def run_main_brain_case(case: Dict[str, Any], catalog: Dict[str, Any], max_steps
             "disposition": None if error else ("PROPOSE" if proposals else "ASK"),
             "proposals": proposals, "resident_main_brain_invoked": True,
             "telemetry": {"latency_ms": sum(calls_ms), "model_calls": len(calls_ms), "per_call_ms": calls_ms, "usage": usage,
-                          "stop_reason": stop_reason, "confirm_mode": confirm_mode, "final_text": final_text[:2000], "provider_id": "lmstudio",
+                          "stop_reason": stop_reason, "confirm_mode": confirm_mode, "final_text": final_text[:2000],
+                          "text_events": [dict(e, content=e["content"][:2000]) for e in text_events], "provider_id": "lmstudio",
                           "runtime_id": "lmstudio-local", "model_id": MAIN_MODEL_ID, "artifact_hash": MAIN_ARTIFACT_SHA256,
                           "artifact_hash_status": MAIN_HASH_STATUS, "timeout": error == "TIMEOUT", "fallback_taken": False}}
 

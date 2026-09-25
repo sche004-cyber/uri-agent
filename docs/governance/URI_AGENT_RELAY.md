@@ -12,7 +12,44 @@ this file and `URI_STATE.yaml` conflict on what is current, `URI_STATE.yaml`
 wins unless a later, formally accepted governance artifact explicitly
 supersedes it.
 
-## CURRENT HANDOFF (M33.3 Batch A — Bounded Repair R2 — VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT)
+## CURRENT HANDOFF (M33.3 Batch A — Bounded Repair R3 — VERIFICATION_READY_FOR_M33_3_A_R3_REAUDIT)
+
+**FROM:**
+Claude Sonnet 5 (bounded repair implementer, by direct User instruction `BOUNDED_M33_3_A_REPAIR_R3`)
+
+**TO:**
+Independent auditor (an agent other than Claude, or the User)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+BOUNDED REPAIR R3 COMPLETE — R3 RE-AUDIT REQUEST
+
+**STATUS:**
+`VERIFICATION_READY_FOR_M33_3_A_R3_REAUDIT`. Not accepted, not frozen. Stage B not authorized.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_R3_REPAIR_REPORT.md`
+- `docs/plans/M33_3_BATCH_A_R2_TRANSCRIPT_ADJUDICATIONS.json` (rebuilt, same 67 entries)
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (regenerated; no value changes)
+
+**SUMMARY:**
+Responds to the first genuinely independent audit this batch received
+(verdict `REPAIR_REQUIRED`). Fixed: adjudication coverage no longer skips a
+row merely because it errored; the harness now retains every step's own
+text instead of one overwritable `final_text`. Ten new end-to-end tests
+(mocked HTTP layer, full harness -> coverage -> scorer path) prove
+persistence across a continued step and all three error classes, plus a
+negative control. Offline rescore: zero change to any published number,
+since no currently retained row exercises the newly-covered case. Disclosed,
+not resolved: the 78 already-retained multi-step rows cannot be
+retroactively checked for a lost mid-trace commitment, since the pre-fix
+harness never stored per-step text.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Bounded Repair R2 — VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT)
 
 **FROM:**
 Claude Opus 5.5 (bounded repair implementer, by direct User instruction `BOUNDED_M33_3_A_REPAIR_R2`)

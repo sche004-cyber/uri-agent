@@ -1,6 +1,6 @@
 # M33.3 Batch A — State
 
-**Status:** VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT (implementation and two bounded repair rounds complete; not accepted, not frozen).
+**Status:** VERIFICATION_READY_FOR_M33_3_A_R3_REAUDIT (implementation and three bounded repair rounds complete; not accepted, not frozen, no Stage B authorization).
 **Milestone:** M33.3 — Edge Intelligence Qualification & Integration
 **Batch:** `M33.3-A` — Edge Intelligence Stage A Qualification Readiness
 **Plan:** `docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md`
@@ -83,8 +83,9 @@ None. No pause recorded.
 
 ## Next action
 
-`INDEPENDENT_M33_3_A_R2_REAUDIT` — not to be performed by Claude (same agent
-planned, implemented, and repaired this batch). Stage B is not authorized.
+`INDEPENDENT_M33_3_A_R3_REAUDIT` — not to be performed by Claude (same agent
+planned, implemented, and repaired this batch across all three rounds).
+Stage B is not authorized.
 
 ## Repair round 1 (2026-09-25)
 
@@ -129,3 +130,31 @@ the candidate ID, an always-present clickable "None of these / Enter something
 else" option that opens free input, user selection or input as the
 authoritative binding, and a Main-Brain-rendered clarification UI when Edge is
 disabled or unavailable.
+
+## Repair round 3 (2026-09-25, `BOUNDED_M33_3_A_REPAIR_R3`)
+
+The first genuinely independent audit artifact this batch received (the R2
+re-audit, delivered directly by the User) returned `REPAIR_REQUIRED`. Full
+detail: `docs/plans/M33_3_BATCH_A_R3_REPAIR_REPORT.md`.
+
+Finding, independently reproduced before fixing: the adjudication builder's
+coverage rule skipped every row with an `error_class`, and the harness kept
+only the trace's *last* message content, so a committed-guess statement made
+in an earlier step (even one that also issued a tool call and let the loop
+continue) could be silently lost before ever reaching adjudication -- whether
+the trace subsequently errored or completed cleanly.
+
+Fixes: the harness now retains every step's own text in a `text_events` list,
+never overwritten; adjudication coverage now requires an entry for any row
+with captured text regardless of error state, and quote-checks against the
+full text union, not `final_text` alone. Ten new end-to-end tests (mocked
+HTTP layer, full harness -> coverage -> scorer path, not scorer-only) prove
+persistence across a continued step and all three error classes, plus a
+negative control proving no false positive on a genuinely clean trace.
+
+Offline rescore: zero change to any published outcome, safety gate, or
+Main-Brain-avoidance count, since no currently retained row combines an error
+with captured commitment text. The fix is forward-looking and does not, and
+by the nature of the retained evidence cannot, retroactively prove no such
+loss occurred in the 78 already-retained multi-step rows -- disclosed as an
+unresolved residual, not implied away.
