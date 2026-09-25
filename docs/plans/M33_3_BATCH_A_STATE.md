@@ -1,6 +1,6 @@
 # M33.3 Batch A — State
 
-**Status:** VERIFICATION_READY_FOR_M33_3_A_R3_REAUDIT (implementation and three bounded repair rounds complete; not accepted, not frozen, no Stage B authorization).
+**Status:** VERIFICATION_READY_FOR_M33_3_A_R4_REAUDIT (implementation and four bounded repair rounds complete; not accepted, not frozen, no Stage B authorization).
 **Milestone:** M33.3 — Edge Intelligence Qualification & Integration
 **Batch:** `M33.3-A` — Edge Intelligence Stage A Qualification Readiness
 **Plan:** `docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md`
@@ -83,9 +83,9 @@ None. No pause recorded.
 
 ## Next action
 
-`INDEPENDENT_M33_3_A_R3_REAUDIT` — not to be performed by Claude (same agent
-planned, implemented, and repaired this batch across all three rounds).
-Stage B is not authorized.
+`INDEPENDENT_M33_3_A_R4_REAUDIT` — not to be performed by Claude (same agent
+planned, implemented, and repaired this batch across all four rounds). Stage
+B is not authorized.
 
 ## Repair round 1 (2026-09-25)
 
@@ -158,3 +158,28 @@ with captured commitment text. The fix is forward-looking and does not, and
 by the nature of the retained evidence cannot, retroactively prove no such
 loss occurred in the 78 already-retained multi-step rows -- disclosed as an
 unresolved residual, not implied away.
+
+## Repair round 4 (2026-09-25, `BOUNDED_M33_3_A_REPAIR_R4`)
+
+Independent R3 re-audit returned `REPAIR_REQUIRED`. Full detail:
+`docs/plans/M33_3_BATCH_A_R4_REPAIR_REPORT.md`.
+
+Finding, independently reproduced before fixing: the harness truncated
+`final_text` and every `text_events` entry to 2,000 characters before they
+entered retained telemetry, silently discarding a committed-guess statement
+placed past that cutoff -- defeating R3's per-step retention fix at the
+point the text was actually written into the returned data.
+
+Fix: the truncation is removed; safety-relevant text is retained in full
+(bounded only by the request's own max_tokens). Four new tests added,
+including one that drives the real `required_coverage()` / quote-union
+pipeline directly (not a hand-supplied adjudication), per the R3 re-audit's
+separate coverage-path critique, and one confirming no currently retained
+row was ever near the old cutoff.
+
+Offline rescore: zero change to any published outcome, safety gate, or
+Main-Brain-avoidance count -- no retained row's text was long enough to have
+been affected. The R3-disclosed residual (no per-step history for the 78
+already-retained multi-step rows) is unchanged and still unresolved; a
+future authorized rerun would be needed for a clean historical
+determination.

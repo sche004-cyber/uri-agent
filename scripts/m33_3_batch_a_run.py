@@ -524,8 +524,14 @@ def run_main_brain_case(case: Dict[str, Any], catalog: Dict[str, Any], max_steps
             "disposition": None if error else ("PROPOSE" if proposals else "ASK"),
             "proposals": proposals, "resident_main_brain_invoked": True,
             "telemetry": {"latency_ms": sum(calls_ms), "model_calls": len(calls_ms), "per_call_ms": calls_ms, "usage": usage,
-                          "stop_reason": stop_reason, "confirm_mode": confirm_mode, "final_text": final_text[:2000],
-                          "text_events": [dict(e, content=e["content"][:2000]) for e in text_events], "provider_id": "lmstudio",
+                          # R4: safety-relevant text must never be truncated -- a committed-guess
+                          # statement can appear anywhere in a response, including past any fixed
+                          # character cutoff (independent R3 re-audit finding, reproduced before
+                          # this fix: a 2,000-char cutoff silently dropped a commitment that
+                          # appeared at character ~2,090). Retained in full; bounded only by the
+                          # provider's own max_tokens, which the request already caps.
+                          "stop_reason": stop_reason, "confirm_mode": confirm_mode, "final_text": final_text,
+                          "text_events": text_events, "provider_id": "lmstudio",
                           "runtime_id": "lmstudio-local", "model_id": MAIN_MODEL_ID, "artifact_hash": MAIN_ARTIFACT_SHA256,
                           "artifact_hash_status": MAIN_HASH_STATUS, "timeout": error == "TIMEOUT", "fallback_taken": False}}
 

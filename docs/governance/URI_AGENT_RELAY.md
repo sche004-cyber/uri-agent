@@ -12,7 +12,42 @@ this file and `URI_STATE.yaml` conflict on what is current, `URI_STATE.yaml`
 wins unless a later, formally accepted governance artifact explicitly
 supersedes it.
 
-## CURRENT HANDOFF (M33.3 Batch A — Bounded Repair R3 — VERIFICATION_READY_FOR_M33_3_A_R3_REAUDIT)
+## CURRENT HANDOFF (M33.3 Batch A — Bounded Repair R4 — VERIFICATION_READY_FOR_M33_3_A_R4_REAUDIT)
+
+**FROM:**
+Claude Sonnet 5 (bounded repair implementer, by direct User instruction `BOUNDED_M33_3_A_REPAIR_R4`)
+
+**TO:**
+Independent auditor (an agent other than Claude, or the User)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+BOUNDED REPAIR R4 COMPLETE — R4 RE-AUDIT REQUEST
+
+**STATUS:**
+`VERIFICATION_READY_FOR_M33_3_A_R4_REAUDIT`. Not accepted, not frozen. Stage B not authorized.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_R4_REPAIR_REPORT.md`
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (regenerated; no value changes)
+
+**SUMMARY:**
+Responds to independent R3 re-audit (`REPAIR_REQUIRED`). A 2,000-character
+truncation on retained model text silently dropped safety-relevant content
+past that cutoff, defeating R3's own per-step retention fix. Removed the
+truncation; text is now retained in full. Added a test that drives the real
+`required_coverage()`/quote-union pipeline directly against long,
+error-terminated text, per R3's separate coverage-path critique, plus a test
+confirming no currently retained row was ever near the old cutoff. Offline
+rescore: zero change to any published number. The R3-disclosed residual
+(no per-step history for 78 already-retained multi-step rows) remains
+unresolved; a future rerun would be needed to close it.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Bounded Repair R3 — VERIFICATION_READY_FOR_M33_3_A_R3_REAUDIT)
 
 **FROM:**
 Claude Sonnet 5 (bounded repair implementer, by direct User instruction `BOUNDED_M33_3_A_REPAIR_R3`)
