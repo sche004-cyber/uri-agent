@@ -165,10 +165,71 @@ queued_initiatives:
     evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1a"
 
 active_continuation:
-  status: "M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY"
-  previous_status: "M33_3_BATCH_A_VERIFICATION_READY_AWAITING_INDEPENDENT_AUDIT"
+  status: "M33_3_CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT"
+  previous_status: "M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY"
+  cross_plan_note: "Updated 2026-09-26 (additive). ARN planning-only continuation produced two plans, cross-audited together (docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md, verdict COMPATIBLE_WITH_BOUNDED_REPAIRS). The G0 + cross-plan repair pass applied repairs A-R1..A-R12 and B-R1..B-R9, recorded User decisions D1-D4 (see architecture_decisions), and recorded M33.2 amendments G1-G3. Next step is an independent cross-plan re-audit (RG-0). Implementation NOT authorized; no slice S1-S13 open; no INT-* event; URI-RAR not adopted. State file: docs/plans/M33_3_CROSS_PLAN_STATE.md."
   scope: "M33.3 Batch A is CLOSED as Stage A readiness/methodology evidence (docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md). No Edge candidate qualified, no production integration, no Stage B, no INT-* event, no ARN implementation. Next authorized action is planning-only, for ARN architecture and a <=1B clarification text generator; integration_events remains empty."
   note: "Updated 2026-09-25 (additive). History: NONE_AUTHORIZED_TO_IMPLEMENT -> M33_3_BATCH_A_ACCEPTED_READY_FOR_EXECUTION -> M33_3_BATCH_A_VERIFICATION_READY_AWAITING_INDEPENDENT_AUDIT -> M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY (independent R4 re-audit ACCEPT_WITH_DOCUMENTED_LIMITATIONS; docs/plans/M33_3_BATCH_A_R4_INDEPENDENT_REAUDIT_REPORT.md)."
+
+# ---------------------------------------------------------------------------
+# Planning artifacts (added 2026-09-26, G0 + cross-plan repair pass).
+# Governed plan identities that are neither product milestones, experiments,
+# integration events, nor reusable components. Registration here grants NO
+# implementation authority and does not adopt any component.
+# ---------------------------------------------------------------------------
+planning_artifacts:
+  - id: "URI-REFERENCE-CLARIFICATION"
+    kind: "workstream_plan"
+    parent_milestone: "M33.3"
+    title: "User-facing reference clarification and correction layer around reference resolution (Plan A)"
+    path: "docs/plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md"
+    revision: "R2"
+    status: "PLAN_REVISED_R2_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT"
+    implementation_authorized: false
+    naming_note: "Not ARN, not ARN.2; does not unpause the ARN milestone. The bare alias ARN stays AMBIGUOUS_BARE_ALIAS_FORBIDDEN. The earlier placeholder URI-ARN-CLARIFICATION (Plan A section 2) is superseded. The file name is unchanged; a rename to M33_3_REFERENCE_CLARIFICATION_PLAN.md is deferred to acceptance. Registered as a planning identity only, not as a reusable component."
+    reuses_without_modifying: "ARN.1 (uri_core/core/arn/), URI-RAR candidate contracts (uri_v1/turn/rar_contracts.py), A9-protected uri_v1/turn/rar_deterministic.py (read-only)"
+  - id: "M33_3_PLAN_URI_BRAIN_ARCHITECTURE"
+    kind: "architecture_proposal"
+    parent_milestone: "M33.3"
+    title: "URI Brain Architecture - evidence-grounded proposal (Plan B)"
+    path: "docs/plans/M33_3_URI_BRAIN_ARCHITECTURE_PROPOSAL.md"
+    revision: "R1 over verbatim R0"
+    status: "PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT"
+    implementation_authorized: false
+    provenance: "R0 authored by Codex 2026-09-25T22:51:31.958Z; recovered verbatim from Codex session rollout-2026-09-26T03-31-00-01a0da96-071c-72f0-8562-0f71ac9457db.jsonl; R0 SHA-256 cf08a0892a8b87508b771edb3a856da652ef19f57ffdc7fb66245108962b8a9b; brought into the repository 2026-09-26."
+  - id: "M33_3_CROSS_PLAN_AUDIT"
+    kind: "audit_record"
+    parent_milestone: "M33.3"
+    path: "docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md"
+    status: "VERDICT_COMPATIBLE_WITH_BOUNDED_REPAIRS"
+    note: "Durable record of the 2026-09-26 cross-plan audit, with post-audit corrections COR-1..COR-4. The next required step is an independent re-audit (RG-0) of the repaired plans; see docs/plans/M33_3_CROSS_PLAN_STATE.md."
+
+# ---------------------------------------------------------------------------
+# Architecture decisions recorded from direct User instruction (2026-09-26).
+# Full exact text: docs/plans/M33_3_CROSS_PLAN_STATE.md section 2.
+# ---------------------------------------------------------------------------
+architecture_decisions:
+  - id: "D1"
+    date: "2026-09-26"
+    status: "DECIDED"
+    decision: "gmail_create_draft wrong_binding_impact = RECOVERABLE (an unsent draft is correctable before external communication). Independent of EffectType, ApprovalRequirement, RiskLevel. A future real send action is expected to be CONSEQUENTIAL. wrong_binding_impact is never derived mechanically from EffectType."
+  - id: "D2"
+    date: "2026-09-26"
+    status: "DECIDED"
+    decision: "Keep EDGE_ONLY, HYBRID, MAIN_BRAIN_PREFERRED. intelligence_mode, AUTO vs explicit model selection, and Edge ON/OFF are independent dimensions. HYBRID is efficiency-first; MAIN_BRAIN_PREFERRED is capability-first; not merged. An explicitly selected model is the Capable Brain for substantive work with native capabilities preserved; qualified supporting Edge work stays permitted. Edge OFF removes Edge inference only. EDGE_ONLY never silently calls the Capable Brain."
+    recorded_in: "docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md amendment G2"
+  - id: "D3"
+    date: "2026-09-26"
+    status: "DECIDED"
+    decision: "Qualified Edge or Capable models may investigate, interpret clues, compare, narrow, annotate, and return structured grounded evidence, but never create binding authority. Model preference alone never creates TENTATIVE. The flow is model evidence, then a deterministic resolution/eligibility check, then TENTATIVE / CONFIRMED / CLARIFY. Models never invent candidate IDs."
+  - id: "D4"
+    date: "2026-09-26"
+    status: "DEFERRED"
+    decision: "Durable cross-session learned reference evidence is deferred to URI-Memory (NOT_STARTED). Allowed now: session-authoritative selections, session-local reference evidence, structured Change/correction events, rank/display effects from valid session evidence. Not authorized: an ad-hoc durable reference-memory subsystem, or durable learned tie-breaking without URI-Memory qualification."
+  - id: "M33.2-AMENDMENTS-G1-G3"
+    date: "2026-09-26"
+    status: "RECORDED_SUBJECT_TO_REAUDIT"
+    decision: "G1: validated deterministic wording may be primary for SIMPLE clarification/confirmation; model wording for EXPLAIN/REASONING; the validator runs on every tier (section 3.1). G2: explicit selection routes substantive work to the selected model; qualified supporting Edge stays permitted; independent dimensions (sections 3 and 6). G3: route preference is not calibration and cannot change thresholds, qualify a failed route, or expand an unqualified role (section 9.1). M33.2 remains CLOSED_VERIFIED; no implementation reopened."
 
 # ---------------------------------------------------------------------------
 # Research experiments (EXP-*) — the M35 URIv1 A0-A9/A2.8x research line.

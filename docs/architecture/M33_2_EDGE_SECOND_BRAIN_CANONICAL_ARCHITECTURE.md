@@ -4,6 +4,15 @@
 
 **Revision history:** revised 2026-09-20 after an independent plan review conducted against live repository source. The review's corrections are applied in place and marked inline as *[review 2026-09-20]* wherever they changed a prior claim, so the earlier wording is not silently overwritten. Final freeze audit 2026-09-20 revalidated this document against `631d630aa9f66b70142f55c7397995e9bafab70f` and corrected only stale baseline/governance references and the already-additive assistance contract presentation.
 
+**Amendments, 2026-09-26 (G1, G2, G3).** These are auditable and additive. The prior text is preserved in place, and each amendment is inserted beside the text it qualifies.
+- They record User-directed changes, stated in a live session on 2026-09-26, that came out of the M33.3 cross-plan audit (`docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md`, §4 C-1 / C-2 / C-9, §6).
+- G1 qualifies §3.1 (clarification wording).
+- G2 qualifies §3 `MAIN_BRAIN_PREFERRED` and §6 `SUPPRESS` (explicit model selection and supporting Edge work).
+- G3 qualifies §9.1 (route preference is not calibration).
+- They reopen no M33.2 implementation, authorize no implementation, and create no INT event.
+- M33.2 remains `CLOSED_VERIFIED`.
+- The amendment text is subject to the independent M33.3 cross-plan re-audit for fidelity to the User's decisions.
+
 **Core principle:** **URI is the system. The Main Brain is optional intelligence plugged into it. The Second Brain keeps URI useful, responsive, and capable even without a Main Brain.**
 
 ## 1. Non-negotiable authority model
@@ -124,6 +133,8 @@ Per-user `intelligence_mode` is one of:
 | `HYBRID` | URI_PREFLIGHT first; invoke Edge only when its declared model profile is eligible and policy says an inexpensive proposal/reply is plausible. Escalate explicitly when it is not. |
 | `MAIN_BRAIN_PREFERRED` | URI_PREFLIGHT first; explicit Main-Brain requests, complex tasks, broad research/drafting, and native/iterative tool tasks bypass Edge and retain full Main-Brain behavior. Edge is reserved for declared fast local routes and Main-Brain-unavailable recovery; it does not add mandatory double inference. |
 
+*[Amendment G2, 2026-09-26: see the G2 block under §6. With explicit model selection, "explicit Main-Brain requests bypass Edge" applies to **substantive** model work only. Qualified **supporting** Edge operations remain permitted. `intelligence_mode`, AUTO vs explicit selection, and Edge ON/OFF are independent dimensions.]*
+
 *[review 2026-09-20 — naming correction.]* The field is `intelligence_mode`, **not** `operating_mode` or a bare `mode`. URI already carries two unrelated `mode` vocabularies on the same user, one of which is authorization-relevant:
 
 - **Capability mode** `{"office","diagnostic","admin"}` (`uri_core/config/modes.py:12,15`), carried on `PrincipalContext.mode`, read during gating, exposed at `GET`/`PUT /modes` (`uri_core/app/server.py:1346,1356`).
@@ -142,6 +153,20 @@ An Edge invocation is eligible only if all are true: Edge is enabled; selected r
 The user-visible text of a `CONFIRM` question and of an `EDGE_ONLY` limitation must be **model-authored**, produced by a constrained `propose_response` call restricted to a clarification or limitation form. URI decides the outcome deterministically and hands the model the real, already-decided facts; it does not write the sentence.
 
 A deterministic template is permitted **only** as a validated fallback when no model draft is available or the draft fails validation, and it may restate only already-decided facts. This matches the live discipline at `uri_core/core/canonical_execution.py:447`, where the message comes from the model's own `unsupported_reason` and a hardcoded string is used only when that field is absent.
+
+**AMENDMENT G1 (2026-09-26): clarification/confirmation wording.** This is an accepted-architecture amendment, not a hidden exception.
+
+- The two paragraphs above required model authorship, with the template only as a fallback. They remain as history.
+- **Effective 2026-09-26:**
+  - Validated deterministic wording **may be the primary** user-visible text for bounded **SIMPLE** clarifications and confirmations (for example "Which report do you mean?" followed by grounded selectable options). This applies wherever deterministic wording is proven sufficient and acceptable to the User.
+  - Model wording (a qualified Edge role, or the Capable Brain) is used for the **EXPLAIN** and **REASONING** need classes, or when qualification evidence shows it is needed.
+  - A deterministic, fail-closed validator runs on the output of **every** authoring tier (template, Edge, or Capable Brain).
+  - The deterministic core still decides facts, options, and outcomes. No tier may add, remove, or reorder the grounded options.
+  - URI never cold-loads a model merely to polish wording, and the Capable Brain is never called merely to replace cosmetic wording that a template handles.
+- **Rationale:** the User requirement recorded in `docs/plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md` R1.2–R1.3 / R2.5.
+- **Evidence that the prior text already differed from live code:** `uri_core/core/canonical_execution.py` already emits deterministic user-visible strings (for example the `approval_required` message), and `uri_core/core/approval_resumption.py` `_clarification_envelope` is a deterministic option-listing clarification.
+- The `EDGE_ONLY` limitation text in the paragraphs above is subject to the same rule: template-primary when SIMPLE, validated always.
+- G1 also qualifies the §6 `CONFIRM` row ("wording is model-authored per §3.1") and the §6 `ESCALATE` row's "limitation/clarification per §3.1".
 
 ## 4. Provider- and runtime-agnostic contracts
 
@@ -279,6 +304,25 @@ Graphify and embeddings can influence orientation/ranking only. They cannot add 
 | `EXECUTE_PROPOSAL` | Edge proposed an offered capability/action and schema-valid bounded args. Send it through the §2.1 contract-injection seam into existing canonical validation/gates; the gate may deny or create approval rather than execute. |
 | `ESCALATE` | Complexity, uncertainty, stale/missing calibration, unsupported modality/schema, insufficient evidence, or an ineligible/failed proposal requires the Main Brain. If no healthy Main Brain exists, return an explicit limitation/clarification per §3.1 — not a fabricated Edge completion. |
 
+**AMENDMENT G2 (2026-09-26): explicit model selection and supporting Edge work.** The `SUPPRESS` row above ("explicit Main request") and §3's `MAIN_BRAIN_PREFERRED` row remain as history. They are qualified as follows.
+
+- **Explicit selection:** when the User explicitly selects a model, that model **is** the Capable Brain for **substantive** model work (reasoning, synthesis, substantive drafting even when short, planning, complex tool use). Its native capabilities are preserved: iterative and parallel tool calls, structured output, multimodality, and agentic continuation.
+  - `SUPPRESS` for an explicit selection means Edge must not replace or downgrade that substantive role.
+  - It does **not** forbid qualified **supporting** Edge operations around the request (for example reference resolution, argument extraction, simple routing, formatting, clarification wording under Amendment G1, or §2.2 assistance), each within its independently qualified role.
+- **Independent dimensions:** `intelligence_mode` (policy), AUTO vs explicit model selection (model choice), and Edge ON/OFF (`EdgeSettings.enabled`) are independent.
+
+| Combination | Behavior |
+|---|---|
+| AUTO + `HYBRID` | Efficiency-first. Deterministic mechanisms run first. A qualified Edge may do substantive bounded work. The Capable Brain is used when Edge is not qualified or not sufficient. |
+| AUTO + `MAIN_BRAIN_PREFERRED` | Capability-first. Deterministic mechanisms still run. Substantive model work normally goes directly to the Capable Brain. A qualified Edge may do supporting work. |
+| Explicit model selected | The selected model is the Capable Brain for substantive work. Deterministic mechanisms stay active. Qualified supporting Edge work stays permitted. Native capabilities are preserved. |
+| Edge OFF | Removes Edge inference only. Deterministic mechanisms stay active. The Capable Brain stays available unless another explicit policy forbids it. |
+| `EDGE_ONLY` | Deterministic mechanisms plus qualified Edge only. The Capable Brain is never called silently. A task beyond that envelope surfaces the limitation or the escalation requirement. |
+
+- `HYBRID` (efficiency-first) and `MAIN_BRAIN_PREFERRED` (capability-first) remain distinct modes.
+- There is one routing authority: this state machine, extended. No second router may be introduced for clarification wording or reference work.
+- As of 2026-09-26, `uri_core/core/edge/routing_policy.py` is **not wired** into any production request path.
+
 For sensitive voice actions, low transcript confidence wins over high action confidence: `CONFIRM` or deny/escalate according to existing policy. `99%` only changes an intelligence-routing decision; it never bypasses the later gate.
 
 **Threshold comparison semantics** *[review 2026-09-20 — previously undefined while boundary tests were already promised]*: the stored threshold is an integer percent and the calibrated score is a float in `0..1`. The single comparison used everywhere is:
@@ -349,6 +393,18 @@ Raw vendor confidence is untrusted metadata. `CalibrationProfile` is deployment-
 M33.2 starts with **one global per-user manual reply threshold**, not adaptive thresholds. It records enough outcome types to decide later whether calibrated profiles must diverge for direct replies, intent classification, capability selection, argument extraction, structured extraction, and voice interpretation. A profile can initially fall back to a documented global calibration mapping, but a stale/missing/mismatched profile makes direct Edge reply ineligible.
 
 Event outcomes may be labelled by a frozen benchmark, deterministic schema/argument validation, execution/evidence result, or explicit user correction. Main-Brain agreement alone is not truth. Later fitting uses held-out data, reliability diagrams, ECE/max error/NLL and task-quality measures; it does not change any user's threshold automatically.
+
+**AMENDMENT G3 (2026-09-26): route learning is not calibration.** The paragraphs above, and §13's exclusion of adaptive thresholds, remain in force.
+
+- Route preference learned from structured evaluation and route-performance evidence (a separate, future, per-user store; not ExperienceStore) is **not** online model calibration.
+- It **must not**:
+  - change a `CalibrationProfile`, the reply-confidence threshold, or any qualification threshold;
+  - qualify a failed or unqualified route;
+  - expand an unqualified role;
+  - weaken confirmation or safety requirements;
+  - redefine the Edge / Capable Brain boundary.
+- It may **only** influence preference among routes that are already qualified and eligible for the same task class.
+- Qualification determines what URI may use. Learning determines which already-qualified route URI prefers.
 
 Note that raw confidence can be legitimately absent: Needle documents confidence as a calibrated-head/decode-probability minimum and returns `None` for fine-tuned weights whose calibration head was not updated (`reports/Edge runtime evaluation.md:7`). `UNAVAILABLE` is an expected value, not an error.
 
