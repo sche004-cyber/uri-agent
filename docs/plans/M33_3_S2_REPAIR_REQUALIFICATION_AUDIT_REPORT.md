@@ -68,4 +68,11 @@ The closure transaction updates `M33_3_S2_STATE.md`, `M33_3_CROSS_PLAN_STATE.md`
 
 ## 7. Final transaction
 
-The audit accepts S2 after the bounded repairs and requalification. Only the two production repair files, the S2 regression test, this report, and the three S2 governance/state files belong in the closure commit. The final response records the resulting commit and remote-head verification; the commit cannot contain its own hash. Stop before S3.
+The audit accepts S2 after the bounded repairs and requalification. The closure commit contains only the two production repair files, the S2 regression test, this report, and the three S2 governance/state files:
+
+- Closure commit: `a69c99d1a610d65d45bfb693308d2e1bc506ef95` (`M33.3 S2: audit, repair, and freeze wrong-binding gate`).
+- Push result: `d8735db..a69c99d  HEAD -> m35-uri-v1-parallel-architecture` at `origin`.
+- Independent remote verification immediately after push: `git ls-remote origin refs/heads/m35-uri-v1-parallel-architecture` returned `a69c99d1a610d65d45bfb693308d2e1bc506ef95`, matching local HEAD.
+- This receipt is an additive report-only commit after the closure commit; its final hash is recorded in the final response because a commit cannot contain its own hash.
+
+Stop before S3.
