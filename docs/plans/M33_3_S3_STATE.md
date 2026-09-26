@@ -1,8 +1,10 @@
 # M33.3 S3 — frozen L1/L2 clarification qualification plan
 
-**State:** `S3_PLAN_FROZEN` (2026-09-26, before S3 implementation).
+**Current state:** `S3_CLOSED_FROZEN` after independent audit and requalification (no repair required).
+**S3_PLAN_FROZEN:** YES. **S3_IMPLEMENTATION_COMPLETE:** YES. **S3_IMPLEMENTATION_AUDITED:** YES. **S3_REPAIRS_REQUIRED:** NO. **S3_REPAIRS_VERIFIED:** N/A. **S3_AUDIT_PENDING:** NO. **S3_CLOSED_FROZEN:** YES. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
 **Authorization:** User S3 Plan + Implement instruction, starting at `98ce66cfe5298741905b5bd40fe6439b46d225c4`. S3 only. S1/S2 stay closed and frozen; S4–S13 remain unauthorized.
-**Workstream:** `URI-REFERENCE-CLARIFICATION`. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+**Workstream:** `URI-REFERENCE-CLARIFICATION`.
+**Independent audit and freeze evidence:** `docs/plans/M33_3_S3_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`.
 
 ## 1. Authority and objective
 
@@ -65,3 +67,9 @@ At Pass-1 completion record `S3_PLAN_FROZEN: YES`, `S3_IMPLEMENTATION_COMPLETE: 
 `S3_PLAN_FROZEN: YES`; `S3_IMPLEMENTATION_COMPLETE: YES`; `S3_AUDIT_PENDING: YES`; `S3_CLOSED_FROZEN: NO`; `M33_3_COMPLETE: NO`; `NEXT_SLICE_AUTHORIZED: NO`. The final fixture manifest, count, and hash are recorded in `M33_3_S3_IMPLEMENTATION_REPORT.md`. This checkpoint adds evidence to the frozen plan; it does not independently audit or accept S3. S4–S13 remain unauthorized.
 
 **Coverage correction before commit:** a final comparison to Plan A §10 found that the initial 64-case design undershot several L1 category minima. The plan was corrected to 80 before the battery anchor was committed; the initial 64-case hash is superseded and has no frozen status. L3-only rows stay deferred. This correction changes fixture coverage, not S1/S2 semantics or S3 authority.
+
+## 8. Independent audit and freeze (2026-09-26)
+
+Independent audit reproduced qualification (80/80: L1 60/60, L2 20/20), the full S1/S2/S3/RAR/governance regression suite (351 passed, 64 subtests), and the governance validator (`VALID`) from a clean worktree at HEAD `4f600e2`. Battery hash, telemetry/aggregate determinism, and all three protected anchors (`rar_deterministic.py`, `rar_contracts.py`, `fixtures/m33_3_batch_a/battery.json`) were independently recomputed and matched exactly. An independent Plan A §10 category-minimum tabulation found 27 of 29 applicable rows cleanly satisfied; two rows ("Hallucinated slot or ID" / "Invented extra candidate," and "Omitted escape option") are thinner than the literal minimum but non-zero and justified against the actual `render_validator.py` mechanism and `check_build`'s positive escape-presence invariant. Ten independent adversarial probes beyond the frozen battery found no disqualifying defect; one non-blocking, non-`FROZEN_REQUIRED` gap was disclosed (a zero-width-space-only label passes validation with no flags). Full detail: `docs/plans/M33_3_S3_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`.
+
+`S3_IMPLEMENTATION_AUDITED: YES`; `S3_REPAIRS_REQUIRED: NO`; `S3_REPAIRS_VERIFIED: N/A`; `S3_CLOSED_FROZEN: YES`; `M33_3_COMPLETE: NO`; `NEXT_SLICE_AUTHORIZED: NO`.
