@@ -1,0 +1,12 @@
+{
+  "battery_bytes": 95085,
+  "battery_file": "battery.json",
+  "battery_lf_sha256": "7601125b77569ef3c8020b473ceabb32443cd8bec3ccd02263bbdd733d32fa7e",
+  "case_count": 80,
+  "hash_rule": "SHA-256 over UTF-8 bytes with CRLF normalized to LF",
+  "l1_count": 60,
+  "l2_count": 20,
+  "privacy": "synthetic-only",
+  "provenance": "Synthetic S3 cases authored from Plan A R4, S1/S2 frozen contracts; no private data",
+  "schema_version": "m33.3.s3.l1l2.v1"
+}

@@ -1,0 +1,3770 @@
+{
+  "cases": [
+    {
+      "case_id": "ARB-001",
+      "category": "same_name_people",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "person-1-0",
+          "person-1-1"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "person",
+            "id": "person-1-0",
+            "is_attachment": false,
+            "owner": "Unit 0",
+            "recency_rank": 0,
+            "title": "Alex Morgan"
+          },
+          {
+            "candidate_type": "person",
+            "id": "person-1-1",
+            "is_attachment": false,
+            "owner": "Unit 1",
+            "recency_rank": 0,
+            "title": "Alex Morgan"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "Alex Morgan",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "person-1-0",
+          "person-1-1"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-002",
+      "category": "same_name_people",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "person-2-0",
+          "person-2-1",
+          "person-2-2"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "person",
+            "id": "person-2-0",
+            "is_attachment": false,
+            "owner": "Unit 0",
+            "recency_rank": 0,
+            "title": "Alex Morgan"
+          },
+          {
+            "candidate_type": "person",
+            "id": "person-2-1",
+            "is_attachment": false,
+            "owner": "Unit 1",
+            "recency_rank": 0,
+            "title": "Alex Morgan"
+          },
+          {
+            "candidate_type": "person",
+            "id": "person-2-2",
+            "is_attachment": false,
+            "owner": "Unit 2",
+            "recency_rank": 0,
+            "title": "Alex Morgan"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "Alex Morgan",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "person-2-0",
+          "person-2-1",
+          "person-2-2"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-003",
+      "category": "same_name_people",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "person-3-0",
+          "person-3-1",
+          "person-3-2",
+          "person-3-3"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "person",
+            "id": "person-3-0",
+            "is_attachment": false,
+            "owner": "Unit 0",
+            "recency_rank": 0,
+            "title": "Alex Morgan"
+          },
+          {
+            "candidate_type": "person",
+            "id": "person-3-1",
+            "is_attachment": false,
+            "owner": "Unit 1",
+            "recency_rank": 0,
+            "title": "Alex Morgan"
+          },
+          {
+            "candidate_type": "person",
+            "id": "person-3-2",
+            "is_attachment": false,
+            "owner": "Unit 2",
+            "recency_rank": 0,
+            "title": "Alex Morgan"
+          },
+          {
+            "candidate_type": "person",
+            "id": "person-3-3",
+            "is_attachment": false,
+            "owner": "Unit 3",
+            "recency_rank": 0,
+            "title": "Alex Morgan"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "Alex Morgan",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "person-3-0",
+          "person-3-1",
+          "person-3-2",
+          "person-3-3"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-004",
+      "category": "similar_files",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "file-0-0",
+          "file-0-1"
+        ],
+        "shown": [
+          "file-0-0",
+          "file-0-1"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "file-0-0",
+            "is_attachment": false,
+            "owner": "Finance",
+            "recency_rank": 0,
+            "title": "Budget 2024.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "file-0-1",
+            "is_attachment": false,
+            "owner": "Finance",
+            "recency_rank": 0,
+            "title": "Budget 2025.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the budget file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "file-0-0",
+          "file-0-1"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-005",
+      "category": "similar_files",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "file-1-0",
+          "file-1-1",
+          "file-1-2"
+        ],
+        "shown": [
+          "file-1-0",
+          "file-1-1",
+          "file-1-2"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "file-1-0",
+            "is_attachment": false,
+            "owner": "Finance",
+            "recency_rank": 0,
+            "title": "Budget 2024.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "file-1-1",
+            "is_attachment": false,
+            "owner": "Finance",
+            "recency_rank": 0,
+            "title": "Budget 2025.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "file-1-2",
+            "is_attachment": false,
+            "owner": "Finance",
+            "recency_rank": 0,
+            "title": "Budget 2026.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the budget file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "file-1-0",
+          "file-1-1",
+          "file-1-2"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-006",
+      "category": "similar_files",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "file-2-0",
+          "file-2-1",
+          "file-2-2",
+          "file-2-3"
+        ],
+        "shown": [
+          "file-2-0",
+          "file-2-1",
+          "file-2-2",
+          "file-2-3"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "file-2-0",
+            "is_attachment": false,
+            "owner": "Finance",
+            "recency_rank": 0,
+            "title": "Budget 2024-rev.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "file-2-1",
+            "is_attachment": false,
+            "owner": "Finance",
+            "recency_rank": 0,
+            "title": "Budget 2025-rev.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "file-2-2",
+            "is_attachment": false,
+            "owner": "Finance",
+            "recency_rank": 0,
+            "title": "Budget 2026-rev.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "file-2-3",
+            "is_attachment": false,
+            "owner": "Finance",
+            "recency_rank": 0,
+            "title": "Budget 2027-rev.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the budget file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "file-2-0",
+          "file-2-1",
+          "file-2-2",
+          "file-2-3"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-007",
+      "category": "temporal",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "time-0-0",
+          "time-0-1"
+        ],
+        "shown": [
+          "time-0-0",
+          "time-0-1"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "time-0-0",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Minute 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "time-0-1",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 1,
+            "title": "Minute 2.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "latest",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "time-0-0",
+          "time-0-1"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-008",
+      "category": "temporal",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "time-1-0",
+          "time-1-1",
+          "time-1-2"
+        ],
+        "shown": [
+          "time-1-0",
+          "time-1-1",
+          "time-1-2"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "time-1-0",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Minute 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "time-1-1",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 1,
+            "title": "Minute 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "time-1-2",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 2,
+            "title": "Minute 3.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "earlier",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "time-1-0",
+          "time-1-1",
+          "time-1-2"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-009",
+      "category": "temporal",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "time-2-0",
+          "time-2-1",
+          "time-2-2",
+          "time-2-3"
+        ],
+        "shown": [
+          "time-2-0",
+          "time-2-1",
+          "time-2-2",
+          "time-2-3"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "time-2-0",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Minute 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "time-2-1",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 1,
+            "title": "Minute 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "time-2-2",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 2,
+            "title": "Minute 3.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "time-2-3",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 3,
+            "title": "Minute 4.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "first",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "time-2-0",
+          "time-2-1",
+          "time-2-2",
+          "time-2-3"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-010",
+      "category": "attachments",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "attachment-0-0",
+          "attachment-0-1"
+        ],
+        "shown": [
+          "attachment-0-0",
+          "attachment-0-1"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "attachment-0-0",
+            "is_attachment": true,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Attachment 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "attachment-0-1",
+            "is_attachment": true,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Attachment 2.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the attachment",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "attachment-0-0",
+          "attachment-0-1"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-011",
+      "category": "attachments",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "attachment-1-0",
+          "attachment-1-1",
+          "attachment-1-2"
+        ],
+        "shown": [
+          "attachment-1-0",
+          "attachment-1-1",
+          "attachment-1-2"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "attachment-1-0",
+            "is_attachment": true,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Attachment 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "attachment-1-1",
+            "is_attachment": true,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Attachment 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "attachment-1-2",
+            "is_attachment": true,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Attachment 3.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the attachment",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "attachment-1-0",
+          "attachment-1-1",
+          "attachment-1-2"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-012",
+      "category": "attachments",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "attachment-2-0",
+          "attachment-2-1",
+          "attachment-2-2",
+          "attachment-2-3"
+        ],
+        "shown": [
+          "attachment-2-0",
+          "attachment-2-1",
+          "attachment-2-2",
+          "attachment-2-3"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "attachment-2-0",
+            "is_attachment": true,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Attachment 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "attachment-2-1",
+            "is_attachment": true,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Attachment 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "attachment-2-2",
+            "is_attachment": true,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Attachment 3.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "attachment-2-3",
+            "is_attachment": true,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Attachment 4.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the attachment",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "attachment-2-0",
+          "attachment-2-1",
+          "attachment-2-2",
+          "attachment-2-3"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-013",
+      "category": "emails_threads",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "email-0-0",
+          "email-0-1"
+        ],
+        "shown": [
+          "email-0-0",
+          "email-0-1"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "email",
+            "id": "email-0-0",
+            "is_attachment": false,
+            "owner": "Sender 1",
+            "recency_rank": 0,
+            "title": "Email thread 1"
+          },
+          {
+            "candidate_type": "email",
+            "id": "email-0-1",
+            "is_attachment": false,
+            "owner": "Sender 2",
+            "recency_rank": 0,
+            "title": "Email thread 2"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the email thread",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "email-0-0",
+          "email-0-1"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-014",
+      "category": "emails_threads",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "email-1-0",
+          "email-1-1",
+          "email-1-2"
+        ],
+        "shown": [
+          "email-1-0",
+          "email-1-1",
+          "email-1-2"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "email",
+            "id": "email-1-0",
+            "is_attachment": false,
+            "owner": "Sender 1",
+            "recency_rank": 0,
+            "title": "Email thread 1"
+          },
+          {
+            "candidate_type": "email",
+            "id": "email-1-1",
+            "is_attachment": false,
+            "owner": "Sender 2",
+            "recency_rank": 0,
+            "title": "Email thread 2"
+          },
+          {
+            "candidate_type": "email",
+            "id": "email-1-2",
+            "is_attachment": false,
+            "owner": "Sender 3",
+            "recency_rank": 0,
+            "title": "Email thread 3"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the email thread",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "email-1-0",
+          "email-1-1",
+          "email-1-2"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-015",
+      "category": "emails_threads",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "email-2-0",
+          "email-2-1",
+          "email-2-2",
+          "email-2-3"
+        ],
+        "shown": [
+          "email-2-0",
+          "email-2-1",
+          "email-2-2",
+          "email-2-3"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "email",
+            "id": "email-2-0",
+            "is_attachment": false,
+            "owner": "Sender 1",
+            "recency_rank": 0,
+            "title": "Email thread 1"
+          },
+          {
+            "candidate_type": "email",
+            "id": "email-2-1",
+            "is_attachment": false,
+            "owner": "Sender 2",
+            "recency_rank": 0,
+            "title": "Email thread 2"
+          },
+          {
+            "candidate_type": "email",
+            "id": "email-2-2",
+            "is_attachment": false,
+            "owner": "Sender 3",
+            "recency_rank": 0,
+            "title": "Email thread 3"
+          },
+          {
+            "candidate_type": "email",
+            "id": "email-2-3",
+            "is_attachment": false,
+            "owner": "Sender 4",
+            "recency_rank": 0,
+            "title": "Email thread 4"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the email thread",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "email-2-0",
+          "email-2-1",
+          "email-2-2",
+          "email-2-3"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-016",
+      "category": "document_versions",
+      "expected": {
+        "axis": "recency",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "version-0-0",
+          "version-0-1"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "version-0-0",
+            "is_attachment": false,
+            "owner": "Office",
+            "recency_rank": 0,
+            "title": "Policy.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "version-0-1",
+            "is_attachment": false,
+            "owner": "Office",
+            "recency_rank": 1,
+            "title": "Policy.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the policy version",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "version-0-0",
+          "version-0-1"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-017",
+      "category": "document_versions",
+      "expected": {
+        "axis": "recency",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "version-1-0",
+          "version-1-1",
+          "version-1-2"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "version-1-0",
+            "is_attachment": false,
+            "owner": "Office",
+            "recency_rank": 0,
+            "title": "Policy.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "version-1-1",
+            "is_attachment": false,
+            "owner": "Office",
+            "recency_rank": 1,
+            "title": "Policy.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "version-1-2",
+            "is_attachment": false,
+            "owner": "Office",
+            "recency_rank": 2,
+            "title": "Policy.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the policy version",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "version-1-0",
+          "version-1-1",
+          "version-1-2"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-018",
+      "category": "document_versions",
+      "expected": {
+        "axis": "recency",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "version-2-0",
+          "version-2-1",
+          "version-2-2",
+          "version-2-3"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "version-2-0",
+            "is_attachment": false,
+            "owner": "Office",
+            "recency_rank": 0,
+            "title": "Policy.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "version-2-1",
+            "is_attachment": false,
+            "owner": "Office",
+            "recency_rank": 1,
+            "title": "Policy.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "version-2-2",
+            "is_attachment": false,
+            "owner": "Office",
+            "recency_rank": 2,
+            "title": "Policy.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "version-2-3",
+            "is_attachment": false,
+            "owner": "Office",
+            "recency_rank": 3,
+            "title": "Policy.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "the policy version",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "version-2-0",
+          "version-2-1",
+          "version-2-2",
+          "version-2-3"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-019",
+      "category": "zero_candidates",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "FREE_INPUT_ONLY",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "missing report",
+        "resolution": "UNKNOWN",
+        "scope": []
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-020",
+      "category": "zero_candidates",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "FREE_INPUT_ONLY",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "unknown attachment",
+        "resolution": "UNKNOWN",
+        "scope": []
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-021",
+      "category": "one_insufficient",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CONFIRM_ONE",
+        "overflow": 0,
+        "scope": [
+          "one-CONSEQUENTIAL"
+        ],
+        "shown": [
+          "one-CONSEQUENTIAL"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "one-CONSEQUENTIAL",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Proposal.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "CONSEQUENTIAL",
+        "reference": "which one",
+        "resolution": "RESOLVED",
+        "scope": [
+          "one-CONSEQUENTIAL"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-022",
+      "category": "one_insufficient",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "DIRECT",
+        "overflow": 0,
+        "scope": [
+          "one-RECOVERABLE"
+        ],
+        "shown": [],
+        "state": "TENTATIVE"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "one-RECOVERABLE",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Proposal.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "which one",
+        "resolution": "RESOLVED",
+        "scope": [
+          "one-RECOVERABLE"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-023",
+      "category": "five_candidates",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "five-0-0",
+          "five-0-1",
+          "five-0-2",
+          "five-0-3",
+          "five-0-4"
+        ],
+        "shown": [
+          "five-0-0",
+          "five-0-1",
+          "five-0-2",
+          "five-0-3",
+          "five-0-4"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "five-0-0",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 0.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "five-0-1",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "five-0-2",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "five-0-3",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 3.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "five-0-4",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 4.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "one of five",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "five-0-0",
+          "five-0-1",
+          "five-0-2",
+          "five-0-3",
+          "five-0-4"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-024",
+      "category": "five_candidates",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "five-1-0",
+          "five-1-1",
+          "five-1-2",
+          "five-1-3",
+          "five-1-4"
+        ],
+        "shown": [
+          "five-1-0",
+          "five-1-1",
+          "five-1-2",
+          "five-1-3",
+          "five-1-4"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "five-1-0",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 0.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "five-1-1",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "five-1-2",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "five-1-3",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 3.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "five-1-4",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 4.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "one of five",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "five-1-0",
+          "five-1-1",
+          "five-1-2",
+          "five-1-3",
+          "five-1-4"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-025",
+      "category": "display_overflow",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 2,
+        "scope": [
+          "overflow-0-0",
+          "overflow-0-1",
+          "overflow-0-2",
+          "overflow-0-3",
+          "overflow-0-4",
+          "overflow-0-5",
+          "overflow-0-6"
+        ],
+        "shown": [
+          "overflow-0-0",
+          "overflow-0-1",
+          "overflow-0-2",
+          "overflow-0-3",
+          "overflow-0-4"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "overflow-0-0",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 0.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-0-1",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-0-2",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-0-3",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 3.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-0-4",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 4.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-0-5",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 5.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-0-6",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 6.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "one of many",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "overflow-0-0",
+          "overflow-0-1",
+          "overflow-0-2",
+          "overflow-0-3",
+          "overflow-0-4",
+          "overflow-0-5",
+          "overflow-0-6"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-026",
+      "category": "display_overflow",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 3,
+        "scope": [
+          "overflow-1-0",
+          "overflow-1-1",
+          "overflow-1-2",
+          "overflow-1-3",
+          "overflow-1-4",
+          "overflow-1-5",
+          "overflow-1-6",
+          "overflow-1-7"
+        ],
+        "shown": [
+          "overflow-1-0",
+          "overflow-1-1",
+          "overflow-1-2",
+          "overflow-1-3",
+          "overflow-1-4"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "overflow-1-0",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 0.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-1-1",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-1-2",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-1-3",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 3.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-1-4",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 4.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-1-5",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 5.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-1-6",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 6.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "overflow-1-7",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "File 7.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "one of many",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "overflow-1-0",
+          "overflow-1-1",
+          "overflow-1-2",
+          "overflow-1-3",
+          "overflow-1-4",
+          "overflow-1-5",
+          "overflow-1-6",
+          "overflow-1-7"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-027",
+      "category": "indistinguishable",
+      "expected": {
+        "axis": null,
+        "error": true,
+        "kind": "ERROR",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "ERROR"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "duplicate-0-0",
+            "is_attachment": false,
+            "owner": "Same",
+            "recency_rank": 0,
+            "title": "Same.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "duplicate-0-1",
+            "is_attachment": false,
+            "owner": "Same",
+            "recency_rank": 0,
+            "title": "Same.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "which one",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "duplicate-0-0",
+          "duplicate-0-1"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-028",
+      "category": "indistinguishable",
+      "expected": {
+        "axis": null,
+        "error": true,
+        "kind": "ERROR",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "ERROR"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "duplicate-1-0",
+            "is_attachment": false,
+            "owner": "Same",
+            "recency_rank": 0,
+            "title": "Same.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "duplicate-1-1",
+            "is_attachment": false,
+            "owner": "Same",
+            "recency_rank": 0,
+            "title": "Same.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "which one",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "duplicate-1-0",
+          "duplicate-1-1"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-029",
+      "category": "click_replay",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": null,
+        "scenario": "click_replay",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-030",
+      "category": "wrong_session",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": null,
+        "scenario": "wrong_session",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-031",
+      "category": "wrong_round",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": null,
+        "scenario": "wrong_round",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-032",
+      "category": "stale_candidate",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": null,
+        "scenario": "stale_candidate",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-033",
+      "category": "hidden_free_input",
+      "expected": {
+        "candidate_id": "hidden",
+        "state": "CONFIRMED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "extra-0",
+            "is_attachment": false,
+            "owner": "Unit",
+            "recency_rank": 0,
+            "title": "Extra 0.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "extra-1",
+            "is_attachment": false,
+            "owner": "Unit",
+            "recency_rank": 0,
+            "title": "Extra 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "extra-2",
+            "is_attachment": false,
+            "owner": "Unit",
+            "recency_rank": 0,
+            "title": "Extra 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "extra-3",
+            "is_attachment": false,
+            "owner": "Unit",
+            "recency_rank": 0,
+            "title": "Extra 3.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": "hidden",
+        "scenario": "hidden_free_input",
+        "scope": [
+          "x",
+          "y",
+          "extra-0",
+          "extra-1",
+          "extra-2",
+          "extra-3",
+          "hidden"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-034",
+      "category": "out_of_scope_free_input",
+      "expected": {
+        "candidate_id": null,
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": "hidden",
+        "scenario": "out_of_scope_free_input",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-035",
+      "category": "free_exact_id",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": "y",
+        "scenario": "free_exact_id",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-036",
+      "category": "free_title_heuristic",
+      "expected": {
+        "candidate_id": "y",
+        "state": "TENTATIVE"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Report.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": "Report",
+        "scenario": "free_title_heuristic",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-037",
+      "category": "free_unknown",
+      "expected": {
+        "candidate_id": null,
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": "unmatched text",
+        "scenario": "free_unknown",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-038",
+      "category": "attribute_narrow",
+      "expected": {
+        "candidate_id": null,
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Report.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Report.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": null,
+        "scenario": "attribute_narrow",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-039",
+      "category": "change_rebind",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "Second.pdf",
+        "response_text": null,
+        "scenario": "change_rebind",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-040",
+      "category": "budget_stop",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Report.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Report.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": "unmatched text",
+        "scenario": "budget_stop",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-041",
+      "category": "change_post_execution",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "Second.pdf",
+        "response_text": null,
+        "scenario": "change_post_execution",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-042",
+      "category": "stale_title",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": null,
+        "scenario": "stale_title",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-043",
+      "category": "candidate_removed",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": null,
+        "scenario": "candidate_removed",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-044",
+      "category": "other_candidate_changed",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": null,
+        "scenario": "other_candidate_changed",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-045",
+      "category": "budget_cost_stop",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "x",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Report.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "y",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Report.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "hidden",
+            "is_attachment": false,
+            "owner": "Carol",
+            "recency_rank": 0,
+            "title": "Hidden.pdf"
+          }
+        ],
+        "reference": "which report",
+        "response_text": "unmatched text",
+        "scenario": "budget_cost_stop",
+        "scope": [
+          "x",
+          "y"
+        ]
+      },
+      "layer": "L1",
+      "operation": "respond",
+      "source": "S1 state §§4.1,6; Plan A R3.1/R3.2/R4.4/R4.5/R4.12"
+    },
+    {
+      "case_id": "ARB-046",
+      "category": "impact_gate",
+      "expected": {
+        "allowed": true,
+        "outcome": "ALLOWED_TENTATIVE_RECOVERABLE"
+      },
+      "input": {
+        "binding": "TENTATIVE",
+        "impact": "RECOVERABLE"
+      },
+      "layer": "L1",
+      "operation": "gate",
+      "source": "S2 state §5 G5-G7; D1 and U-1"
+    },
+    {
+      "case_id": "ARB-047",
+      "category": "impact_gate",
+      "expected": {
+        "allowed": false,
+        "outcome": "CONFIRMATION_REQUIRED"
+      },
+      "input": {
+        "binding": "TENTATIVE",
+        "impact": "CONSEQUENTIAL"
+      },
+      "layer": "L1",
+      "operation": "gate",
+      "source": "S2 state §5 G5-G7; D1 and U-1"
+    },
+    {
+      "case_id": "ARB-048",
+      "category": "impact_gate",
+      "expected": {
+        "allowed": false,
+        "outcome": "CONFIRMATION_REQUIRED"
+      },
+      "input": {
+        "binding": "TENTATIVE",
+        "impact": null
+      },
+      "layer": "L1",
+      "operation": "gate",
+      "source": "S2 state §5 G5-G7; D1 and U-1"
+    },
+    {
+      "case_id": "ARB-049",
+      "category": "impact_gate",
+      "expected": {
+        "allowed": true,
+        "outcome": "ALLOWED_CONFIRMED"
+      },
+      "input": {
+        "binding": "CONFIRMED",
+        "impact": null
+      },
+      "layer": "L1",
+      "operation": "gate",
+      "source": "S2 state §5 G5-G7; D1 and U-1"
+    },
+    {
+      "case_id": "ARB-050",
+      "category": "conflicting_metadata",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "conflict-0-a",
+          "conflict-0-b"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "conflict-0-a",
+            "is_attachment": false,
+            "owner": "North",
+            "recency_rank": 0,
+            "title": "Record.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "conflict-0-b",
+            "is_attachment": false,
+            "owner": "South",
+            "recency_rank": 0,
+            "title": "Record.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "record",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "conflict-0-a",
+          "conflict-0-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-051",
+      "category": "conflicting_metadata",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "conflict-1-a",
+          "conflict-1-b"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "conflict-1-a",
+            "is_attachment": false,
+            "owner": "North",
+            "recency_rank": 0,
+            "title": "Record.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "conflict-1-b",
+            "is_attachment": false,
+            "owner": "South",
+            "recency_rank": 0,
+            "title": "Record.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "record",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "conflict-1-a",
+          "conflict-1-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-052",
+      "category": "exactly_two",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "two-0-a",
+          "two-0-b"
+        ],
+        "shown": [
+          "two-0-a",
+          "two-0-b"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "two-0-a",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "two-0-b",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "which file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "two-0-a",
+          "two-0-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-053",
+      "category": "exactly_two",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "two-1-a",
+          "two-1-b"
+        ],
+        "shown": [
+          "two-1-a",
+          "two-1-b"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "two-1-a",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "First.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "two-1-b",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Second.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "which file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "two-1-a",
+          "two-1-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-054",
+      "category": "negation_contrast",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "contrast-0-a",
+          "contrast-0-b"
+        ],
+        "shown": [
+          "contrast-0-a",
+          "contrast-0-b"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "contrast-0-excluded",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Avoid 0.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "contrast-0-a",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "One.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "contrast-0-b",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Two.pdf"
+          }
+        ],
+        "excluded": [
+          "contrast-0-excluded"
+        ],
+        "impact": "RECOVERABLE",
+        "reference": "the other file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "contrast-0-a",
+          "contrast-0-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-055",
+      "category": "negation_contrast",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "contrast-1-a",
+          "contrast-1-b"
+        ],
+        "shown": [
+          "contrast-1-a",
+          "contrast-1-b"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "contrast-1-excluded",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Avoid 1.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "contrast-1-a",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "One.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "contrast-1-b",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Two.pdf"
+          }
+        ],
+        "excluded": [
+          "contrast-1-excluded"
+        ],
+        "impact": "RECOVERABLE",
+        "reference": "the other file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "contrast-1-a",
+          "contrast-1-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-056",
+      "category": "negation_contrast",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "contrast-2-a",
+          "contrast-2-b"
+        ],
+        "shown": [
+          "contrast-2-a",
+          "contrast-2-b"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "contrast-2-excluded",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Avoid 2.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "contrast-2-a",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "One.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "contrast-2-b",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Two.pdf"
+          }
+        ],
+        "excluded": [
+          "contrast-2-excluded"
+        ],
+        "impact": "RECOVERABLE",
+        "reference": "the other file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "contrast-2-a",
+          "contrast-2-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-057",
+      "category": "edge_disabled",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "edge-0-a",
+          "edge-0-b"
+        ],
+        "shown": [
+          "edge-0-a",
+          "edge-0-b"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "edge-0-a",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "One.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "edge-0-b",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Two.pdf"
+          }
+        ],
+        "edge_state": "OFF",
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "which file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "edge-0-a",
+          "edge-0-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-058",
+      "category": "edge_disabled",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "edge-1-a",
+          "edge-1-b"
+        ],
+        "shown": [
+          "edge-1-a",
+          "edge-1-b"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "edge-1-a",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "One.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "edge-1-b",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Two.pdf"
+          }
+        ],
+        "edge_state": "OFF",
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "which file",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "edge-1-a",
+          "edge-1-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-059",
+      "category": "generator_unavailable",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "generator-0-a",
+          "generator-0-b"
+        ],
+        "shown": [
+          "generator-0-a",
+          "generator-0-b"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "generator-0-a",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "One.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "generator-0-b",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Two.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "which file",
+        "renderer_availability": "UNAVAILABLE",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "generator-0-a",
+          "generator-0-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-060",
+      "category": "generator_unavailable",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "generator-1-a",
+          "generator-1-b"
+        ],
+        "shown": [
+          "generator-1-a",
+          "generator-1-b"
+        ],
+        "state": "PENDING"
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "generator-1-a",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "One.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "generator-1-b",
+            "is_attachment": false,
+            "owner": null,
+            "recency_rank": 0,
+            "title": "Two.pdf"
+          }
+        ],
+        "excluded": [],
+        "impact": "RECOVERABLE",
+        "reference": "which file",
+        "renderer_availability": "TIMEOUT",
+        "resolution": "AMBIGUOUS",
+        "scope": [
+          "generator-1-a",
+          "generator-1-b"
+        ]
+      },
+      "layer": "L1",
+      "operation": "build",
+      "source": "Plan A R4.3/R4.12; S1 state §§4,6"
+    },
+    {
+      "case_id": "ARB-061",
+      "category": "malformed_output",
+      "expected": {
+        "flag": "V-SCHEMA",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "not_json"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-062",
+      "category": "malformed_output",
+      "expected": {
+        "flag": "V-SCHEMA",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "extra_field"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-063",
+      "category": "malformed_output",
+      "expected": {
+        "flag": "V-SCHEMA",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "duplicate_json_key"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-064",
+      "category": "invented_option",
+      "expected": {
+        "flag": "V-SLOT-UNKNOWN",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "unknown_slot"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-065",
+      "category": "invented_option",
+      "expected": {
+        "flag": "V-SLOT-UNKNOWN",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "extra_slot"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-066",
+      "category": "rank_mutation",
+      "expected": {
+        "flag": "V-ORDER",
+        "valid": true
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "reverse_order"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-067",
+      "category": "omission",
+      "expected": {
+        "flag": "V-SLOT-MISSING",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "omit_first"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-068",
+      "category": "omission",
+      "expected": {
+        "flag": "V-SLOT-MISSING",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "omit_second"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-069",
+      "category": "unsupported_fact",
+      "expected": {
+        "flag": "V-UNSUPPORTED-FACT",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "invented_label"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-070",
+      "category": "unsupported_fact",
+      "expected": {
+        "flag": "V-UNSUPPORTED-FACT",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "invented_question"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-071",
+      "category": "unsupported_fact",
+      "expected": {
+        "flag": "V-UNSUPPORTED-FACT",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "invented_location"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-072",
+      "category": "cross_slot",
+      "expected": {
+        "flag": "V-CROSS-SLOT",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "swap_labels"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-073",
+      "category": "cross_slot",
+      "expected": {
+        "flag": "V-CROSS-SLOT",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "borrow_owner"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-074",
+      "category": "presumption",
+      "expected": {
+        "flag": "V-SELECTION",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "selected_question"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-075",
+      "category": "presumption",
+      "expected": {
+        "flag": "V-SELECTION",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "assume_question"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-076",
+      "category": "contrast",
+      "expected": {
+        "flag": "V-EXCLUSION",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "excluded_question"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-077",
+      "category": "contrast",
+      "expected": {
+        "flag": "V-EXCLUSION",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "excluded_label"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-078",
+      "category": "contrast",
+      "expected": {
+        "flag": "V-EXCLUSION",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "excluded_second"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-079",
+      "category": "duplicate_label",
+      "expected": {
+        "flag": "V-LABEL-DUP",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "duplicate_labels"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-080",
+      "category": "duplicate_label",
+      "expected": {
+        "flag": "V-LABEL-DUP",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "duplicate_labels_case"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    }
+  ],
+  "schema_version": "m33.3.s3.l1l2.v1"
+}

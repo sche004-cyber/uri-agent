@@ -1,0 +1,2295 @@
+{
+  "cases": [
+    {
+      "case_id": "ARB-001",
+      "category": "same_name_people",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "person-1-0",
+          "person-1-1"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": "owner",
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "person-1-0",
+          "person-1-1"
+        ],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-002",
+      "category": "same_name_people",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "person-2-0",
+          "person-2-1",
+          "person-2-2"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": "owner",
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "person-2-0",
+          "person-2-1",
+          "person-2-2"
+        ],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-003",
+      "category": "same_name_people",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "person-3-0",
+          "person-3-1",
+          "person-3-2",
+          "person-3-3"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": "owner",
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "person-3-0",
+          "person-3-1",
+          "person-3-2",
+          "person-3-3"
+        ],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-004",
+      "category": "similar_files",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "file-0-0",
+          "file-0-1"
+        ],
+        "shown": [
+          "file-0-0",
+          "file-0-1"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "file-0-0",
+          "file-0-1"
+        ],
+        "shown": [
+          "file-0-0",
+          "file-0-1"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-005",
+      "category": "similar_files",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "file-1-0",
+          "file-1-1",
+          "file-1-2"
+        ],
+        "shown": [
+          "file-1-0",
+          "file-1-1",
+          "file-1-2"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "file-1-0",
+          "file-1-1",
+          "file-1-2"
+        ],
+        "shown": [
+          "file-1-0",
+          "file-1-1",
+          "file-1-2"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-006",
+      "category": "similar_files",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "file-2-0",
+          "file-2-1",
+          "file-2-2",
+          "file-2-3"
+        ],
+        "shown": [
+          "file-2-0",
+          "file-2-1",
+          "file-2-2",
+          "file-2-3"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "file-2-0",
+          "file-2-1",
+          "file-2-2",
+          "file-2-3"
+        ],
+        "shown": [
+          "file-2-0",
+          "file-2-1",
+          "file-2-2",
+          "file-2-3"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-007",
+      "category": "temporal",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "time-0-0",
+          "time-0-1"
+        ],
+        "shown": [
+          "time-0-0",
+          "time-0-1"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "time-0-0",
+          "time-0-1"
+        ],
+        "shown": [
+          "time-0-0",
+          "time-0-1"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-008",
+      "category": "temporal",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "time-1-0",
+          "time-1-1",
+          "time-1-2"
+        ],
+        "shown": [
+          "time-1-0",
+          "time-1-1",
+          "time-1-2"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "time-1-0",
+          "time-1-1",
+          "time-1-2"
+        ],
+        "shown": [
+          "time-1-0",
+          "time-1-1",
+          "time-1-2"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-009",
+      "category": "temporal",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "time-2-0",
+          "time-2-1",
+          "time-2-2",
+          "time-2-3"
+        ],
+        "shown": [
+          "time-2-0",
+          "time-2-1",
+          "time-2-2",
+          "time-2-3"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "time-2-0",
+          "time-2-1",
+          "time-2-2",
+          "time-2-3"
+        ],
+        "shown": [
+          "time-2-0",
+          "time-2-1",
+          "time-2-2",
+          "time-2-3"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-010",
+      "category": "attachments",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "attachment-0-0",
+          "attachment-0-1"
+        ],
+        "shown": [
+          "attachment-0-0",
+          "attachment-0-1"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "attachment-0-0",
+          "attachment-0-1"
+        ],
+        "shown": [
+          "attachment-0-0",
+          "attachment-0-1"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-011",
+      "category": "attachments",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "attachment-1-0",
+          "attachment-1-1",
+          "attachment-1-2"
+        ],
+        "shown": [
+          "attachment-1-0",
+          "attachment-1-1",
+          "attachment-1-2"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "attachment-1-0",
+          "attachment-1-1",
+          "attachment-1-2"
+        ],
+        "shown": [
+          "attachment-1-0",
+          "attachment-1-1",
+          "attachment-1-2"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-012",
+      "category": "attachments",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "attachment-2-0",
+          "attachment-2-1",
+          "attachment-2-2",
+          "attachment-2-3"
+        ],
+        "shown": [
+          "attachment-2-0",
+          "attachment-2-1",
+          "attachment-2-2",
+          "attachment-2-3"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "attachment-2-0",
+          "attachment-2-1",
+          "attachment-2-2",
+          "attachment-2-3"
+        ],
+        "shown": [
+          "attachment-2-0",
+          "attachment-2-1",
+          "attachment-2-2",
+          "attachment-2-3"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-013",
+      "category": "emails_threads",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "email-0-0",
+          "email-0-1"
+        ],
+        "shown": [
+          "email-0-0",
+          "email-0-1"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "email-0-0",
+          "email-0-1"
+        ],
+        "shown": [
+          "email-0-0",
+          "email-0-1"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-014",
+      "category": "emails_threads",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "email-1-0",
+          "email-1-1",
+          "email-1-2"
+        ],
+        "shown": [
+          "email-1-0",
+          "email-1-1",
+          "email-1-2"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "email-1-0",
+          "email-1-1",
+          "email-1-2"
+        ],
+        "shown": [
+          "email-1-0",
+          "email-1-1",
+          "email-1-2"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-015",
+      "category": "emails_threads",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "email-2-0",
+          "email-2-1",
+          "email-2-2",
+          "email-2-3"
+        ],
+        "shown": [
+          "email-2-0",
+          "email-2-1",
+          "email-2-2",
+          "email-2-3"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "email-2-0",
+          "email-2-1",
+          "email-2-2",
+          "email-2-3"
+        ],
+        "shown": [
+          "email-2-0",
+          "email-2-1",
+          "email-2-2",
+          "email-2-3"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-016",
+      "category": "document_versions",
+      "expected": {
+        "axis": "recency",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "version-0-0",
+          "version-0-1"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": "recency",
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "version-0-0",
+          "version-0-1"
+        ],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-017",
+      "category": "document_versions",
+      "expected": {
+        "axis": "recency",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "version-1-0",
+          "version-1-1",
+          "version-1-2"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": "recency",
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "version-1-0",
+          "version-1-1",
+          "version-1-2"
+        ],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-018",
+      "category": "document_versions",
+      "expected": {
+        "axis": "recency",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "version-2-0",
+          "version-2-1",
+          "version-2-2",
+          "version-2-3"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": "recency",
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "version-2-0",
+          "version-2-1",
+          "version-2-2",
+          "version-2-3"
+        ],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-019",
+      "category": "zero_candidates",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "FREE_INPUT_ONLY",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "FREE_INPUT_ONLY",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-020",
+      "category": "zero_candidates",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "FREE_INPUT_ONLY",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "FREE_INPUT_ONLY",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-021",
+      "category": "one_insufficient",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CONFIRM_ONE",
+        "overflow": 0,
+        "scope": [
+          "one-CONSEQUENTIAL"
+        ],
+        "shown": [
+          "one-CONSEQUENTIAL"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CONFIRM_ONE",
+        "overflow": 0,
+        "scope": [
+          "one-CONSEQUENTIAL"
+        ],
+        "shown": [
+          "one-CONSEQUENTIAL"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-022",
+      "category": "one_insufficient",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "DIRECT",
+        "overflow": 0,
+        "scope": [
+          "one-RECOVERABLE"
+        ],
+        "shown": [],
+        "state": "TENTATIVE"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "kind": "DIRECT",
+        "overflow": 0,
+        "scope": [
+          "one-RECOVERABLE"
+        ],
+        "shown": [],
+        "state": "TENTATIVE"
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-023",
+      "category": "five_candidates",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "five-0-0",
+          "five-0-1",
+          "five-0-2",
+          "five-0-3",
+          "five-0-4"
+        ],
+        "shown": [
+          "five-0-0",
+          "five-0-1",
+          "five-0-2",
+          "five-0-3",
+          "five-0-4"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "five-0-0",
+          "five-0-1",
+          "five-0-2",
+          "five-0-3",
+          "five-0-4"
+        ],
+        "shown": [
+          "five-0-0",
+          "five-0-1",
+          "five-0-2",
+          "five-0-3",
+          "five-0-4"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-024",
+      "category": "five_candidates",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "five-1-0",
+          "five-1-1",
+          "five-1-2",
+          "five-1-3",
+          "five-1-4"
+        ],
+        "shown": [
+          "five-1-0",
+          "five-1-1",
+          "five-1-2",
+          "five-1-3",
+          "five-1-4"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "five-1-0",
+          "five-1-1",
+          "five-1-2",
+          "five-1-3",
+          "five-1-4"
+        ],
+        "shown": [
+          "five-1-0",
+          "five-1-1",
+          "five-1-2",
+          "five-1-3",
+          "five-1-4"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-025",
+      "category": "display_overflow",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 2,
+        "scope": [
+          "overflow-0-0",
+          "overflow-0-1",
+          "overflow-0-2",
+          "overflow-0-3",
+          "overflow-0-4",
+          "overflow-0-5",
+          "overflow-0-6"
+        ],
+        "shown": [
+          "overflow-0-0",
+          "overflow-0-1",
+          "overflow-0-2",
+          "overflow-0-3",
+          "overflow-0-4"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 2,
+        "scope": [
+          "overflow-0-0",
+          "overflow-0-1",
+          "overflow-0-2",
+          "overflow-0-3",
+          "overflow-0-4",
+          "overflow-0-5",
+          "overflow-0-6"
+        ],
+        "shown": [
+          "overflow-0-0",
+          "overflow-0-1",
+          "overflow-0-2",
+          "overflow-0-3",
+          "overflow-0-4"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-026",
+      "category": "display_overflow",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 3,
+        "scope": [
+          "overflow-1-0",
+          "overflow-1-1",
+          "overflow-1-2",
+          "overflow-1-3",
+          "overflow-1-4",
+          "overflow-1-5",
+          "overflow-1-6",
+          "overflow-1-7"
+        ],
+        "shown": [
+          "overflow-1-0",
+          "overflow-1-1",
+          "overflow-1-2",
+          "overflow-1-3",
+          "overflow-1-4"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 3,
+        "scope": [
+          "overflow-1-0",
+          "overflow-1-1",
+          "overflow-1-2",
+          "overflow-1-3",
+          "overflow-1-4",
+          "overflow-1-5",
+          "overflow-1-6",
+          "overflow-1-7"
+        ],
+        "shown": [
+          "overflow-1-0",
+          "overflow-1-1",
+          "overflow-1-2",
+          "overflow-1-3",
+          "overflow-1-4"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-027",
+      "category": "indistinguishable",
+      "expected": {
+        "axis": null,
+        "error": true,
+        "kind": "ERROR",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "ERROR"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "detail": "indistinguishable candidates lack grounded display facts",
+        "error": true,
+        "kind": "ERROR",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "ERROR"
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-028",
+      "category": "indistinguishable",
+      "expected": {
+        "axis": null,
+        "error": true,
+        "kind": "ERROR",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "ERROR"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "detail": "indistinguishable candidates lack grounded display facts",
+        "error": true,
+        "kind": "ERROR",
+        "overflow": 0,
+        "scope": [],
+        "shown": [],
+        "state": "ERROR"
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-029",
+      "category": "click_replay",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": "y",
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": null,
+        "state": "CONFIRMED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-030",
+      "category": "wrong_session",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": "wrong session",
+        "state": "REJECTED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-031",
+      "category": "wrong_round",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": "unknown ambiguity ID",
+        "state": "REJECTED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-032",
+      "category": "stale_candidate",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": "candidate stale or absent",
+        "state": "REJECTED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-033",
+      "category": "hidden_free_input",
+      "expected": {
+        "candidate_id": "hidden",
+        "state": "CONFIRMED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": "hidden",
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": null,
+        "state": "CONFIRMED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-034",
+      "category": "out_of_scope_free_input",
+      "expected": {
+        "candidate_id": null,
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": true,
+        "reason": null,
+        "state": "PENDING"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-035",
+      "category": "free_exact_id",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": "y",
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": null,
+        "state": "CONFIRMED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-036",
+      "category": "free_title_heuristic",
+      "expected": {
+        "candidate_id": "y",
+        "state": "TENTATIVE"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": "y",
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": null,
+        "state": "TENTATIVE"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-037",
+      "category": "free_unknown",
+      "expected": {
+        "candidate_id": null,
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": true,
+        "reason": null,
+        "state": "PENDING"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-038",
+      "category": "attribute_narrow",
+      "expected": {
+        "candidate_id": null,
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": true,
+        "reason": null,
+        "state": "PENDING"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-039",
+      "category": "change_rebind",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": "y",
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": null,
+        "state": "CONFIRMED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-040",
+      "category": "budget_stop",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": "clarification budget exhausted",
+        "state": "REJECTED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-041",
+      "category": "change_post_execution",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": "y",
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": null,
+        "state": "CONFIRMED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-042",
+      "category": "stale_title",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": "candidate stale or absent",
+        "state": "REJECTED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-043",
+      "category": "candidate_removed",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": "candidate scope changed",
+        "state": "REJECTED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-044",
+      "category": "other_candidate_changed",
+      "expected": {
+        "candidate_id": "y",
+        "state": "CONFIRMED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": "y",
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": null,
+        "state": "CONFIRMED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-045",
+      "category": "budget_cost_stop",
+      "expected": {
+        "candidate_id": null,
+        "state": "REJECTED"
+      },
+      "level": "L1",
+      "observed": {
+        "candidate_id": null,
+        "extra_guard_pass": true,
+        "has_next_contract": false,
+        "reason": "clarification budget exhausted",
+        "state": "REJECTED"
+      },
+      "operation": "respond",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-046",
+      "category": "impact_gate",
+      "expected": {
+        "allowed": true,
+        "outcome": "ALLOWED_TENTATIVE_RECOVERABLE"
+      },
+      "level": "L1",
+      "observed": {
+        "allowed": true,
+        "impact_declared": true,
+        "outcome": "ALLOWED_TENTATIVE_RECOVERABLE"
+      },
+      "operation": "gate",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-047",
+      "category": "impact_gate",
+      "expected": {
+        "allowed": false,
+        "outcome": "CONFIRMATION_REQUIRED"
+      },
+      "level": "L1",
+      "observed": {
+        "allowed": false,
+        "impact_declared": true,
+        "outcome": "CONFIRMATION_REQUIRED"
+      },
+      "operation": "gate",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-048",
+      "category": "impact_gate",
+      "expected": {
+        "allowed": false,
+        "outcome": "CONFIRMATION_REQUIRED"
+      },
+      "level": "L1",
+      "observed": {
+        "allowed": false,
+        "impact_declared": false,
+        "outcome": "CONFIRMATION_REQUIRED"
+      },
+      "operation": "gate",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-049",
+      "category": "impact_gate",
+      "expected": {
+        "allowed": true,
+        "outcome": "ALLOWED_CONFIRMED"
+      },
+      "level": "L1",
+      "observed": {
+        "allowed": true,
+        "impact_declared": false,
+        "outcome": "ALLOWED_CONFIRMED"
+      },
+      "operation": "gate",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-050",
+      "category": "conflicting_metadata",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "conflict-0-a",
+          "conflict-0-b"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": "owner",
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "conflict-0-a",
+          "conflict-0-b"
+        ],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-051",
+      "category": "conflicting_metadata",
+      "expected": {
+        "axis": "owner",
+        "error": false,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "conflict-1-a",
+          "conflict-1-b"
+        ],
+        "shown": [],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": "owner",
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ATTRIBUTE",
+        "overflow": 0,
+        "scope": [
+          "conflict-1-a",
+          "conflict-1-b"
+        ],
+        "shown": [],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-052",
+      "category": "exactly_two",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "two-0-a",
+          "two-0-b"
+        ],
+        "shown": [
+          "two-0-a",
+          "two-0-b"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "two-0-a",
+          "two-0-b"
+        ],
+        "shown": [
+          "two-0-a",
+          "two-0-b"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-053",
+      "category": "exactly_two",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "two-1-a",
+          "two-1-b"
+        ],
+        "shown": [
+          "two-1-a",
+          "two-1-b"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "two-1-a",
+          "two-1-b"
+        ],
+        "shown": [
+          "two-1-a",
+          "two-1-b"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-054",
+      "category": "negation_contrast",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "contrast-0-a",
+          "contrast-0-b"
+        ],
+        "shown": [
+          "contrast-0-a",
+          "contrast-0-b"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "exclusion_integrity": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "contrast-0-a",
+          "contrast-0-b"
+        ],
+        "shown": [
+          "contrast-0-a",
+          "contrast-0-b"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-055",
+      "category": "negation_contrast",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "contrast-1-a",
+          "contrast-1-b"
+        ],
+        "shown": [
+          "contrast-1-a",
+          "contrast-1-b"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "exclusion_integrity": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "contrast-1-a",
+          "contrast-1-b"
+        ],
+        "shown": [
+          "contrast-1-a",
+          "contrast-1-b"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-056",
+      "category": "negation_contrast",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "contrast-2-a",
+          "contrast-2-b"
+        ],
+        "shown": [
+          "contrast-2-a",
+          "contrast-2-b"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "exclusion_integrity": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "contrast-2-a",
+          "contrast-2-b"
+        ],
+        "shown": [
+          "contrast-2-a",
+          "contrast-2-b"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-057",
+      "category": "edge_disabled",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "edge-0-a",
+          "edge-0-b"
+        ],
+        "shown": [
+          "edge-0-a",
+          "edge-0-b"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "edge-0-a",
+          "edge-0-b"
+        ],
+        "shown": [
+          "edge-0-a",
+          "edge-0-b"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-058",
+      "category": "edge_disabled",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "edge-1-a",
+          "edge-1-b"
+        ],
+        "shown": [
+          "edge-1-a",
+          "edge-1-b"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "edge-1-a",
+          "edge-1-b"
+        ],
+        "shown": [
+          "edge-1-a",
+          "edge-1-b"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-059",
+      "category": "generator_unavailable",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "generator-0-a",
+          "generator-0-b"
+        ],
+        "shown": [
+          "generator-0-a",
+          "generator-0-b"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "generator-0-a",
+          "generator-0-b"
+        ],
+        "shown": [
+          "generator-0-a",
+          "generator-0-b"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-060",
+      "category": "generator_unavailable",
+      "expected": {
+        "axis": null,
+        "error": false,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "generator-1-a",
+          "generator-1-b"
+        ],
+        "shown": [
+          "generator-1-a",
+          "generator-1-b"
+        ],
+        "state": "PENDING"
+      },
+      "level": "L1",
+      "observed": {
+        "axis": null,
+        "error": false,
+        "escape_appended": true,
+        "kind": "CHOOSE_ONE",
+        "overflow": 0,
+        "scope": [
+          "generator-1-a",
+          "generator-1-b"
+        ],
+        "shown": [
+          "generator-1-a",
+          "generator-1-b"
+        ],
+        "slot_identity": true,
+        "state": "PENDING",
+        "template_valid": true
+      },
+      "operation": "build",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-061",
+      "category": "malformed_output",
+      "expected": {
+        "flag": "V-SCHEMA",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SCHEMA"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-062",
+      "category": "malformed_output",
+      "expected": {
+        "flag": "V-SCHEMA",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SCHEMA"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-063",
+      "category": "malformed_output",
+      "expected": {
+        "flag": "V-SCHEMA",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SCHEMA"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-064",
+      "category": "invented_option",
+      "expected": {
+        "flag": "V-SLOT-UNKNOWN",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SLOT-UNKNOWN",
+          "V-SLOT-MISSING"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-065",
+      "category": "invented_option",
+      "expected": {
+        "flag": "V-SLOT-UNKNOWN",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SLOT-UNKNOWN",
+          "V-EXTRA-OPTION"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-066",
+      "category": "rank_mutation",
+      "expected": {
+        "flag": "V-ORDER",
+        "valid": true
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-ORDER"
+        ],
+        "valid": true
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-067",
+      "category": "omission",
+      "expected": {
+        "flag": "V-SLOT-MISSING",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SLOT-MISSING",
+          "V-EXTRA-OPTION"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-068",
+      "category": "omission",
+      "expected": {
+        "flag": "V-SLOT-MISSING",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SLOT-MISSING",
+          "V-EXTRA-OPTION"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-069",
+      "category": "unsupported_fact",
+      "expected": {
+        "flag": "V-UNSUPPORTED-FACT",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-UNSUPPORTED-FACT"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-070",
+      "category": "unsupported_fact",
+      "expected": {
+        "flag": "V-UNSUPPORTED-FACT",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-UNSUPPORTED-FACT"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-071",
+      "category": "unsupported_fact",
+      "expected": {
+        "flag": "V-UNSUPPORTED-FACT",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-UNSUPPORTED-FACT"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-072",
+      "category": "cross_slot",
+      "expected": {
+        "flag": "V-CROSS-SLOT",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-UNSUPPORTED-FACT",
+          "V-CROSS-SLOT"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-073",
+      "category": "cross_slot",
+      "expected": {
+        "flag": "V-CROSS-SLOT",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-UNSUPPORTED-FACT",
+          "V-CROSS-SLOT"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-074",
+      "category": "presumption",
+      "expected": {
+        "flag": "V-SELECTION",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SELECTION",
+          "V-UNSUPPORTED-FACT"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-075",
+      "category": "presumption",
+      "expected": {
+        "flag": "V-SELECTION",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SELECTION",
+          "V-UNSUPPORTED-FACT"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-076",
+      "category": "contrast",
+      "expected": {
+        "flag": "V-EXCLUSION",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-UNSUPPORTED-FACT",
+          "V-EXCLUSION"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-077",
+      "category": "contrast",
+      "expected": {
+        "flag": "V-EXCLUSION",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-UNSUPPORTED-FACT",
+          "V-EXCLUSION"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-078",
+      "category": "contrast",
+      "expected": {
+        "flag": "V-EXCLUSION",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-UNSUPPORTED-FACT",
+          "V-EXCLUSION"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-079",
+      "category": "duplicate_label",
+      "expected": {
+        "flag": "V-LABEL-DUP",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-LABEL-DUP",
+          "V-UNSUPPORTED-FACT",
+          "V-CROSS-SLOT"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-080",
+      "category": "duplicate_label",
+      "expected": {
+        "flag": "V-LABEL-DUP",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-LABEL-DUP",
+          "V-UNSUPPORTED-FACT",
+          "V-CROSS-SLOT"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    }
+  ]
+}

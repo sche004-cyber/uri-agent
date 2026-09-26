@@ -1,0 +1,13 @@
+{
+  "battery_lf_sha256": "7601125b77569ef3c8020b473ceabb32443cd8bec3ccd02263bbdd733d32fa7e",
+  "critical_gates_passed": true,
+  "failed": 0,
+  "failed_case_ids": [],
+  "l1_passed": 60,
+  "l2_passed": 20,
+  "l3_model_metrics": "UNMEASURED",
+  "passed": 80,
+  "runtime_ms": "UNMEASURED",
+  "schema_version": "m33.3.s3.l1l2.v1",
+  "total": 80
+}
