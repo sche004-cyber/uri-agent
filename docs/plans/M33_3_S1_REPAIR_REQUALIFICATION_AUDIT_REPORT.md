@@ -97,4 +97,4 @@ Batch A remains frozen, RAR remains frozen, and there is no S2 authorization or 
 
 ## 9. Post-push addendum
 
-Pending closure commit and remote verification.
+The S1 repair/test/audit/freeze transaction was committed as `04cc35f896ded739b0f032eb0e498480a3ce2f0b` (`fix(m33.3): requalify and freeze S1 clarification`) on `m35-uri-v1-parallel-architecture`. `git push origin m35-uri-v1-parallel-architecture` succeeded with `3cd5c03..04cc35f`. A subsequent `git ls-remote origin refs/heads/m35-uri-v1-parallel-architecture` returned exactly `04cc35f896ded739b0f032eb0e498480a3ce2f0b`, matching local `git rev-parse HEAD` at that checkpoint. This addendum is an evidence-only follow-up commit; it changes no production code, tests, frozen artifact, or authorization state.
