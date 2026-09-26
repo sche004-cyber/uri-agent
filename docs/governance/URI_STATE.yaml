@@ -165,8 +165,10 @@ queued_initiatives:
     evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1a"
 
 active_continuation:
-  status: "M33_3_CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT"
-  previous_status: "M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY"
+  status: "M33_3_RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
+  previous_status: "M33_3_CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT"
+  rg0_note: "Updated 2026-09-26 (additive). The independent RG-0 cross-plan re-audit returned BOUNDED_REPAIR_REQUIRED with findings RG-0-F1 (incomplete CHOOSE_ATTRIBUTE contract), RG-0-F2 (Change/rebind/redo lifecycle allowed redo before a validated rebind), RG-0-F3 (RAR described as having no scores; DeterministicRARTrace.candidate_scores exist as deterministic diagnostic scores, not calibrated confidence), and a B-R7 interface clarification (the existing RARQuery is the RAR-facing projection; a provenance-bearing evidence envelope is future S4 work). Repairs: Plan A revision R3, Plan B revision R2, cross-plan audit COR-5 and COR-6. No new User decision was required. D1 user acceptance: USER_ACCEPTANCE_SATISFIED (PG-2 no longer awaits it). The RG-0 report is not stored in the repository; its findings are recorded in docs/plans/M33_3_CROSS_PLAN_STATE.md section 5a. Next step: a focused independent re-audit (RG-0R) of these four repairs, not S1. Implementation NOT authorized; no slice S1-S13 open; no INT-* event; URI-RAR not adopted. A9 rar_deterministic.py, rar_contracts.py, and the frozen Batch A battery verified unchanged."
+  previous_status_history: "M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY -> M33_3_CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT -> M33_3_RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
   cross_plan_note: "Updated 2026-09-26 (additive). ARN planning-only continuation produced two plans, cross-audited together (docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md, verdict COMPATIBLE_WITH_BOUNDED_REPAIRS). The G0 + cross-plan repair pass applied repairs A-R1..A-R12 and B-R1..B-R9, recorded User decisions D1-D4 (see architecture_decisions), and recorded M33.2 amendments G1-G3. Next step is an independent cross-plan re-audit (RG-0). Implementation NOT authorized; no slice S1-S13 open; no INT-* event; URI-RAR not adopted. State file: docs/plans/M33_3_CROSS_PLAN_STATE.md."
   scope: "M33.3 Batch A is CLOSED as Stage A readiness/methodology evidence (docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md). No Edge candidate qualified, no production integration, no Stage B, no INT-* event, no ARN implementation. Next authorized action is planning-only, for ARN architecture and a <=1B clarification text generator; integration_events remains empty."
   note: "Updated 2026-09-25 (additive). History: NONE_AUTHORIZED_TO_IMPLEMENT -> M33_3_BATCH_A_ACCEPTED_READY_FOR_EXECUTION -> M33_3_BATCH_A_VERIFICATION_READY_AWAITING_INDEPENDENT_AUDIT -> M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY (independent R4 re-audit ACCEPT_WITH_DOCUMENTED_LIMITATIONS; docs/plans/M33_3_BATCH_A_R4_INDEPENDENT_REAUDIT_REPORT.md)."
@@ -183,8 +185,9 @@ planning_artifacts:
     parent_milestone: "M33.3"
     title: "User-facing reference clarification and correction layer around reference resolution (Plan A)"
     path: "docs/plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md"
-    revision: "R2"
-    status: "PLAN_REVISED_R2_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT"
+    revision: "R3"
+    status: "PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
+    status_history: "PLAN_REVISED_R2_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT -> RG-0 BOUNDED_REPAIR_REQUIRED -> PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT (R3 = RG-0-F1, RG-0-F2, RG-0-F3 repairs)"
     implementation_authorized: false
     naming_note: "Not ARN, not ARN.2; does not unpause the ARN milestone. The bare alias ARN stays AMBIGUOUS_BARE_ALIAS_FORBIDDEN. The earlier placeholder URI-ARN-CLARIFICATION (Plan A section 2) is superseded. The file name is unchanged; a rename to M33_3_REFERENCE_CLARIFICATION_PLAN.md is deferred to acceptance. Registered as a planning identity only, not as a reusable component."
     reuses_without_modifying: "ARN.1 (uri_core/core/arn/), URI-RAR candidate contracts (uri_v1/turn/rar_contracts.py), A9-protected uri_v1/turn/rar_deterministic.py (read-only)"
@@ -193,8 +196,9 @@ planning_artifacts:
     parent_milestone: "M33.3"
     title: "URI Brain Architecture - evidence-grounded proposal (Plan B)"
     path: "docs/plans/M33_3_URI_BRAIN_ARCHITECTURE_PROPOSAL.md"
-    revision: "R1 over verbatim R0"
-    status: "PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT"
+    revision: "R1 and R2 over verbatim R0"
+    status: "PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
+    status_history: "PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT -> RG-0 BOUNDED_REPAIR_REQUIRED -> PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT (R2 = B-R7 interface clarification)"
     implementation_authorized: false
     provenance: "R0 authored by Codex 2026-09-25T22:51:31.958Z; recovered verbatim from Codex session rollout-2026-09-26T03-31-00-01a0da96-071c-72f0-8562-0f71ac9457db.jsonl; R0 SHA-256 cf08a0892a8b87508b771edb3a856da652ef19f57ffdc7fb66245108962b8a9b; brought into the repository 2026-09-26."
   - id: "M33_3_CROSS_PLAN_AUDIT"
@@ -203,6 +207,7 @@ planning_artifacts:
     path: "docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md"
     status: "VERDICT_COMPATIBLE_WITH_BOUNDED_REPAIRS"
     note: "Durable record of the 2026-09-26 cross-plan audit, with post-audit corrections COR-1..COR-4. The next required step is an independent re-audit (RG-0) of the repaired plans; see docs/plans/M33_3_CROSS_PLAN_STATE.md."
+    rg0_note: "Updated 2026-09-26 (additive). RG-0 ran and returned BOUNDED_REPAIR_REQUIRED; post-audit corrections COR-5 (RAR candidate_scores exist; not calibrated confidence) and COR-6 (RARQuery carries no provenance locators) were added from its findings. Next: focused independent re-audit RG-0R."
 
 # ---------------------------------------------------------------------------
 # Architecture decisions recorded from direct User instruction (2026-09-26).
@@ -212,6 +217,8 @@ architecture_decisions:
   - id: "D1"
     date: "2026-09-26"
     status: "DECIDED"
+    user_acceptance: "USER_ACCEPTANCE_SATISFIED"
+    user_acceptance_note: "D1 is the User's acceptance of the wrong_binding_impact capability-contract classification. Gate PG-2 no longer awaits User acceptance; it awaits the focused independent re-audit RG-0R and implementation authorization."
     decision: "gmail_create_draft wrong_binding_impact = RECOVERABLE (an unsent draft is correctable before external communication). Independent of EffectType, ApprovalRequirement, RiskLevel. A future real send action is expected to be CONSEQUENTIAL. wrong_binding_impact is never derived mechanically from EffectType."
   - id: "D2"
     date: "2026-09-26"

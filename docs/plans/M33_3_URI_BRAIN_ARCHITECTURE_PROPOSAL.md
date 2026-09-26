@@ -1,6 +1,6 @@
 # M33.3 — URI Brain Architecture Proposal (Plan B)
 
-**Status:** `PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`. Planning and review only. Not accepted, not frozen. Implementation is **NOT authorized**.
+**Status:** `PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT` (R2 = RG-0 B-R7 interface clarification; previously `PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`). Planning and review only. Not accepted, not frozen. Implementation is **NOT authorized**.
 **Canonical identity:** `M33_3_PLAN_URI_BRAIN_ARCHITECTURE` (registered in `docs/governance/URI_STATE.yaml` → `planning_artifacts`).
 **Sibling plan:** `docs/plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md` (Plan A, identity `URI-REFERENCE-CLARIFICATION`).
 **Cross-plan audit:** `docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md`, verdict `COMPATIBLE_WITH_BOUNDED_REPAIRS`.
@@ -17,9 +17,9 @@
 | Uniqueness check | A scan of every Codex rollout dated 2026-09 found exactly one assistant message titled "URI Brain Architecture". No later revision exists. |
 | Relation to audit | This is the exact text cross-audited on 2026-09-26 (audit report §0) |
 | Brought into the repository | 2026-09-26, by the G0 + cross-plan repair pass (Claude). This is repair B-R8. |
-| Revisions | R0 = the original, preserved verbatim below. R1 = the repair revision in this header. |
+| Revisions | R0 = the original, preserved verbatim below. R1 = the repair revision in this header. R2 = the RG-0 B-R7 interface clarification (after R1). |
 
-Section R0 is byte-for-byte the recovered message text. It was not edited. Its links point to absolute local paths as written by the author. Where R0 conflicts with R1, **R1 wins**. R0 stays as auditable history.
+Section R0 is byte-for-byte the recovered message text. It was not edited. Its links point to absolute local paths as written by the author. Where R0 conflicts with R1, **R1 wins**; where R1 conflicts with R2, **R2 wins**. R0 stays as auditable history.
 
 Labels: **[USER]** User requirement or decision · **[EVIDENCE]** repository evidence · **[HYPOTHESIS]** · **[EXPERIMENT]** needs an experiment before it becomes architecture.
 
@@ -108,7 +108,7 @@ There are three independent dimensions. None replaces another:
 - Residency thresholds remain [EXPERIMENT] (the stage 3 residency study).
 
 ### R1.7 (B-R7) One canonical grounding output
-- The output of R0 §3's "Ground only the context this task needs" stage is defined as **the `RARQuery` candidate set** (candidates with IDs, types, provenance locators, and deterministic anchors), per `uri_v1/turn/rar_contracts.py` `RARQuery` / `RARCandidate` / `RARDeterministicAnchor`.
+- `[CLARIFIED by R2.1 / R2.2 — the existing RARQuery is the RAR-facing projection; it carries no provenance locators, dependency, provider, or freshness metadata; the provenance-bearing evidence envelope is future S4 work]` The output of R0 §3's "Ground only the context this task needs" stage is defined as **the `RARQuery` candidate set** (candidates with IDs, types, provenance locators, and deterministic anchors), per `uri_v1/turn/rar_contracts.py` `RARQuery` / `RARCandidate` / `RARDeterministicAnchor`.
 - There is **one** source-to-candidate producer. `context_builder` / `query_context`, `CapabilityContextResolver`, and `uri_v1` TurnFrame / `active_context` are inputs to it or predecessors of it, not competing owners.
 - Plan A consumes only this output.
 - The producer is **not implemented** by this revision. Its feasibility is what the stage 1 experiment measures.
@@ -146,7 +146,54 @@ There are three independent dimensions. None replaces another:
 - R0 §6 "Retrieval interpretation / ranking" role and R0 §8 "Model-assisted comparison" → bounded by D3. Models return annotations, eliminations, or evidence only. The deterministic layer owns ranking order, candidate identity, and binding state.
 
 ### R1.12 Status
-`BRAIN_ARCHITECTURE_STATUS`: `PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`.
+`BRAIN_ARCHITECTURE_STATUS`: `PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`. `[SUPERSEDED by R2.4]`
+- The first experiment (stage 1 source-to-candidate replay) still needs its own separately scoped, pre-audited plan and authorization.
+- No experiment, implementation, freeze, or INT event is authorized.
+
+---
+
+## REVISION R2 — RG-0 B-R7 interface clarification (2026-09-26). SUPERSEDES conflicting text in R1 and R0.
+
+**Source.** The independent RG-0 cross-plan re-audit returned `BOUNDED_REPAIR_REQUIRED`. One finding concerns this plan: R1.7 implies that the existing `RARQuery` carries provenance and dependency information that its actual contract does not contain. The RG-0 report is not stored in the repository; see `docs/plans/M33_3_CROSS_PLAN_STATE.md` §5a. No new User decision is required.
+
+**Authorization.** Planning only. Implementation is **not authorized**. R2 does not design or implement a Reference Evidence Gateway.
+
+### R2.1 Correction to R1.7
+- R1.7 said the grounding output is "the `RARQuery` candidate set (candidates with IDs, types, provenance locators, and deterministic anchors)". The words "provenance locators" overstate the existing contract.
+- [EVIDENCE] `uri_v1/turn/rar_contracts.py` (unchanged, SHA-256 `4cc9aa43…6819`):
+  - `RARQuery` has `reference_expression`, `candidates`, `local_evidence`, and `deterministic_anchor`;
+  - `RARCandidate` has `id`, `title`, `candidate_type`, `recency_rank`, `domain_tags`, `owner`, `is_attachment`, `exact_aliases`, and `description`;
+  - `RARDeterministicAnchor` has `exact_id`, `unique_title_match`, `deterministic_recency`, `current_attachment_id`, and `selected_ui_id`.
+- None of these carries provenance locators, dependency or parent metadata, provider or source metadata, or freshness metadata. `recency_rank` is an ordinal position, not freshness metadata.
+
+### R2.2 Canonical distinction
+
+```
+source / reference evidence producer(s)
+  -> future normalized evidence envelope      [NOT IMPLEMENTED; future S4 / source-interface work]
+  -> RAR-facing projection
+  -> RARQuery                                  [existing contract]
+  -> deterministic RAR                         [A9-protected, unchanged]
+```
+
+- **The existing `RARQuery` is the RAR-facing projection.** RAR consumes it, and Plan A's contract builder checks candidate membership against it. It is not the provenance-bearing producer interface.
+- **The provenance-bearing interface is future work.** It may eventually carry what Plan A needs but `RARQuery` does not: provenance locators (Plan A §4 `CandidateFact.source`, R3.1 `fact_sources`), dependency or parent edges (Plan A R2.11 `depends_on`), provider identity, and freshness or fingerprint inputs (Plan A §4 `fingerprint`, R3.2 check 4). Where Plan A needs these, it depends on this future interface. Plan A R2.11 already discloses this.
+- R1.7's "one source-to-candidate producer" stands: there is one canonical candidate set and one owner of producing it. That producer is not implemented.
+
+### R2.3 Compatibility with a future Reference Evidence Gateway (RG-0 conclusion preserved)
+- The current architecture is compatible with a future normalized Reference Evidence Gateway, also describable as a Reference Context Provider.
+- Its conceptual responsibility may eventually be to:
+  - query authorized evidence providers;
+  - normalize evidence;
+  - preserve candidate identity and provenance;
+  - produce one canonical candidate set;
+  - project that set into `RARQuery`;
+  - make **no** binding decision.
+- Potential future providers include session state, files and Drive, Gmail, Graphify hints (within the R1.5 scope, never proof), and URI-Memory (when it exists; D4).
+- **Not specified by this revision:** provider registration, retrieval policy, source retry semantics, freshness algorithms, and memory implementation. These belong to later S4 planning (gate PG-5).
+
+### R2.4 Status
+`BRAIN_ARCHITECTURE_STATUS`: `PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT`.
 - The first experiment (stage 1 source-to-candidate replay) still needs its own separately scoped, pre-audited plan and authorization.
 - No experiment, implementation, freeze, or INT event is authorized.
 

@@ -2,6 +2,7 @@
 
 **Status:** DRAFT, revised R1 after the User architecture interview (planning only, `PLAN_M33_3_ARN_ARCHITECTURE_AND_LT1B_TEXT_GENERATOR`). Not accepted, not frozen, not registered, not committed.
 **Status update (2026-09-26, additive):** revised R2 (cross-plan repairs A-R1…A-R12, User decisions D1–D4). Registered as planning identity `URI-REFERENCE-CLARIFICATION` in `URI_STATE.yaml` → `planning_artifacts`. Committed to the repository. Status `PLAN_REVISED_R2_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`: not accepted, not frozen, implementation NOT authorized.
+**Status update (2026-09-26, additive):** revised R3 (RG-0 bounded contract repair: RG-0-F1 `CHOOSE_ATTRIBUTE` contract, RG-0-F2 Change/rebind/redo lifecycle, RG-0-F3 RAR score terminology). Status `PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT`: not accepted, not frozen, implementation NOT authorized.
 **Branch / base:** `m35-uri-v1-parallel-architecture` @ `127c733` (Batch A frozen).
 **Author role:** Claude (Architect / Pre-Auditor). Implementation is not authorized by this document.
 **Date:** 2026-09-26
@@ -49,19 +50,19 @@ The draft chains (<1B → Main Brain → template, and <1B → template) are rep
 ### R1.5 Binding, consequence, and ask-versus-proceed
 - [USER] Consequence means the impact of a wrong reference, not whether the action writes. Confirmation is required when a wrong reference could cause a meaningful external, destructive, irreversible, security-sensitive, financial, submission/publication, or hard-to-recover effect. Read, open, search, summarize, and ordinary draft creation may proceed tentatively, with the choice visible and easy to change. Approval gates stay independent.
 - `[CORRECTED by R2.6 — the production fields are `Action.effect_type` / `approval_requirement` / `risk`; there is no `requires_approval` field]` New metadata: a `wrong_binding_impact` of `NONE`, `RECOVERABLE`, or `CONSEQUENTIAL`, declared per capability/action next to `requires_approval`. [EVIDENCE] Nothing like this exists in `uri_core` today. [HYPOTHESIS] Unclassified actions are treated as `CONSEQUENTIAL` (fail closed).
-- Binding states: `TENTATIVE` (shown as "Using X · Change") and `CONFIRMED`. The execution gate requires `CONFIRMED` for `CONSEQUENTIAL` actions. `CONFIRM_SINGLE` is replaced by this. `[REFINED by R2.2 / R2.4 — single-candidate kind `CONFIRM_ONE`; post-execution states TENTATIVE_APPLIED/CHANGED/REDONE/VERSIONED]`
+- Binding states: `TENTATIVE` (shown as "Using X · Change") and `CONFIRMED`. The execution gate requires `CONFIRMED` for `CONSEQUENTIAL` actions. `CONFIRM_SINGLE` is replaced by this. `[REFINED by R2.2 / R2.4 — single-candidate kind `CONFIRM_ONE`; post-execution states TENTATIVE_APPLIED/CHANGED/REDONE/VERSIONED]` `[REFINED by R3.2 — CHANGED renamed CHANGE_PENDING; redo only after a validated rebind to CONFIRMED(Y)]`
 - [USER] Two or more equally plausible candidates: always ask with clickable options, even for harmless actions.
 - `[REFINED by R2.9 — deterministic TENTATIVE eligibility check; model evidence only when grounded and re-checked (D3); no durable learned evidence (D4)]` "Strongly preferred" (allowed to be TENTATIVE): [HYPOTHESIS] deterministic separation only. A lone `MODEL_SELECTION` result never counts; it is treated as ambiguous. Learned evidence may count (R1.7).
 - `[REFINED by R2.8 — after bounded, non-binding pre-ask investigation inside candidate generation]` Timing: an AMBIGUOUS result asks immediately, before any action proposal. A TENTATIVE single candidate is checked for consequence at proposal time. No Capable Brain call is spent before an ambiguity question.
-- [USER] Changing a tentative choice after use: the recoverable action is redone automatically on the new candidate. If the user had edited the old result, the redo is a new version and the edited version is kept in history.
+- `[REFINED by R3.2 — redo only after BindingService rebinds to CONFIRMED(Y) and fresh execution/approval authorization passes; edited-result preservation depends on S11]` [USER] Changing a tentative choice after use: the recoverable action is redone automatically on the new candidate. If the user had edited the old result, the redo is a new version and the edited version is kept in history.
 
 ### R1.6 Presentation
 - [USER] Adaptive, minimizing user effort.
   - If the ranking clearly separates a small top group: show up to 4-5 options, plus "N more" where useful, plus the escape option.
   - If candidates are flat: first ask the most valuable grounded attribute question, then show the narrowed set.
   - Never dump a large list. Never ask an attribute question when the ranking already makes the choice obvious.
-- New kind `CHOOSE_ATTRIBUTE`. It reuses ARN.1 `get_clarification_recommendation` (axis choice) and `UserClue` / `apply_user_clue` (binding an attribute click). An attribute option binds a `UserClue(axis, value)`, not a candidate ID.
-- [HYPOTHESIS] "Clearly separated" = the RAR top driver-rule tier holds 5 or fewer candidates. RAR ranks are ordinal, and no scores exist. [EXPERIMENT] Measure clicks-to-resolution for top-N versus attribute-first on the battery and in the User rating subset.
+- `[CONTRACT COMPLETED by R3.1 — attribute option type, render request, ATTRIBUTE payload, validation, re-resolution transition, escape path]` New kind `CHOOSE_ATTRIBUTE`. It reuses ARN.1 `get_clarification_recommendation` (axis choice) and `UserClue` / `apply_user_clue` (binding an attribute click). An attribute option binds a `UserClue(axis, value)`, not a candidate ID.
+- [HYPOTHESIS] "Clearly separated" = the RAR top driver-rule tier holds 5 or fewer candidates. `[CORRECTED by R3.3 — RAR emits deterministic diagnostic candidate_scores; they are not calibrated confidence]` RAR ranks are ordinal, and no scores exist. [EXPERIMENT] Measure clicks-to-resolution for top-N versus attribute-first on the battery and in the User rating subset.
 - The cap stays at 5 as the hard maximum. Whether 4 is better is [EXPERIMENT] (clicks, errors, User rating). It is not frozen.
 - [USER] Multiple ambiguous references in one turn are handled adaptively. A bundle contract holds several reference sub-contracts with dependency edges. Independent references share one combined card. Dependent references are asked in order; a dependency exists when one reference's candidates derive from another's binding. [HYPOTHESIS] Dependency can be detected from candidate provenance (parent locator).
 
@@ -133,7 +134,7 @@ RAR owns trigger, type, candidate set, IDs, rank, cap, provenance, and binding c
   - there are no candidate IDs, no decay, invalidation, or source fingerprint, and no delete/inspect endpoint (only `list_all` / `recent` / `add`);
   - records feed the Brain's query context, not a deterministic ranker.
   - ExperienceStore therefore cannot serve as auditable ranking input. **ExperienceStore keeps its existing role and is not repurposed** for reference memory or route learning.
-- [EVIDENCE] `uri_v1/turn/rar_deterministic.py` is A9-protected (SHA-256 `e02af25bb7009d12d829c8b8fc92e487d3da75aeaa160092db617458278fb649`). RAR ranks are ordinal and carry no scores. The learned-evidence weighting therefore **cannot live "inside RAR"**.
+- [EVIDENCE] `uri_v1/turn/rar_deterministic.py` is A9-protected (SHA-256 `e02af25bb7009d12d829c8b8fc92e487d3da75aeaa160092db617458278fb649`). `[CORRECTED by R3.3 — RAR does emit deterministic diagnostic candidate_scores (not calibrated confidence); the conclusion below rests on A9 protection]` RAR ranks are ordinal and carry no scores. The learned-evidence weighting therefore **cannot live "inside RAR"**.
 - **Mechanism (replaces R1.7's "Mechanism" and "weighting … inside RAR" bullets).** A **separate deterministic session-evidence adjunct runs after RAR**. It reads:
   - the RAR resolution;
   - the `RARQuery`;
@@ -155,7 +156,7 @@ Add `ClarificationKind.CONFIRM_ONE`. It replaces the draft's `CONFIRM_SINGLE`, w
 |---|---|---|
 | `CHOOSE_ONE` | RAR `AMBIGUOUS` (at least 2 plausible) | 2 ≤ candidates ≤ `max_options` (5) |
 | `CONFIRM_ONE` | Exactly one candidate exists **and** no deterministic anchor authorizes automatic binding **and** the deterministic TENTATIVE check (R2.9) does not pass (for example, a lone `MODEL_SELECTION` basis, or `wrong_binding_impact = CONSEQUENTIAL`) | exactly 1 |
-| `CHOOSE_ATTRIBUTE` | Flat candidate set (R1.6) | 0 candidate options; 2 ≤ attribute options ≤ 5; each option binds a `UserClue(axis, value)` |
+| `CHOOSE_ATTRIBUTE` | Flat candidate set (R1.6) | 0 candidate options; 2 ≤ attribute options ≤ 5; each option binds a `UserClue(axis, value)` (full contract: R3.1; never confirms a candidate) |
 | `FREE_INPUT_ONLY` | RAR `UNKNOWN` / `NO_CANDIDATE` and the reference is required | 0 |
 
 - Validation additions:
@@ -182,6 +183,8 @@ Add `ClarificationKind.CONFIRM_ONE`. It replaces the draft's `CONFIRM_SINGLE`, w
 
 ### R2.4 (A-R4) Post-execution lifecycle
 - The per-`ambiguity_id` state machine of §7 gains post-execution states:
+
+`[DIAGRAM SUPERSEDED by R3.2 — CHANGED renamed CHANGE_PENDING; no redo before BindingService rebinds to CONFIRMED(Y) and fresh execution/approval authorization passes]`
 
 ```
 PENDING --click/confirm--> CONFIRMED --execute--> APPLIED
@@ -333,6 +336,219 @@ class ClarificationBundle:
 
 ---
 
+## REVISION R3 — RG-0 bounded contract repair: RG-0-F1, RG-0-F2, RG-0-F3 (2026-09-26). SUPERSEDES conflicting text in R2, R1, and the draft.
+
+**Source.** The independent RG-0 cross-plan re-audit of R2 returned `BOUNDED_REPAIR_REQUIRED` with four findings: RG-0-F1, RG-0-F2, RG-0-F3 (this plan) and a B-R7 interface clarification (Plan B, revision R2). The RG-0 auditor found that no new User product decision is required. The findings reached this repair pass through the User's repair instruction; the RG-0 report itself is not stored in the repository (disclosed in `docs/plans/M33_3_CROSS_PLAN_STATE.md` §5a).
+
+**Precedence.** R3 wins over R2, R1, and the draft wherever they conflict. Earlier text stays unchanged as history, except for short `[… by R3.x]` markers beside the passages R3 replaces.
+
+**Authorization.** Still DRAFT and not frozen. Implementation is **not authorized**. R3 changes no code and no protected artifact.
+
+**Evidence inspected for R3** (repository at `7ae6d22`):
+- No `ClarificationContract`, `BindingService`, `CHOOSE_ATTRIBUTE`, attribute-option type, or clarification response type exists in any Python file. Every type named in R3 is **planned** and conceptual.
+- ARN.1 `UserClue(axis, value, received_at, category=USER_CLUE)` is at `uri_core/core/arn/models.py:86`. `ARNEngine.apply_user_clue` (`uri_core/core/arn/engine.py:139`) eliminates every candidate whose normalized `metadata[axis]` differs from the clue value. `get_clarification_recommendation` (`engine.py:218`) chooses an axis on which every active candidate has a value and which splits them into at least two groups. Both operate on ARN.1 `Candidate.metadata`, not on `RARCandidate`. R3 reuses their record shape and matching semantics through a planned adapter. It does not modify ARN.1 or drive the ARN.1 engine state machine.
+- `ApprovalStore` (`uri_core/core/approval_store.py:18-26, 108-118, 298-353`) stores each proposed action's exact `arguments` and an `arguments_fingerprint` (SHA-256 over `capability_id` and `arguments`). `consume()` is single-use and fails closed when the fingerprint of the requested arguments differs from the approved one.
+- `DeterministicRARTrace.candidate_scores: Tuple[Tuple[str, float], ...]` is at `uri_v1/turn/rar_deterministic.py:88` (details in R3.3).
+
+### R3.1 (RG-0-F1) Complete `CHOOSE_ATTRIBUTE` interaction contract
+
+R2.2 allowed `CHOOSE_ATTRIBUTE` with zero candidate options and 2 to 5 attribute options, but the contract, render request, click payload, and binding path were candidate-only. R3.1 completes the contract. It supersedes the `CHOOSE_ATTRIBUTE` row's count rule in R2.2 and R1.6's sentence "An attribute option binds a `UserClue(axis, value)`, not a candidate ID" (retained in substance, specified below).
+
+**A. Attribute option representation (planned; no such type exists today).**
+
+```python
+class ClarificationOptionKind(str, Enum):
+    CANDIDATE = "CANDIDATE"   # selecting it confirms a candidate_id
+    ATTRIBUTE = "ATTRIBUTE"   # selecting it supplies a UserClue(axis, value); it never confirms a candidate
+
+@dataclass(frozen=True)
+class AttributeOption:
+    option_key: str                         # "a1".."a5"; stable within one ambiguity_id; a namespace separate from candidate slots "s1".."s5"
+    axis: str                               # a CandidateFact.key from the closed vocabulary (§4); one axis per contract
+    value: str                              # the grounded CandidateFact.value, verbatim as produced by the builder
+    member_candidate_ids: Tuple[str, ...]   # scope candidates whose fact on `axis` equals `value`; URI-side only; never rendered; never sent to a model
+    fact_sources: Tuple[str, ...] = ()      # CandidateFact.source locators behind the value where the producer supplies them
+                                            # (planned per R2.11 and Plan B R2; empty until that producer exists)
+```
+
+Additions to the planned `ClarificationContract` (§4):
+- `attribute_axis: Optional[str]`: set only for `CHOOSE_ATTRIBUTE`.
+- `attribute_options: Tuple[AttributeOption, ...]`: 2 to `max_options` entries for `CHOOSE_ATTRIBUTE`; empty for every other kind.
+- `scope_candidate_ids: Tuple[str, ...]`: the full ambiguous candidate set that the attribute split partitions. It may exceed `max_options` and is never displayed. For the other kinds it equals the IDs in `candidates`.
+- `candidate_set_fingerprint` covers the fingerprints of the scope candidates and, for `CHOOSE_ATTRIBUTE`, every `(option_key, axis, value, member_candidate_ids)` tuple.
+
+Builder rules (deterministic):
+- The axis follows ARN.1 `get_clarification_recommendation` semantics. Every scope candidate must have a grounded value on the axis. The axis must split the scope into 2 to `max_options` groups, and no group may equal the whole scope. Ties break as in ARN.1: smallest largest group, then smallest size spread, then fixed closed-vocabulary order.
+- There is one option per distinct value. Member sets are non-empty and disjoint, and their union is the scope.
+- `candidates` is empty. No candidate can be selected from a `CHOOSE_ATTRIBUTE` contract. `overflow_count` is 0, because the options cover every scope candidate.
+- If no axis qualifies, `CHOOSE_ATTRIBUTE` is not built. The builder falls back to `CHOOSE_ONE` with top-5 plus overflow (§4.2 rule 3).
+- A contract never mixes candidate options and attribute options.
+
+Contract validation additions (deterministic, raises on violation):
+- `CHOOSE_ATTRIBUTE`: `candidates` is empty; 2 ≤ `len(attribute_options)` ≤ `max_options`; option keys are unique and in `a1`..`a5`; `attribute_axis` is in the closed vocabulary and equals every option's `axis`; values are unique after normalization; member sets satisfy the builder rules; `scope_candidate_ids` ⊆ the `RARQuery` candidate IDs; no scope ID is in `contrast_exclusions`.
+- Every other kind: `attribute_options` is empty and `attribute_axis` is `None`.
+
+**B. Rendering.**
+- `RenderRequest` for `CHOOSE_ATTRIBUTE` (planned):
+  ```json
+  {"kind":"CHOOSE_ATTRIBUTE","reference":"the report","axis":"owner","scope_count":7,
+   "attribute_slots":{"a1":{"value":"Priya"},"a2":{"value":"Finance team"}}}
+  ```
+  It carries no candidate slots, no candidate titles, and no member IDs.
+- The output is `{"question": …, "labels": {"a1": …, …}}`.
+- Validator changes:
+  - V-SLOT-UNKNOWN, V-SLOT-MISSING, and V-EXTRA-OPTION apply to the `a*` namespace.
+  - An `s*` key in a `CHOOSE_ATTRIBUTE` output, or an `a*` key in a candidate-kind output, is V-SLOT-UNKNOWN.
+  - V-UNSUPPORTED-FACT checks labels against that slot's `value`, the `axis`, `reference`, and `scope_count`.
+  - V-SELECTION also rejects wording that presents an attribute value as the chosen object (for example, "I'll use the one from Priya").
+- Deterministic template: "I found {scope_count} {type_noun}s matching "{original_reference}". Which {axis_noun}?" Each label is the option's `value`.
+- Presentation: URI sets `option_kind = ATTRIBUTE` on each attribute option from the contract, never from renderer output. Candidate options carry `option_kind = CANDIDATE`. The UI must render attribute options visibly as narrowing choices (filters), distinct from candidate-object choices. The exact visual treatment belongs to S12. The escape option is appended, as for every kind.
+
+**C. User response payloads (planned).**
+
+```
+CANDIDATE:   {ambiguity_id, response_kind: "CANDIDATE", candidate_id, candidate_set_fingerprint}
+ATTRIBUTE:   {ambiguity_id, response_kind: "ATTRIBUTE", option_key, candidate_set_fingerprint}
+FREE_INPUT:  {ambiguity_id, response_kind: "FREE_INPUT", text}
+```
+
+- The `ATTRIBUTE` payload carries no `candidate_id`. The `candidate_id` field is never overloaded to carry an option key or an attribute.
+- The payload does not need to carry `axis` or `value`. URI reads them from the stored contract. Display text is never trusted.
+- §7's click payload `{ambiguity_id, candidate_id, candidate_set_fingerprint}` becomes the `CANDIDATE` form above.
+
+**D. Validation of an `ATTRIBUTE` response** (in order; any failure → `REJECTED`, no clue is applied, and the rebuild path of §7 runs):
+1. `ambiguity_id` identifies a stored contract in a state that BindingService admits (R3.2 table), in the same session, and not expired.
+2. `response_kind` matches the contract kind. `ATTRIBUTE` is valid only for `CHOOSE_ATTRIBUTE`; `CANDIDATE` only for `CHOOSE_ONE` / `CONFIRM_ONE`; `FREE_INPUT` for every kind.
+3. `option_key` exists in the stored `attribute_options`. Unknown, invented, or stale option keys are rejected.
+4. `candidate_set_fingerprint` equals the stored value, and each member candidate's current fingerprint equals its stored fingerprint.
+5. `axis` and `value` come only from the stored contract. If a client also sends them, they must equal the stored values, otherwise the response is rejected.
+6. The option's member set is non-empty and is a subset of the current `RARQuery` candidate IDs.
+- A contract accepts at most one successful response. Replays are rejected.
+
+**E. Resolution transition (canonical).**
+
+```
+CHOOSE_ATTRIBUTE (ambiguity_id A, round k)
+  --ATTRIBUTE(option_key) validated (D)-->
+UserClue(axis, value), category USER_CLUE, recorded as session-local evidence (R2.1)
+  --> deterministic narrowing: candidate set := the option's member_candidate_ids, re-checked against current facts
+  --> new RARQuery(same reference_expression, narrowed candidates, same local_evidence, no selected_ui_id)
+  --> deterministic RAR re-run (A9 unchanged)
+  --> RESOLVED / AMBIGUOUS / UNKNOWN
+  --> R2.3 trigger table applied to the new result, as a new round (new ambiguity_id, round_index k+1), with the rule below
+```
+
+- **Attribute selection is not candidate confirmation.** It never emits `selected_ui_id` and never directly produces `CONFIRMED`.
+- If the re-run returns `RESOLVED`, or the narrowed set holds exactly one candidate and RAR does not return `UNKNOWN`, that candidate enters R2.3's "exactly 1 candidate" rows:
+  - `TENTATIVE` only if the R2.9 check passes. The attribute clue counts as session evidence under R2.9(c), and the action's `wrong_binding_impact` must be `NONE` or `RECOVERABLE`.
+  - Otherwise `CONFIRM_ONE`.
+  - The candidate becomes `CONFIRMED` only through an explicit `CONFIRM_ONE` confirmation or a candidate click.
+  - A `RESOLVED` / `DETERMINISTIC_ANCHOR` result on the narrowed set does **not** take R2.3's first row ("binding `CONFIRMED`"), because its separation came from the attribute clue, not from an anchor independent of the clue.
+- `AMBIGUOUS` → `CHOOSE_ONE`, or `CHOOSE_ATTRIBUTE` on a **different** axis if the set is still flat. An axis already answered for this reference is never asked again.
+- `UNKNOWN` with a narrowed set of exactly one candidate → `CONFIRM_ONE` (never `TENTATIVE`, because RAR did not support the candidate). `UNKNOWN` otherwise → `FREE_INPUT_ONLY` if the reference is required.
+- Progress: an attribute selection strictly shrinks the candidate set (the options are non-degenerate by construction), so it counts as progress under R1.8(a). Every attribute round is charged to the R1.8(b) per-turn budget.
+
+**F. Escape path.** "None of these / Enter something else" is always present. Free input on a `CHOOSE_ATTRIBUTE` contract is handled as follows:
+1. If the normalized text equals exactly one rendered attribute value of this contract, it is treated as that option. The same validation (D) and transition (E) apply.
+2. Otherwise the §7 free-input path runs over the scope candidate set (RAR re-run with the text as local evidence).
+   - A qualified model may interpret the text into a proposed `(axis, value)` only under D3. The proposal is accepted only if the axis is in the closed vocabulary and the value equals a grounded fact of at least one scope candidate. It then enters transition E as a `UserClue`. Otherwise the text remains evidence text only.
+3. `UNKNOWN` → a new bounded cycle with a new `ambiguity_id` (R1.7 / R2.7 sources).
+- Safeguards are unchanged: R1.8 (a) and (b), expiry, and no silent broadening.
+
+### R3.2 (RG-0-F2) Change / rebind / redo lifecycle
+
+R3.2 supersedes R2.4's state diagram. R2.4's edge `CHANGED --redo recoverable action on Y--> REDONE` allowed a redo without an explicit prior rebind, and §7's BindingService admitted only a pending ambiguity. R2.4's state `CHANGED` is renamed `CHANGE_PENDING` and no longer has a direct edge to redo.
+
+```
+PENDING --candidate click / CONFIRM_ONE confirm (BindingService)--> CONFIRMED --execute--> APPLIED
+(exactly 1 candidate, R2.9 check passes) --> TENTATIVE(X) --execute (impact NONE / RECOVERABLE)--> TENTATIVE_APPLIED(X)   shown "Using X · Change"
+TENTATIVE(X) --Change before execution: rebind through BindingService--> CONFIRMED(Y)          (no redo needed)
+TENTATIVE_APPLIED(X) --user selects Change--> CHANGE_PENDING(X)
+      (a new Change round: new ambiguity_id, linked change_of = the original ambiguity_id and the applied-action reference; X's result is untouched)
+CHANGE_PENDING --candidate Y selected or supplied--> REBIND_CHECK
+REBIND_CHECK --BindingService validates rebind eligibility--> CONFIRMED(Y)                       (rebound)
+REBIND_CHECK --any check fails--> REJECTED --> Change round rebuilt (still CHANGE_PENDING) or CHANGE_ABANDONED
+CONFIRMED(Y) [from a Change round] --fresh execution authorization: execution gate, execution policy, approval for Y's arguments--> REDO_AUTHORIZED --execute--> REDONE(Y)
+CONFIRMED(Y) [from a Change round] --authorization denied, or approval declined / expired--> REDO_NOT_EXECUTED   (X's result kept; the User is told the redo did not run)
+REDONE(Y), when the X-derived result was user-edited --> VERSIONED   (requires S11; see I-6)
+CHANGE_PENDING --timeout / cancel / unrelated turn--> CHANGE_ABANDONED --> TENTATIVE_APPLIED(X), unchanged
+PENDING --timeout / new unrelated turn--> EXPIRED
+```
+
+"Candidate Y selected or supplied" means one of:
+- a click on a rendered candidate;
+- a `CONFIRM_ONE` confirmation;
+- free input that makes RAR return `RESOLVED` with basis `DETERMINISTIC_ANCHOR` independently of any attribute clue (§7 "If RAR returns RESOLVED, bind and resume").
+
+An attribute selection inside a Change round narrows and re-resolves (R3.1 E). It never supplies Y by itself. In the Change round, X is shown as the current binding and is not offered as a selectable option.
+
+**Invariants.**
+- **I-1 (no redo before validated rebind).** `REDO_AUTHORIZED` is reachable only from a `CONFIRMED(Y)` that BindingService produced in a Change round. There is no edge from `CHANGE_PENDING` or `REBIND_CHECK` to redo.
+- **I-2.** Y ≠ X. Choosing X again closes the round as `CHANGE_ABANDONED`, with no redo.
+- **I-3.** Change after execution starts only from `TENTATIVE_APPLIED`, and only for an action whose `wrong_binding_impact` is `NONE` or `RECOVERABLE` (unchanged from R2.4). For `CONFIRMED` / `APPLIED` actions and every `CONSEQUENTIAL` action, a correction after execution is a new request (§7, retained).
+- **I-4.** The redo re-executes the same recorded action (same capability and action). Only the reference argument or arguments are rebound from X to Y. Any other argument change is a new request, not a redo.
+- **I-5 (fresh authorization).** The redo is a new execution. It passes every gate as if it were the first execution: the execution policy, the `wrong_binding_impact` gate (with binding `CONFIRMED(Y)`), and the approval gate. The redo uses the same route policy as the original action (R2.5, retained).
+- **I-6 (edited-result preservation).** If the User edited the X-derived result before selecting Change, the redo on Y must never silently destroy, overwrite, or replace that edited result. The R1.9 `FROZEN_REQUIRED` gate "an edited result is never overwritten by a redo" is retained.
+  - **Dependency on S11.** Result-version ownership and storage belong to S11 (`PLAN_REQUIRED`). This plan does not design them.
+  - Any slice that implements post-execution redo before S11 exists must fail closed: if it cannot establish that the X-derived result is unedited, or that the edited version is preserved, the redo must not write over it. The preservation mechanism is S11's decision.
+
+**BindingService admissible source states** (supersedes §7's single check "the ambiguity is pending"):
+
+| Source state | Admissible for binding? | Result on success |
+|---|---|---|
+| `PENDING` (initial round: `CHOOSE_ONE`, `CONFIRM_ONE`, `CHOOSE_ATTRIBUTE`, `FREE_INPUT_ONLY`) | yes | `CONFIRMED` for a candidate response; `UserClue` and re-resolution for an attribute response (R3.1 E) |
+| `TENTATIVE(X)`, not yet executed | yes, for Change | `CONFIRMED(Y)`; no redo |
+| `CHANGE_PENDING(X)`, opened from `TENTATIVE_APPLIED` with impact `NONE` / `RECOVERABLE` | yes | `CONFIRMED(Y)`, then the redo path (I-5) |
+| `TENTATIVE_APPLIED(X)` directly, with no Change round opened | no | Change must first open a `CHANGE_PENDING` round with its own contract |
+| `CONFIRMED`, `APPLIED`, `REDO_AUTHORIZED`, `REDONE`, `VERSIONED`, `REDO_NOT_EXECUTED`, `EXPIRED`, `REJECTED`, `CHANGE_ABANDONED` | no | — |
+
+**Rebind checks in a Change round** (all, in order; any failure → `REJECTED`, and X's binding and result stay untouched):
+1. Same active session. `ambiguity_id` identifies the active Change-round contract (not the original, closed round), and its `change_of` link points to a binding that is `TENTATIVE_APPLIED` in this session.
+2. The Change round has not expired.
+3. Candidate membership: Y is in the Change contract's candidates, which are a subset of the `RARQuery` candidate set. Invented IDs are rejected.
+4. Freshness: Y's current fingerprint equals the stored fingerprint, and the X-derived applied result still exists.
+5. Provenance where required: if the contract requires producer provenance (for example, a dependent slot under R2.11), Y carries a provenance locator consistent with its parent binding.
+6. Y ≠ X (I-2).
+7. The recorded action's declared `wrong_binding_impact` is `NONE` or `RECOVERABLE`. It is re-read from the action's declared metadata, not from a cached value. Undeclared means `CONSEQUENTIAL`, so Change-redo is rejected and the correction becomes a new request.
+- The execution policy and approval are **not** BindingService checks. They run at `REDO_AUTHORIZED` (I-5).
+
+**Approval behavior.**
+- Approvals are argument-bound and single-use. `ApprovalStore` fingerprints `(capability_id, arguments)`, and `consume()` fails closed on any argument drift.
+- An approval for X's arguments never authorizes Y. No approval, grant, or cached authorization is transferred to Y, reused, or re-fingerprinted.
+- The redo creates a new proposed action with Y-derived arguments, a new `action_id`, and a new `arguments_fingerprint`. If the action's `approval_requirement` requires approval, the User approves the redo explicitly. If approval is declined or expires, the state is `REDO_NOT_EXECUTED`.
+
+**Evaluation event.** R2.12 is unchanged. The `wrong_reference` event records prior X, new Y, and the redo outcome (`REDONE`, `VERSIONED`, or `REDO_NOT_EXECUTED`).
+
+### R3.3 (RG-0-F3) RAR score terminology
+
+R3.3 corrects R1.6's "RAR ranks are ordinal, and no scores exist" and R2.1's "RAR ranks are ordinal and carry no scores". Both statements are factually wrong. Three separate concepts apply.
+
+1. **Deterministic diagnostic / discrimination scores: these exist.**
+   - `DeterministicRARTrace.candidate_scores` (`uri_v1/turn/rar_deterministic.py:88`) holds `(candidate_id, float)` pairs.
+   - The values come from `score_candidate_relevance` ("discriminating term overlap score", line 135), which uses term document frequency over the candidate pool and the target-type hint.
+   - They are populated on the `TERM_DISCRIMINATION` path and are empty by default on the other paths.
+   - RAR uses them internally: a `RESOLVED` outcome on that path also requires every substantive query token to match the winner and a score margin of at least 0.5 over the runner-up (lines 874-887). The code comment states that the highest lexical score alone must not bind.
+   - They are deterministic, path-dependent diagnostic values. They are not comparable across queries and are not produced on every path.
+2. **Calibrated confidence or probability: NOT established.**
+   - The existence of `candidate_scores` does not make them confidence. They are not probabilities, and no calibration exists.
+   - `RARResolution.raw_confidence` exists as an optional field (`uri_v1/turn/rar_contracts.py:155`), but deterministic RAR does not set it.
+   - §4's exclusion of numeric confidence from the clarification contract stands. No part of this plan may treat `candidate_scores` as confidence, as a probability, or as a TENTATIVE threshold.
+3. **Learned ranking or preference: NOT authorized inside frozen RAR.**
+   - `rar_deterministic.py` is A9-protected and frozen. Learned ranking is not added to it.
+   - The R2.1 session-evidence adjunct runs after RAR, separately, on session-local evidence only. Durable learned evidence stays deferred to URI-Memory (D4).
+   - This correction does not justify moving any learning into RAR.
+
+Consequences:
+- R2.1's conclusion is unchanged. The learned-evidence weighting cannot live inside RAR because `rar_deterministic.py` is A9-protected and frozen, not because RAR lacks scores.
+- R1.6's "clearly separated" hypothesis keeps its driver-rule-tier definition. Using `candidate_scores` to choose between top-N and attribute-first presentation is at most an [EXPERIMENT] candidate that reads them as deterministic diagnostics. It would need its own qualification and is not adopted here.
+- R2.9(a) "RAR driver-rule separation" means RAR's own resolution outcome, not a reinterpretation of the scores.
+- RAR behavior and A9 are unchanged.
+
+### R3.4 Unchanged by R3
+Everything else in R2 stands, including D1–D4, R2.5 routing, R2.6 `wrong_binding_impact`, R2.7 Graphify scope, R2.8 pre-ask investigation, R2.9 TENTATIVE check, R2.11 bundles, and R2.12 events. The source-to-candidate interface distinction (existing `RARQuery` as the RAR-facing projection; the provenance-bearing evidence envelope as future S4 work) is recorded in Plan B revision R2 and applies to R2.8, R2.11, R3.1 `fact_sources`, and R3.2 check 5.
+
+---
+
 ## 0. Acceptance criteria for this plan (defined before drafting)
 
 - AC-1: Every architectural claim about existing code cites a file that was inspected in this session.
@@ -386,7 +602,7 @@ The name is a User decision (governance alias table). Planning proceeds with it 
 
 ## 3. Recommended architecture
 
-`[DIAGRAM SUPERSEDED in part: renderer tier chain by R1.3/R2.5; candidate sources by R2.7/R2.8; single grounding producer per Plan B R1.7]`
+`[DIAGRAM SUPERSEDED in part: renderer tier chain by R1.3/R2.5; candidate sources by R2.7/R2.8; single grounding producer per Plan B R1.7; binding payload kinds and admissible binding states by R3.1/R3.2]`
 
 ```
 Input / session context
@@ -433,7 +649,7 @@ class ClarificationKind(str, Enum):
     CHOOSE_ONE = "CHOOSE_ONE"                  # RAR AMBIGUOUS, 2..MAX candidates
     CONFIRM_SINGLE = "CONFIRM_SINGLE"          # [SUPERSEDED by R2.2: CONFIRM_ONE] 1 candidate, non-deterministic basis, risk policy requires confirmation
     FREE_INPUT_ONLY = "FREE_INPUT_ONLY"        # RAR UNKNOWN / NO_CANDIDATE
-    # no other kinds in v1
+    # no other kinds in v1  [SUPERSEDED by R2.2 / R3.1: CONFIRM_ONE and CHOOSE_ATTRIBUTE added]
 
 @dataclass(frozen=True)
 class CandidateFact:
@@ -511,7 +727,7 @@ The CONFIRM_SINGLE rule depends on a risk tier that is not known at RAR time in 
 ---
 
 ## 5. <1B renderer role
-`[ROLE REFRAMED by R1.4 / R2.5 — the EXPLAIN-class Edge wording role within the shared Edge Brain qualification; input/output/forbidden rules below still apply to every model tier]`
+`[ROLE REFRAMED by R1.4 / R2.5 — the EXPLAIN-class Edge wording role within the shared Edge Brain qualification; input/output/forbidden rules below still apply to every model tier; CHOOSE_ATTRIBUTE render request and a* slot namespace: R3.1 B]`
 
 **Input.** A `RenderRequest` derived from the contract. It carries only the kind, `original_reference`, slot-keyed display facts, `overflow_count`, and a fixed style instruction. It carries no raw user history, no candidate IDs, no RAR internals, and no scaffolding headers. The A2.8B scaffolding-confusion finding makes a minimal flat prompt mandatory.
 
@@ -561,6 +777,7 @@ Escape-option omission is not a validator check, because URI appends the escape 
 **Deterministic template** (tier 3, new, modeled on `QuestionFramingEngine.frame_method_a` and `_clarification_envelope`):
 - `CHOOSE_ONE`: "Which {type_noun} do you mean by "{original_reference}"?" Each label joins the discriminating facts: "{title} · {discriminating facts}".
 - `CONFIRM_SINGLE`: "Did you mean {label}?" `[now CONFIRM_ONE per R2.2]`
+- `[CHOOSE_ATTRIBUTE template: R3.1 B]`
 - `FREE_INPUT_ONLY`: "I couldn't find what "{original_reference}" refers to. What should I use?"
 - The overflow suffix is appended when `overflow_count > 0`.
 
@@ -578,7 +795,7 @@ BINDING_CHECK --stale/expired/unknown id--> REJECTED --> RAR rebuild --> new rou
 ```
 
 - **Persistence.** The pending contract is stored in the session. The recommended surface is the existing `turn_state` pending-interaction projection (`kind: "awaiting_clarification_answer"`) plus a stored contract reference, not a new store. `ApprovalStore` is the precedent for expiry and session-mismatch rejection, and its code is reused as a pattern only: approvals are authority records, and a clarification binding is not an authorization.
-- **Click binding.** The UI sends `{ambiguity_id, candidate_id, candidate_set_fingerprint}`, never display text. BindingService checks, in order:
+- `[REFINED by R3.1 C/D and R3.2 — typed CANDIDATE / ATTRIBUTE / FREE_INPUT payloads; BindingService admits PENDING, TENTATIVE, and CHANGE_PENDING, not only pending]` **Click binding.** The UI sends `{ambiguity_id, candidate_id, candidate_set_fingerprint}`, never display text. BindingService checks, in order:
   - the ambiguity is pending;
   - same session;
   - not expired;
@@ -591,7 +808,7 @@ BINDING_CHECK --stale/expired/unknown id--> REJECTED --> RAR rebuild --> new rou
   - If RAR returns `AMBIGUOUS` with a smaller set, start the next round.
   - If RAR returns `UNKNOWN`, the text describes something outside the set. `[BROADENING SOURCES CORRECTED by R2.7 — documents/emails via authorized retrieval capabilities, not Graphify]` This starts an explicit new resolution cycle, allowed to broaden (session, Graphify, retrieval), with a new `ambiguity_id`. The broadening is recorded in telemetry. It is never a silent broadening of the original set.
 - `[SUPERSEDED by R1.8 / R2.4 — progress-based limit + per-turn budget; values are EXPERIMENT]` **Loop limit.** At most 2 user-facing ARN-C rounds per original reference, counted in the contract's `round_index` and reflected in the existing `consecutive_clarification_count`. After that, ARN-C stops. The Main Brain receives the full pending state plus the user's inputs and either proceeds with an explicit statement of its assumption for an AUTO-tier action, or asks an open question for CONFIRM/DESTRUCTIVE. It never auto-binds a restricted action. The value 2 is `CANDIDATE_THRESHOLD_TO_BE_ESTABLISHED`: it is a design default, not a measured value. System-caused rebuilds (stale rejection) do not count as user rounds. A hard cap of 3 total rebuilds prevents a system loop.
-- `[SUPERSEDED for TENTATIVE_APPLIED recoverable actions by R2.4 — Change redoes automatically; still holds for CONFIRMED/APPLIED and all CONSEQUENTIAL actions]` **Correction after choosing** ("no, the other one"). If no side-effecting action has executed, a correction referring to the pending or bound contract re-runs RAR with the correction as evidence against the same set, then rebinds. After execution, a correction is a new request; it never silently reverses an executed action.
+- `[SUPERSEDED for TENTATIVE_APPLIED recoverable actions by R2.4 / R3.2 — Change redoes after a validated rebind and fresh authorization; still holds for CONFIRMED/APPLIED and all CONSEQUENTIAL actions]` **Correction after choosing** ("no, the other one"). If no side-effecting action has executed, a correction referring to the pending or bound contract re-runs RAR with the correction as evidence against the same set, then rebinds. After execution, a correction is a new request; it never silently reverses an executed action.
 - **Expiry.** The default is to reuse the `DEFAULT_EXPIRY_SECONDS = 900` precedent. This is `CANDIDATE_THRESHOLD_TO_BE_ESTABLISHED`, to be confirmed from interaction telemetry.
 
 ---

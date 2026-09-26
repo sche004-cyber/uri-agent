@@ -58,7 +58,7 @@ Four User decisions (D1 to D4) were identified. They gate specific slices only. 
 | RAR | `uri_v1/turn` research only; `URI-RAR` `EXPERIMENTAL`; zero `uri_core` imports | no | RAR, after `URI-RAR` adoption |
 | ARN.1 | production NOT_FOUND narrowing (`canonical_execution.py:722`) | no | ARN.1, unchanged |
 | Graphify | hint/pointer; no document or email index | no (both plans overstate reach) | hint only |
-| Candidate ranking | RAR ordinal ranks, no scores | yes (C-3, C-4) | RAR deterministic order; a model annotates only |
+| Candidate ranking | RAR ordinal ranks, no scores `[CORRECTED by COR-5: deterministic diagnostic candidate_scores exist; not calibrated confidence]` | yes (C-3, C-4) | RAR deterministic order; a model annotates only |
 | Candidate IDs | `validate_rar_resolution` anti-invention | no | RAR |
 | Clarification wording | M33.2 §3.1: model-authored, template only as fallback | yes (C-1) | Plan A policy, after amendment |
 | Binding | none in production | no | Plan A `BindingService` → `RARDeterministicAnchor.selected_ui_id` / `ACTIVE_UI` |
@@ -134,7 +134,7 @@ Four User decisions (D1 to D4) were identified. They gate specific slices only. 
 | C-1 | Template-primary wording vs M33.2 §3.1 "model-authored; template only as fallback". Live code already has deterministic text: `canonical_execution.py:441`, `approval_resumption._clarification_envelope`. | HIGH (governance) | Amend M33.2 §3.1 |
 | C-2 | Edge supporting work under explicit selection vs `SUPPRESS` ("explicit Main request") | MEDIUM | Amend M33.2 §6 |
 | C-3 | Plan B model-assisted candidate comparison vs Plan A "no model ranking" | MEDIUM | A model annotates or narrows only |
-| C-4 | Plan A learned evidence via `ExperienceRecord.corrections`, "inside RAR". ExperienceStore is prose, Brain-gated, with no IDs, decay, or delete. `rar_deterministic.py` is A9-protected (hash `e02af25b…b649`) with ordinal ranks and no scores. | HIGH for that slice | Separate deterministic adjunct; session-only |
+| C-4 | Plan A learned evidence via `ExperienceRecord.corrections`, "inside RAR". ExperienceStore is prose, Brain-gated, with no IDs, decay, or delete. `rar_deterministic.py` is A9-protected (hash `e02af25b…b649`) with ordinal ranks and no scores `[CORRECTED by COR-5]`. | HIGH for that slice | Separate deterministic adjunct; session-only |
 | C-5 | A lone `MODEL_SELECTION` is treated as ambiguous, but `CHOOSE_ONE` needs ≥2 and `CONFIRM_SINGLE` was removed. The single-candidate kind is undefined. | MEDIUM | Keep a single-candidate confirm kind |
 | C-6 | Stale draft text beside R1: §4.1 TOOL_CATALOG tiers, §7 post-execution rule, loop limit 2, §9 default chains | MEDIUM | Mark superseded; add post-execution states |
 | C-7 | "Next to `requires_approval`" and "nothing like this exists" vs `Action.approval_requirement` / `effect_type` / `risk` (`uri_core/capabilities/base.py:138-146`) | LOW | Correct the text |
@@ -304,3 +304,8 @@ None of these changed the verdict.
   - **Effect:** repair A-R10 is `NOT_APPLICABLE` (no change to Plan A's figure). There is no effect on the verdict.
 - **COR-4 (2026-09-26). Section reference.** C-9, §6 item 8, and §2 cite "M33.2 §8" for the calibration rule "never trained online from a single user's traffic". In `docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md` that rule is in **§9.1 Calibration** (§8 is the control-panel backend contract). The substance is unchanged. Amendment G3 was placed in §9.1.
 - **COR-2 (2026-09-26).** Plan B's SHA-256 was not recorded at audit time. The G0 repair pass recorded it from the same transcript message and confirmed that the transcript contains exactly one Plan B proposal message. See the Plan B artifact's provenance block.
+- **COR-5 (2026-09-26, from the independent RG-0 re-audit, finding RG-0-F3). RAR scores.**
+  - **What changed:** §2's row "Candidate ranking: RAR ordinal ranks, no scores" and C-4's "ordinal ranks and no scores" are factually wrong.
+  - **Corrected evidence:** `uri_v1/turn/rar_deterministic.py:88` defines `DeterministicRARTrace.candidate_scores`, deterministic discrimination scores from `score_candidate_relevance`, populated on the `TERM_DISCRIMINATION` path. They are diagnostic values, not calibrated confidence, and they do not authorize learned ranking inside frozen RAR.
+  - **Effect:** none on the verdict or on repair A-R1. The session adjunct stays outside RAR because `rar_deterministic.py` is A9-protected and frozen. Plan A revision R3.3 records the corrected terminology.
+- **COR-6 (2026-09-26, from the independent RG-0 re-audit). Interface wording in B-R7.** Repair B-R7 as applied in Plan B R1.7 described the existing `RARQuery` candidate set as carrying "provenance locators". `RARQuery` / `RARCandidate` carry no provenance, dependency, provider, or freshness metadata. Plan B revision R2 records the distinction: the existing `RARQuery` is the RAR-facing projection; a provenance-bearing evidence envelope is future S4 work. No effect on the verdict.
