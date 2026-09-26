@@ -4,8 +4,8 @@
 **Audit:** RG-0R, the focused independent re-audit of the four RG-0 bounded repairs (scope: `docs/plans/M33_3_CROSS_PLAN_STATE.md` §7a).
 **Verdict:** `RG_0R_ACCEPTED`
 **Date recorded:** 2026-09-26
-**Audited baseline:** branch `m35-uri-v1-parallel-architecture` @ `94ccf2ab24414007feccbcf2c5c903f8755621ec` (RG-0 bounded repair commit `94ccf2a`).
-**Recorded by:** Claude (Architect / governance recorder). Claude authored the RG-0 repair and did not perform RG-0R.
+**Audited baseline (inferred):** branch `m35-uri-v1-parallel-architecture` @ `94ccf2ab24414007feccbcf2c5c903f8755621ec` (RG-0 bounded repair commit `94ccf2a`). The relayed verdict did not state its baseline. This value is derived from repository chronology: `94ccf2a` was the branch HEAD after the RG-0 repair and before this record. No stored audit evidence proves it. `[CORRECTED 2026-09-26, fidelity follow-up F-U4: the original line stated the baseline without marking it as inferred]`
+**Recorded by:** Claude (Architect / governance recorder). Claude authored the RG-0 repair. **RG-0R auditor identity: UNVERIFIED** (see Provenance). `[CORRECTED 2026-09-26, fidelity follow-up F-U4: the original line asserted "and did not perform RG-0R", which no repository evidence proves]`
 
 ## Provenance of this record
 

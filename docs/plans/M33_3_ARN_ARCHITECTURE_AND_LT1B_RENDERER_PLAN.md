@@ -4,6 +4,7 @@
 **Status update (2026-09-26, additive):** revised R2 (cross-plan repairs A-R1…A-R12, User decisions D1–D4). Registered as planning identity `URI-REFERENCE-CLARIFICATION` in `URI_STATE.yaml` → `planning_artifacts`. Committed to the repository. Status `PLAN_REVISED_R2_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`: not accepted, not frozen, implementation NOT authorized.
 **Status update (2026-09-26, additive):** revised R3 (RG-0 bounded contract repair: RG-0-F1 `CHOOSE_ATTRIBUTE` contract, RG-0-F2 Change/rebind/redo lifecycle, RG-0-F3 RAR score terminology). Status `PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT`: not accepted, not frozen, implementation NOT authorized.
 **Status update (2026-09-26, additive):** RG-0R returned `RG_0R_ACCEPTED` (no blocking defects; R3 repairs accepted; planning phase may close). Revision R4 records User decisions D5 (CONFIRMED authority) and D6 (S1 boundary) and S1 scoping evidence F-1 to F-6. Status `PLANNING_CLOSED_RG0R_ACCEPTED_R4_RECORDED`. S1 scope: `docs/plans/M33_3_S1_STATE.md` (`S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`). Implementation NOT authorized.
+**Status update (2026-09-26, additive):** S1 fidelity self-audit follow-ups F-U1 to F-U4 closed (docs only). R4.12 records the User decision on free input with display overflow (displayed option set vs round ambiguity scope). Implementation NOT authorized.
 **Branch / base:** `m35-uri-v1-parallel-architecture` @ `127c733` (Batch A frozen).
 **Author role:** Claude (Architect / Pre-Auditor). Implementation is not authorized by this document.
 **Date:** 2026-09-26
@@ -375,7 +376,7 @@ class AttributeOption:
 Additions to the planned `ClarificationContract` (§4):
 - `attribute_axis: Optional[str]`: set only for `CHOOSE_ATTRIBUTE`.
 - `attribute_options: Tuple[AttributeOption, ...]`: 2 to `max_options` entries for `CHOOSE_ATTRIBUTE`; empty for every other kind.
-- `scope_candidate_ids: Tuple[str, ...]`: the full ambiguous candidate set that the attribute split partitions. It may exceed `max_options` and is never displayed. For the other kinds it equals the IDs in `candidates`.
+- `scope_candidate_ids: Tuple[str, ...]`: the full ambiguous candidate set that the attribute split partitions. It may exceed `max_options` and is never displayed. For the other kinds it equals the IDs in `candidates`. `[REFINED by R4.12 (User decision, 2026-09-26) - for CHOOSE_ONE it is the full round ambiguity scope RAR returned, including candidates hidden only by the display cap; candidates is the displayed option set]`
 - `candidate_set_fingerprint` covers the fingerprints of the scope candidates and, for `CHOOSE_ATTRIBUTE`, every `(option_key, axis, value, member_candidate_ids)` tuple.
 
 Builder rules (deterministic):
@@ -451,7 +452,7 @@ UserClue(axis, value), category USER_CLUE, recorded as session-local evidence (R
 
 **F. Escape path.** "None of these / Enter something else" is always present. Free input on a `CHOOSE_ATTRIBUTE` contract is handled as follows:
 1. If the normalized text equals exactly one rendered attribute value of this contract, it is treated as that option. The same validation (D) and transition (E) apply.
-2. Otherwise the §7 free-input path runs over the scope candidate set (RAR re-run with the text as local evidence).
+2. Otherwise the §7 free-input path runs over the scope candidate set (RAR re-run with the text as local evidence). `[REFINED by R4.5 / R4.12 - the typed text is the fresh RARQuery.reference_expression, not local evidence; deterministic RAR does not read RAREvidence.clause_text (F-3); the scope is the round ambiguity scope]`
    - A qualified model may interpret the text into a proposed `(axis, value)` only under D3. The proposal is accepted only if the axis is in the closed vocabulary and the value equals a grounded fact of at least one scope candidate. It then enters transition E as a `UserClue`. Otherwise the text remains evidence text only.
 3. `UNKNOWN` → a new bounded cycle with a new `ambiguity_id` (R1.7 / R2.7 sources).
 - Safeguards are unchanged: R1.8 (a) and (b), expiry, and no silent broadening.
@@ -629,7 +630,7 @@ The wrong interpretation "`RESOLVED` + `basis = DETERMINISTIC_ANCHOR` → always
 
 ### R4.5 Free-input authority (refines §7 "Free input", R3.1 F, R3.2 "Candidate Y selected or supplied")
 
-- Typed text re-resolves through a fresh `RARQuery` whose `reference_expression` is the typed text (F-3). The candidate set is the contract's candidate set (scope set for `CHOOSE_ATTRIBUTE`), never silently broadened. Other query fields follow the stored query.
+- Typed text re-resolves through a fresh `RARQuery` whose `reference_expression` is the typed text (F-3). The candidate set is the contract's candidate set (scope set for `CHOOSE_ATTRIBUTE`), never silently broadened. `[REFINED by R4.12 - "the contract's candidate set" means the round ambiguity scope (scope_candidate_ids), not only the displayed options]` Other query fields follow the stored query.
 - The result is classified by R4.2 exactly like any RAR result (D5):
   - `CERTAINTY` → `CONFIRMED`;
   - `HEURISTIC` → the R2.9 check and impact, as in R4.3 (`TENTATIVE` or `CONFIRM_ONE`);
@@ -660,6 +661,8 @@ The wrong interpretation "`RESOLVED` + `basis = DETERMINISTIC_ANCHOR` → always
 - R3.1 evidence note (ARN.1 adapter) and R3.1 A (`axis`) — R4.6.
 - R3.2 "Candidate Y selected or supplied" — R4.4, R4.5.
 - Cross-plan audit report §3 Case A — COR-7 in that report.
+- R3.1 F.2 and §7 "Free input" ("text as local evidence") — R4.5 / R4.12 (fidelity follow-up F-U2).
+- R3.1 A `scope_candidate_ids`, R4.5 candidate set, and §4 `candidate_set_fingerprint` — R4.12 (fidelity follow-up F-U3).
 
 ### R4.9 Unchanged by R4
 
@@ -673,6 +676,33 @@ Everything else in R3, R2, and R1 stands: D1–D4, R2.5 routing, R2.6 `wrong_bin
 
 1. **`EXACT_TITLE` Level 2 and `stem_title`.** D5 admits "an equivalent unique verbatim-title anchor". RAR's Level 2 ("Strict Verbatim Title Match") also matches after `stem_title` normalization (extension stripped, delimiters collapsed). R4.2 treats only a case/whitespace-normalized full-title match as `CERTAINTY`, and a stem-only match as `HEURISTIC`. This is the conservative (fail-closed) reading. The User may widen it. It does not block S1 scope.
 2. **R4 fidelity.** R4 records decisions and findings relayed from the S1 scoping audit. The findings were re-verified against source here, but R4 itself has not been independently re-audited. The implementation-authorization review should confirm R4 against D5, D6, and F-1 to F-6.
+
+### R4.12 Free input with display overflow: displayed option set vs round ambiguity scope (User decision, 2026-09-26; fidelity follow-up F-U3)
+
+**Decision [USER].** Free input reruns over the **full ambiguity scope RAR returned** for that clarification round, including candidates not displayed because of the UI option cap. The display cap is a presentation constraint, not a reduction of binding scope. URI must not reconstruct candidates that frozen RAR omitted or truncated: the full ambiguity scope is exactly the candidate set RAR returned to the clarification layer for that round.
+
+**Two distinct sets per round.**
+
+| Set | Definition | Contract field |
+|---|---|---|
+| **Displayed option set** | the candidates rendered as clickable options: at most `max_options` (5), in RAR order | `candidates` |
+| **Round ambiguity scope** | exactly the candidate IDs RAR returned for this round (`ambiguous_candidate_ids` for `AMBIGUOUS`), unchanged by the display cap, never re-expanded from `RARQuery.candidates` (F-2) | `scope_candidate_ids` |
+
+- For `CHOOSE_ONE`, the displayed option set is the first `max_options` scope candidates in RAR order, and `overflow_count` = scope size minus displayed size. The escape option ("None of these / Enter something else") stays present.
+- For `CHOOSE_ATTRIBUTE`, R3.1 is unchanged: no candidate is displayed, and the scope is the set the attribute options partition.
+- For `CONFIRM_ONE` the scope is its single candidate. `FREE_INPUT_ONLY` has no RAR-returned scope; its free input follows the existing R1.7 / R2.7 bounded-cycle rule, unchanged by R4.12.
+
+**Free input.** Typed text reruns RAR with the text as `reference_expression` (F-3) over the round ambiguity scope. A hidden overflow candidate is as eligible as a displayed one. The rerun never goes beyond that scope; a broader search happens only as the explicit new bounded cycle after `UNKNOWN` (R1.7, R2.7). The result is classified by R4.2 and bound per R4.3 / R4.5.
+
+**Click.** A click can target only a displayed candidate (R3.1 D and R4.4, unchanged).
+
+**Fingerprint and freshness (coherence; no new contract).**
+- R3.1 already defines `candidate_set_fingerprint` over the fingerprints of the scope candidates, and already fingerprints non-displayed candidates (every `CHOOSE_ATTRIBUTE` scope candidate is non-displayed). R4.12 applies that existing rule to `CHOOSE_ONE`. It supersedes §4's draft comment "hash over ordered candidate fingerprints" (displayed only) and, for `CHOOSE_ONE`, R3.1's sentence "For the other kinds it equals the IDs in `candidates`".
+- Each scope candidate, displayed or hidden, has a stored per-candidate `fingerprint` (§4 definition, unchanged).
+- A candidate that free input resolves to must pass the same per-candidate freshness check as a clicked candidate (current fingerprint equals stored) before any binding. Otherwise the response is `REJECTED` and the §7 rebuild path runs. This applies the existing per-candidate check; it adds no new fingerprint input.
+- §7's rule that a change in other candidates does not block a click is unchanged.
+
+**Unchanged.** RAR, A9, `rar_contracts.py`, D5, D6, R3.1 E, and the R4.2–R4.5 authority rules.
 
 ---
 
@@ -809,7 +839,7 @@ class ClarificationContract:
     max_options: int                  # frozen constant, 5
     free_input_allowed: bool          # always True in v1
     binding_target: str               # "RARDeterministicAnchor.selected_ui_id"
-    candidate_set_fingerprint: str    # hash over ordered candidate fingerprints
+    candidate_set_fingerprint: str    # hash over ordered candidate fingerprints  [SUPERSEDED by R3.1 / R4.12: covers every round-scope candidate, displayed or hidden]
     created_at: str
     expires_at: str                   # created_at + expiry (see §7)
     resolution_basis: str             # RARBasis of the triggering resolution
@@ -930,7 +960,7 @@ BINDING_CHECK --stale/expired/unknown id--> REJECTED --> RAR rebuild --> new rou
   - the clicked candidate's current fingerprint equals the stored fingerprint.
 
   If all pass, it emits `RARDeterministicAnchor(selected_ui_id=candidate_id)` and re-runs RAR, which must return `RESOLVED` / `DETERMINISTIC_ANCHOR` / `ACTIVE_UI` `[REFINED by R4.4 — rule_used must be ACTIVE_UI and candidate_id must equal the clicked candidate; any other result is REJECTED, fail closed (F-6)]`. The evidence is recorded as `USER_CLUE` / user selection. A change in other candidates does not block the binding: the user chose a concrete, still-valid item.
-- **Free input.** The text is authoritative clarification input, but not an automatic binding. RAR re-runs against the same candidate set with the text as new local evidence (exact alias, title, or ID match).
+- **Free input.** `[REFINED by R4.5 / R4.12 - the typed text is the fresh RARQuery.reference_expression, not local evidence (F-3); the rerun covers the round ambiguity scope RAR returned, including candidates hidden only by the display cap]` The text is authoritative clarification input, but not an automatic binding. RAR re-runs against the same candidate set with the text as new local evidence (exact alias, title, or ID match).
   - If RAR returns `RESOLVED`, bind and resume. `[REFINED by R4.5 (D5) — the typed text is the fresh reference_expression (F-3); the binding state follows R4.3: CONFIRMED only for a CERTAINTY-class result]`
   - If RAR returns `AMBIGUOUS` with a smaller set, start the next round.
   - If RAR returns `UNKNOWN`, the text describes something outside the set. `[BROADENING SOURCES CORRECTED by R2.7 — documents/emails via authorized retrieval capabilities, not Graphify]` This starts an explicit new resolution cycle, allowed to broaden (session, Graphify, retrieval), with a new `ambiguity_id`. The broadening is recorded in telemetry. It is never a silent broadening of the original set.

@@ -1,7 +1,7 @@
 # M33.3 — S1 State: Reference-Clarification Deterministic Core (frozen scope)
 
 **Current state:** `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`
-**State history:** S1 `BLOCKED` pending RG-0R (`docs/plans/M33_3_CROSS_PLAN_STATE.md` §4) → RG-0R `RG_0R_ACCEPTED` → S1 pre-implementation scoping audit `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP` → bounded governance follow-up (this file, Plan A R4) → `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`.
+**State history:** S1 `BLOCKED` pending RG-0R (`docs/plans/M33_3_CROSS_PLAN_STATE.md` §4) → RG-0R `RG_0R_ACCEPTED` → S1 pre-implementation scoping audit `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP` → bounded governance follow-up (this file, Plan A R4) → `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW` → S1 fidelity self-audit `S1_FIDELITY_AUDIT_ACCEPTED_WITH_BOUNDED_FOLLOWUP` → docs-only repair of follow-ups F-U1 to F-U4 (2026-09-26; state unchanged: `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`).
 **Implementation authorized:** **NO.** `CODE_IMPLEMENTATION_AUTHORIZED: NO`. `S1_IMPLEMENTATION_AUTHORIZED: NO`. Authorization is a separate User/governance action.
 **Workstream identity:** `URI-REFERENCE-CLARIFICATION` (planning identity; the bare alias "ARN" stays forbidden).
 **Branch / baseline:** `m35-uri-v1-parallel-architecture` @ `94ccf2ab24414007feccbcf2c5c903f8755621ec`.
@@ -25,6 +25,7 @@ S1 is the **full** state-file S1 (D6). It is not split into S1 and S1b.
 
 - **D5 — CONFIRMED authority.** Only certainty-tier deterministic rules may produce `CONFIRMED`: `EXACT_ID`; `EXACT_ALIAS`; `ACTIVE_UI`; `CURRENT_ATTACHMENT` only when tied to `deterministic_anchor.current_attachment_id`; `EXACT_TITLE` only when tied to `deterministic_anchor.unique_title_match` or an equivalent unique verbatim-title anchor. Other deterministic `RESOLVED` rules are only TENTATIVE-eligible through the R2.9 check. `CONSEQUENTIAL` or undeclared `wrong_binding_impact` → `CONFIRM_ONE`. The same classification applies to typed free input. The classifier lives outside frozen RAR/A9. Operational table: Plan A R4.2.
 - **D6 — S1 boundary.** S1 = deterministic clarification/binding core + deterministic template + RenderValidator + `ClarificationBundle` / multi-reference contract. No S1/S1b split.
+- **Free input with display overflow (User decision, 2026-09-26; follow-up F-U3).** Free input reruns over the full ambiguity scope RAR returned for that round, including candidates hidden only by the display cap. The display cap is a presentation constraint, not a reduction of binding scope. URI never reconstructs candidates frozen RAR omitted or truncated. Operational text: Plan A R4.12.
 - D1–D4 stand unchanged (`docs/plans/M33_3_CROSS_PLAN_STATE.md` §2).
 
 ## 3. Evidence findings (re-verified; detail and line citations in Plan A R4.1)
@@ -44,13 +45,13 @@ S1 is the **full** state-file S1 (D6). It is not split into S1 and S1b.
 
 1. Contract types and deterministic validation: `ClarificationKind` (`CHOOSE_ONE`, `CONFIRM_ONE`, `CHOOSE_ATTRIBUTE`, `FREE_INPUT_ONLY`), `CandidateFact`, `ClarificationCandidate`, `ClarificationContract` (with R3.1 attribute fields), `ClarificationOptionKind`, `AttributeOption`, `ReferenceSlot`, `ClarificationBundle`, response payloads (`CANDIDATE`, `ATTRIBUTE`, `FREE_INPUT`), binding-state enum, and an S1-local `wrong_binding_impact` value type (`NONE` / `RECOVERABLE` / `CONSEQUENTIAL`; undeclared → `CONSEQUENTIAL`).
 2. The D5 binding-authority classifier (Plan A R4.2), pure and outside frozen RAR.
-3. The contract builder and trigger (Plan A R4.3, replacing R2.3's table): top-N ordering in RAR order, cap 5, `overflow_count` over the returned set only, contrast exclusions, near-identical handling (§4.2).
+3. The contract builder and trigger (Plan A R4.3, replacing R2.3's table): top-N ordering in RAR order, cap 5, `overflow_count` over the returned set only, contrast exclusions, near-identical handling (§4.2). The builder keeps two distinct sets (Plan A R4.12): the **displayed option set** (`candidates`, at most 5) and the **round ambiguity scope** (`scope_candidate_ids`, exactly the IDs RAR returned for the round, including candidates hidden by the cap). `candidate_set_fingerprint` covers every round-scope candidate, displayed or hidden (existing R3.1 rule).
 4. `CHOOSE_ATTRIBUTE` axis selection and clue narrowing over `title` / `type` / `owner` / `recency` only, as a port of ARN.1 semantics (R3.1 A, R4.6).
 5. The deterministic R2.9 TENTATIVE eligibility check.
 6. The session-evidence adjunct (R2.1): session-local, in-memory, display reorder/annotation among RAR ties, and R2.9(c) input only.
 7. The deterministic template for every kind, including `CHOOSE_ATTRIBUTE` and overflow suffix (§6, R3.1 B).
 8. The RenderValidator: all V-* checks of §6 plus the R3.1 B `a*` namespace rules. It validates any supplied render output (template or canned), so L2 adversarial tests need no model.
-9. BindingService: R3.1 D response validation; R3.2 admissible source states and rebind checks 1–7; fingerprint freshness; expiry; replay rejection; the R4.4 `ACTIVE_UI` re-run check; R4.5 free-input re-resolution.
+9. BindingService: R3.1 D response validation; R3.2 admissible source states and rebind checks 1–7; fingerprint freshness; expiry; replay rejection; the R4.4 `ACTIVE_UI` re-run check; R4.5 free-input re-resolution over the round ambiguity scope (R4.12), never beyond it and never reconstructing RAR-omitted candidates; the per-candidate freshness check on any candidate free input resolves to.
 10. The lifecycle state machine (§6 below).
 11. The bundle contract (R2.11): validation (targets exist, no cycles, pending-parent slots hidden), `COMBINED` / `SEQUENTIAL` presentation, per-slot binding, dependent-slot rebuild from a caller-supplied fresh `RARQuery`.
 12. Stop safeguards (R1.8): progress-based round limit and per-turn budget counters. Limit values are parameters; no value is frozen (values are [EXPERIMENT]).
@@ -105,6 +106,11 @@ S1 implements the Plan A R3.2 machine per `ambiguity_id`, with R4.4/R4.5 authori
 - **Not reachable in S1:** `VERSIONED` (needs S11).
 - **I-6 fail-closed representation (interpretive choice, subject to implementation review):** if the injected edited-result status is `EDITED` or `UNKNOWN`, S1 never enters `REDO_AUTHORIZED`; it records `REDO_NOT_EXECUTED` with the reason "result-version owner (S11) required". Only `UNEDITED` can proceed.
 - A contract accepts at most one successful response. Replays are rejected.
+- **Attribute-narrowed results never confirm directly (Plan A R3.1 E; follow-up F-U1).** A result reached through `CHOOSE_ATTRIBUTE` / attribute narrowing never directly produces `CONFIRMED`, even when the fresh RAR rerun returns a certainty-tier rule (R4.2 `CERTAINTY`). After attribute narrowing:
+  - multiple candidates → another clarification round;
+  - one candidate, R2.9 check passes, impact `NONE` / `RECOVERABLE` → `TENTATIVE`;
+  - one candidate where R2.9 does not permit `TENTATIVE`, or RAR returns `UNKNOWN` → `CONFIRM_ONE`;
+  - never `CONFIRMED` directly. `CONFIRMED` is reachable afterwards only through an explicit `CONFIRM_ONE` confirmation or a candidate click (R4.4).
 
 ## 7. Persistence boundary
 
@@ -129,6 +135,8 @@ In-memory only. Pending contracts, session evidence, and state live in process o
 15. Stop safeguards: no-progress stop; budget exhaustion; a new clue counts toward budget, not the round limit.
 16. Edge independence: S1 imports no model, provider, router, or Edge module.
 17. Protected-hash test: the §13 RAR/A9 hashes are unchanged before and after the test run.
+18. F-U1 (R3.1 E): attribute narrowing whose fresh RAR rerun returns a certainty-tier result (for example, a Level 2 verbatim `EXACT_TITLE` that becomes unique only after narrowing) is **not** `CONFIRMED`; it yields `TENTATIVE` (R2.9 passes, impact `NONE` / `RECOVERABLE`) or `CONFIRM_ONE`. Also: multiple remaining → new round; `UNKNOWN` with one remaining → `CONFIRM_ONE`.
+19. F-U3 (R4.12): a `CHOOSE_ONE` round with more than 5 RAR-returned candidates displays 5 plus overflow; free input naming a hidden candidate re-resolves within the round scope; free input never resolves to a candidate outside the RAR-returned scope; a truncated RAR set is not re-expanded; `candidate_set_fingerprint` changes when a hidden scope candidate's fingerprint changes; a stale candidate reached by free input is `REJECTED`.
 
 ## 9. Proposed file-impact map (proposed; confirmed at authorization)
 

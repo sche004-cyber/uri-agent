@@ -70,6 +70,8 @@ Other deterministic `RESOLVED` rules are only TENTATIVE-eligible through the R2.
 
 **D6: S1 boundary** (2026-09-26). S1 is the full state-file S1: deterministic clarification/binding core, deterministic template, RenderValidator, and `ClarificationBundle` / multi-reference contract. Do not split into S1/S1b. Applied in Plan A R4.7 and `docs/plans/M33_3_S1_STATE.md`.
 
+**Free input with display overflow** (2026-09-26, User decision during the S1 fidelity follow-up repair, F-U3). Free input reruns over the full ambiguity scope RAR returned for that clarification round, including candidates not displayed because of the UI option cap. The display cap is a presentation constraint, not a reduction of binding scope. URI must not reconstruct candidates omitted or truncated by frozen RAR; the full ambiguity scope is exactly the candidate set RAR returned to the clarification layer for that round. Applied in Plan A R4.12 and `docs/plans/M33_3_S1_STATE.md`.
+
 ## 3. Repair application index
 
 | Repair | Where applied |
@@ -151,6 +153,7 @@ Other deterministic `RESOLVED` rules are only TENTATIVE-eligible through the R2.
 - **S1 pre-implementation scoping audit:** `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP`. The follow-up is governance recording only. User decisions D5 and D6 (§2). Evidence findings F-1 to F-6 (Plan A R4.1). The report is not stored in the repository; this record and Plan A R4 are its durable record as relayed.
 - **Governance recording pass (this update):** P-1 recorded RG-0R; P-2 added Plan A R4; P-3 froze the S1 scope in `docs/plans/M33_3_S1_STATE.md` with state `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`. No code, fixture, or protected artifact changed.
 - **Planning phase:** closed.
+- **S1 fidelity self-audit (2026-09-26):** `S1_FIDELITY_AUDIT_ACCEPTED_WITH_BOUNDED_FOLLOWUP`, no blocking defect. Claude performed it and also authored R4 and the S1 state, so it is not independent (disclosed). Follow-ups F-U1 (attribute-narrowed results never confirm directly), F-U2 (stale free-input wording markers), F-U3 (displayed option set vs round ambiguity scope; User decision in §2), and F-U4 (RG-0R record provenance) were closed by a docs-only repair. The audit was returned in chat and is not stored as a separate file; this bullet is its durable record.
 - **Implementation authorized:** NO. `CODE_IMPLEMENTATION_AUTHORIZED: NO`. `S1_IMPLEMENTATION_AUTHORIZED: NO`. The next step is a separate User/governance implementation-authorization review of S1.
 
 ## 6. Protected artifacts (verified unchanged at the G0 repair, before and after the RG-0 bounded repair, and before and after the RG-0R/S1 governance recording pass on 2026-09-26)
