@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Seque
 from .base import ApprovalRequirement
 from .context_resolver import CapabilityContextResolver
 from .registry import MultiActionCapabilityRegistry
+from .wrong_binding import GateOutcome, ReferenceBinding, evaluate_wrong_binding_gate
 
 
 class MultiActionExecutor:
@@ -33,6 +34,7 @@ class MultiActionExecutor:
         *,
         user_approved: bool = False,
         admin_approved: bool = False,
+        reference_bindings: Optional[Sequence[ReferenceBinding]] = None,
     ) -> Dict[str, Any]:
         capability = self.registry.get_capability(capability_name)
         if capability is None:
@@ -62,6 +64,17 @@ class MultiActionExecutor:
         errors = action.parameters.validate(inputs)
         if errors:
             return self._record(capability_name, action_name, "invalid_input", {"errors": errors})
+        # M33.3 S2: wrong-binding impact gate. Opt-in: a strict no-op when the
+        # caller supplies no reference bindings. Runs before approval, and
+        # approval never satisfies it (approval stays a separate gate).
+        gate = evaluate_wrong_binding_gate(action, reference_bindings)
+        if not gate.allowed:
+            status = (
+                "invalid_reference_binding"
+                if gate.outcome is GateOutcome.INVALID_REFERENCE_BINDING
+                else "reference_confirmation_required"
+            )
+            return self._record(capability_name, action_name, status, gate.as_detail())
         if action.approval_requirement == ApprovalRequirement.USER_APPROVAL_REQUIRED and not user_approved:
             return self._record(capability_name, action_name, "approval_required", {"approval_requirement": action.approval_requirement.value})
         if action.approval_requirement == ApprovalRequirement.ADMIN_APPROVAL_REQUIRED and not admin_approved:
@@ -93,6 +106,7 @@ class MultiActionExecutor:
             response = self.execute(
                 str(step.get("capability")), str(step.get("action")), inputs,
                 user_approved=user_approved, admin_approved=admin_approved,
+                reference_bindings=step.get("reference_bindings"),
             )
             completed[step_id] = response
             if response["status"] not in {"success", "ok"}:

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from .base import Action, ActionSchema, ApprovalRequirement, Capability, EffectType, RiskLevel
+from .wrong_binding import WrongBindingImpact
 
 KNOWN_CAPABILITY_EFFECTS: Dict[str, EffectType] = {
     # Pure reads (no state change)
@@ -28,6 +29,24 @@ KNOWN_CAPABILITY_EFFECTS: Dict[str, EffectType] = {
     "gmail_create_draft": EffectType.EXTERNAL_WRITE,
     "drive_upload": EffectType.EXTERNAL_WRITE,
 }
+
+# M33.3 S2: explicit wrong-binding impact declarations, one User decision per
+# entry. Deliberately separate from KNOWN_CAPABILITY_EFFECTS and never derived
+# from it. Anything not listed is undeclared (treated as CONSEQUENTIAL).
+KNOWN_CAPABILITY_WRONG_BINDING_IMPACT: Dict[str, WrongBindingImpact] = {
+    # D1: an unsent draft is correctable before external communication.
+    "gmail_create_draft": WrongBindingImpact.RECOVERABLE,
+}
+
+
+def _declared_wrong_binding_impact(capability_id: str, raw: Any) -> Optional[WrongBindingImpact]:
+    """A descriptor value wins; an invalid one is undeclared, with no fallback."""
+    if raw is None:
+        return KNOWN_CAPABILITY_WRONG_BINDING_IMPACT.get(capability_id)
+    try:
+        return WrongBindingImpact(raw)
+    except (TypeError, ValueError):
+        return None
 
 
 class MultiActionCapabilityRegistry:
@@ -147,6 +166,12 @@ class LegacyCapabilityAdapter:
         else:
             effect_type = KNOWN_CAPABILITY_EFFECTS.get(capability_id, EffectType.LOCAL_WRITE)
 
+        raw_impact = (
+            source.get("wrong_binding_impact")
+            if isinstance(descriptor, Mapping)
+            else getattr(descriptor, "wrong_binding_impact", None)
+        )
+
         action = Action(
             name=capability_id,
             description=description or f"Execute legacy capability {capability_id}.",
@@ -156,6 +181,7 @@ class LegacyCapabilityAdapter:
             approval_requirement=ApprovalRequirement(approval if approval in {item.value for item in ApprovalRequirement} else "none"),
             risk=RiskLevel(risk if risk in {item.value for item in RiskLevel} else "controlled"),
             handler=handler,
+            wrong_binding_impact=_declared_wrong_binding_impact(capability_id, raw_impact),
         )
         return Capability(
             name=capability_id,

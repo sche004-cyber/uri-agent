@@ -14,6 +14,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 from uri_core.services.gmail_service import GmailService
 
 from ..base import Action, ActionSchema, ApprovalRequirement, Capability, RiskLevel
+from ..wrong_binding import WrongBindingImpact
 
 
 class GmailCapability(Capability):
@@ -102,6 +103,8 @@ class GmailCapability(Capability):
                     approval_requirement=ApprovalRequirement.USER_APPROVAL_REQUIRED,
                     risk=RiskLevel.HIGH,
                     handler=self.create_draft,
+                    # M33.3 S2 (D1, U-2): an unsent draft is correctable.
+                    wrong_binding_impact=WrongBindingImpact.RECOVERABLE,
                 ),
                 "apply_label": self._unsupported_action(
                     "apply_label",

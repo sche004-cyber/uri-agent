@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
+from .wrong_binding import WrongBindingImpact, coerce_declared_impact
+
 
 class ApprovalRequirement(str, Enum):
     NONE = "none"
@@ -151,9 +153,15 @@ class Action:
     # new action-level gate is a strict no-op until an action opts in by
     # declaring a non-empty tuple here).
     permissions: Tuple[str, ...] = ()
+    # M33.3 S2: consequence of executing this action with the wrong bound
+    # reference. Declared per action, never derived from effect_type (D1).
+    # None means undeclared, which the execution gate treats as
+    # CONSEQUENTIAL (see wrong_binding.effective_wrong_binding_impact).
+    wrong_binding_impact: Optional[WrongBindingImpact] = None
 
     def __post_init__(self) -> None:
         self.parameters = ActionSchema.coerce(self.parameters)
+        self.wrong_binding_impact = coerce_declared_impact(self.wrong_binding_impact)
         if not isinstance(self.effect_type, EffectType):
             self.effect_type = EffectType(self.effect_type)
         # read_only is strictly synchronized with effect_type == EffectType.READ_ONLY

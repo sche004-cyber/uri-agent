@@ -7,6 +7,13 @@ existing runtime capability registry or grant execution authority to models.
 from .base import Action, ActionSchema, ApprovalRequirement, Capability, RiskLevel
 from .executor import MultiActionExecutor
 from .registry import LegacyCapabilityAdapter, MultiActionCapabilityRegistry
+from .wrong_binding import (
+    ReferenceBinding,
+    ReferenceBindingStatus,
+    WrongBindingGateDecision,
+    WrongBindingImpact,
+    evaluate_wrong_binding_gate,
+)
 
 __all__ = [
     "Action",
@@ -17,4 +24,9 @@ __all__ = [
     "LegacyCapabilityAdapter",
     "MultiActionCapabilityRegistry",
     "MultiActionExecutor",
+    "ReferenceBinding",
+    "ReferenceBindingStatus",
+    "WrongBindingGateDecision",
+    "WrongBindingImpact",
+    "evaluate_wrong_binding_gate",
 ]
