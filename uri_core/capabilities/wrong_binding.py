@@ -73,7 +73,9 @@ def coerce_declared_impact(value: Any) -> Optional[WrongBindingImpact]:
     """Strict: ``None`` stays undeclared; an exact value string is accepted."""
     if value is None or isinstance(value, WrongBindingImpact):
         return value
-    return WrongBindingImpact(value)
+    if type(value) is str:
+        return WrongBindingImpact(value)
+    raise ValueError("wrong_binding_impact must be a WrongBindingImpact or exact value string")
 
 
 def effective_wrong_binding_impact(action: Any) -> Tuple[WrongBindingImpact, bool]:
@@ -85,11 +87,15 @@ def effective_wrong_binding_impact(action: Any) -> Tuple[WrongBindingImpact, boo
 
 
 def _valid_binding(item: Any) -> bool:
+    if type(item) is not ReferenceBinding:
+        return False
+    ref_key = getattr(item, "ref_key", None)
+    candidate_id = getattr(item, "candidate_id", None)
+    status = getattr(item, "status", None)
     return (
-        type(item) is ReferenceBinding
-        and isinstance(item.ref_key, str) and bool(item.ref_key.strip())
-        and isinstance(item.candidate_id, str) and bool(item.candidate_id.strip())
-        and isinstance(item.status, ReferenceBindingStatus)
+        isinstance(ref_key, str) and bool(ref_key.strip())
+        and isinstance(candidate_id, str) and bool(candidate_id.strip())
+        and isinstance(status, ReferenceBindingStatus)
     )
 
 
@@ -108,8 +114,10 @@ def evaluate_wrong_binding_gate(
     if not isinstance(reference_bindings, (list, tuple)):
         return decide(False, GateOutcome.INVALID_REFERENCE_BINDING)
     bindings = tuple(reference_bindings)
-    keys = [getattr(item, "ref_key", None) for item in bindings]
-    if not all(_valid_binding(item) for item in bindings) or len(set(keys)) != len(keys):
+    if not all(_valid_binding(item) for item in bindings):
+        return decide(False, GateOutcome.INVALID_REFERENCE_BINDING)
+    keys = [item.ref_key for item in bindings]
+    if len(set(keys)) != len(keys):
         return decide(False, GateOutcome.INVALID_REFERENCE_BINDING)
     if not bindings:
         return decide(True, GateOutcome.NO_REFERENCE_BINDING)

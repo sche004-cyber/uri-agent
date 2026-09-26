@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from .base import Action, ActionSchema, ApprovalRequirement, Capability, EffectType, RiskLevel
-from .wrong_binding import WrongBindingImpact
+from .wrong_binding import WrongBindingImpact, coerce_declared_impact
 
 KNOWN_CAPABILITY_EFFECTS: Dict[str, EffectType] = {
     # Pure reads (no state change)
@@ -44,7 +44,7 @@ def _declared_wrong_binding_impact(capability_id: str, raw: Any) -> Optional[Wro
     if raw is None:
         return KNOWN_CAPABILITY_WRONG_BINDING_IMPACT.get(capability_id)
     try:
-        return WrongBindingImpact(raw)
+        return coerce_declared_impact(raw)
     except (TypeError, ValueError):
         return None
 

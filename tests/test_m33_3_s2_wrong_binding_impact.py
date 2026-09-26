@@ -6,6 +6,7 @@ docs/plans/M33_3_S2_STATE.md (sections 4-9).
 
 import ast
 import hashlib
+from enum import Enum
 from pathlib import Path
 
 import pytest
@@ -78,6 +79,15 @@ def test_action_field_coerces_exact_strings_and_rejects_invalid():
     for bad in ("recoverable", "LOW", "", "SAFE"):
         with pytest.raises(ValueError):
             _action(bad)
+
+
+def test_foreign_string_enum_cannot_declare_low_impact():
+    class ForeignImpact(str, Enum):
+        RECOVERABLE = "RECOVERABLE"
+
+    with pytest.raises(ValueError):
+        _action(ForeignImpact.RECOVERABLE)
+    assert _adapted({"id": "gmail_create_draft", "wrong_binding_impact": ForeignImpact.RECOVERABLE}) is None
 
 
 # 3. effective impact -----------------------------------------------------------------
@@ -179,6 +189,27 @@ def test_binding_subclass_is_rejected():
     assert decision.outcome is GateOutcome.INVALID_REFERENCE_BINDING
 
 
+@pytest.mark.parametrize("missing", ["ref_key", "candidate_id", "status"])
+def test_binding_with_missing_field_fails_closed(missing):
+    binding = _b("r1", C)
+    object.__delattr__(binding, missing)
+    for bindings in ([binding], [_b("valid", C), binding]):
+        decision = evaluate_wrong_binding_gate(_action(REC), bindings)
+        assert decision.allowed is False
+        assert decision.outcome is GateOutcome.INVALID_REFERENCE_BINDING
+
+
+def test_malformed_object_is_rejected_before_reading_its_fields():
+    class Malformed:
+        @property
+        def ref_key(self):
+            raise RuntimeError("untrusted property")
+
+    decision = evaluate_wrong_binding_gate(_action(REC), [_b("valid", C), Malformed()])
+    assert decision.allowed is False
+    assert decision.outcome is GateOutcome.INVALID_REFERENCE_BINDING
+
+
 # 6. Executor integration -------------------------------------------------------------
 
 def _executor(impact=None, approval=ApprovalRequirement.NONE, calls=None):
@@ -242,6 +273,15 @@ def test_executor_invalid_bindings_status():
     executor, calls = _executor(REC)
     result = executor.execute("cap", "act", {"x": "1"},
                               reference_bindings=[ReferenceBinding("r1", "c1", "PENDING")])
+    assert result["status"] == "invalid_reference_binding"
+    assert calls == []
+
+
+def test_executor_missing_binding_field_never_calls_handler():
+    executor, calls = _executor(REC)
+    binding = _b("r1", C)
+    object.__delattr__(binding, "candidate_id")
+    result = executor.execute("cap", "act", {"x": "1"}, reference_bindings=[binding])
     assert result["status"] == "invalid_reference_binding"
     assert calls == []
 

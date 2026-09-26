@@ -1,12 +1,13 @@
 # M33.3 — S2 State: `wrong_binding_impact` Production Field and Execution-Gate Check (frozen plan)
 
-**Current state:** `S2_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT`.
-**S2_PLAN_FROZEN:** YES. **S2_IMPLEMENTATION_COMPLETE:** YES. **S2_AUDIT_PENDING:** YES. **S2_CLOSED_FROZEN:** NO. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
-**State history:** S2 `BLOCKED only on implementation authorization` (`docs/plans/M33_3_CROSS_PLAN_STATE.md` §4; PG-2 satisfied) → User S2 plan+implement task package (2026-09-26, starting HEAD `2fa90fbbb1fc00ceca828adbdc90a5442c263892`) → scope recovery and User decisions U-1 to U-3 (§3) → `S2_PLAN_FROZEN` (this file, §1–§12, frozen before any code change) → implementation → `S2_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT`.
+**Current state:** `S2_CLOSED_FROZEN` after independent audit, bounded repair, and requalification.
+**S2_PLAN_FROZEN:** YES. **S2_IMPLEMENTATION_COMPLETE:** YES. **S2_IMPLEMENTATION_AUDITED:** YES. **S2_REPAIRS_REQUIRED:** YES. **S2_REPAIRS_VERIFIED:** YES. **S2_AUDIT_PENDING:** NO. **S2_CLOSED_FROZEN:** YES. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+**State history:** S2 `BLOCKED only on implementation authorization` (`docs/plans/M33_3_CROSS_PLAN_STATE.md` §4; PG-2 satisfied) → User S2 plan+implement task package (2026-09-26, starting HEAD `2fa90fbbb1fc00ceca828adbdc90a5442c263892`) → scope recovery and User decisions U-1 to U-3 (§3) → `S2_PLAN_FROZEN` (this file, §1–§12, frozen before any code change) → implementation → `S2_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT` → independent audit and bounded repair → `S2_CLOSED_FROZEN` (§14).
 **Implementation authorized:** **YES, S2 only**, by the User's S2 task package. S1 stays closed/frozen. S3–S13 stay unauthorized.
 **Workstream identity:** `URI-REFERENCE-CLARIFICATION`.
 **Date:** 2026-09-26.
 **Implementation report:** `docs/plans/M33_3_S2_IMPLEMENTATION_REPORT.md`.
+**Independent audit and freeze evidence:** `docs/plans/M33_3_S2_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`.
 
 ---
 
@@ -176,4 +177,10 @@ Reliability numbers: none are claimed; the battery is deterministic.
 - `S2_IMPLEMENTATION_COMPLETE: YES` (evidence: implementation report).
 - `S2_AUDIT_PENDING: YES`. `S2_CLOSED_FROZEN: NO`.
 - `S1_CLOSED_FROZEN: YES` (unchanged). `M33_3_COMPLETE: NO`. `NEXT_SLICE_AUTHORIZED: NO`. No `INT-*` event. `URI-RAR` not adopted.
-- Next safe step: independent S2 audit, bounded repair, requalification, and close/freeze if accepted.
+- Next safe step at implementation handoff: independent S2 audit, bounded repair, requalification, and close/freeze if accepted. [Completed; superseded by §14.]
+
+## 14. Independent audit and freeze (2026-09-26; additive)
+
+The independent audit reproduced two bounded defects in the S2 implementation commit `d8735dbf2f471e3c9e63389b30d66e60718bf2d0`. First, a `ReferenceBinding` with a missing dataclass field raised `AttributeError`, and a foreign object with a raising `ref_key` property could do the same, instead of returning `INVALID_REFERENCE_BINDING`. Second, a foreign string enum with value `RECOVERABLE` was accepted as a low-impact declaration despite §4.2's exact type/string rule. The validator now checks binding type and fields before key access; impact coercion accepts only the S2 enum or an exact string, and the adapter uses the same rule. Regression tests cover both defects. Requalification and the full contract matrix are recorded in the independent audit report above.
+
+Final S2 state: `S2_IMPLEMENTATION_AUDITED: YES`; `S2_REPAIRS_REQUIRED: YES`; `S2_REPAIRS_VERIFIED: YES`; `S2_CLOSED_FROZEN: YES`. S1 remains closed/frozen. `M33_3_COMPLETE: NO`; `NEXT_SLICE_AUTHORIZED: NO`; S3–S13 remain unauthorized. No `INT-*` event or `URI-RAR` adoption is created by this freeze.
