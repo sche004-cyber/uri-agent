@@ -1,6 +1,7 @@
 # M33.3 — URI Brain Architecture Proposal (Plan B)
 
-**Status:** `PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT` (R2 = RG-0 B-R7 interface clarification; previously `PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`). Planning and review only. Not accepted, not frozen. Implementation is **NOT authorized**.
+**Status update (2026-09-26, additive):** `PROPOSAL_R2_RG0R_ACCEPTED_PLANNING_CLOSED`. The focused independent re-audit RG-0R returned `RG_0R_ACCEPTED` and accepted the R2 B-R7 clarification; planning phase closed; implementation NOT authorized (see R2.5).
+**Status:** `PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT` `[SUPERSEDED by the status update above]` (R2 = RG-0 B-R7 interface clarification; previously `PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`). Planning and review only. Not accepted, not frozen. Implementation is **NOT authorized**.
 **Canonical identity:** `M33_3_PLAN_URI_BRAIN_ARCHITECTURE` (registered in `docs/governance/URI_STATE.yaml` → `planning_artifacts`).
 **Sibling plan:** `docs/plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md` (Plan A, identity `URI-REFERENCE-CLARIFICATION`).
 **Cross-plan audit:** `docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md`, verdict `COMPATIBLE_WITH_BOUNDED_REPAIRS`.
@@ -193,8 +194,15 @@ source / reference evidence producer(s)
 - **Not specified by this revision:** provider registration, retrieval policy, source retry semantics, freshness algorithms, and memory implementation. These belong to later S4 planning (gate PG-5).
 
 ### R2.4 Status
-`BRAIN_ARCHITECTURE_STATUS`: `PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT`.
+`BRAIN_ARCHITECTURE_STATUS`: `PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT`. `[SUPERSEDED by R2.5]`
 - The first experiment (stage 1 source-to-candidate replay) still needs its own separately scoped, pre-audited plan and authorization.
+- No experiment, implementation, freeze, or INT event is authorized.
+
+### R2.5 Status update after RG-0R (2026-09-26, additive)
+`BRAIN_ARCHITECTURE_STATUS`: `PROPOSAL_R2_RG0R_ACCEPTED_PLANNING_CLOSED`.
+- RG-0R returned `RG_0R_ACCEPTED` (record: `docs/plans/M33_3_RG0R_FOCUSED_INDEPENDENT_REAUDIT_REPORT.md`). The B-R7 clarification (R2.1–R2.3) is accepted.
+- User decision D5 (CONFIRMED authority by RAR rule class) is consistent with R1.4's TENTATIVE criteria: RAR driver-rule separation is TENTATIVE-eligible evidence, and only certainty-tier rules confirm. Operational text: Plan A R4.2–R4.3. No change to this plan's text is required.
+- The S4 evidence envelope (R2.2) remains future work; S1 grounds only `title`, `type`, `owner`, and `recency` (Plan A R4.1 F-4).
 - No experiment, implementation, freeze, or INT event is authorized.
 
 ---

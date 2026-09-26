@@ -1,8 +1,8 @@
 # M33.3 — Cross-Plan State: URI-REFERENCE-CLARIFICATION × URI Brain Architecture
 
-**Current state:** `RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT`
-**State history:** `CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT` (G0 + cross-plan repair, commit `7ae6d22`) → RG-0 verdict `BOUNDED_REPAIR_REQUIRED` → `RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT` (this bounded repair, 2026-09-26; see §5a).
-**Implementation authorized:** **NO.** No slice S1–S13 is open. No INT event exists. `URI-RAR` is not adopted.
+**Current state:** `RG0R_ACCEPTED_PLANNING_CLOSED_S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`
+**State history:** `CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT` (G0 + cross-plan repair, commit `7ae6d22`) → RG-0 verdict `BOUNDED_REPAIR_REQUIRED` → `RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT` (bounded repair, commit `94ccf2a`; see §5a) → RG-0R verdict `RG_0R_ACCEPTED` → S1 scoping audit `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP` → `RG0R_ACCEPTED_PLANNING_CLOSED_S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW` (governance recording pass, 2026-09-26; see §5b).
+**Implementation authorized:** **NO.** `CODE_IMPLEMENTATION_AUTHORIZED: NO`. `S1_IMPLEMENTATION_AUTHORIZED: NO`. No slice S1–S13 is open. No INT event exists. `URI-RAR` is not adopted.
 **Branch / repair baseline:** `m35-uri-v1-parallel-architecture` @ `127c7339ad61d2929a7dda04e58e511d26241401` (G0 repair); RG-0 bounded repair baseline @ `7ae6d228729549ece9f6a8b2dc2bdb8f5e833b7a`.
 **Date:** 2026-09-26
 
@@ -10,10 +10,12 @@
 
 | Role | Path | Identity | Status |
 |---|---|---|---|
-| Plan A | `docs/plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md` (revision R3 over R2) | `URI-REFERENCE-CLARIFICATION` (planning identity; the bare alias "ARN" stays forbidden) | `PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT` (was `PLAN_REVISED_R2_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`) |
-| Plan B | `docs/plans/M33_3_URI_BRAIN_ARCHITECTURE_PROPOSAL.md` (revisions R1 and R2 over verbatim R0) | `M33_3_PLAN_URI_BRAIN_ARCHITECTURE` | `PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT` (was `PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`) |
+| Plan A | `docs/plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md` (revision R3 over R2) | `URI-REFERENCE-CLARIFICATION` (planning identity; the bare alias "ARN" stays forbidden) | `PLANNING_CLOSED_RG0R_ACCEPTED_R4_RECORDED` (R4 = D5, D6, F-1 to F-6; was `PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT`) |
+| Plan B | `docs/plans/M33_3_URI_BRAIN_ARCHITECTURE_PROPOSAL.md` (revisions R1 and R2 over verbatim R0) | `M33_3_PLAN_URI_BRAIN_ARCHITECTURE` | `PROPOSAL_R2_RG0R_ACCEPTED_PLANNING_CLOSED` (was `PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT`) |
 | Cross-plan audit | `docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md` | — | verdict `COMPATIBLE_WITH_BOUNDED_REPAIRS` (with post-audit corrections COR-1 to COR-6; COR-5 and COR-6 come from RG-0) |
 | M33.2 amendments | `docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md`: header amendment note; G1 under §3.1; G2 note under §3 table and G2 block under §6 table; G3 under §9.1 | — | recorded (User-directed); fidelity subject to re-audit |
+| RG-0R record | `docs/plans/M33_3_RG0R_FOCUSED_INDEPENDENT_REAUDIT_REPORT.md` | — | verdict `RG_0R_ACCEPTED` (relayed; full report text not stored) |
+| S1 state | `docs/plans/M33_3_S1_STATE.md` | — | `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`; implementation NOT authorized |
 | Canonical state | `docs/governance/URI_STATE.yaml` → `planning_artifacts`, `architecture_decisions`, `active_continuation` | — | updated additively |
 
 Plan B provenance: recovered verbatim from Codex session `rollout-2026-09-26T03-31-00-01a0da96-071c-72f0-8562-0f71ac9457db.jsonl` (message 2026-09-25T22:51:31.958Z). The SHA-256 of the R0 text is `cf08a0892a8b87508b771edb3a856da652ef19f57ffdc7fb66245108962b8a9b`. A scan of all 2026-09 Codex rollouts found exactly one such message.
@@ -57,6 +59,17 @@ Plan B provenance: recovered verbatim from Codex session `rollout-2026-09-26T03-
   - a new ad-hoc durable cross-session reference-memory subsystem;
   - durable learned tie-breaking without URI-Memory qualification.
 
+**D5: CONFIRMED authority** (2026-09-26, during the S1 scoping audit). Only certainty-tier deterministic rules may produce `CONFIRMED`:
+- `EXACT_ID`;
+- `EXACT_ALIAS`;
+- `ACTIVE_UI`;
+- `CURRENT_ATTACHMENT` only when tied to `deterministic_anchor.current_attachment_id`;
+- `EXACT_TITLE` only when tied to `deterministic_anchor.unique_title_match` or an equivalent unique verbatim-title anchor.
+
+Other deterministic `RESOLVED` rules are only TENTATIVE-eligible through the R2.9 check. `CONSEQUENTIAL` or undeclared `wrong_binding_impact` → `CONFIRM_ONE`. The same authority classification applies to typed free input. This classifier lives outside frozen RAR/A9. Applied in Plan A R4.2–R4.5.
+
+**D6: S1 boundary** (2026-09-26). S1 is the full state-file S1: deterministic clarification/binding core, deterministic template, RenderValidator, and `ClarificationBundle` / multi-reference contract. Do not split into S1/S1b. Applied in Plan A R4.7 and `docs/plans/M33_3_S1_STATE.md`.
+
 ## 3. Repair application index
 
 | Repair | Where applied |
@@ -86,18 +99,19 @@ Plan B provenance: recovered verbatim from Codex session `rollout-2026-09-26T03-
 | RG-0-F2 (Change / rebind / redo lifecycle) | Plan A R3.2 (+ markers at R1.5 (two), R2.4 diagram, §7 click binding and correction rule) |
 | RG-0-F3 (RAR score terminology) | Plan A R3.3 (+ markers at R1.6 and R2.1); audit report COR-5 (+ markers at the §2 row and C-4) |
 | B-R7 clarification (`RARQuery` projection vs future evidence envelope) | Plan B R2 (+ marker at R1.7; R1.12 status superseded by R2.4); audit report COR-6 |
+| D5, D6, F-1 to F-6 (post-RG-0R S1 scoping follow-up) | Plan A R4 (+ markers listed in R4.8); audit report COR-7; `docs/plans/M33_3_S1_STATE.md` |
 
-## 4. Slice readiness (after the RG-0 bounded repair, pending the focused re-audit)
+## 4. Slice readiness (updated after RG-0R `RG_0R_ACCEPTED` and the S1 scoping audit)
 
 | Slice | Content | Classification | Gate(s) |
 |---|---|---|---|
-| G0 | Governance: Plan B durable, identities registered, decisions recorded | DONE by this pass (subject to re-audit) | — |
-| S1 | RC deterministic core in `uri_v1` against fixtures (contracts incl. `CONFIRM_ONE`, `CHOOSE_ATTRIBUTE` per R3.1, and bundle; builder, template, validator, `BindingService` with the R3.2 admissible states, lifecycle states, session adjunct, stop safeguards) | BLOCKED until the focused re-audit (RG-0R) passes and implementation is authorized | PG-1 |
-| S2 | `Action.wrong_binding_impact` production field + execution-gate check | BLOCKED until the focused re-audit (RG-0R) passes and implementation is authorized. User acceptance of the extension: `USER_ACCEPTANCE_SATISFIED` (D1) | PG-2 |
+| G0 | Governance: Plan B durable, identities registered, decisions recorded | DONE (RG-0 and RG-0R accepted) | — |
+| S1 | RC deterministic core in `uri_v1` against fixtures (contracts incl. `CONFIRM_ONE`, `CHOOSE_ATTRIBUTE` per R3.1, and bundle; builder, template, validator, `BindingService` with the R3.2 admissible states, lifecycle states, session adjunct, stop safeguards) | `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW` (scope frozen in `docs/plans/M33_3_S1_STATE.md`; full state-file S1 per D6). RG-0R passed. Implementation NOT authorized | PG-1 (RG-0R part satisfied); implementation authorization |
+| S2 | `Action.wrong_binding_impact` production field + execution-gate check | BLOCKED only on implementation authorization (RG-0R passed; User acceptance `USER_ACCEPTANCE_SATISFIED`, D1) | PG-2 (satisfied); implementation authorization |
 | S3 | Battery L1/L2 (no model) | after S1 | PG-1 |
 | S4 | Offline source-to-candidate / RAR-boundary replay (Plan B stage 1, with D0/D1R/D1RQ arms) | EXPERIMENT_REQUIRED; needs its own pre-audited plan | PG-5, PG-6 |
 | S5 | Wording qualification (template vs Edge vs Capable, User blind rating) | EXPERIMENT_REQUIRED | S1, S3 |
-| S6 | Unified router extension (mode mapping, explicit selection, Edge OFF) | BLOCKED until the focused re-audit (RG-0R) passes | PG-3 (D2 now answered; G2 recorded) |
+| S6 | Unified router extension (mode mapping, explicit selection, Edge OFF) | BLOCKED only on its own plan/authorization (RG-0R passed) | PG-3 (satisfied) |
 | S7 | Response `trace_id` + structured evaluation event stream | PLAN_REQUIRED (no slice plan exists) | — |
 | S8 | Route-performance store + learning replay | EXPERIMENT_REQUIRED | S6, S7 |
 | S9 | Durable learned reference tie-break | **DEFERRED** (D4: URI-Memory) | URI-Memory + correction-rate experiment |
@@ -109,11 +123,11 @@ Plan B provenance: recovered verbatim from Codex session `rollout-2026-09-26T03-
 ## 5. Gates
 
 - **RG-0 (done):** the independent cross-plan re-audit of Plan A R2, Plan B R1, the M33.2 amendments G1–G3, and this state file. Verdict `BOUNDED_REPAIR_REQUIRED` (see §5a).
-- **RG-0R (next):** a focused independent re-audit of the four RG-0 repairs (Plan A R3.1, R3.2, R3.3; Plan B R2; audit COR-5 and COR-6; this state file). It is performed by an agent other than the author of this repair pass.
-- **PG-1:** RG-0R passes before S1.
-- **PG-2:** RG-0R passes before S2. User acceptance of the `wrong_binding_impact` capability-contract extension: `USER_ACCEPTANCE_SATISFIED` (D1, 2026-09-26). History: until this repair, PG-2 read "RG-0 passes and the `wrong_binding_impact` capability-contract extension is explicitly accepted before S2"; the acceptance half was already satisfied by D1.
-- **PG-3:** RG-0R passes before S6 (G2 fidelity was within RG-0's scope, and RG-0 raised no finding on it).
-- **PG-4:** RG-0R passes before any production wording path (G1 fidelity was within RG-0's scope, and RG-0 raised no finding on it).
+- **RG-0R (done, `RG_0R_ACCEPTED`; see §5b):** a focused independent re-audit of the four RG-0 repairs (Plan A R3.1, R3.2, R3.3; Plan B R2; audit COR-5 and COR-6; this state file). It is performed by an agent other than the author of this repair pass.
+- **PG-1:** RG-0R passes before S1. **Satisfied** (RG-0R accepted). S1 still needs implementation authorization.
+- **PG-2:** RG-0R passes before S2. **Satisfied** (RG-0R accepted). User acceptance of the `wrong_binding_impact` capability-contract extension: `USER_ACCEPTANCE_SATISFIED` (D1, 2026-09-26). History: until this repair, PG-2 read "RG-0 passes and the `wrong_binding_impact` capability-contract extension is explicitly accepted before S2"; the acceptance half was already satisfied by D1.
+- **PG-3:** **Satisfied** (RG-0R accepted). RG-0R passes before S6 (G2 fidelity was within RG-0's scope, and RG-0 raised no finding on it).
+- **PG-4:** **Satisfied** (RG-0R accepted). RG-0R passes before any production wording path (G1 fidelity was within RG-0's scope, and RG-0 raised no finding on it).
 - **PG-5:** S4 has its own plan, independently pre-audited, with hash anchors. The frozen Batch A battery (`06d0dfff…c3fa`) and A9 stay untouched.
 - **PG-6:** the A9 `rar_deterministic.py` SHA-256 `e02af25bb7009d12d829c8b8fc92e487d3da75aeaa160092db617458278fb649` is verified before and after any RAR-touching slice.
 
@@ -129,9 +143,17 @@ Plan B provenance: recovered verbatim from Codex session `rollout-2026-09-26T03-
 - **No new User product decision was required.** This was RG-0's finding, and this repair pass confirmed it: every repair was resolvable from repository evidence and the accepted decisions D1–D4.
 - **Repairs applied:** see §3, rows RG-0-F1, RG-0-F2, RG-0-F3, and the B-R7 clarification.
 - **D1 acceptance:** `USER_ACCEPTANCE_SATISFIED`. PG-2 no longer awaits User acceptance.
-- **Implementation authorized:** NO. The active continuation is RG-0R (focused independent re-audit), not S1.
+- **Implementation authorized:** NO. The active continuation was RG-0R (focused independent re-audit), not S1. `[Superseded by §5b: RG-0R accepted; S1 scope frozen; implementation still not authorized]`
 
-## 6. Protected artifacts (verified unchanged at the G0 repair, and again before and after the RG-0 bounded repair on 2026-09-26)
+### 5b. RG-0R and S1 scoping record (2026-09-26)
+
+- **RG-0R verdict:** `RG_0R_ACCEPTED`. No blocking defects. RG-0-F1, RG-0-F2, RG-0-F3, and the B-R7 clarification are accepted. The two conservative repair calls are consistent and safe. The active planning phase may close. Implementation remains not authorized. Record: `docs/plans/M33_3_RG0R_FOCUSED_INDEPENDENT_REAUDIT_REPORT.md` (the full report text is not stored; the verdict is recorded as relayed).
+- **S1 pre-implementation scoping audit:** `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP`. The follow-up is governance recording only. User decisions D5 and D6 (§2). Evidence findings F-1 to F-6 (Plan A R4.1). The report is not stored in the repository; this record and Plan A R4 are its durable record as relayed.
+- **Governance recording pass (this update):** P-1 recorded RG-0R; P-2 added Plan A R4; P-3 froze the S1 scope in `docs/plans/M33_3_S1_STATE.md` with state `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`. No code, fixture, or protected artifact changed.
+- **Planning phase:** closed.
+- **Implementation authorized:** NO. `CODE_IMPLEMENTATION_AUTHORIZED: NO`. `S1_IMPLEMENTATION_AUTHORIZED: NO`. The next step is a separate User/governance implementation-authorization review of S1.
+
+## 6. Protected artifacts (verified unchanged at the G0 repair, before and after the RG-0 bounded repair, and before and after the RG-0R/S1 governance recording pass on 2026-09-26)
 
 | Artifact | SHA-256 |
 |---|---|
@@ -163,7 +185,7 @@ The re-auditor should verify at least the following from repository evidence alo
 6. No production code, frozen artifact, or research code changed.
 7. Plan A R2.11 invents no existing field (the `depends_on` / provenance source is marked planned).
 
-### 7a. RG-0R focused re-audit handoff
+### 7a. RG-0R focused re-audit handoff (completed, verdict `RG_0R_ACCEPTED`)
 
 The focused re-auditor should verify at least the following from repository evidence alone:
 1. Plan A R3.1: `CHOOSE_ATTRIBUTE` has a complete logical contract (option type, render request with a separate `a*` namespace, `ATTRIBUTE` payload without `candidate_id`, validation, re-resolution transition, escape path). An attribute selection can never directly produce `CONFIRMED`.

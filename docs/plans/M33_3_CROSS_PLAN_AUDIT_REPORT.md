@@ -89,7 +89,7 @@ Four User decisions (D1 to D4) were identified. They gate specific slices only. 
 **Current production reality (applies to every case):** RAR, the clarification layer, and the Edge router are unwired. `/ask` is Main Brain native loop plus first-match `CapabilityContextResolver`.
 
 - **A. "Open the report", one deterministic candidate.**
-  - Resolves to RAR `RESOLVED` / `DETERMINISTIC_ANCHOR` only if a driver rule fires. Binding CONFIRMED. Deterministic route; open (READ_ONLY, impact NONE).
+  - Resolves to RAR `RESOLVED` / `DETERMINISTIC_ANCHOR` only if a driver rule fires. Binding CONFIRMED `[CORRECTED by COR-7 (D5): CONFIRMED only for a certainty-tier rule; a heuristic RESOLVED is TENTATIVE-eligible]`. Deterministic route; open (READ_ONLY, impact NONE).
   - Seam: one candidate is not the same as a deterministic anchor. Otherwise C-5 applies.
 - **B. Several equal candidates.**
   - `AMBIGUOUS` → `CHOOSE_ONE`. SIMPLE template with at most 5 options plus the escape option. A click binds via `ACTIVE_UI`.
@@ -309,3 +309,7 @@ None of these changed the verdict.
   - **Corrected evidence:** `uri_v1/turn/rar_deterministic.py:88` defines `DeterministicRARTrace.candidate_scores`, deterministic discrimination scores from `score_candidate_relevance`, populated on the `TERM_DISCRIMINATION` path. They are diagnostic values, not calibrated confidence, and they do not authorize learned ranking inside frozen RAR.
   - **Effect:** none on the verdict or on repair A-R1. The session adjunct stays outside RAR because `rar_deterministic.py` is A9-protected and frozen. Plan A revision R3.3 records the corrected terminology.
 - **COR-6 (2026-09-26, from the independent RG-0 re-audit). Interface wording in B-R7.** Repair B-R7 as applied in Plan B R1.7 described the existing `RARQuery` candidate set as carrying "provenance locators". `RARQuery` / `RARCandidate` carry no provenance, dependency, provider, or freshness metadata. Plan B revision R2 records the distinction: the existing `RARQuery` is the RAR-facing projection; a provenance-bearing evidence envelope is future S4 work. No effect on the verdict.
+- **COR-7 (2026-09-26, from the S1 pre-implementation scoping audit and User decision D5). Binding authority from RAR `RESOLVED`.**
+  - **What changed:** §3 Case A reads "RAR `RESOLVED` / `DETERMINISTIC_ANCHOR` … Binding CONFIRMED", matching Plan A R2.3 row 1. Frozen RAR sets `basis=DETERMINISTIC_ANCHOR` on every outcome, including heuristic rules (finding F-1), so this reading would let a heuristic resolution become `CONFIRMED`.
+  - **Corrected rule (D5):** only certainty-tier rules produce `CONFIRMED` (`EXACT_ID`, `EXACT_ALIAS`, `ACTIVE_UI`, anchor-tied `CURRENT_ATTACHMENT`, anchor-tied or equivalent unique verbatim `EXACT_TITLE`). Other `RESOLVED` rules are TENTATIVE-eligible through the R2.9 check; `CONSEQUENTIAL` or undeclared impact → `CONFIRM_ONE`. Plan A revision R4 records the operational table (R4.2) and the replacement trigger table (R4.3).
+  - **Effect:** none on the verdict. For Case A (open, impact `NONE`), a heuristic resolution now yields `TENTATIVE` ("Using X · Change") instead of `CONFIRMED` when the R2.9 check passes.

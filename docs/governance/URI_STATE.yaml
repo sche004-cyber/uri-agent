@@ -165,10 +165,11 @@ queued_initiatives:
     evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1a"
 
 active_continuation:
-  status: "M33_3_RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
-  previous_status: "M33_3_CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT"
+  status: "M33_3_RG0R_ACCEPTED_S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW"
+  previous_status: "M33_3_RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
+  rg0r_note: "Updated 2026-09-26 (additive). The focused independent re-audit RG-0R returned RG_0R_ACCEPTED: no blocking defects; RG-0-F1, RG-0-F2, RG-0-F3 and the B-R7 clarification accepted; the two conservative repair calls consistent and safe; planning phase closed (record: docs/plans/M33_3_RG0R_FOCUSED_INDEPENDENT_REAUDIT_REPORT.md; full report text not stored, verdict recorded as relayed). The S1 pre-implementation scoping audit returned S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP; User decisions D5 (CONFIRMED authority by RAR rule class) and D6 (full state-file S1, no S1/S1b split) and findings F-1..F-6 are recorded in Plan A revision R4. S1 scope frozen in docs/plans/M33_3_S1_STATE.md as S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW. CODE_IMPLEMENTATION_AUTHORIZED: NO. S1_IMPLEMENTATION_AUTHORIZED: NO. Next: a separate User/governance implementation-authorization review of S1. No slice S1-S13 open; no INT-* event; URI-RAR not adopted. A9 rar_deterministic.py, rar_contracts.py and the frozen Batch A battery verified unchanged."
   rg0_note: "Updated 2026-09-26 (additive). The independent RG-0 cross-plan re-audit returned BOUNDED_REPAIR_REQUIRED with findings RG-0-F1 (incomplete CHOOSE_ATTRIBUTE contract), RG-0-F2 (Change/rebind/redo lifecycle allowed redo before a validated rebind), RG-0-F3 (RAR described as having no scores; DeterministicRARTrace.candidate_scores exist as deterministic diagnostic scores, not calibrated confidence), and a B-R7 interface clarification (the existing RARQuery is the RAR-facing projection; a provenance-bearing evidence envelope is future S4 work). Repairs: Plan A revision R3, Plan B revision R2, cross-plan audit COR-5 and COR-6. No new User decision was required. D1 user acceptance: USER_ACCEPTANCE_SATISFIED (PG-2 no longer awaits it). The RG-0 report is not stored in the repository; its findings are recorded in docs/plans/M33_3_CROSS_PLAN_STATE.md section 5a. Next step: a focused independent re-audit (RG-0R) of these four repairs, not S1. Implementation NOT authorized; no slice S1-S13 open; no INT-* event; URI-RAR not adopted. A9 rar_deterministic.py, rar_contracts.py, and the frozen Batch A battery verified unchanged."
-  previous_status_history: "M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY -> M33_3_CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT -> M33_3_RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
+  previous_status_history: "M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY -> M33_3_CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT -> M33_3_RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT -> M33_3_RG0R_ACCEPTED_S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW"
   cross_plan_note: "Updated 2026-09-26 (additive). ARN planning-only continuation produced two plans, cross-audited together (docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md, verdict COMPATIBLE_WITH_BOUNDED_REPAIRS). The G0 + cross-plan repair pass applied repairs A-R1..A-R12 and B-R1..B-R9, recorded User decisions D1-D4 (see architecture_decisions), and recorded M33.2 amendments G1-G3. Next step is an independent cross-plan re-audit (RG-0). Implementation NOT authorized; no slice S1-S13 open; no INT-* event; URI-RAR not adopted. State file: docs/plans/M33_3_CROSS_PLAN_STATE.md."
   scope: "M33.3 Batch A is CLOSED as Stage A readiness/methodology evidence (docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md). No Edge candidate qualified, no production integration, no Stage B, no INT-* event, no ARN implementation. Next authorized action is planning-only, for ARN architecture and a <=1B clarification text generator; integration_events remains empty."
   note: "Updated 2026-09-25 (additive). History: NONE_AUTHORIZED_TO_IMPLEMENT -> M33_3_BATCH_A_ACCEPTED_READY_FOR_EXECUTION -> M33_3_BATCH_A_VERIFICATION_READY_AWAITING_INDEPENDENT_AUDIT -> M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY (independent R4 re-audit ACCEPT_WITH_DOCUMENTED_LIMITATIONS; docs/plans/M33_3_BATCH_A_R4_INDEPENDENT_REAUDIT_REPORT.md)."
@@ -185,9 +186,9 @@ planning_artifacts:
     parent_milestone: "M33.3"
     title: "User-facing reference clarification and correction layer around reference resolution (Plan A)"
     path: "docs/plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md"
-    revision: "R3"
-    status: "PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
-    status_history: "PLAN_REVISED_R2_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT -> RG-0 BOUNDED_REPAIR_REQUIRED -> PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT (R3 = RG-0-F1, RG-0-F2, RG-0-F3 repairs)"
+    revision: "R4"
+    status: "PLANNING_CLOSED_RG0R_ACCEPTED_R4_RECORDED"
+    status_history: "PLAN_REVISED_R2_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT -> RG-0 BOUNDED_REPAIR_REQUIRED -> PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT (R3 = RG-0-F1, RG-0-F2, RG-0-F3 repairs) -> RG-0R RG_0R_ACCEPTED -> PLANNING_CLOSED_RG0R_ACCEPTED_R4_RECORDED (R4 = User decisions D5, D6 and S1 scoping findings F-1..F-6)"
     implementation_authorized: false
     naming_note: "Not ARN, not ARN.2; does not unpause the ARN milestone. The bare alias ARN stays AMBIGUOUS_BARE_ALIAS_FORBIDDEN. The earlier placeholder URI-ARN-CLARIFICATION (Plan A section 2) is superseded. The file name is unchanged; a rename to M33_3_REFERENCE_CLARIFICATION_PLAN.md is deferred to acceptance. Registered as a planning identity only, not as a reusable component."
     reuses_without_modifying: "ARN.1 (uri_core/core/arn/), URI-RAR candidate contracts (uri_v1/turn/rar_contracts.py), A9-protected uri_v1/turn/rar_deterministic.py (read-only)"
@@ -197,8 +198,8 @@ planning_artifacts:
     title: "URI Brain Architecture - evidence-grounded proposal (Plan B)"
     path: "docs/plans/M33_3_URI_BRAIN_ARCHITECTURE_PROPOSAL.md"
     revision: "R1 and R2 over verbatim R0"
-    status: "PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
-    status_history: "PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT -> RG-0 BOUNDED_REPAIR_REQUIRED -> PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT (R2 = B-R7 interface clarification)"
+    status: "PROPOSAL_R2_RG0R_ACCEPTED_PLANNING_CLOSED"
+    status_history: "PROPOSAL_REVISED_R1_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT -> RG-0 BOUNDED_REPAIR_REQUIRED -> PROPOSAL_REVISED_R2_AWAITING_FOCUSED_INDEPENDENT_REAUDIT (R2 = B-R7 interface clarification) -> RG-0R RG_0R_ACCEPTED -> PROPOSAL_R2_RG0R_ACCEPTED_PLANNING_CLOSED"
     implementation_authorized: false
     provenance: "R0 authored by Codex 2026-09-25T22:51:31.958Z; recovered verbatim from Codex session rollout-2026-09-26T03-31-00-01a0da96-071c-72f0-8562-0f71ac9457db.jsonl; R0 SHA-256 cf08a0892a8b87508b771edb3a856da652ef19f57ffdc7fb66245108962b8a9b; brought into the repository 2026-09-26."
   - id: "M33_3_CROSS_PLAN_AUDIT"
@@ -208,6 +209,21 @@ planning_artifacts:
     status: "VERDICT_COMPATIBLE_WITH_BOUNDED_REPAIRS"
     note: "Durable record of the 2026-09-26 cross-plan audit, with post-audit corrections COR-1..COR-4. The next required step is an independent re-audit (RG-0) of the repaired plans; see docs/plans/M33_3_CROSS_PLAN_STATE.md."
     rg0_note: "Updated 2026-09-26 (additive). RG-0 ran and returned BOUNDED_REPAIR_REQUIRED; post-audit corrections COR-5 (RAR candidate_scores exist; not calibrated confidence) and COR-6 (RARQuery carries no provenance locators) were added from its findings. Next: focused independent re-audit RG-0R."
+    rg0r_note: "Updated 2026-09-26 (additive). RG-0R returned RG_0R_ACCEPTED. Post-audit correction COR-7 (from the S1 scoping audit and User decision D5) corrects section 3 Case A: RAR RESOLVED with basis DETERMINISTIC_ANCHOR is CONFIRMED only for certainty-tier rules. No effect on the verdict."
+  - id: "M33_3_RG0R_REAUDIT"
+    kind: "audit_record"
+    parent_milestone: "M33.3"
+    path: "docs/plans/M33_3_RG0R_FOCUSED_INDEPENDENT_REAUDIT_REPORT.md"
+    status: "VERDICT_RG_0R_ACCEPTED"
+    note: "Durable record of the focused independent re-audit of the four RG-0 repairs, as relayed by the User on 2026-09-26. Full report text not stored in the repository; disclosed in the record. Planning phase closed; implementation NOT authorized."
+  - id: "M33_3_S1_STATE"
+    kind: "slice_scope_state"
+    parent_milestone: "M33.3"
+    title: "S1 reference-clarification deterministic core - frozen scope"
+    path: "docs/plans/M33_3_S1_STATE.md"
+    status: "S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW"
+    implementation_authorized: false
+    note: "Frozen S1 scope per User decision D6 (full state-file S1, no S1/S1b split), D5, and findings F-1..F-6. Implementation authorization is a separate User/governance action."
 
 # ---------------------------------------------------------------------------
 # Architecture decisions recorded from direct User instruction (2026-09-26).
@@ -233,10 +249,21 @@ architecture_decisions:
     date: "2026-09-26"
     status: "DEFERRED"
     decision: "Durable cross-session learned reference evidence is deferred to URI-Memory (NOT_STARTED). Allowed now: session-authoritative selections, session-local reference evidence, structured Change/correction events, rank/display effects from valid session evidence. Not authorized: an ad-hoc durable reference-memory subsystem, or durable learned tie-breaking without URI-Memory qualification."
+  - id: "D5"
+    date: "2026-09-26"
+    status: "DECIDED"
+    decision: "Only certainty-tier deterministic RAR rules may produce CONFIRMED: EXACT_ID; EXACT_ALIAS; ACTIVE_UI; CURRENT_ATTACHMENT only when tied to deterministic_anchor.current_attachment_id; EXACT_TITLE only when tied to deterministic_anchor.unique_title_match or an equivalent unique verbatim-title anchor. Other deterministic RESOLVED rules are only TENTATIVE-eligible through the R2.9 check. CONSEQUENTIAL or undeclared wrong_binding_impact -> CONFIRM_ONE. The same classification applies to typed free input. The classifier lives outside frozen RAR/A9."
+    recorded_in: "docs/plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md revision R4; docs/plans/M33_3_CROSS_PLAN_STATE.md section 2"
+  - id: "D6"
+    date: "2026-09-26"
+    status: "DECIDED"
+    decision: "S1 is the full state-file S1: deterministic clarification/binding core, deterministic template, RenderValidator, and ClarificationBundle / multi-reference contract. Not split into S1/S1b."
+    recorded_in: "docs/plans/M33_3_S1_STATE.md; Plan A revision R4.7"
   - id: "M33.2-AMENDMENTS-G1-G3"
     date: "2026-09-26"
     status: "RECORDED_SUBJECT_TO_REAUDIT"
     decision: "G1: validated deterministic wording may be primary for SIMPLE clarification/confirmation; model wording for EXPLAIN/REASONING; the validator runs on every tier (section 3.1). G2: explicit selection routes substantive work to the selected model; qualified supporting Edge stays permitted; independent dimensions (sections 3 and 6). G3: route preference is not calibration and cannot change thresholds, qualify a failed route, or expand an unqualified role (section 9.1). M33.2 remains CLOSED_VERIFIED; no implementation reopened."
+    rg0r_note: "Updated 2026-09-26 (additive). G1-G3 fidelity was within RG-0 scope and RG-0 raised no finding on it; RG-0R returned RG_0R_ACCEPTED. The RG-0R condition of gates PG-3 and PG-4 is satisfied. Status string kept as history; no implementation authorized."
 
 # ---------------------------------------------------------------------------
 # Research experiments (EXP-*) — the M35 URIv1 A0-A9/A2.8x research line.

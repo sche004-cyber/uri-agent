@@ -3,6 +3,7 @@
 **Status:** DRAFT, revised R1 after the User architecture interview (planning only, `PLAN_M33_3_ARN_ARCHITECTURE_AND_LT1B_TEXT_GENERATOR`). Not accepted, not frozen, not registered, not committed.
 **Status update (2026-09-26, additive):** revised R2 (cross-plan repairs A-R1…A-R12, User decisions D1–D4). Registered as planning identity `URI-REFERENCE-CLARIFICATION` in `URI_STATE.yaml` → `planning_artifacts`. Committed to the repository. Status `PLAN_REVISED_R2_AWAITING_INDEPENDENT_CROSS_PLAN_REAUDIT`: not accepted, not frozen, implementation NOT authorized.
 **Status update (2026-09-26, additive):** revised R3 (RG-0 bounded contract repair: RG-0-F1 `CHOOSE_ATTRIBUTE` contract, RG-0-F2 Change/rebind/redo lifecycle, RG-0-F3 RAR score terminology). Status `PLAN_REVISED_R3_AWAITING_FOCUSED_INDEPENDENT_REAUDIT`: not accepted, not frozen, implementation NOT authorized.
+**Status update (2026-09-26, additive):** RG-0R returned `RG_0R_ACCEPTED` (no blocking defects; R3 repairs accepted; planning phase may close). Revision R4 records User decisions D5 (CONFIRMED authority) and D6 (S1 boundary) and S1 scoping evidence F-1 to F-6. Status `PLANNING_CLOSED_RG0R_ACCEPTED_R4_RECORDED`. S1 scope: `docs/plans/M33_3_S1_STATE.md` (`S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`). Implementation NOT authorized.
 **Branch / base:** `m35-uri-v1-parallel-architecture` @ `127c733` (Batch A frozen).
 **Author role:** Claude (Architect / Pre-Auditor). Implementation is not authorized by this document.
 **Date:** 2026-09-26
@@ -61,7 +62,7 @@ The draft chains (<1B → Main Brain → template, and <1B → template) are rep
   - If the ranking clearly separates a small top group: show up to 4-5 options, plus "N more" where useful, plus the escape option.
   - If candidates are flat: first ask the most valuable grounded attribute question, then show the narrowed set.
   - Never dump a large list. Never ask an attribute question when the ranking already makes the choice obvious.
-- `[CONTRACT COMPLETED by R3.1 — attribute option type, render request, ATTRIBUTE payload, validation, re-resolution transition, escape path]` New kind `CHOOSE_ATTRIBUTE`. It reuses ARN.1 `get_clarification_recommendation` (axis choice) and `UserClue` / `apply_user_clue` (binding an attribute click). An attribute option binds a `UserClue(axis, value)`, not a candidate ID.
+- `[CONTRACT COMPLETED by R3.1 — attribute option type, render request, ATTRIBUTE payload, validation, re-resolution transition, escape path]` `[REFINED by R4.6 — ARN.1 semantics are ported into S1, not imported (F-5); S1 axes are title/type/owner/recency only (F-4)]` New kind `CHOOSE_ATTRIBUTE`. It reuses ARN.1 `get_clarification_recommendation` (axis choice) and `UserClue` / `apply_user_clue` (binding an attribute click). An attribute option binds a `UserClue(axis, value)`, not a candidate ID.
 - [HYPOTHESIS] "Clearly separated" = the RAR top driver-rule tier holds 5 or fewer candidates. `[CORRECTED by R3.3 — RAR emits deterministic diagnostic candidate_scores; they are not calibrated confidence]` RAR ranks are ordinal, and no scores exist. [EXPERIMENT] Measure clicks-to-resolution for top-N versus attribute-first on the battery and in the User rating subset.
 - The cap stays at 5 as the hard maximum. Whether 4 is better is [EXPERIMENT] (clicks, errors, User rating). It is not frozen.
 - [USER] Multiple ambiguous references in one turn are handled adaptively. A bundle contract holds several reference sub-contracts with dependency edges. Independent references share one combined card. Dependent references are asked in order; a dependency exists when one reference's candidates derive from another's binding. [HYPOTHESIS] Dependency can be detected from candidate provenance (parent locator).
@@ -103,7 +104,7 @@ The draft chains (<1B → Main Brain → template, and <1B → template) are rep
   - no-progress stop.
 
 ### R1.10 Unchanged from the draft
-RAR owns trigger, type, candidate set, IDs, rank, cap, provenance, and binding contract. `rar_deterministic.py` (A9) is untouched. Slot-keyed rendering hides IDs. URI controls option order. The escape option is a URI-appended constant. The deterministic RenderValidator runs on every tier and fails closed. A click binds through `RARDeterministicAnchor.selected_ui_id` / `ACTIVE_UI`. Contract validation mirrors `validate_rar_resolution`. Graphify is optional, and its facts are `SOURCE_POINTER`. Provenance is carried per fact. Pending state uses the `turn_state` projection and the approval-expiry precedent. No numeric confidence. Privacy: local tiers only, and no content in production traces.
+RAR owns trigger, type, candidate set, IDs, rank, cap, provenance, and binding contract. `rar_deterministic.py` (A9) is untouched. Slot-keyed rendering hides IDs. URI controls option order. The escape option is a URI-appended constant. The deterministic RenderValidator runs on every tier and fails closed. A click binds through `RARDeterministicAnchor.selected_ui_id` / `ACTIVE_UI` `[REFINED by R4.4 — CONFIRMED only if the fresh re-run returns the clicked candidate through ACTIVE_UI; otherwise fail closed]`. Contract validation mirrors `validate_rar_resolution`. Graphify is optional, and its facts are `SOURCE_POINTER`. Provenance is carried per fact. Pending state uses the `turn_state` projection and the approval-expiry precedent. No numeric confidence. Privacy: local tiers only, and no content in production traces.
 
 ---
 
@@ -174,7 +175,7 @@ Add `ClarificationKind.CONFIRM_ONE`. It replaces the draft's `CONFIRM_SINGLE`, w
 
 | RAR / evidence state | Clarification action |
 |---|---|
-| `RESOLVED`, basis `DETERMINISTIC_ANCHOR` | none; binding `CONFIRMED` |
+| `RESOLVED`, basis `DETERMINISTIC_ANCHOR` `[SUPERSEDED by R4.2 / R4.3 (D5) — basis alone never decides authority (F-1); only certainty-tier rule/provenance → CONFIRMED; other RESOLVED → TENTATIVE-eligible via R2.9 or CONFIRM_ONE]` | none; binding `CONFIRMED` |
 | exactly 1 candidate, deterministic TENTATIVE check passes (R2.9) | none before the proposal; binding `TENTATIVE`; shown as "Using X · Change". The execution gate still blocks if the proposed action's `wrong_binding_impact` is `CONSEQUENTIAL` (R2.6), which then raises `CONFIRM_ONE`. |
 | exactly 1 candidate, check fails (for example, a lone `MODEL_SELECTION` basis) | `CONFIRM_ONE` |
 | `AMBIGUOUS` | `CHOOSE_ONE`, or `CHOOSE_ATTRIBUTE` if the set is flat (R1.6) |
@@ -346,7 +347,7 @@ class ClarificationBundle:
 
 **Evidence inspected for R3** (repository at `7ae6d22`):
 - No `ClarificationContract`, `BindingService`, `CHOOSE_ATTRIBUTE`, attribute-option type, or clarification response type exists in any Python file. Every type named in R3 is **planned** and conceptual.
-- ARN.1 `UserClue(axis, value, received_at, category=USER_CLUE)` is at `uri_core/core/arn/models.py:86`. `ARNEngine.apply_user_clue` (`uri_core/core/arn/engine.py:139`) eliminates every candidate whose normalized `metadata[axis]` differs from the clue value. `get_clarification_recommendation` (`engine.py:218`) chooses an axis on which every active candidate has a value and which splits them into at least two groups. Both operate on ARN.1 `Candidate.metadata`, not on `RARCandidate`. R3 reuses their record shape and matching semantics through a planned adapter. It does not modify ARN.1 or drive the ARN.1 engine state machine.
+- ARN.1 `UserClue(axis, value, received_at, category=USER_CLUE)` is at `uri_core/core/arn/models.py:86`. `ARNEngine.apply_user_clue` (`uri_core/core/arn/engine.py:139`) eliminates every candidate whose normalized `metadata[axis]` differs from the clue value. `get_clarification_recommendation` (`engine.py:218`) chooses an axis on which every active candidate has a value and which splits them into at least two groups. Both operate on ARN.1 `Candidate.metadata`, not on `RARCandidate`. R3 reuses their record shape and matching semantics through a planned adapter `[SUPERSEDED by R4.6 — ported into S1 with parity tests under tests/; no uri_core import from uri_v1 (F-5)]`. It does not modify ARN.1 or drive the ARN.1 engine state machine.
 - `ApprovalStore` (`uri_core/core/approval_store.py:18-26, 108-118, 298-353`) stores each proposed action's exact `arguments` and an `arguments_fingerprint` (SHA-256 over `capability_id` and `arguments`). `consume()` is single-use and fails closed when the fingerprint of the requested arguments differs from the approved one.
 - `DeterministicRARTrace.candidate_scores: Tuple[Tuple[str, float], ...]` is at `uri_v1/turn/rar_deterministic.py:88` (details in R3.3).
 
@@ -364,7 +365,7 @@ class ClarificationOptionKind(str, Enum):
 @dataclass(frozen=True)
 class AttributeOption:
     option_key: str                         # "a1".."a5"; stable within one ambiguity_id; a namespace separate from candidate slots "s1".."s5"
-    axis: str                               # a CandidateFact.key from the closed vocabulary (§4); one axis per contract
+    axis: str                               # a CandidateFact.key from the closed vocabulary (§4); one axis per contract  [S1: title/type/owner/recency only, R4.6]
     value: str                              # the grounded CandidateFact.value, verbatim as produced by the builder
     member_candidate_ids: Tuple[str, ...]   # scope candidates whose fact on `axis` equals `value`; URI-side only; never rendered; never sent to a model
     fact_sources: Tuple[str, ...] = ()      # CandidateFact.source locators behind the value where the producer supplies them
@@ -476,6 +477,7 @@ PENDING --timeout / new unrelated turn--> EXPIRED
 ```
 
 "Candidate Y selected or supplied" means one of:
+`[REFINED by R4.4 / R4.5 (D5) — a click or confirmation counts only if the fresh re-run returns Y through ACTIVE_UI; free input supplies Y directly only for a CERTAINTY-class result; a HEURISTIC result offers Y through CONFIRM_ONE; basis DETERMINISTIC_ANCHOR alone is not sufficient]`
 - a click on a rendered candidate;
 - a `CONFIRM_ONE` confirmation;
 - free input that makes RAR return `RESOLVED` with basis `DETERMINISTIC_ANCHOR` independently of any attribute clue (§7 "If RAR returns RESOLVED, bind and resume").
@@ -546,6 +548,131 @@ Consequences:
 
 ### R3.4 Unchanged by R3
 Everything else in R2 stands, including D1–D4, R2.5 routing, R2.6 `wrong_binding_impact`, R2.7 Graphify scope, R2.8 pre-ask investigation, R2.9 TENTATIVE check, R2.11 bundles, and R2.12 events. The source-to-candidate interface distinction (existing `RARQuery` as the RAR-facing projection; the provenance-bearing evidence envelope as future S4 work) is recorded in Plan B revision R2 and applies to R2.8, R2.11, R3.1 `fact_sources`, and R3.2 check 5.
+
+---
+
+## REVISION R4 — Post-RG-0R addendum: User decisions D5 and D6, S1 scoping evidence F-1 … F-6 (2026-09-26). SUPERSEDES conflicting text in R3, R2, R1, and the draft.
+
+**Source.**
+- The focused independent re-audit RG-0R returned `RG_0R_ACCEPTED`: no blocking defects; RG-0-F1, RG-0-F2, RG-0-F3, and the B-R7 clarification accepted; planning phase may close; implementation not authorized. Record: `docs/plans/M33_3_RG0R_FOCUSED_INDEPENDENT_REAUDIT_REPORT.md`.
+- The subsequent S1 pre-implementation scoping audit returned `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP`. The follow-up is governance recording only. The User made decisions D5 and D6 during that audit. Its report is not stored in the repository; this revision and `docs/plans/M33_3_S1_STATE.md` are the durable record of its decisions and findings as relayed.
+- Every F-item below was re-checked against the frozen source in this recording pass. Line numbers refer to `uri_v1/turn/rar_deterministic.py` (SHA-256 `e02af25b…b649`, unchanged) and `uri_v1/turn/rar_contracts.py` (SHA-256 `4cc9aa43…6819`, unchanged).
+
+**Precedence.** R4 wins over R3, R2, R1, and the draft wherever they conflict. Earlier text stays unchanged as history, except for short `[… by R4.x]` markers beside the passages R4 refines or supersedes.
+
+**Authorization.** R4 changes no code, no fixture, and no protected artifact. It does not alter frozen RAR or A9 behavior: the classification below lives outside frozen RAR. `CODE_IMPLEMENTATION_AUTHORIZED: NO`. `S1_IMPLEMENTATION_AUTHORIZED: NO`.
+
+### R4.0 User decisions (2026-09-26)
+
+- **D5 [USER] — CONFIRMED authority.** Only certainty-tier deterministic rules may produce `CONFIRMED`:
+  - `EXACT_ID`;
+  - `EXACT_ALIAS`;
+  - `ACTIVE_UI`;
+  - `CURRENT_ATTACHMENT`, only when tied to `deterministic_anchor.current_attachment_id`;
+  - `EXACT_TITLE`, only when tied to `deterministic_anchor.unique_title_match` or an equivalent unique verbatim-title anchor.
+
+  Other deterministic `RESOLVED` rules are only TENTATIVE-eligible, through the R2.9 check. `CONSEQUENTIAL` or undeclared `wrong_binding_impact` → `CONFIRM_ONE`. The same authority classification applies to typed free input. The classifier lives outside frozen RAR/A9.
+- **D6 [USER] — S1 boundary.** S1 is the full state-file S1: the deterministic clarification/binding core, the deterministic template, the RenderValidator, and the `ClarificationBundle` / multi-reference contract. S1 is **not** split into S1 and S1b.
+
+### R4.1 Evidence findings (S1 scoping audit; re-verified in this pass)
+
+- **F-1 — basis cannot decide authority.** Frozen RAR sets `basis=RARBasis.DETERMINISTIC_ANCHOR` on every outcome it returns, including heuristic rules: `ACTIVE_POINTER` (lines 413, 421), `CONTRAST_FILTER` (493, 502), `TYPE_FILTER` (520, 544, 555), `REVISION_RELATION` (578, 587), `TEMPORAL_RELATION` (600–690), the inferred `CURRENT_ATTACHMENT` (723, 734), `TERM_DISCRIMINATION` (766–919), and `NONE` (931–952). `basis` alone therefore cannot determine binding authority. S1 uses `rule_used` plus anchor provenance, per D5.
+- **F-2 — truncated ambiguity sets.** Several ambiguity paths truncate `ambiguous_candidate_ids` to two candidates: `prev_cands[:2]` (608), `older_cands[:2]` (631), `latest_cands[:2]` (676), `candidates_list[:2]` (687, 857, 901, 936), `scores[:2]` and `ambiguous_ids[:2]` (899, 905), `top_candidates[:2]` (916). S1 accepts the candidate set exactly as RAR returns it. It does not reconstruct omitted survivors from `RARQuery.candidates`, and it does not modify frozen RAR.
+- **F-3 — `clause_text` is unused.** No line of `rar_deterministic.py` reads `RAREvidence.clause_text` (the field is declared at `rar_contracts.py:95`). Free-input re-resolution therefore uses the typed text as the fresh `RARQuery.reference_expression`. Placing the text only in `clause_text` would have no effect.
+- **F-4 — groundable attribute axes.** `RARCandidate` (`rar_contracts.py:80–88`) carries `id`, `title`, `candidate_type`, `recency_rank`, `domain_tags`, `owner`, `is_attachment`, `exact_aliases`, `description`. Of the §4 closed fact vocabulary, only `title`, `type`, `owner`, and `recency` are groundable from it in S1. `modified`, `version`, `sender`, `thread_subject`, and `locator` require later S4 evidence producers and stay unavailable in S1.
+- **F-5 — zero-import boundary.** No module under `uri_v1/` imports `uri_core` (repository grep, this pass; also `docs/governance/URI_DEVELOPMENT_EVIDENCE_REGISTRY.md` §0). The ARN.1 narrowing semantics S1 needs (`_normalized` matching, `apply_user_clue` elimination at `uri_core/core/arn/engine.py:139`, `get_clarification_recommendation` axis choice at `engine.py:218`) are ported into S1 and checked by parity tests under `tests/`. They are not imported across the boundary.
+- **F-6 — exact-ID/alias precedes `ACTIVE_UI`.** RAR evaluates Level 0 (`anchor.exact_id`, then verbatim `reference_expression` against candidate IDs and `exact_aliases`, lines 283–313) before Level 1 `selected_ui_id` (line 319). A re-run carrying the clicked candidate as `selected_ui_id` can therefore return a different rule, or a different candidate. S1 must fail closed unless the fresh re-run returns the clicked candidate through `ACTIVE_UI` (R4.4).
+
+### R4.2 Binding authority classification (the D5 classifier)
+
+A pure deterministic function outside frozen RAR. Inputs: the `RARResolution` (or `DeterministicRARTrace`) and the `RARQuery` that produced it. Output: `CERTAINTY` or `HEURISTIC`. It never reads `basis` as authority (F-1).
+
+| `RESOLVED` with `rule_used` | Provenance condition | Class |
+|---|---|---|
+| `EXACT_ID` | Level 0 (lines 283–303) | `CERTAINTY` |
+| `EXACT_ALIAS` | Level 0 (lines 305–313) | `CERTAINTY` |
+| `ACTIVE_UI` | `candidate_id == deterministic_anchor.selected_ui_id` (Level 1, line 319) | `CERTAINTY` |
+| `CURRENT_ATTACHMENT` | `candidate_id == deterministic_anchor.current_attachment_id` (Level 1, line 329) | `CERTAINTY` |
+| `CURRENT_ATTACHMENT` | any other case, including the `is_attachment` inference path (lines 716–726) | `HEURISTIC` |
+| `EXACT_TITLE` | `candidate_id == deterministic_anchor.unique_title_match` (Level 1, line 339) | `CERTAINTY` |
+| `EXACT_TITLE` | Level 2 unique title match (lines 350–367) where the normalized `reference_expression` equals the candidate's full title (case and surrounding whitespace only) | `CERTAINTY` (the equivalent unique verbatim-title anchor) |
+| `EXACT_TITLE` | Level 2 unique match only through `stem_title` normalization (file extension stripped, delimiters collapsed) | `HEURISTIC` (conservative reading; see R4.11 item 1) |
+| `ACTIVE_POINTER`, `TYPE_FILTER`, `CONTRAST_FILTER`, `REVISION_RELATION`, `TEMPORAL_RELATION`, `TERM_DISCRIMINATION`, `NONE`, any other or future value | — | `HEURISTIC` |
+
+- Any `RESOLVED` with `basis = MODEL_SELECTION` is never `CERTAINTY`. A lone model selection yields `CONFIRM_ONE` (R1.5, R2.9, retained).
+- An unknown or unmapped rule value is `HEURISTIC` (fail closed).
+- `CERTAINTY` → binding `CONFIRMED`, with no clarification. This holds for every `wrong_binding_impact`, because `CONFIRMED` is what the execution gate requires for `CONSEQUENTIAL` actions.
+- `HEURISTIC` → TENTATIVE-eligible only. `TENTATIVE` requires the R2.9 check to pass and `wrong_binding_impact` ∈ {`NONE`, `RECOVERABLE`}. Otherwise the result is `CONFIRM_ONE`. `CONSEQUENTIAL` or undeclared impact → `CONFIRM_ONE`.
+- R3.1 E is unchanged and stays stricter: a `RESOLVED` result on an attribute-narrowed set never takes the `CONFIRMED` row, because its separation came from the clue.
+
+### R4.3 Replacement trigger table (supersedes R2.3's table; R2.3's other text stands)
+
+| RAR / evidence state | Clarification action |
+|---|---|
+| `RESOLVED`, class `CERTAINTY` (R4.2) | none; binding `CONFIRMED` |
+| `RESOLVED`, class `HEURISTIC`; R2.9 check passes; impact `NONE` / `RECOVERABLE` | none before the proposal; binding `TENTATIVE`; shown as "Using X · Change". Impact is checked at proposal time (R1.5 timing); `CONSEQUENTIAL` or undeclared then raises `CONFIRM_ONE`. |
+| `RESOLVED`, class `HEURISTIC`; R2.9 check fails, or impact `CONSEQUENTIAL` / undeclared | `CONFIRM_ONE` |
+| exactly 1 candidate without a `RESOLVED` outcome (for example, a lone `MODEL_SELECTION` basis) | R2.3 rows 2 and 3 apply unchanged (R2.9 check; else `CONFIRM_ONE`) |
+| `AMBIGUOUS` | `CHOOSE_ONE`, or `CHOOSE_ATTRIBUTE` if the set is flat (R1.6, R3.1, R4.6), over the candidate set exactly as RAR returned it (F-2) |
+| `UNKNOWN` / `NO_CANDIDATE`, reference required | `FREE_INPUT_ONLY` |
+| `UNKNOWN`, reference not required | none; routing proceeds per R2.5 |
+
+The wrong interpretation "`RESOLVED` + `basis = DETERMINISTIC_ANCHOR` → always `CONFIRMED`" is **not** part of the effective contract.
+
+### R4.4 Candidate click and `ACTIVE_UI` authority (refines §7 click binding, D-5, R1.10, R3.2 "candidate click")
+
+- After the existing BindingService checks (R3.1 D, R3.2 table and rebind checks), BindingService re-runs RAR with the clicked `candidate_id` as `RARDeterministicAnchor.selected_ui_id`.
+- The binding becomes `CONFIRMED` only if the fresh re-run returns **all** of: outcome `RESOLVED`; `rule_used == ACTIVE_UI`; `candidate_id` equal to the clicked candidate.
+- Any other re-run result, including `EXACT_ID` or `EXACT_ALIAS` returning the same or a different candidate, is `REJECTED` (fail closed). No binding is created, the RAR-returned alternative is never bound, and the §7 rebuild path runs.
+- A `CONFIRM_ONE` confirmation binds through the same path and the same check.
+- Frozen RAR ordering is not changed. The check lives in BindingService.
+
+### R4.5 Free-input authority (refines §7 "Free input", R3.1 F, R3.2 "Candidate Y selected or supplied")
+
+- Typed text re-resolves through a fresh `RARQuery` whose `reference_expression` is the typed text (F-3). The candidate set is the contract's candidate set (scope set for `CHOOSE_ATTRIBUTE`), never silently broadened. Other query fields follow the stored query.
+- The result is classified by R4.2 exactly like any RAR result (D5):
+  - `CERTAINTY` → `CONFIRMED`;
+  - `HEURISTIC` → the R2.9 check and impact, as in R4.3 (`TENTATIVE` or `CONFIRM_ONE`);
+  - `AMBIGUOUS` → next round; `UNKNOWN` → a new bounded cycle (R1.7, R2.7).
+- §7's "If RAR returns RESOLVED, bind and resume" means: bind with the state R4.3 assigns, not always `CONFIRMED`.
+- **In a Change round (R3.2):** free input supplies Y directly only when the result is `CERTAINTY` (then `REBIND_CHECK`). A `HEURISTIC` result offers Y through `CONFIRM_ONE` inside the Change round. `TENTATIVE` is never a rebind outcome, because I-1 requires `CONFIRMED(Y)` before any redo.
+- R3.1 F.1 (text equal to a rendered attribute value) is unchanged. R3.1 F.2's model interpretation of text into `(axis, value)` under D3 is not part of S1 (`docs/plans/M33_3_S1_STATE.md`).
+
+### R4.6 Attribute narrowing in S1 (refines R3.1 A builder rules and R1.6)
+
+- S1 attribute axes are exactly `title` (`RARCandidate.title`), `type` (`candidate_type`), `owner` (`owner`), and `recency` (from `recency_rank`, rendered deterministically) (F-4).
+- An axis qualifies only if every scope candidate has a grounded value on it. A candidate with `owner = None` makes the `owner` axis non-qualifying for that scope.
+- `modified`, `version`, `sender`, `thread_subject`, and `locator` are unavailable until S4 evidence producers exist. `domain_tags`, `description`, `is_attachment`, and `exact_aliases` are not attribute axes.
+- `scope_candidate_ids` equals RAR's `ambiguous_candidate_ids` exactly (F-2). It is never re-expanded from `RARQuery.candidates`. `overflow_count` counts only candidates RAR returned.
+- The axis choice, tie-break, and clue matching are S1 ports of ARN.1 semantics (F-5). R3.1's "planned adapter" over ARN.1 is superseded by this port: there is no import of `uri_core` from `uri_v1`.
+
+### R4.7 S1 boundary (D6; refines §13 P1, §15, and the cross-plan state file S1 row)
+
+- S1 is the full state-file S1: the deterministic clarification/binding core (contracts, builder, trigger, D5 classifier, R2.9 check, session adjunct, BindingService, lifecycle states, stop safeguards), the deterministic template, the RenderValidator, and the `ClarificationBundle` / multi-reference contract.
+- It is not split into S1 and S1b.
+- The frozen scope, deferred slices, test battery, file-impact map, implementation order, stop conditions, and protected hashes are in `docs/plans/M33_3_S1_STATE.md`.
+
+### R4.8 Marker index (R4 markers added to earlier text)
+
+- §3 D-5; §4.1 row 1; §7 click binding and free input — R4.4, R4.5.
+- R1.6 (`CHOOSE_ATTRIBUTE` reuse) and R1.10 (click binding) — R4.4, R4.6.
+- R2.3 table row 1 — R4.2, R4.3.
+- R3.1 evidence note (ARN.1 adapter) and R3.1 A (`axis`) — R4.6.
+- R3.2 "Candidate Y selected or supplied" — R4.4, R4.5.
+- Cross-plan audit report §3 Case A — COR-7 in that report.
+
+### R4.9 Unchanged by R4
+
+Everything else in R3, R2, and R1 stands: D1–D4, R2.5 routing, R2.6 `wrong_binding_impact`, R2.9 (its clause (a) still means RAR's own resolution outcome; R4.2 decides only whether that outcome is `CERTAINTY` or `HEURISTIC`), R2.11 bundles, R3.1 contract, R3.2 lifecycle and invariants I-1 to I-6, R3.3 score terminology. Frozen RAR, `rar_contracts.py`, A9, and the frozen Batch A battery are unchanged.
+
+### R4.10 Status
+
+`PLANNING_CLOSED_RG0R_ACCEPTED_R4_RECORDED`. Planning phase closed per RG-0R. S1 scope recorded as `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`. Implementation is **not authorized**.
+
+### R4.11 Items for the implementation-authorization review (non-blocking)
+
+1. **`EXACT_TITLE` Level 2 and `stem_title`.** D5 admits "an equivalent unique verbatim-title anchor". RAR's Level 2 ("Strict Verbatim Title Match") also matches after `stem_title` normalization (extension stripped, delimiters collapsed). R4.2 treats only a case/whitespace-normalized full-title match as `CERTAINTY`, and a stem-only match as `HEURISTIC`. This is the conservative (fail-closed) reading. The User may widen it. It does not block S1 scope.
+2. **R4 fidelity.** R4 records decisions and findings relayed from the S1 scoping audit. The findings were re-verified against source here, but R4 itself has not been independently re-audited. The implementation-authorization review should confirm R4 against D5, D6, and F-1 to F-6.
 
 ---
 
@@ -636,7 +763,7 @@ Design choices, with alternatives considered:
 
 **D-4: The escape option.** "None of these / Enter something else" is a deterministic UI constant, always appended by URI. The renderer may propose an alternative label for it, but presence never depends on the model. This removes a failure mode rather than validating for it.
 
-**D-5: The binding path.** A click produces `RARDeterministicAnchor(selected_ui_id=<candidate_id>)` and re-runs RAR. This reuses the existing `ACTIVE_UI` rule instead of creating a parallel binding mechanism.
+**D-5: The binding path.** `[REFINED by R4.4 — fail closed unless the re-run returns the clicked candidate through ACTIVE_UI (F-6)]` A click produces `RARDeterministicAnchor(selected_ui_id=<candidate_id>)` and re-runs RAR. This reuses the existing `ACTIVE_UI` rule instead of creating a parallel binding mechanism.
 
 ---
 
@@ -705,7 +832,7 @@ Fields deliberately excluded:
 
 | RAR state | ARN-C action |
 |---|---|
-| `RESOLVED`, basis `DETERMINISTIC_ANCHOR` | No clarification. |
+| `RESOLVED`, basis `DETERMINISTIC_ANCHOR` `[SUPERSEDED by R4.2 / R4.3 (D5)]` | No clarification. |
 | `RESOLVED`, basis `MODEL_SELECTION`, the downstream proposed tool risk tier is AUTO | No clarification. The selection is recorded as model-selected. |
 | `RESOLVED`, basis `MODEL_SELECTION`, risk tier CONFIRM or DESTRUCTIVE | `CONFIRM_SINGLE`. The tiers are the Batch A `TOOL_CATALOG` vocabulary. |
 | `AMBIGUOUS` (at least 2 IDs, already validated) | `CHOOSE_ONE`. |
@@ -802,9 +929,9 @@ BINDING_CHECK --stale/expired/unknown id--> REJECTED --> RAR rebuild --> new rou
   - `candidate_id` is in the contract;
   - the clicked candidate's current fingerprint equals the stored fingerprint.
 
-  If all pass, it emits `RARDeterministicAnchor(selected_ui_id=candidate_id)` and re-runs RAR, which must return `RESOLVED` / `DETERMINISTIC_ANCHOR` / `ACTIVE_UI`. The evidence is recorded as `USER_CLUE` / user selection. A change in other candidates does not block the binding: the user chose a concrete, still-valid item.
+  If all pass, it emits `RARDeterministicAnchor(selected_ui_id=candidate_id)` and re-runs RAR, which must return `RESOLVED` / `DETERMINISTIC_ANCHOR` / `ACTIVE_UI` `[REFINED by R4.4 — rule_used must be ACTIVE_UI and candidate_id must equal the clicked candidate; any other result is REJECTED, fail closed (F-6)]`. The evidence is recorded as `USER_CLUE` / user selection. A change in other candidates does not block the binding: the user chose a concrete, still-valid item.
 - **Free input.** The text is authoritative clarification input, but not an automatic binding. RAR re-runs against the same candidate set with the text as new local evidence (exact alias, title, or ID match).
-  - If RAR returns `RESOLVED`, bind and resume.
+  - If RAR returns `RESOLVED`, bind and resume. `[REFINED by R4.5 (D5) — the typed text is the fresh reference_expression (F-3); the binding state follows R4.3: CONFIRMED only for a CERTAINTY-class result]`
   - If RAR returns `AMBIGUOUS` with a smaller set, start the next round.
   - If RAR returns `UNKNOWN`, the text describes something outside the set. `[BROADENING SOURCES CORRECTED by R2.7 — documents/emails via authorized retrieval capabilities, not Graphify]` This starts an explicit new resolution cycle, allowed to broaden (session, Graphify, retrieval), with a new `ambiguity_id`. The broadening is recorded in telemetry. It is never a silent broadening of the original set.
 - `[SUPERSEDED by R1.8 / R2.4 — progress-based limit + per-turn budget; values are EXPERIMENT]` **Loop limit.** At most 2 user-facing ARN-C rounds per original reference, counted in the contract's `round_index` and reflected in the existing `consecutive_clarification_count`. After that, ARN-C stops. The Main Brain receives the full pending state plus the user's inputs and either proceeds with an explicit statement of its assumption for an AUTO-tier action, or asks an open question for CONFIRM/DESTRUCTIVE. It never auto-binds a restricted action. The value 2 is `CANDIDATE_THRESHOLD_TO_BE_ESTABLISHED`: it is a design default, not a measured value. System-caused rebuilds (stale rejection) do not count as user rounds. A hard cap of 3 total rebuilds prevents a system loop.
