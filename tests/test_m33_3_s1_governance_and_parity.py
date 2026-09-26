@@ -35,7 +35,8 @@ def test_protected_hashes_and_uri_v1_import_boundary():
         "uri_v1/turn/rar_contracts.py": "4cc9aa43726a870ca2e9ab1b19f6bf9d72dcb74c8a2818856776af95195b6819",
     }
     for path, digest in expected.items():
-        assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest
+        source = (ROOT / path).read_bytes().replace(b"\r\n", b"\n")
+        assert hashlib.sha256(source).hexdigest() == digest
     battery = (ROOT / "fixtures/m33_3_batch_a/battery.json").read_bytes().replace(b"\r\n", b"\n")
     assert hashlib.sha256(battery).hexdigest() == "06d0dfffd8ecabff8b98ea7d24c1574904aa16fa172a3956e0a5fb95d6d1c3fa"
     for path in (ROOT / "uri_v1").rglob("*.py"):

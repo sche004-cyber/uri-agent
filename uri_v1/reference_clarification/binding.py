@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
+from threading import RLock
 from typing import Callable
 
 from uri_v1.turn.rar_clarification_contract import (
@@ -39,10 +40,18 @@ class BindingService:
         self.store = store or InMemoryClarificationStore()
         self.session_evidence: dict[str, SessionEvidence] = {}
         self.safeguards = safeguards
+        self._turn_safeguards: dict[tuple[str, str], ClarificationSafeguards] = {}
+        self._binding_lock = RLock()
 
     def _charge(self, record: StoredRound, *, made_progress: bool) -> bool:
-        if self.safeguards is None or self.safeguards.charge(made_progress=made_progress):
+        if self.safeguards is None:
             return True
+        with self._binding_lock:
+            key = (record.contract.session_id, record.contract.turn_id)
+            guard = self._turn_safeguards.setdefault(key, ClarificationSafeguards(
+                self.safeguards.max_no_progress_rounds, self.safeguards.max_turn_cost))
+            if guard.charge(made_progress=made_progress):
+                return True
         record.state = BindingState.REJECTED
         return False
 
@@ -51,9 +60,18 @@ class BindingService:
             self.store.add_round(built.contract, query, built.state)
             return BindingResult(built.state, next_contract_id=built.contract.ambiguity_id)
         if built.candidate_id and built.binding_id and built.session_id:
+            if built.state not in (BindingState.CONFIRMED, BindingState.TENTATIVE):
+                raise ValueError("invalid direct binding state")
             candidate = query.get_candidate(built.candidate_id)
             if candidate is None:
                 raise ValueError("binding candidate missing")
+            if built.state == BindingState.CONFIRMED:
+                resolution = resolve_rar_deterministic_extended(query).resolution
+                if (resolution.outcome != RAROutcome.RESOLVED or resolution.candidate_id != built.candidate_id
+                        or classify_authority(resolution, query) != AuthorityClass.CERTAINTY):
+                    raise ValueError("direct confirmation requires RAR certainty")
+            if built.binding_id in self.store.bindings or built.binding_id in self.store.rounds:
+                raise ValueError("duplicate binding ID")
             self.store.bindings[built.binding_id] = BindingRecord(built.binding_id, built.session_id,
                 built.candidate_id, built.state, candidate_fingerprint(candidate))
             self.store.binding_queries[built.binding_id] = query
@@ -76,10 +94,18 @@ class BindingService:
     def _binding(self, record: StoredRound, candidate_id: str, query: RARQuery,
                  *, change: bool = False,
                  current_candidate_locators: dict[str, str] | None = None) -> BindingResult:
+        with self._binding_lock:
+            return self._binding_locked(record, candidate_id, query, change=change,
+                                        current_candidate_locators=current_candidate_locators)
+
+    def _binding_locked(self, record: StoredRound, candidate_id: str, query: RARQuery,
+                        *, change: bool = False,
+                        current_candidate_locators: dict[str, str] | None = None) -> BindingResult:
         contract = record.contract
         if change:
             prior = self.store.bindings.get(contract.change_of or "")
-            if prior is None or prior.state not in (BindingState.TENTATIVE, BindingState.TENTATIVE_APPLIED) or prior.session_id != contract.session_id:
+            if (prior is None or prior.state not in (BindingState.TENTATIVE, BindingState.TENTATIVE_APPLIED)
+                    or prior.session_id != contract.session_id or prior.superseded_by is not None):
                 return self._reject(record, "change source is not tentative")
             if candidate_id == prior.candidate_id:
                 record.used = True
@@ -102,6 +128,8 @@ class BindingService:
                                 prior_binding_id=contract.change_of)
         self.store.bindings[contract.ambiguity_id] = binding
         self.store.binding_queries[contract.ambiguity_id] = query
+        if change:
+            prior.superseded_by = contract.ambiguity_id
         record.used = True
         record.state = BindingState.CONFIRMED
         self.session_evidence.setdefault(contract.session_id, SessionEvidence(contract.session_id)).record_selection(candidate_id)
@@ -115,6 +143,18 @@ class BindingService:
                 current_candidate_locators: dict[str, str] | None = None,
                 current_extra_facts: dict[str, tuple[CandidateFact, ...]] | None = None,
                 now: datetime | None = None) -> BindingResult:
+        with self._binding_lock:
+            return self._respond_locked(session_id, response, current_query,
+                wrong_binding_impact=wrong_binding_impact, impact_reader=impact_reader,
+                current_candidate_locators=current_candidate_locators,
+                current_extra_facts=current_extra_facts, now=now)
+
+    def _respond_locked(self, session_id: str, response: ClarificationResponse, current_query: RARQuery,
+                        *, wrong_binding_impact: WrongBindingImpact | str | None = None,
+                        impact_reader: Callable[[], WrongBindingImpact | str | None] | None = None,
+                        current_candidate_locators: dict[str, str] | None = None,
+                        current_extra_facts: dict[str, tuple[CandidateFact, ...]] | None = None,
+                        now: datetime | None = None) -> BindingResult:
         record = self.store.rounds.get(response.ambiguity_id)
         if record is None:
             return BindingResult(BindingState.REJECTED, reason="unknown ambiguity ID")
@@ -169,28 +209,33 @@ class BindingService:
                 return self._reject(record, "attribute member absent")
             if not self._charge(record, made_progress=True):
                 return BindingResult(BindingState.REJECTED, reason="clarification budget exhausted")
-            self.session_evidence.setdefault(session_id, SessionEvidence(session_id)).record_clue(option.axis, option.value)
             narrowed = tuple(current_query.get_candidate(cid) for cid in option.member_candidate_ids)
             old_anchor = record.query.deterministic_anchor
             anchor = replace(old_anchor, selected_ui_id=None) if old_anchor else None
             rerun_query = replace(record.query, candidates=narrowed, deterministic_anchor=anchor)
             resolution = resolve_rar_deterministic_extended(rerun_query).resolution
-            record.used = True
-            built = build_clarification(rerun_query, resolution, session_id=session_id, turn_id=contract.turn_id,
-                wrong_binding_impact=impact, round_index=contract.round_index + 1,
-                answered_axes=contract.answered_axes + (option.axis,), attribute_narrowed=True,
-                change_of=contract.change_of, current_binding_id=contract.current_binding_id,
-                provenance_required=contract.provenance_required, parent_locator=contract.parent_locator,
-                candidate_locators=dict(contract.candidate_locators), extra_facts=current_extra_facts)
+            try:
+                built = build_clarification(rerun_query, resolution, session_id=session_id, turn_id=contract.turn_id,
+                    wrong_binding_impact=impact, round_index=contract.round_index + 1,
+                    answered_axes=contract.answered_axes + (option.axis,), attribute_narrowed=True,
+                    change_of=contract.change_of, current_binding_id=contract.current_binding_id,
+                    provenance_required=contract.provenance_required, parent_locator=contract.parent_locator,
+                    candidate_locators=dict(contract.candidate_locators), extra_facts=current_extra_facts)
+            except ValueError:
+                return self._reject(record, "attribute narrowing did not yield a safe next round")
             if built.state == BindingState.TENTATIVE and not change:
                 candidate = rerun_query.get_candidate(built.candidate_id)
                 self.store.bindings[contract.ambiguity_id] = BindingRecord(contract.ambiguity_id, session_id,
                     built.candidate_id, BindingState.TENTATIVE, candidate_fingerprint(candidate))
                 record.state = BindingState.TENTATIVE
+                record.used = True
+                self.session_evidence.setdefault(session_id, SessionEvidence(session_id)).record_clue(option.axis, option.value)
                 return BindingResult(BindingState.TENTATIVE, built.candidate_id)
             if built.contract:
                 self.store.add_round(built.contract, rerun_query, built.state)
                 record.state = BindingState.REBIND_CHECK if change else BindingState.REJECTED
+                record.used = True
+                self.session_evidence.setdefault(session_id, SessionEvidence(session_id)).record_clue(option.axis, option.value)
                 return BindingResult(built.state, next_contract_id=built.contract.ambiguity_id)
             return self._reject(record, "attribute narrowing did not yield a safe next round")
         if response.response_kind == ResponseKind.FREE_INPUT:
@@ -237,28 +282,38 @@ class BindingService:
                 if classify_authority(resolution, rerun_query) == AuthorityClass.CERTAINTY:
                     return self._binding(record, cid, current_query, change=change,
                                          current_candidate_locators=current_candidate_locators)
-            record.used = True
-            built = build_clarification(rerun_query, resolution, session_id=session_id, turn_id=contract.turn_id,
-                wrong_binding_impact=impact, round_index=contract.round_index + 1,
-                change_of=contract.change_of, current_binding_id=contract.current_binding_id,
-                answered_axes=contract.answered_axes,
-                provenance_required=contract.provenance_required, parent_locator=contract.parent_locator,
-                candidate_locators=dict(contract.candidate_locators), extra_facts=current_extra_facts)
+            try:
+                built = build_clarification(rerun_query, resolution, session_id=session_id, turn_id=contract.turn_id,
+                    wrong_binding_impact=impact, round_index=contract.round_index + 1,
+                    change_of=contract.change_of, current_binding_id=contract.current_binding_id,
+                    answered_axes=contract.answered_axes,
+                    provenance_required=contract.provenance_required, parent_locator=contract.parent_locator,
+                    candidate_locators=dict(contract.candidate_locators), extra_facts=current_extra_facts)
+            except ValueError:
+                return self._reject(record, "free input did not yield a safe next round")
             if built.state == BindingState.TENTATIVE and not change:
                 candidate = rerun_query.get_candidate(built.candidate_id)
                 self.store.bindings[contract.ambiguity_id] = BindingRecord(contract.ambiguity_id, session_id,
                     built.candidate_id, BindingState.TENTATIVE, candidate_fingerprint(candidate))
                 record.state = BindingState.TENTATIVE
+                record.used = True
                 return BindingResult(BindingState.TENTATIVE, built.candidate_id)
             if built.contract:
                 self.store.add_round(built.contract, rerun_query, built.state)
                 record.state = BindingState.REBIND_CHECK if change else BindingState.REJECTED
+                record.used = True
                 return BindingResult(built.state, next_contract_id=built.contract.ambiguity_id)
             return self._reject(record, "free input unresolved")
         return self._reject(record, "unrecognized response")
 
     def record_execution(self, ambiguity_id: str, *, applied_result_exists: bool = True) -> BindingState:
+        with self._binding_lock:
+            return self._record_execution_locked(ambiguity_id, applied_result_exists=applied_result_exists)
+
+    def _record_execution_locked(self, ambiguity_id: str, *, applied_result_exists: bool) -> BindingState:
         binding = self.store.bindings[ambiguity_id]
+        if binding.superseded_by is not None:
+            raise ValueError("binding superseded by Change")
         if binding.state == BindingState.TENTATIVE:
             binding.state = BindingState.TENTATIVE_APPLIED
         elif binding.state == BindingState.CONFIRMED and not binding.from_change:
@@ -300,9 +355,15 @@ class BindingService:
 
     def open_change(self, ambiguity_id: str, query: RARQuery, resolution, *,
                     impact_reader: Callable[[], WrongBindingImpact | str | None], turn_id: str) -> BindingResult:
+        with self._binding_lock:
+            return self._open_change_locked(ambiguity_id, query, resolution,
+                                            impact_reader=impact_reader, turn_id=turn_id)
+
+    def _open_change_locked(self, ambiguity_id: str, query: RARQuery, resolution, *,
+                            impact_reader: Callable[[], WrongBindingImpact | str | None], turn_id: str) -> BindingResult:
         validate_rar_resolution(resolution, query.candidates)
         prior = self.store.bindings[ambiguity_id]
-        if prior.state not in (BindingState.TENTATIVE, BindingState.TENTATIVE_APPLIED):
+        if prior.state not in (BindingState.TENTATIVE, BindingState.TENTATIVE_APPLIED) or prior.superseded_by is not None:
             return BindingResult(BindingState.REJECTED, reason="change source is terminal")
         if prior.state == BindingState.TENTATIVE_APPLIED and impact_reader() not in (
                 WrongBindingImpact.NONE, WrongBindingImpact.RECOVERABLE, "NONE", "RECOVERABLE"):
@@ -321,7 +382,7 @@ class BindingService:
         binding = self.store.bindings[ambiguity_id]
         if not binding.from_change or binding.state != BindingState.CONFIRMED:
             raise ValueError("redo requires confirmed Change rebind")
-        if edited_result_status == "UNEDITED" and fresh_authorized:
+        if edited_result_status == "UNEDITED" and fresh_authorized is True:
             # An injected authorization decision may be recorded, but S1 has no redo executor.
             binding.state = BindingState.REDO_AUTHORIZED
             return binding.state

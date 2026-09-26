@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
 from typing import Sequence
 
 from uri_v1.turn.rar_contracts import RARCandidate
@@ -30,13 +29,17 @@ def recommend_axis(candidates: Sequence[RARCandidate], answered_axes: Sequence[s
     for index, axis in enumerate(AXES):
         if axis in answered_axes:
             continue
-        groups: dict[str, list[str]] = defaultdict(list)
+        normalized_groups: dict[str, tuple[str, list[str]]] = {}
         for candidate in candidates:
             value = fact_value(candidate, axis)
             if value is None:
                 break
-            groups[value].append(candidate.id)
+            key = normalized(value)
+            if key not in normalized_groups:
+                normalized_groups[key] = (value, [])
+            normalized_groups[key][1].append(candidate.id)
         else:
+            groups = {value: ids for value, ids in normalized_groups.values()}
             if 2 <= len(groups) <= max_options:
                 sizes = [len(ids) for ids in groups.values()]
                 choices.append((max(sizes), max(sizes) - min(sizes), index, axis, groups))

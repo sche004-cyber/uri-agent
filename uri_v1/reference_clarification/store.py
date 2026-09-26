@@ -27,6 +27,7 @@ class BindingRecord:
     from_change: bool = False
     prior_binding_id: str | None = None
     redo_reason: str | None = None
+    superseded_by: str | None = None
 
 
 class InMemoryClarificationStore:

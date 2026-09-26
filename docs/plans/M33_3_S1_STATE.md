@@ -1,7 +1,9 @@
 # M33.3 — S1 State: Reference-Clarification Deterministic Core (frozen scope)
 
-**Current state:** `S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT`
-**State history:** S1 `BLOCKED` pending RG-0R (`docs/plans/M33_3_CROSS_PLAN_STATE.md` §4) → RG-0R `RG_0R_ACCEPTED` → S1 pre-implementation scoping audit `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP` → bounded governance follow-up (this file, Plan A R4) → `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW` → S1 fidelity self-audit `S1_FIDELITY_AUDIT_ACCEPTED_WITH_BOUNDED_FOLLOWUP` → docs-only repair of follow-ups F-U1 to F-U4 (2026-09-26; state unchanged: `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`).
+**Current state:** `S1_CLOSED_FROZEN` (bounded repair and requalification accepted, 2026-09-26).
+**S1_IMPLEMENTATION_AUDITED:** YES. **S1_REPAIRS_REQUIRED:** YES. **S1_REPAIRS_VERIFIED:** YES. **S1_CLOSED_FROZEN:** YES. **M33_3_COMPLETE:** NO. **LATER_SLICE_IMPLEMENTATION_AUTHORIZED:** NO.
+**Closure evidence:** `docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`. This freezes only S1; Batch A and the RAR anchors remain frozen, and S2–S13 require separate authorization.
+**State history:** S1 `BLOCKED` pending RG-0R (`docs/plans/M33_3_CROSS_PLAN_STATE.md` §4) → RG-0R `RG_0R_ACCEPTED` → S1 pre-implementation scoping audit `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP` → bounded governance follow-up (this file, Plan A R4) → `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW` → S1 fidelity self-audit `S1_FIDELITY_AUDIT_ACCEPTED_WITH_BOUNDED_FOLLOWUP` → docs-only repair of follow-ups F-U1 to F-U4 → implementation commit `3cd5c03262e332684efc2c8c396fde7b585a032b` → independent audit `S1_REPAIR_REQUIRED` → bounded repair/requalification `S1_REPAIR_REQUALIFICATION_ACCEPTED` → `S1_CLOSED_FROZEN` (2026-09-26).
 **Implementation authorized:** **YES, S1 only**, by the User's S1 implementation task package at starting HEAD `ad9e2a6fef7b12c4aa4ecfde93fa06d397de7682` (2026-09-26). No later slice is authorized.
 **Workstream identity:** `URI-REFERENCE-CLARIFICATION` (planning identity; the bare alias "ARN" stays forbidden).
 **Branch / baseline:** `m35-uri-v1-parallel-architecture` @ `94ccf2ab24414007feccbcf2c5c903f8755621ec`.
@@ -200,5 +202,5 @@ Parity reference (informational, not protected by this file): `uri_core/core/arn
 - `S1_SCOPE`: frozen and unchanged.
 - `CODE_IMPLEMENTATION_AUTHORIZED: YES — S1 ONLY` (User task package, 2026-09-26).
 - `S1_IMPLEMENTATION_AUTHORIZED: YES` (same package).
-- `S1_IMPLEMENTATION_STATE: IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT` (evidence: `docs/plans/M33_3_S1_IMPLEMENTATION_REPORT.md`). This is not an independent acceptance or full M33.3 closure.
+- `S1_IMPLEMENTATION_STATE: S1_CLOSED_FROZEN` (repair and requalification evidence: `docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`). This is not full M33.3 closure.
 - S2–S13 remain unauthorized. No `INT-*` event. `URI-RAR` not adopted.

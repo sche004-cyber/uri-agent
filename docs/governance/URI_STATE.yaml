@@ -90,14 +90,14 @@ product_milestones:
 
   - id: "M33.3"
     title: "Edge Intelligence Qualification & Integration"
-    status: "S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT"
-    status_history_note: "PLANNING_BASIS_FROZEN at 47af60a -> BATCH_A_PLAN_FROZEN on 2026-09-25 -> S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-26 under the User's S1-only task package. Batch A remains frozen Stage A evidence; S1 is an isolated uri_v1 clarification implementation, not an INT-* integration or later-slice authorization."
+    status: "S1_CLOSED_FROZEN"
+    status_history_note: "PLANNING_BASIS_FROZEN at 47af60a -> BATCH_A_PLAN_FROZEN on 2026-09-25 -> S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-26 under the User's S1-only task package -> S1_REPAIR_REQUIRED after independent audit -> S1_CLOSED_FROZEN after bounded repair/requalification. Batch A remains frozen Stage A evidence; S1 is an isolated uri_v1 clarification implementation, not an INT-* integration or later-slice authorization."
     batch_a_plan: "docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md"
     batch_a_state: "docs/plans/M33_3_BATCH_A_STATE.md"
     batch_a_baseline_commit: "1fa24fca97dec34e431e82062b27b3da222b87cd"
     batch_a_status: "BATCH_A_FROZEN_ACCEPTED_WITH_LIMITATIONS"
     batch_a_status_note: "Updated 2026-09-25 (additive). History: ACCEPTED_NOT_STARTED -> VERIFICATION_READY_FOR_INDEPENDENT_AUDIT (implementation) -> VERIFICATION_READY_FOR_M33_3_A_REAUDIT (bounded repair R1) -> VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT (bounded repair R2) -> VERIFICATION_READY_FOR_M33_3_A_R3_REAUDIT (bounded repair R3) -> VERIFICATION_READY_FOR_M33_3_A_R4_REAUDIT (bounded repair R4, responding to independent R3 re-audit: removed a 2,000-character truncation that silently dropped safety-relevant text past that cutoff, and added a test exercising the real coverage/quote-verification pipeline directly; evidence docs/plans/M33_3_BATCH_A_R4_REPAIR_REPORT.md; the R3-disclosed residual for the 78 already-retained multi-step rows remains unresolved) -> BATCH_A_FROZEN_ACCEPTED_WITH_LIMITATIONS on 2026-09-25 (independent R4 re-audit verdict ACCEPT_WITH_DOCUMENTED_LIMITATIONS, preserved in docs/plans/M33_3_BATCH_A_R4_INDEPENDENT_REAUDIT_REPORT.md -- the first durable repository artifact for an independent review of this batch; a metadata-only coverage_rule description correction was made and verified to change no score; frozen as Stage A readiness/methodology evidence only, qualifying no Edge candidate and authorizing no Stage B work; the R3 historical-text-gap limitation for 78 already-retained multi-step rows remains unresolved and is not softened). R3/R2/R1 text follows: Seven scorer/provenance/governance-wording findings addressed from retained raw evidence, zero provider reruns; evidence in docs/plans/M33_3_BATCH_A_REPAIR_REPORT.md (repair) and docs/plans/M33_3_BATCH_A_COMPLETION_REPORT.md (original submission, preserved unedited). No durable independent-audit artifact for this batch exists in the repository (disclosed gap, repair report §0). Not accepted; re-audit pending (not by Claude, which planned/implemented/repaired this batch). No production integration, no INT-* event, no promotion."
-    note: "Batch A remains frozen readiness evidence only; no Edge candidate qualified and no Stage B authorization. S1 reference clarification is implemented under the User's S1-only task package and awaits independent audit (docs/plans/M33_3_S1_IMPLEMENTATION_REPORT.md). No S2-S13 authorization, INT-* event, or research/component promotion. This identity supersedes the stale 'Unified URI Interaction & Capability UI' reservation in URI_ACTIVE_MILESTONE.md §1c."
+    note: "Batch A remains frozen readiness evidence only; no Edge candidate qualified and no Stage B authorization. S1 reference clarification passed bounded repair/requalification and is closed/frozen (docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md). M33.3 remains incomplete. No S2-S13 authorization, INT-* event, or research/component promotion. This identity supersedes the stale 'Unified URI Interaction & Capability UI' reservation in URI_ACTIVE_MILESTONE.md §1c."
     accepted_plan: "docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md"
     accepted_at_commit: "47af60a65946e83b5fa10132b8363adfd18aca31"
     terminal_audit_state: "ARCHITECTURE_PLAN_ACCEPTED_WITH_LIMITATIONS"
@@ -109,7 +109,7 @@ product_milestones:
       file: "docs/governance/URI_ACTIVE_MILESTONE.md"
       section: "§1c"
       claimed_status_in_prose: "Unified URI Interaction & Capability UI (stale, superseded by additive correction dated 2026-09-25 in the same section)"
-      canonical_status_here: "S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT"
+      canonical_status_here: "S1_CLOSED_FROZEN"
       reconciled: true
       superseding_commit: "47af60a65946e83b5fa10132b8363adfd18aca31"
 
@@ -165,15 +165,23 @@ queued_initiatives:
     evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1a"
 
 active_continuation:
-  status: "M33_3_S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT"
-  previous_status: "M33_3_RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT"
+  status: "M33_3_S1_CLOSED_FROZEN"
+  s1_implementation_audited: true
+  s1_repairs_required: true
+  s1_repairs_verified: true
+  s1_closed_frozen: true
+  m33_3_complete: false
+  later_slice_implementation_authorized: false
+  s1_closure_evidence: "docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md"
+  previous_status: "M33_3_S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT"
   rg0r_note: "Updated 2026-09-26 (additive). The focused independent re-audit RG-0R returned RG_0R_ACCEPTED: no blocking defects; RG-0-F1, RG-0-F2, RG-0-F3 and the B-R7 clarification accepted; the two conservative repair calls consistent and safe; planning phase closed (record: docs/plans/M33_3_RG0R_FOCUSED_INDEPENDENT_REAUDIT_REPORT.md; full report text not stored, verdict recorded as relayed). The S1 pre-implementation scoping audit returned S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP; User decisions D5 (CONFIRMED authority by RAR rule class) and D6 (full state-file S1, no S1/S1b split) and findings F-1..F-6 are recorded in Plan A revision R4. S1 scope frozen in docs/plans/M33_3_S1_STATE.md as S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW. CODE_IMPLEMENTATION_AUTHORIZED: NO. S1_IMPLEMENTATION_AUTHORIZED: NO. Next: a separate User/governance implementation-authorization review of S1. No slice S1-S13 open; no INT-* event; URI-RAR not adopted. A9 rar_deterministic.py, rar_contracts.py and the frozen Batch A battery verified unchanged."
   rg0_note: "Updated 2026-09-26 (additive). The independent RG-0 cross-plan re-audit returned BOUNDED_REPAIR_REQUIRED with findings RG-0-F1 (incomplete CHOOSE_ATTRIBUTE contract), RG-0-F2 (Change/rebind/redo lifecycle allowed redo before a validated rebind), RG-0-F3 (RAR described as having no scores; DeterministicRARTrace.candidate_scores exist as deterministic diagnostic scores, not calibrated confidence), and a B-R7 interface clarification (the existing RARQuery is the RAR-facing projection; a provenance-bearing evidence envelope is future S4 work). Repairs: Plan A revision R3, Plan B revision R2, cross-plan audit COR-5 and COR-6. No new User decision was required. D1 user acceptance: USER_ACCEPTANCE_SATISFIED (PG-2 no longer awaits it). The RG-0 report is not stored in the repository; its findings are recorded in docs/plans/M33_3_CROSS_PLAN_STATE.md section 5a. Next step: a focused independent re-audit (RG-0R) of these four repairs, not S1. Implementation NOT authorized; no slice S1-S13 open; no INT-* event; URI-RAR not adopted. A9 rar_deterministic.py, rar_contracts.py, and the frozen Batch A battery verified unchanged."
   s1_fidelity_note: "Updated 2026-09-26 (additive). S1 fidelity self-audit by Claude (author of Plan A R4 and the S1 state; not independent, disclosed) returned S1_FIDELITY_AUDIT_ACCEPTED_WITH_BOUNDED_FOLLOWUP with no blocking defect. Follow-ups F-U1..F-U4 closed docs-only: attribute-narrowed results never confirm directly (R3.1 E made explicit in the S1 state and test plan); stale free-input 'local evidence' wording marked (R4.5); User decision recorded that free input reruns over the full RAR-returned round ambiguity scope, including candidates hidden by the display cap (Plan A R4.12); RG-0R record provenance corrected (baseline marked inferred, auditor identity UNVERIFIED). Status unchanged. CODE_IMPLEMENTATION_AUTHORIZED: NO. S1_IMPLEMENTATION_AUTHORIZED: NO."
   s1_implementation_note: "Updated 2026-09-26. The User's S1-only task package explicitly authorized code implementation at ad9e2a6fef7b12c4aa4ecfde93fa06d397de7682. Codex implemented the frozen S1 isolated core in uri_v1/reference_clarification/ and uri_v1/turn/rar_clarification_contract.py; evidence and tests are in docs/plans/M33_3_S1_IMPLEMENTATION_REPORT.md. Await independent implementation audit. No S2-S13 authorization, INT-* event, component adoption, or full M33.3 closure."
+  s1_closure_note: "Updated 2026-09-26. Independent audit required bounded S1 repairs K-B1..K-B4; repairs and closely coupled F-4 and other supplied observations were requalified against source and deterministic tests. Verdict S1_REPAIR_REQUALIFICATION_ACCEPTED. S1_IMPLEMENTATION_AUDITED: YES; S1_REPAIRS_REQUIRED: YES; S1_REPAIRS_VERIFIED: YES; S1_CLOSED_FROZEN: YES; M33_3_COMPLETE: NO; LATER_SLICE_IMPLEMENTATION_AUTHORIZED: NO. Evidence: docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md."
   previous_status_history: "M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY -> M33_3_CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT -> M33_3_RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT -> M33_3_RG0R_ACCEPTED_S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW"
   cross_plan_note: "Updated 2026-09-26 (additive). ARN planning-only continuation produced two plans, cross-audited together (docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md, verdict COMPATIBLE_WITH_BOUNDED_REPAIRS). The G0 + cross-plan repair pass applied repairs A-R1..A-R12 and B-R1..B-R9, recorded User decisions D1-D4 (see architecture_decisions), and recorded M33.2 amendments G1-G3. Next step is an independent cross-plan re-audit (RG-0). Implementation NOT authorized; no slice S1-S13 open; no INT-* event; URI-RAR not adopted. State file: docs/plans/M33_3_CROSS_PLAN_STATE.md."
-  scope: "M33.3 Batch A remains closed Stage A readiness evidence. S1 reference clarification was authorized and implemented only in uri_v1; independent implementation audit is next. No S2-S13, Stage B, production integration, INT-* event, or research promotion."
+  scope: "M33.3 Batch A remains closed Stage A readiness evidence. S1 reference clarification is repaired, independently requalified, and closed/frozen in uri_v1. M33.3 is incomplete. No S2-S13, Stage B, production integration, INT-* event, or research promotion."
   note: "Updated 2026-09-25 (additive). History: NONE_AUTHORIZED_TO_IMPLEMENT -> M33_3_BATCH_A_ACCEPTED_READY_FOR_EXECUTION -> M33_3_BATCH_A_VERIFICATION_READY_AWAITING_INDEPENDENT_AUDIT -> M33_3_BATCH_A_FROZEN_NEXT_IS_ARN_PLANNING_ONLY (independent R4 re-audit ACCEPT_WITH_DOCUMENTED_LIMITATIONS; docs/plans/M33_3_BATCH_A_R4_INDEPENDENT_REAUDIT_REPORT.md)."
 
 # ---------------------------------------------------------------------------
@@ -224,9 +232,9 @@ planning_artifacts:
     parent_milestone: "M33.3"
     title: "S1 reference-clarification deterministic core - frozen scope"
     path: "docs/plans/M33_3_S1_STATE.md"
-    status: "S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT"
+    status: "S1_CLOSED_FROZEN"
     implementation_authorized: true
-    note: "Frozen S1 scope per D5/D6 and F-1..F-6. User S1-only implementation authorization received 2026-09-26 at starting HEAD ad9e2a6fef7b12c4aa4ecfde93fa06d397de7682. Implementation evidence: docs/plans/M33_3_S1_IMPLEMENTATION_REPORT.md. Independent audit pending; no later slice authorized."
+    note: "Frozen S1 scope per D5/D6 and F-1..F-6. User S1-only implementation authorization received 2026-09-26 at starting HEAD ad9e2a6fef7b12c4aa4ecfde93fa06d397de7682. Independent bounded repair/requalification accepted; evidence: docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md. No later slice authorized."
 
 # ---------------------------------------------------------------------------
 # Architecture decisions recorded from direct User instruction (2026-09-26).

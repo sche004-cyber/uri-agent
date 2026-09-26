@@ -70,7 +70,13 @@ def validate_render(contract: ClarificationContract, output: object,
         flags.append("V-LABEL-DUP")
     if len(output.question) > question_limit or any(len(x) > label_limit for x in labels):
         flags.append("V-LENGTH")
-    if _SELECTION.search(output.question) or any(_SELECTION.search(x) for x in labels):
+    slot_facts = {key: tuple(value for _, value in facts) for key, facts in request.slots}
+    unsupported_selection = _SELECTION.search(output.question.replace(request.reference, ""))
+    for key, label in output.labels:
+        for match in _SELECTION.finditer(label):
+            if not any(match.group().casefold() in fact.casefold() for fact in slot_facts.get(key, ())):
+                unsupported_selection = match
+    if unsupported_selection:
         flags.append("V-SELECTION")
     common = _tokens(request.reference) | _ALLOW | ({str(request.overflow)} if request.overflow else set())
     all_facts = {key: _tokens(" ".join(v for _, v in facts)) for key, facts in request.slots}

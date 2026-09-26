@@ -1,8 +1,9 @@
 # M33.3 — Cross-Plan State: URI-REFERENCE-CLARIFICATION × URI Brain Architecture
 
-**Current state:** `S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT`
-**State history:** `CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT` (G0 + cross-plan repair, commit `7ae6d22`) → RG-0 verdict `BOUNDED_REPAIR_REQUIRED` → `RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT` (bounded repair, commit `94ccf2a`; see §5a) → RG-0R verdict `RG_0R_ACCEPTED` → S1 scoping audit `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP` → `RG0R_ACCEPTED_PLANNING_CLOSED_S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW` (governance recording pass, 2026-09-26; see §5b).
-**Implementation authorization:** **YES, S1 only** (User task package, 2026-09-26, starting HEAD `ad9e2a6fef7b12c4aa4ecfde93fa06d397de7682`). S1 implementation evidence is in `docs/plans/M33_3_S1_IMPLEMENTATION_REPORT.md`; independent implementation audit is next. S2–S13 remain unauthorized. No INT event exists. `URI-RAR` is not adopted.
+**Current state:** `S1_CLOSED_FROZEN` (S1 repair requalification accepted 2026-09-26; M33.3 incomplete).
+**S1_IMPLEMENTATION_AUDITED:** YES. **S1_REPAIRS_REQUIRED:** YES. **S1_REPAIRS_VERIFIED:** YES. **S1_CLOSED_FROZEN:** YES. **M33_3_COMPLETE:** NO. **LATER_SLICE_IMPLEMENTATION_AUTHORIZED:** NO. Evidence: `docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`.
+**State history:** `CROSS_PLAN_REPAIRED_AWAITING_INDEPENDENT_REAUDIT` (G0 + cross-plan repair, commit `7ae6d22`) → RG-0 verdict `BOUNDED_REPAIR_REQUIRED` → `RG0_BOUNDED_REPAIR_APPLIED_AWAITING_FOCUSED_INDEPENDENT_REAUDIT` (bounded repair, commit `94ccf2a`; see §5a) → RG-0R verdict `RG_0R_ACCEPTED` → S1 scoping audit `S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP` → `RG0R_ACCEPTED_PLANNING_CLOSED_S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW` (governance recording pass, 2026-09-26; see §5b) → S1 implementation `3cd5c03` → `S1_REPAIR_REQUIRED` → `S1_CLOSED_FROZEN`.
+**Implementation authorization:** **YES, S1 only** (User task package, 2026-09-26, starting HEAD `ad9e2a6fef7b12c4aa4ecfde93fa06d397de7682`). S1 is closed/frozen after bounded repair and requalification. S2–S13 remain unauthorized. No INT event exists. `URI-RAR` is not adopted.
 **Branch / repair baseline:** `m35-uri-v1-parallel-architecture` @ `127c7339ad61d2929a7dda04e58e511d26241401` (G0 repair); RG-0 bounded repair baseline @ `7ae6d228729549ece9f6a8b2dc2bdb8f5e833b7a`.
 **Date:** 2026-09-26
 
@@ -15,7 +16,7 @@
 | Cross-plan audit | `docs/plans/M33_3_CROSS_PLAN_AUDIT_REPORT.md` | — | verdict `COMPATIBLE_WITH_BOUNDED_REPAIRS` (with post-audit corrections COR-1 to COR-6; COR-5 and COR-6 come from RG-0) |
 | M33.2 amendments | `docs/architecture/M33_2_EDGE_SECOND_BRAIN_CANONICAL_ARCHITECTURE.md`: header amendment note; G1 under §3.1; G2 note under §3 table and G2 block under §6 table; G3 under §9.1 | — | recorded (User-directed); fidelity subject to re-audit |
 | RG-0R record | `docs/plans/M33_3_RG0R_FOCUSED_INDEPENDENT_REAUDIT_REPORT.md` | — | verdict `RG_0R_ACCEPTED` (relayed; full report text not stored) |
-| S1 state | `docs/plans/M33_3_S1_STATE.md` | — | `S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW`; implementation NOT authorized |
+| S1 state | `docs/plans/M33_3_S1_STATE.md` | — | `S1_CLOSED_FROZEN`; S2–S13 remain unauthorized |
 | Canonical state | `docs/governance/URI_STATE.yaml` → `planning_artifacts`, `architecture_decisions`, `active_continuation` | — | updated additively |
 
 Plan B provenance: recovered verbatim from Codex session `rollout-2026-09-26T03-31-00-01a0da96-071c-72f0-8562-0f71ac9457db.jsonl` (message 2026-09-25T22:51:31.958Z). The SHA-256 of the R0 text is `cf08a0892a8b87508b771edb3a856da652ef19f57ffdc7fb66245108962b8a9b`. A scan of all 2026-09 Codex rollouts found exactly one such message.
