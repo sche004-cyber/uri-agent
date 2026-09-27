@@ -117,15 +117,24 @@ def test_frozen_corpus_projection_and_replay_gate() -> None:
     assert set(aggregate["groups"]) == {f"{a}:{c}:{p}" for a in ("D0", "D1R", "D1RQ")
                                          for c in ("C1", "C2", "C3") for p in ("control", "producer")}
     assert aggregate["promotion_eligible"] is False
+    assert aggregate["row_count"] == 2466
     gates = aggregate["gates"]
-    # Known frozen-mechanism residuals (A2.8I/A2.8J): present in control and producer alike.
-    assert gates["annotated_wrong_binding_cases"] == ["NB-B-05:r1", "NB-H-06:r1"]
-    assert gates["annotated_wrong_binding_rows"] == 8
+    # R2 upstream recovery: the NB-B-05:r1 (detector span crossed "in") and NB-H-06:r1
+    # (contrast shortcut without demonstrated exclusion) residuals no longer bind.
+    assert gates["annotated_wrong_binding_cases"] == []
+    assert gates["annotated_wrong_binding_rows"] == 0
     assert gates["producer_only_wrong_binding_rows"] == 0
     assert gates["false_certainty_authority_on_scored_rows"] == 0
     assert gates["certainty_authority_on_unattributed_rows"] == 8  # turn-scoped attachment anchor (User decision)
+    assert gates["attachment_anchor_certainty_rows"] == 18
+    assert gates["attachment_anchor_certainty_unattributed_rows"] == 8
+    assert gates["attachment_anchor_certainty_cases"] == ["NB-C-01", "NB-C-02"]
     assert gates["protected_hashes_unchanged"] is True
-    assert gates["safety_gate_passed"] is False
+    assert gates["safety_gate_passed"] is True
+    scored = {(r["case_id"], r["arm"], r["condition"], r["path"]): r for r in telemetry["rows"]
+              if r["ref_key"] == "r1" and r["case_id"] in ("NB-B-05", "NB-H-06") and r["arm"] != "D0"
+              and r["condition"] != "C3"}
+    assert len(scored) == 16 and all(r["outcome"] != "RESOLVED" for r in scored.values())
     for row in telemetry["rows"]:
         assert row["candidate_id"] is None or row["candidate_id"] in row["source_ids"]
         assert all(p["candidate_id"] in row["source_ids"] for p in row["provenance"])

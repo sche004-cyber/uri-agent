@@ -142,7 +142,8 @@ def test_kb3_free_input_build_failure_is_recoverable():
 def test_kb4_protected_hash_is_line_ending_portable():
     root = Path(__file__).resolve().parents[1]
     protected = {
-        "uri_v1/turn/rar_deterministic.py": "e02af25bb7009d12d829c8b8fc92e487d3da75aeaa160092db617458278fb649",
+        # M33.3 S4 upstream recovery (RC-5 contrast gate) re-pinned this; pre-recovery e02af25b...8fb649.
+        "uri_v1/turn/rar_deterministic.py": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95",
         "uri_v1/turn/rar_contracts.py": "4cc9aa43726a870ca2e9ab1b19f6bf9d72dcb74c8a2818856776af95195b6819",
     }
     for name, expected in protected.items():

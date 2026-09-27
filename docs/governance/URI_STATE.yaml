@@ -90,8 +90,8 @@ product_milestones:
 
   - id: "M33.3"
     title: "Edge Intelligence Qualification & Integration"
-    status: "S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN"
-    status_history_note: "PLANNING_BASIS_FROZEN at 47af60a -> BATCH_A_PLAN_FROZEN on 2026-09-25 -> S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-26 under the User's S1-only task package -> S1_REPAIR_REQUIRED after independent audit -> S1_CLOSED_FROZEN after bounded repair/requalification -> S2_PLAN_FROZEN and S2_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-26 under the User's S2 task package (docs/plans/M33_3_S2_STATE.md) -> S2_CLOSED_FROZEN after independent audit, bounded G3/type-validation repairs, and requalification (docs/plans/M33_3_S2_REPAIR_REQUALIFICATION_AUDIT_REPORT.md) -> S3_PLAN_FROZEN and S3_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-26 under the User's S3-only task package (docs/plans/M33_3_S3_STATE.md) -> S3_CLOSED_FROZEN after independent audit and requalification, no repair required (docs/plans/M33_3_S3_REPAIR_REQUALIFICATION_AUDIT_REPORT.md) -> [correction 2026-09-27] independent re-audit of that closure found F1 (Plan A rows 18/19 below mandatory minimum) and F2 (stale scope line); User directed reopen and repair; bounded repair added ARB-081/082 (battery v2, 82 cases), requalified, S3_CLOSED_FROZEN re-confirmed (docs/plans/M33_3_S3_REAUDIT_CORRECTION_REQUALIFICATION_REPORT.md). S1 and S2 stay closed/frozen. Batch A remains frozen Stage A evidence; no INT-* integration or later-slice authorization. -> S4_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-27 (commit 337aec2) -> S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN on 2026-09-27 after independent audit, bounded repair and requalification (docs/plans/M33_3_S4_INDEPENDENT_AUDIT_REPAIR_REQUALIFICATION_REPORT.md); S4 not closed/frozen."
+    status: "S4_RECOVERY_CANDIDATE_REQUALIFIED_AWAITING_INDEPENDENT_AUDIT"
+    status_history_note: "PLANNING_BASIS_FROZEN at 47af60a -> BATCH_A_PLAN_FROZEN on 2026-09-25 -> S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-26 under the User's S1-only task package -> S1_REPAIR_REQUIRED after independent audit -> S1_CLOSED_FROZEN after bounded repair/requalification -> S2_PLAN_FROZEN and S2_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-26 under the User's S2 task package (docs/plans/M33_3_S2_STATE.md) -> S2_CLOSED_FROZEN after independent audit, bounded G3/type-validation repairs, and requalification (docs/plans/M33_3_S2_REPAIR_REQUALIFICATION_AUDIT_REPORT.md) -> S3_PLAN_FROZEN and S3_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-26 under the User's S3-only task package (docs/plans/M33_3_S3_STATE.md) -> S3_CLOSED_FROZEN after independent audit and requalification, no repair required (docs/plans/M33_3_S3_REPAIR_REQUALIFICATION_AUDIT_REPORT.md) -> [correction 2026-09-27] independent re-audit of that closure found F1 (Plan A rows 18/19 below mandatory minimum) and F2 (stale scope line); User directed reopen and repair; bounded repair added ARB-081/082 (battery v2, 82 cases), requalified, S3_CLOSED_FROZEN re-confirmed (docs/plans/M33_3_S3_REAUDIT_CORRECTION_REQUALIFICATION_REPORT.md). S1 and S2 stay closed/frozen. Batch A remains frozen Stage A evidence; no INT-* integration or later-slice authorization. -> S4_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT on 2026-09-27 (commit 337aec2) -> S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN on 2026-09-27 after independent audit, bounded repair and requalification (docs/plans/M33_3_S4_INDEPENDENT_AUDIT_REPAIR_REQUALIFICATION_REPORT.md); S4 not closed/frozen. -> S4_RECOVERY_CANDIDATE_REQUALIFIED_AWAITING_INDEPENDENT_AUDIT on 2026-09-27 after the implementer upstream recovery batch (User Option B: D1R/D1RQ preposition boundary, RAR RC-5 contrast gate; docs/plans/M33_3_S4_UPSTREAM_RECOVERY_REQUALIFICATION_REPORT.md); awaiting independent S4 audit; not closed/frozen."
     batch_a_plan: "docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md"
     batch_a_state: "docs/plans/M33_3_BATCH_A_STATE.md"
     batch_a_baseline_commit: "1fa24fca97dec34e431e82062b27b3da222b87cd"
@@ -165,14 +165,16 @@ queued_initiatives:
     evidence: "docs/governance/URI_ACTIVE_MILESTONE.md §1a"
 
 active_continuation:
-  status: "M33_3_S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN"
-  s4_status_history: "M33_3_S4_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT -> M33_3_S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN (2026-09-27)"
+  status: "M33_3_S4_RECOVERY_CANDIDATE_REQUALIFIED_AWAITING_INDEPENDENT_AUDIT"
+  s4_status_history: "M33_3_S4_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT -> M33_3_S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN (2026-09-27) -> M33_3_S4_RECOVERY_CANDIDATE_REQUALIFIED_AWAITING_INDEPENDENT_AUDIT (2026-09-27, implementer upstream recovery)"
   s4_plan_preaudited: true
   s4_implementation_authorized: true
   s4_implementation_complete: true
   s4_implementer_qualification_run: true
-  s4_safety_gate_passed: false
-  s4_audit_pending: false
+  s4_safety_gate_passed: true
+  s4_safety_gate_passed_basis: "implementer R2 replay only; not independently reproduced"
+  s4_audit_pending: true
+  s4_upstream_recovery_applied: true
   s4_implementation_audited: true
   s4_repairs_required: true
   s4_repairs_verified: true
@@ -181,6 +183,8 @@ active_continuation:
   s4_plan: "docs/plans/M33_3_S4_OFFLINE_SOURCE_TO_CANDIDATE_PLAN.md"
   s4_implementation_evidence: "docs/plans/M33_3_S4_IMPLEMENTATION_REPORT.md"
   s4_audit_evidence: "docs/plans/M33_3_S4_INDEPENDENT_AUDIT_REPAIR_REQUALIFICATION_REPORT.md"
+  s4_recovery_evidence: "docs/plans/M33_3_S4_UPSTREAM_RECOVERY_REQUALIFICATION_REPORT.md"
+  s4_recovery_note: "Updated 2026-09-27 (implementer recovery batch, not an independent audit). User selected Option B. Reproduced NB-B-05:r1 (D1R/D1RQ noun-phrase span crossed 'in', giving coarse_type=email; RAR 4b bound the sole C2 email) and NB-H-06:r1 (RAR 4a contrast shortcut bound the sole candidate with nothing eliminated). Repairs: D1R/D1RQ noun phrases stop at the remaining locative/medium/path prepositions (temporal ones excluded); RAR RC-5 lets the contrast shortcut fire only after at least one candidate is eliminated. Requalified: RAR fixture sweep changed 1 of 1031 shared queries (NB-H-06 C1), all 21 other contrast bindings unchanged; A2.8K-R2 L5 battery ICB 26->22 with 0 new wrong bindings and 160/160 correct; Batch A run_det unchanged; 624 passed/178 subtests (baseline 607, +17 new), validator VALID. S4 R2: 79 cases, 2466 rows, deterministic, 0 annotated/producer-only wrong bindings, 0 false certainty on scored rows, safety_gate_passed true; attachment-anchor certainty 18 rows (8 unattributed) remains a disclosed experimental limitation, not production-approved. Protected anchors: rar_deterministic.py, D1R, D1RQ intentionally re-pinned (PG-6 re-pin recorded in M33_3_CROSS_PLAN_STATE.md); other five S4 anchors unchanged. Awaiting independent S4 audit; S4 not closed/frozen."
   s4_audit_note: "Updated 2026-09-27 (independent S4 audit). Audit found A-F1 (producer attached a turn-level exact-ID/unique-title anchor to every detected span, giving certainty-tier EXACT_ID/EXACT_TITLE bindings to spans without that evidence, hidden as UNATTRIBUTED rows) and A-F2 (structural false-CONFIRMED-authority gate unmeasured). Bounded repair scoped lexical anchors to the containing span and added authority_class telemetry plus a computed gates block; per User decision the current-attachment anchor stays turn-scoped (8 unattributed certainty rows disclosed). Requalified: 2442 rows reproducible, annotated results unchanged, 0 producer-only wrong bindings, 0 false certainty on scored rows, protected hashes unchanged, 461 passed/178 subtests + 22 passed, validator VALID. Safety gate still fails: NB-B-05:r1 (frozen D1R/D1RQ span crosses 'in', RAR 4b type-only bind) and NB-H-06:r1 (frozen RAR contrast shortcut binds the excluded sole candidate), identical in control and producer. S4 not closed/frozen. Evidence: docs/plans/M33_3_S4_INDEPENDENT_AUDIT_REPAIR_REQUALIFICATION_REPORT.md."
   s4_note: "Updated 2026-09-27. User authorized plan and implementation of S4 only at starting HEAD 0caf3dd5d11a7b5c8b7f18133955a785707505d7. PG-5 independent plan pre-audit accepted after F1/F2 repair, final input-allowlist check, and focused scorer correction recheck. Offline 79-case D0/D1R/D1RQ replay ran; two distinct annotated wrong-binding cases persist in paired control and producer, so the implementer safety/promotion gate is not passed. S4 implementation audit pending; not frozen. S1/S2/S3 stay closed/frozen; S5-S13 unauthorized; no INT event or URI-RAR adoption."
   s3_plan_frozen: true
@@ -240,10 +244,10 @@ planning_artifacts:
     parent_milestone: "M33.3"
     title: "S4 offline source-to-candidate and RAR-boundary replay"
     path: "docs/plans/M33_3_S4_OFFLINE_SOURCE_TO_CANDIDATE_PLAN.md"
-    status: "AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN"
+    status: "RECOVERY_CANDIDATE_REQUALIFIED_AWAITING_INDEPENDENT_AUDIT"
     implementation_authorized: true
     authorization_scope: "S4 offline experiment only; User task package dated 2026-09-27"
-    note: "Independent PG-5 pre-audit accepted after F1/F2 repair and focused rechecks. Safety gate failed on two annotated wrong-binding cases; no production or component promotion. See docs/plans/M33_3_S4_STATE.md. Updated 2026-09-27: status was IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT; independent audit repaired A-F1/A-F2 and requalified; safety gate still fails on frozen detector/RAR residuals NB-B-05:r1 and NB-H-06:r1; not closed/frozen."
+    note: "Independent PG-5 pre-audit accepted after F1/F2 repair and focused rechecks. Safety gate failed on two annotated wrong-binding cases; no production or component promotion. See docs/plans/M33_3_S4_STATE.md. Updated 2026-09-27: status was IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT; independent audit repaired A-F1/A-F2 and requalified; safety gate still fails on frozen detector/RAR residuals NB-B-05:r1 and NB-H-06:r1; not closed/frozen. Updated 2026-09-27 (upstream recovery, User Option B): status was AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN; detector/RAR repaired and requalified, R2 safety gate passes at implementer level; awaiting independent audit (docs/plans/M33_3_S4_UPSTREAM_RECOVERY_REQUALIFICATION_REPORT.md)."
   - id: "URI-REFERENCE-CLARIFICATION"
     kind: "workstream_plan"
     parent_milestone: "M33.3"

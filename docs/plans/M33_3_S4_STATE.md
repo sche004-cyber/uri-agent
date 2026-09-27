@@ -1,5 +1,12 @@
 # M33.3 S4 — offline source-to-candidate replay state
 
+**State:** `S4_RECOVERY_CANDIDATE_REQUALIFIED_AWAITING_INDEPENDENT_AUDIT` (2026-09-27, implementer upstream recovery batch under User Option B; was `S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN`).
+**S4_UPSTREAM_REPAIR_APPLIED:** YES (D1R/D1RQ noun-phrase preposition boundary; RAR RC-5 contrast shortcut requires demonstrated exclusion). **S4_REQUALIFIED_BY_IMPLEMENTER:** YES. **S4_SAFETY_GATE_PASSED:** YES (implementer R2 replay; not independently reproduced). **S4_AUDIT_PENDING:** YES. **S4_CLOSED_FROZEN:** NO. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+
+Evidence: `docs/plans/M33_3_S4_UPSTREAM_RECOVERY_REQUALIFICATION_REPORT.md`; telemetry `M33_3_S4_R2_TELEMETRY.json` / `M33_3_S4_R2_AGGREGATES.json` (R1 and pre-repair files preserved). The R2 replay (79 cases, 2,466 rows, three fresh replays decision-identical) has 0 annotated wrong bindings, 0 producer-only wrong bindings, 0 false certainty on scored rows, and `safety_gate_passed: true`. The turn-scoped attachment anchor still gives certainty to 18 rows (8 unattributed); this remains an experimental limitation and is not production-approved. Changed protected anchors: `rar_deterministic.py` `e02af25b…` → `4db77566…`, D1R `03479773…` → `0986503d…`, D1RQ `49f5faa9…` → `42332d28…`; the other five S4 anchors are unchanged. This is an implementer recovery candidate. S4 may be frozen only after an independent audit by an agent other than this session.
+
+## History (independent S4 audit record, preserved)
+
 **State:** `S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN` (2026-09-27, independent audit/repair/requalification; was `S4_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT`).
 **S4_PLAN_PREAUDITED:** YES. **S4_IMPLEMENTATION_COMPLETE:** YES. **S4_IMPLEMENTATION_AUDITED:** YES. **S4_REPAIRS_REQUIRED:** YES (A-F1 turn-scoped lexical anchor contamination; A-F2 unmeasured authority gate). **S4_REPAIRS_VERIFIED:** YES. **S4_SAFETY_GATE_PASSED:** NO. **S4_AUDIT_PENDING:** NO. **S4_CLOSED_FROZEN:** NO. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
 

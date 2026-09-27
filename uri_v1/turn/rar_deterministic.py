@@ -7,6 +7,11 @@ Stage 4: four bounded deterministic refinements (Root Causes 1-4 from Stage 3 an
   RC-3 — UNKNOWN vs AMBIGUOUS semantic distinction on zero-score (Level 6 repair).
   RC-4 — Existing is_attachment metadata consulted for explicit attachment references
           (new Level 5.5 between Temporal and TF-IDF).
+M33.3 S4 recovery (upstream repair):
+  RC-5 — The Level 4a contrast shortcut ("the other ...") binds the sole
+          remaining candidate only when negation elimination actually removed
+          at least one candidate. Pool size alone is not evidence that the
+          survivor is the contrasted one.
 
 Deterministic Coverage Stack:
 - Level 0: Verbatim ID / Exact Alias Anchor
@@ -484,8 +489,14 @@ def resolve_rar_deterministic_extended(query: RARQuery) -> DeterministicRARTrace
         candidates_list = [c for c in candidates_list if c.id not in eliminated_ids]
 
         # Contrast selection shortcut ("the other one", "the alternative")
+        #
+        # RC-5: "the other X" names the survivor of an exclusion. The shortcut
+        # may only fire when the exclusion was demonstrated, i.e. elimination
+        # removed at least one candidate. If nothing was eliminated, the sole
+        # remaining candidate may be the very item the user just rejected, so
+        # the cascade continues and later levels must justify any binding.
         if query.local_evidence.recency_hint == "other" or "other" in ref_tokens:
-            if len(candidates_list) == 1:
+            if len(candidates_list) == 1 and eliminated_ids:
                 res = RARResolution(
                     reference_expression=query.reference_expression,
                     outcome=RAROutcome.RESOLVED,

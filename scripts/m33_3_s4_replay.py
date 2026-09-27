@@ -28,17 +28,20 @@ from uri_v1.reference_clarification.authority import classify_authority  # noqa:
 from uri_v1.turn.rar_deterministic import resolve_rar_deterministic_extended  # noqa: E402
 
 CORPUS = ROOT / "uri_v1/turn/rar_natural_boundary_raw_turn_fixtures.json"
-TELEMETRY = ROOT / "docs/plans/M33_3_S4_R1_TELEMETRY.json"
-AGGREGATES = ROOT / "docs/plans/M33_3_S4_R1_AGGREGATES.json"
+# R2 = upstream recovery replay. R1 files are kept as the pre-recovery evidence.
+TELEMETRY = ROOT / "docs/plans/M33_3_S4_R2_TELEMETRY.json"
+AGGREGATES = ROOT / "docs/plans/M33_3_S4_R2_AGGREGATES.json"
 ANCHORS = {
     "uri_v1/turn/rar_natural_boundary_raw_turn_fixtures.json": "0ea5447354481041181538244ef70b6dc58a72267dd95263d61dbdb55ab07380",
-    "uri_v1/turn/rar_deterministic.py": "e02af25bb7009d12d829c8b8fc92e487d3da75aeaa160092db617458278fb649",
+    # Recovery targets (RC-5 contrast gate; NP preposition boundary). Pre-recovery anchors:
+    # rar_deterministic e02af25b...8fb649, D1R 03479773...41be75, D1RQ 49f5faa9...fb6b82.
+    "uri_v1/turn/rar_deterministic.py": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95",
     "uri_v1/turn/rar_contracts.py": "4cc9aa43726a870ca2e9ab1b19f6bf9d72dcb74c8a2818856776af95195b6819",
     "fixtures/m33_3_batch_a/battery.json": "06d0dfffd8ecabff8b98ea7d24c1574904aa16fa172a3956e0a5fb95d6d1c3fa",
     "uri_v1/turn/rar_attachment_order_experimental.py": "90d89c372e7618f3476719ed1acebcb81cdb0907b4723b695ec6d4a4f289f79c",
     "uri_v1/turn/rar_attachment_order_factorial_fixtures.py": "3657070635827bf9850d11aafe7cdd0c47bd7c7c7747025de6cb17227566315a",
-    "scripts/m35_a2_8f_detector_d1r.py": "0347977372a3dfefa9d42780168b7724ce857eb8941696ec21e590fbff41be75",
-    "scripts/m35_a2_8h_detector_d1rq.py": "49f5faa9b37051fec876f5523383b4e965422976562c52e12fc38c970bfa6b82",
+    "scripts/m35_a2_8f_detector_d1r.py": "0986503dd46e87773f2303e612ed8b552500588f9a027b5c9aab6795615ec8b3",
+    "scripts/m35_a2_8h_detector_d1rq.py": "42332d28eca4db3533a54174a3386e573b4e5495120ad3d537dd918d8aa80862",
 }
 
 
@@ -223,8 +226,10 @@ def replay() -> tuple[dict, dict]:
             "full_boundary_p50_us": _percentile(times, .5), "full_boundary_p95_us": _percentile(times, .95),
         }
     wrong = [r for r in rows if r["classification"] in WRONG_BINDING]
+    attachment_certainty = [r for r in rows if r["authority_class"] == "CERTAINTY"
+                            and "current_attachment" in r["anchor_origin"]]
     summary = {
-        "schema": "m33.3.s4.offline_replay.v2",
+        "schema": "m33.3.s4.offline_replay.v3",
         "gates": {
             "candidate_invention_or_unauthorized_source": 0,  # enforced by fail-closed runtime checks above
             "protected_hashes_unchanged": post_hashes == pre_hashes,
@@ -235,6 +240,11 @@ def replay() -> tuple[dict, dict]:
             "annotated_wrong_binding_cases": sorted({f"{r['case_id']}:{r['ref_key'] or '-'}" for r in wrong}),
             "producer_only_wrong_binding_rows": len(_producer_only(wrong)),
             "safety_gate_passed": not wrong,
+            # Turn-scoped attachment anchor (User decision A-F3): disclosed exposure, not production-approved.
+            "attachment_anchor_certainty_rows": len(attachment_certainty),
+            "attachment_anchor_certainty_unattributed_rows": sum(
+                r["classification"] == "UNATTRIBUTED_DETECTOR_FIND" for r in attachment_certainty),
+            "attachment_anchor_certainty_cases": sorted({r["case_id"] for r in attachment_certainty}),
         }, "case_count": len(corpus["cases"]),
         "row_count": len(rows), "frozen_hashes": pre_hashes, "groups": aggregates,
         "provider_coverage": "UNMEASURED", "cpu_ram_resource_cost": "UNMEASURED",

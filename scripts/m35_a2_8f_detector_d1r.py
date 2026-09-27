@@ -200,6 +200,22 @@ _NP_STOP_WORDS = {
     "to", "for", "with", "by", "from", "about", "of", "under", "into",
 }
 
+# M33.3 S4 recovery (upstream boundary repair): a determiner noun phrase
+# never extends across a preposition. The set above already stopped at
+# some prepositions; these are the remaining locative, medium and path
+# prepositions of the same closed English word class. Without them the
+# scan crossed from a pronominal determiner into the verb's complement
+# ("put that in an email" -> span "that in an email", coarse_type=email),
+# so a type word that names a destination, not the referent, became
+# referential evidence. Temporal prepositions (before/after/since/until)
+# are deliberately excluded: "the one before" is an ordinal reference.
+_NP_PREPOSITION_STOPS = {
+    "in", "on", "at", "onto", "via", "inside", "within", "without",
+    "through", "across", "between", "among", "around", "during",
+    "against", "per",
+}
+_NP_STOP_WORDS = _NP_STOP_WORDS | _NP_PREPOSITION_STOPS
+
 # ---------------------------------------------------------------------------
 # Negation -- overfitting repair (A2.8F S4, per A2.8E S9 finding 3).
 #
