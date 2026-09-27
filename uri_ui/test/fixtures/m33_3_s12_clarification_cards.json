@@ -1,0 +1,428 @@
+{
+ "schema_version": "m33.3-r.s12.cards.v1",
+ "source_battery_sha256": "6e28cd3023a43ba8790d5999da6586fd4d81c56f704995106eec3bb62f5a7801",
+ "fixture_only": true,
+ "cards": [
+  {
+   "case_id": "L3B-01",
+   "ambiguity_id": "amb-s12-01",
+   "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa01",
+   "kind": "CHOOSE_ONE",
+   "need_class": "EXPLAIN",
+   "question": "Which item do you mean by \"the budget\"?",
+   "options": [
+    {
+     "option_key": "s1",
+     "candidate_id": "doc-b1",
+     "label": "Q3 Budget.xlsx · Finance · recency 0 · Sep 24 · v3 · document",
+     "rank": 1
+    },
+    {
+     "option_key": "s2",
+     "candidate_id": "doc-b2",
+     "label": "Q3 Budget (draft).xlsx · Finance · recency 1 · Sep 12 · v2 · document",
+     "rank": 2
+    },
+    {
+     "option_key": "s3",
+     "candidate_id": "doc-b3",
+     "label": "Q3 Budget - board copy.xlsx · Finance · recency 2 · Sep 20 · v3 · document",
+     "rank": 3
+    }
+   ],
+   "attribute_axis": null,
+   "attribute_filters": [],
+   "overflow_count": 0,
+   "escape_label": "None of these / Enter something else",
+   "candidate_set_fingerprint": "6fbfa168a10091acf11385b236856a89f80fb1dfaf32e51d26cfd60e043717db",
+   "scope_candidate_ids": [
+    "doc-b1",
+    "doc-b2",
+    "doc-b3"
+   ],
+   "expected_payloads": {
+    "s1": {
+     "ambiguity_id": "amb-s12-01",
+     "response_kind": "CANDIDATE",
+     "candidate_id": "doc-b1",
+     "candidate_set_fingerprint": "6fbfa168a10091acf11385b236856a89f80fb1dfaf32e51d26cfd60e043717db"
+    },
+    "s2": {
+     "ambiguity_id": "amb-s12-01",
+     "response_kind": "CANDIDATE",
+     "candidate_id": "doc-b2",
+     "candidate_set_fingerprint": "6fbfa168a10091acf11385b236856a89f80fb1dfaf32e51d26cfd60e043717db"
+    },
+    "s3": {
+     "ambiguity_id": "amb-s12-01",
+     "response_kind": "CANDIDATE",
+     "candidate_id": "doc-b3",
+     "candidate_set_fingerprint": "6fbfa168a10091acf11385b236856a89f80fb1dfaf32e51d26cfd60e043717db"
+    }
+   },
+   "expected_free_input_payload": {
+    "ambiguity_id": "amb-s12-01",
+    "response_kind": "FREE_INPUT",
+    "text": "<typed text>"
+   }
+  },
+  {
+   "case_id": "L3B-08",
+   "ambiguity_id": "amb-s12-02",
+   "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa02",
+   "kind": "CHOOSE_ATTRIBUTE",
+   "need_class": "EXPLAIN",
+   "question": "Which owner matches \"Jordan Lee\"?",
+   "options": [],
+   "attribute_axis": "owner",
+   "attribute_filters": [
+    {
+     "option_key": "a1",
+     "axis": "owner",
+     "value": "Procurement",
+     "label": "Procurement",
+     "member_count": 1
+    },
+    {
+     "option_key": "a2",
+     "axis": "owner",
+     "value": "IT Support",
+     "label": "IT Support",
+     "member_count": 1
+    }
+   ],
+   "overflow_count": 0,
+   "escape_label": "None of these / Enter something else",
+   "candidate_set_fingerprint": "cae4c9d8e32e394a4a0270df86924454f7d9decfe200cc1eb40b990b9cb3f596",
+   "scope_candidate_ids": [
+    "per-3",
+    "per-4"
+   ],
+   "expected_payloads": {
+    "a1": {
+     "ambiguity_id": "amb-s12-02",
+     "response_kind": "ATTRIBUTE",
+     "option_key": "a1",
+     "candidate_set_fingerprint": "cae4c9d8e32e394a4a0270df86924454f7d9decfe200cc1eb40b990b9cb3f596"
+    },
+    "a2": {
+     "ambiguity_id": "amb-s12-02",
+     "response_kind": "ATTRIBUTE",
+     "option_key": "a2",
+     "candidate_set_fingerprint": "cae4c9d8e32e394a4a0270df86924454f7d9decfe200cc1eb40b990b9cb3f596"
+    }
+   },
+   "expected_free_input_payload": {
+    "ambiguity_id": "amb-s12-02",
+    "response_kind": "FREE_INPUT",
+    "text": "<typed text>"
+   }
+  },
+  {
+   "case_id": "L3B-13",
+   "ambiguity_id": "amb-s12-03",
+   "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa03",
+   "kind": "CHOOSE_ONE",
+   "need_class": "EXPLAIN",
+   "question": "Which item do you mean by \"the other invoice\"?",
+   "options": [
+    {
+     "option_key": "s1",
+     "candidate_id": "inv-2",
+     "label": "Invoice INV-2240.pdf · Vendor B · recency 0 · document",
+     "rank": 1
+    },
+    {
+     "option_key": "s2",
+     "candidate_id": "inv-3",
+     "label": "Invoice INV-2252.pdf · Vendor C · recency 0 · document",
+     "rank": 2
+    }
+   ],
+   "attribute_axis": null,
+   "attribute_filters": [],
+   "overflow_count": 0,
+   "escape_label": "None of these / Enter something else",
+   "candidate_set_fingerprint": "cb69d61246fb7db77892c2da091ba872aa54cd010c97557f684cedc5479c4cb0",
+   "scope_candidate_ids": [
+    "inv-2",
+    "inv-3"
+   ],
+   "expected_payloads": {
+    "s1": {
+     "ambiguity_id": "amb-s12-03",
+     "response_kind": "CANDIDATE",
+     "candidate_id": "inv-2",
+     "candidate_set_fingerprint": "cb69d61246fb7db77892c2da091ba872aa54cd010c97557f684cedc5479c4cb0"
+    },
+    "s2": {
+     "ambiguity_id": "amb-s12-03",
+     "response_kind": "CANDIDATE",
+     "candidate_id": "inv-3",
+     "candidate_set_fingerprint": "cb69d61246fb7db77892c2da091ba872aa54cd010c97557f684cedc5479c4cb0"
+    }
+   },
+   "expected_free_input_payload": {
+    "ambiguity_id": "amb-s12-03",
+    "response_kind": "FREE_INPUT",
+    "text": "<typed text>"
+   }
+  },
+  {
+   "case_id": "L3B-15",
+   "ambiguity_id": "amb-s12-04",
+   "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa04",
+   "kind": "CHOOSE_ATTRIBUTE",
+   "need_class": "EXPLAIN",
+   "question": "Which owner matches \"the proposal\"?",
+   "options": [],
+   "attribute_axis": "owner",
+   "attribute_filters": [
+    {
+     "option_key": "a1",
+     "axis": "owner",
+     "value": "Procurement",
+     "label": "Procurement",
+     "member_count": 2
+    },
+    {
+     "option_key": "a2",
+     "axis": "owner",
+     "value": "R&D",
+     "label": "R&D",
+     "member_count": 2
+    },
+    {
+     "option_key": "a3",
+     "axis": "owner",
+     "value": "Facilities",
+     "label": "Facilities",
+     "member_count": 1
+    },
+    {
+     "option_key": "a4",
+     "axis": "owner",
+     "value": "HR",
+     "label": "HR",
+     "member_count": 1
+    },
+    {
+     "option_key": "a5",
+     "axis": "owner",
+     "value": "Finance",
+     "label": "Finance",
+     "member_count": 1
+    }
+   ],
+   "overflow_count": 0,
+   "escape_label": "None of these / Enter something else",
+   "candidate_set_fingerprint": "758888171dd961e703a63930d610cc1f2cc9a478118f61ae2f1703207c49a30d",
+   "scope_candidate_ids": [
+    "prop-0",
+    "prop-1",
+    "prop-2",
+    "prop-3",
+    "prop-4",
+    "prop-5",
+    "prop-6"
+   ],
+   "expected_payloads": {
+    "a1": {
+     "ambiguity_id": "amb-s12-04",
+     "response_kind": "ATTRIBUTE",
+     "option_key": "a1",
+     "candidate_set_fingerprint": "758888171dd961e703a63930d610cc1f2cc9a478118f61ae2f1703207c49a30d"
+    },
+    "a2": {
+     "ambiguity_id": "amb-s12-04",
+     "response_kind": "ATTRIBUTE",
+     "option_key": "a2",
+     "candidate_set_fingerprint": "758888171dd961e703a63930d610cc1f2cc9a478118f61ae2f1703207c49a30d"
+    },
+    "a3": {
+     "ambiguity_id": "amb-s12-04",
+     "response_kind": "ATTRIBUTE",
+     "option_key": "a3",
+     "candidate_set_fingerprint": "758888171dd961e703a63930d610cc1f2cc9a478118f61ae2f1703207c49a30d"
+    },
+    "a4": {
+     "ambiguity_id": "amb-s12-04",
+     "response_kind": "ATTRIBUTE",
+     "option_key": "a4",
+     "candidate_set_fingerprint": "758888171dd961e703a63930d610cc1f2cc9a478118f61ae2f1703207c49a30d"
+    },
+    "a5": {
+     "ambiguity_id": "amb-s12-04",
+     "response_kind": "ATTRIBUTE",
+     "option_key": "a5",
+     "candidate_set_fingerprint": "758888171dd961e703a63930d610cc1f2cc9a478118f61ae2f1703207c49a30d"
+    }
+   },
+   "expected_free_input_payload": {
+    "ambiguity_id": "amb-s12-04",
+    "response_kind": "FREE_INPUT",
+    "text": "<typed text>"
+   }
+  },
+  {
+   "case_id": "L3B-22",
+   "ambiguity_id": "amb-s12-05",
+   "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa05",
+   "kind": "FREE_INPUT_ONLY",
+   "need_class": "SIMPLE",
+   "question": "I could not find what \"the Henderson file\" refers to. What should I use?",
+   "options": [],
+   "attribute_axis": null,
+   "attribute_filters": [],
+   "overflow_count": 0,
+   "escape_label": "None of these / Enter something else",
+   "candidate_set_fingerprint": "643d5437104296e21d906ecb15b2c96ad278f20cfc4af53b12bb6069bd853726",
+   "scope_candidate_ids": [],
+   "expected_payloads": {},
+   "expected_free_input_payload": {
+    "ambiguity_id": "amb-s12-05",
+    "response_kind": "FREE_INPUT",
+    "text": "<typed text>"
+   }
+  },
+  {
+   "case_id": "L3B-23",
+   "ambiguity_id": "amb-s12-06",
+   "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa06",
+   "kind": "CONFIRM_ONE",
+   "need_class": "SIMPLE",
+   "question": "Did you mean Q3 Budget - board copy.xlsx · Finance · recency 0 · document?",
+   "options": [
+    {
+     "option_key": "s1",
+     "candidate_id": "doc-b3",
+     "label": "Q3 Budget - board copy.xlsx · Finance · recency 0 · document",
+     "rank": 1
+    }
+   ],
+   "attribute_axis": null,
+   "attribute_filters": [],
+   "overflow_count": 0,
+   "escape_label": "None of these / Enter something else",
+   "candidate_set_fingerprint": "c03a47f641c024b3bdd3a9843ae17396774045d09d35313bf41d08dfacf9aeed",
+   "scope_candidate_ids": [
+    "doc-b3"
+   ],
+   "expected_payloads": {
+    "s1": {
+     "ambiguity_id": "amb-s12-06",
+     "response_kind": "CANDIDATE",
+     "candidate_id": "doc-b3",
+     "candidate_set_fingerprint": "c03a47f641c024b3bdd3a9843ae17396774045d09d35313bf41d08dfacf9aeed"
+    }
+   },
+   "expected_free_input_payload": {
+    "ambiguity_id": "amb-s12-06",
+    "response_kind": "FREE_INPUT",
+    "text": "<typed text>"
+   }
+  },
+  {
+   "case_id": "L3B-17",
+   "ambiguity_id": "amb-s12-07",
+   "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa07",
+   "kind": "CHOOSE_ATTRIBUTE",
+   "need_class": "EXPLAIN",
+   "question": "Which owner matches \"Maria's report\"?",
+   "options": [],
+   "attribute_axis": "owner",
+   "attribute_filters": [
+    {
+     "option_key": "a1",
+     "axis": "owner",
+     "value": "Maria Chen",
+     "label": "Maria Chen",
+     "member_count": 1
+    },
+    {
+     "option_key": "a2",
+     "axis": "owner",
+     "value": "Maria Santos",
+     "label": "Maria Santos",
+     "member_count": 1
+    }
+   ],
+   "overflow_count": 0,
+   "escape_label": "None of these / Enter something else",
+   "candidate_set_fingerprint": "2c5a8733dff83d5e0df13143f245aaf3dd3d16940b640e695cda69bc0d2912c2",
+   "scope_candidate_ids": [
+    "rp-1",
+    "rp-2"
+   ],
+   "expected_payloads": {
+    "a1": {
+     "ambiguity_id": "amb-s12-07",
+     "response_kind": "ATTRIBUTE",
+     "option_key": "a1",
+     "candidate_set_fingerprint": "2c5a8733dff83d5e0df13143f245aaf3dd3d16940b640e695cda69bc0d2912c2"
+    },
+    "a2": {
+     "ambiguity_id": "amb-s12-07",
+     "response_kind": "ATTRIBUTE",
+     "option_key": "a2",
+     "candidate_set_fingerprint": "2c5a8733dff83d5e0df13143f245aaf3dd3d16940b640e695cda69bc0d2912c2"
+    }
+   },
+   "expected_free_input_payload": {
+    "ambiguity_id": "amb-s12-07",
+    "response_kind": "FREE_INPUT",
+    "text": "<typed text>"
+   }
+  },
+  {
+   "case_id": "L3B-07",
+   "ambiguity_id": "amb-s12-08",
+   "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa08",
+   "kind": "CHOOSE_ONE",
+   "need_class": "SIMPLE",
+   "question": "Which item do you mean by \"Sam\"?",
+   "options": [
+    {
+     "option_key": "s1",
+     "candidate_id": "per-1",
+     "label": "Sam Patel · Finance · recency 0 · person",
+     "rank": 1
+    },
+    {
+     "option_key": "s2",
+     "candidate_id": "per-2",
+     "label": "Sam Okoro · Legal · recency 0 · person",
+     "rank": 2
+    }
+   ],
+   "attribute_axis": null,
+   "attribute_filters": [],
+   "overflow_count": 0,
+   "escape_label": "None of these / Enter something else",
+   "candidate_set_fingerprint": "feef38b5ca9276c8b68155b422f65422e8328ce488a67e57115e5eb27d8ccbc9",
+   "scope_candidate_ids": [
+    "per-1",
+    "per-2"
+   ],
+   "expected_payloads": {
+    "s1": {
+     "ambiguity_id": "amb-s12-08",
+     "response_kind": "CANDIDATE",
+     "candidate_id": "per-1",
+     "candidate_set_fingerprint": "feef38b5ca9276c8b68155b422f65422e8328ce488a67e57115e5eb27d8ccbc9"
+    },
+    "s2": {
+     "ambiguity_id": "amb-s12-08",
+     "response_kind": "CANDIDATE",
+     "candidate_id": "per-2",
+     "candidate_set_fingerprint": "feef38b5ca9276c8b68155b422f65422e8328ce488a67e57115e5eb27d8ccbc9"
+    }
+   },
+   "expected_free_input_payload": {
+    "ambiguity_id": "amb-s12-08",
+    "response_kind": "FREE_INPUT",
+    "text": "<typed text>"
+   }
+  }
+ ]
+}

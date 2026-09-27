@@ -1,0 +1,142 @@
+{
+ "1": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3A-20",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "10": {
+  "A": "template",
+  "B": "edge",
+  "case_id": "L3B-20",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "11": {
+  "A": "template",
+  "B": "edge",
+  "case_id": "L3B-21",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "12": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-04",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "13": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-11",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "14": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3A-21",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "15": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-36",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "16": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-02",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "17": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-18",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "18": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3A-27",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "19": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3B-08",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "2": {
+  "A": "template",
+  "B": "edge",
+  "case_id": "L3A-29",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "20": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3B-20",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "3": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3B-05",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "4": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3B-23",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "5": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3A-30",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "6": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3A-32",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "7": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3B-01",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "8": {
+  "A": "template",
+  "B": "edge",
+  "case_id": "L3B-18",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "9": {
+  "A": "template",
+  "B": "edge",
+  "case_id": "L3B-19",
+  "prompt_variant": "natural",
+  "set": "valid"
+ }
+}

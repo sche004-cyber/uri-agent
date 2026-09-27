@@ -15,6 +15,25 @@ _WORD = re.compile(r"[\w.]+", re.UNICODE)
 _ALLOW = {"which", "item", "do", "you", "mean", "by", "did", "matches", "what", "should", "i", "use",
           "could", "not", "find", "refers", "to", "there", "are", "other", "can", "enter", "one", "the",
           "owner", "type", "title", "recency", "and", "more", "document", "email", "person", "file"}
+# Amendment S1-A1 (User decision at the M33.3-R S5 touchpoint, 2026-09-27):
+# closed-class English function words and generic clarification verbs only.
+# No numbers, dates, names, file extensions, or domain nouns are added, so
+# V-UNSUPPORTED-FACT still rejects every invented fact token.
+_ALLOW |= {
+    # articles, determiners, quantifiers
+    "a", "an", "this", "that", "these", "those", "each", "any", "another", "both", "either", "neither",
+    # conjunctions
+    "or", "nor", "but", "if",
+    # prepositions
+    "of", "in", "on", "at", "from", "for", "with", "about", "between", "as",
+    # pronouns addressing the reader
+    "your", "it", "its", "ones", "me", "my", "we",
+    # auxiliaries and copula
+    "is", "was", "were", "be", "does", "would", "will", "may", "might", "have", "has",
+    # generic clarification verbs and words
+    "meant", "refer", "referring", "want", "like", "choose", "select", "pick", "confirm", "match",
+    "please", "option", "options", "here", "listed", "yes", "no",
+}
 
 
 @dataclass(frozen=True)

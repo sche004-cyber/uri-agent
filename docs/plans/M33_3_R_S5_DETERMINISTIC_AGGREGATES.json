@@ -1,0 +1,465 @@
+{
+ "aggregates": {},
+ "anchors_after": {
+  "changed": [],
+  "current_rar_sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95",
+  "frozen_lf_anchor_count": 24,
+  "ok": true,
+  "s4_anchor_count": 8
+ },
+ "anchors_before": {
+  "changed": [],
+  "current_rar_sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95",
+  "frozen_lf_anchor_count": 24,
+  "ok": true,
+  "s4_anchor_count": 8
+ },
+ "battery": {
+  "battery_lf_sha256": "6e28cd3023a43ba8790d5999da6586fd4d81c56f704995106eec3bb62f5a7801",
+  "case_count": 60,
+  "schema_version": "m33.3-r.s5.l3.v1"
+ },
+ "deterministic": {
+  "kind_counts": {
+   "CHOOSE_ATTRIBUTE": 12,
+   "CHOOSE_ONE": 42,
+   "CONFIRM_ONE": 3,
+   "FREE_INPUT_ONLY": 3
+  },
+  "need_class_counts": {
+   "EXPLAIN": 26,
+   "REASONING": 3,
+   "SIMPLE": 31
+  },
+  "rows": [
+   {
+    "case_id": "L3A-01",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-02",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-03",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-04",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-05",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-06",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-07",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-08",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-09",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-10",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-11",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-12",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-13",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-14",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-15",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-16",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-17",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-18",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-19",
+    "kind": "FREE_INPUT_ONLY",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-20",
+    "kind": "FREE_INPUT_ONLY",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-21",
+    "kind": "CONFIRM_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-22",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-23",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-24",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-25",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-26",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-27",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-28",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-29",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-30",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-31",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-32",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-33",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-34",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-35",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3A-36",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-01",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-02",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-03",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-04",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-05",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-06",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-07",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-08",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-09",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-10",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-11",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-12",
+    "kind": "CHOOSE_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-13",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-14",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-15",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-16",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-17",
+    "kind": "CHOOSE_ATTRIBUTE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-18",
+    "kind": "CHOOSE_ONE",
+    "need_class": "EXPLAIN",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-19",
+    "kind": "CHOOSE_ONE",
+    "need_class": "REASONING",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-20",
+    "kind": "CHOOSE_ONE",
+    "need_class": "REASONING",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-21",
+    "kind": "CHOOSE_ONE",
+    "need_class": "REASONING",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-22",
+    "kind": "FREE_INPUT_ONLY",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-23",
+    "kind": "CONFIRM_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   },
+   {
+    "case_id": "L3B-24",
+    "kind": "CONFIRM_ONE",
+    "need_class": "SIMPLE",
+    "template_flags": [],
+    "template_valid": true
+   }
+  ],
+  "template_valid_all": true,
+  "violations": []
+ },
+ "finished_at": "2026-09-27T10:56:13.550912+00:00",
+ "host": "Windows-11-10.0.26200-SP0",
+ "mode": "deterministic",
+ "need_class_policy_version": "m33.3-r.s5.need-class.v1",
+ "prompt_version": "m33.3-r.s5.prompt.v2",
+ "started_at": "2026-09-27T10:56:13.480625+00:00"
+}

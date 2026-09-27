@@ -1,0 +1,494 @@
+[
+ {
+  "item": 1,
+  "need_class": "SIMPLE",
+  "reference": "unknown attachment",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "None of these / Enter something else"
+    ],
+    "question": "What do you mean?"
+   },
+   "B": {
+    "options": [
+     "None of these / Enter something else"
+    ],
+    "question": "I could not find what \"unknown attachment\" refers to. What should I use?"
+   }
+  }
+ },
+ {
+  "item": 2,
+  "need_class": "SIMPLE",
+  "reference": "which file",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "First.pdf · recency 0 · document",
+     "Second.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"which file\"?"
+   },
+   "B": {
+    "options": [
+     "First.pdf",
+     "Second.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "which file"
+   }
+  }
+ },
+ {
+  "item": 3,
+  "need_class": "SIMPLE",
+  "reference": "the attachment",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "signed_contract.pdf",
+     "contract_redline.docx",
+     "None of these / Enter something else"
+    ],
+    "question": "which option you mean."
+   },
+   "B": {
+    "options": [
+     "signed_contract.pdf · recency 0 · attached to Contract renewal email · document",
+     "contract_redline.docx · recency 0 · attached to Contract renewal email · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the attachment\"?"
+   }
+  }
+ },
+ {
+  "item": 4,
+  "need_class": "SIMPLE",
+  "reference": "send it to the board",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "owner",
+     "None of these / Enter something else"
+    ],
+    "question": "Which document should you send to the board?"
+   },
+   "B": {
+    "options": [
+     "Q3 Budget - board copy.xlsx · Finance · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Did you mean Q3 Budget - board copy.xlsx · Finance · recency 0 · document?"
+   }
+  }
+ },
+ {
+  "item": 5,
+  "need_class": "EXPLAIN",
+  "reference": "the other file",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "One.pdf",
+     "Two.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which option you mean."
+   },
+   "B": {
+    "options": [
+     "One.pdf · recency 0 · document",
+     "Two.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the other file\"?"
+   }
+  }
+ },
+ {
+  "item": 6,
+  "need_class": "EXPLAIN",
+  "reference": "the other file",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "One.pdf",
+     "Two.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which option you mean."
+   },
+   "B": {
+    "options": [
+     "One.pdf · recency 0 · document",
+     "Two.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the other file\"?"
+   }
+  }
+ },
+ {
+  "item": 7,
+  "need_class": "EXPLAIN",
+  "reference": "the budget",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "None of these / Enter something else"
+    ],
+    "question": "which option you mean."
+   },
+   "B": {
+    "options": [
+     "Q3 Budget.xlsx · Finance · recency 0 · Sep 24 · v3 · document",
+     "Q3 Budget (draft).xlsx · Finance · recency 1 · Sep 12 · v2 · document",
+     "Q3 Budget - board copy.xlsx · Finance · recency 2 · Sep 20 · v3 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the budget\"?"
+   }
+  }
+ },
+ {
+  "item": 8,
+  "need_class": "EXPLAIN",
+  "reference": "the form",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Leave request form.docx · HR · recency 0 · document",
+     "Expense claim form.xlsx · Finance · recency 1 · document",
+     "Access request form.pdf · IT Support · recency 2 · document",
+     "Purchase request form.docx · Procurement · recency 3 · document",
+     "Feedback form.docx · PMO · recency 4 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the form\"?"
+   },
+   "B": {
+    "options": [
+     "HR owner",
+     "Finance owner",
+     "IT Support owner",
+     "Procurement owner",
+     "PMO owner",
+     "None of these / Enter something else"
+    ],
+    "question": "which option you mean."
+   }
+  }
+ },
+ {
+  "item": 9,
+  "need_class": "REASONING",
+  "reference": "the contract",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Supplier contract - Acme.pdf · Legal · recency 0 · document",
+     "Supplier contract - Birch.pdf · Legal · recency 1 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the contract\"?"
+   },
+   "B": {
+    "options": [
+     "Document with recency 0",
+     "Document with recency 1",
+     "None of these / Enter something else"
+    ],
+    "question": "Which document should you select?"
+   }
+  }
+ },
+ {
+  "item": 10,
+  "need_class": "REASONING",
+  "reference": "that document Alex mentioned",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Risk register.xlsx · PMO · recency 0 · document",
+     "Audit findings.docx · Audit · recency 1 · document",
+     "Risk appetite statement.pdf · Board · recency 2 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"that document Alex mentioned\"?"
+   },
+   "B": {
+    "options": [
+     "owner is PMO",
+     "recency is 1",
+     "title is Risk appetite statement.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "which option you mean."
+   }
+  }
+ },
+ {
+  "item": 11,
+  "need_class": "REASONING",
+  "reference": "the budget",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Q3 Budget.xlsx · Finance · recency 0 · v3 · document",
+     "Q3 Budget - board copy.xlsx · Finance · recency 1 · v3 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the budget\"?"
+   },
+   "B": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "None of these / Enter something else"
+    ],
+    "question": "which option you mean."
+   }
+  }
+ },
+ {
+  "item": 12,
+  "need_class": "SIMPLE",
+  "reference": "the budget file",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Budget 2024.pdf",
+     "Budget 2025.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which option do you mean?"
+   },
+   "B": {
+    "options": [
+     "Budget 2024.pdf · Finance · recency 0 · document",
+     "Budget 2025.pdf · Finance · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the budget file\"?"
+   }
+  }
+ },
+ {
+  "item": 13,
+  "need_class": "SIMPLE",
+  "reference": "the attachment",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Attachment 1.pdf",
+     "Attachment 2.pdf",
+     "Attachment 3.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which option do you mean?"
+   },
+   "B": {
+    "options": [
+     "Attachment 1.pdf · recency 0 · document",
+     "Attachment 2.pdf · recency 0 · document",
+     "Attachment 3.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the attachment\"?"
+   }
+  }
+ },
+ {
+  "item": 14,
+  "need_class": "SIMPLE",
+  "reference": "which one",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Proposal.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Did you mean Proposal.pdf · recency 0 · document?"
+   },
+   "B": {
+    "options": [
+     "the one with recency 0 and title Proposal.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Is this the document you mean?"
+   }
+  }
+ },
+ {
+  "item": 15,
+  "need_class": "SIMPLE",
+  "reference": "which file",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "One.pdf",
+     "Two.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "which file do you mean?"
+   },
+   "B": {
+    "options": [
+     "One.pdf · recency 0 · document",
+     "Two.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"which file\"?"
+   }
+  }
+ },
+ {
+  "item": 16,
+  "need_class": "EXPLAIN",
+  "reference": "Alex Morgan",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Unit 0",
+     "Unit 1",
+     "Unit 2",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner do you mean?"
+   },
+   "B": {
+    "options": [
+     "Unit 0",
+     "Unit 1",
+     "Unit 2",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner matches \"Alex Morgan\"?"
+   }
+  }
+ },
+ {
+  "item": 17,
+  "need_class": "EXPLAIN",
+  "reference": "the policy version",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "recency 3",
+     "None of these / Enter something else"
+    ],
+    "question": "which recency do you mean"
+   },
+   "B": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "recency 3",
+     "None of these / Enter something else"
+    ],
+    "question": "Which recency matches \"the policy version\"?"
+   }
+  }
+ },
+ {
+  "item": 18,
+  "need_class": "EXPLAIN",
+  "reference": "record",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "North",
+     "South",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner matches \"record\"?"
+   },
+   "B": {
+    "options": [
+     "North",
+     "South",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner do you mean, North or South?"
+   }
+  }
+ },
+ {
+  "item": 19,
+  "need_class": "EXPLAIN",
+  "reference": "Jordan Lee",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Procurement",
+     "IT Support",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner matches \"Jordan Lee\"?"
+   },
+   "B": {
+    "options": [
+     "Procurement",
+     "IT Support",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner do you mean, Procurement or IT Support?"
+   }
+  }
+ },
+ {
+  "item": 20,
+  "need_class": "REASONING",
+  "reference": "that document Alex mentioned",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Risk register.xlsx · PMO · recency 0 · document",
+     "Audit findings.docx · Audit · recency 1 · document",
+     "Risk appetite statement.pdf · Board · recency 2 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"that document Alex mentioned\"?"
+   },
+   "B": {
+    "options": [
+     "PMO",
+     "Audit",
+     "Board",
+     "None of these / Enter something else"
+    ],
+    "question": "Which option do you mean?"
+   }
+  }
+ }
+]

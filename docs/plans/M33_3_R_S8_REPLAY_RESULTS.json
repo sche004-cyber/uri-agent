@@ -1,0 +1,83 @@
+{
+ "anchors_before": {
+  "ok": true,
+  "changed": [],
+  "s4_anchor_count": 8,
+  "frozen_lf_anchor_count": 24,
+  "current_rar_sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95"
+ },
+ "events": 3000,
+ "seed": 808,
+ "route_version": "m33.3-r.s6.v1|m33.3-r.s5.prompt.v3|m33.3-r.s5.need-class.v1|s5-final",
+ "qualified_routes": {
+  "EXPLAIN": [
+   "template"
+  ],
+  "REASONING": [
+   "template"
+  ],
+  "SIMPLE": [
+   "template"
+  ]
+ },
+ "fixed_routing": {
+  "SIMPLE": "template",
+  "EXPLAIN": "template",
+  "REASONING": "template"
+ },
+ "config": {
+  "half_life_days": 14.0,
+  "negative_weight": 3.0,
+  "min_evidence": 5.0,
+  "margin": 0.1,
+  "latency_penalty_per_s": 0.667
+ },
+ "exact_values": {
+  "fixed": 1.0,
+  "learned_final": 1.0,
+  "per_case_oracle": 1.0
+ },
+ "learned_final_policy": {
+  "EXPLAIN": "template",
+  "REASONING": "template",
+  "SIMPLE": "template"
+ },
+ "replay": {
+  "accepted_events": 3000,
+  "mean_reward": 1.0
+ },
+ "estimators": {
+  "ips": 1.0,
+  "snips": 1.0,
+  "abs_error_ips": 0.0,
+  "abs_error_snips": 0.0
+ },
+ "choice_counts": {
+  "EXPLAIN|template": 1279,
+  "REASONING|template": 147,
+  "SIMPLE|template": 1574
+ },
+ "guards": {
+  "off_uses_fixed": true,
+  "off_writes_nothing": true,
+  "version_bump_invalidates": true,
+  "unqualified_never_chosen": true,
+  "reset_returns_fixed": true
+ },
+ "guards_passed": true,
+ "method_validation": {
+  "label": "METHOD_VALIDATION_SYNTHETIC_NOT_ROUTE_EVIDENCE",
+  "true_value_B": 0.9,
+  "ips_estimate_B": 0.887,
+  "abs_error": 0.013,
+  "learner_chose": "B",
+  "passed": true
+ },
+ "anchors_after": {
+  "ok": true,
+  "changed": [],
+  "s4_anchor_count": 8,
+  "frozen_lf_anchor_count": 24,
+  "current_rar_sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95"
+ }
+}

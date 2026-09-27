@@ -1,0 +1,12 @@
+{
+ "battery_bytes": 59614,
+ "battery_file": "battery.json",
+ "battery_lf_sha256": "6e28cd3023a43ba8790d5999da6586fd4d81c56f704995106eec3bb62f5a7801",
+ "case_count": 60,
+ "hash_rule": "SHA-256 over UTF-8 bytes with CRLF normalized to LF",
+ "part_a_count": 36,
+ "part_b_count": 24,
+ "privacy": "synthetic-only",
+ "provenance": "Part A verbatim from fixtures/m33_3_arn/battery.json (S3 v2) L1 build cases with a PENDING contract; Part B authored for M33.3-R S5 (office-realistic synthetic facts).",
+ "schema_version": "m33.3-r.s5.l3.v1"
+}

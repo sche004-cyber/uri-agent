@@ -1,0 +1,205 @@
+{
+ "1": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3A-17",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "10": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3B-16",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "11": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3B-18",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "12": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3B-19",
+  "prompt_variant": "natural",
+  "set": "shadow"
+ },
+ "13": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3A-09",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "14": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-19",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "15": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3A-29",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "16": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3A-35",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "17": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3A-18",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "18": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-25",
+  "prompt_variant": "natural",
+  "set": "valid"
+ },
+ "19": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3A-32",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "2": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3A-18",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "20": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3B-13",
+  "prompt_variant": "allowlist",
+  "set": "valid"
+ },
+ "21": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-08",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "22": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-22",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "23": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3A-23",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "24": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3A-29",
+  "prompt_variant": "natural",
+  "set": "shadow"
+ },
+ "25": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3A-27",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "26": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3B-04",
+  "prompt_variant": "natural",
+  "set": "shadow"
+ },
+ "27": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3B-13",
+  "prompt_variant": "natural",
+  "set": "shadow"
+ },
+ "28": {
+  "A": "template",
+  "B": "capable",
+  "case_id": "L3B-17",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "29": {
+  "A": "capable",
+  "B": "template",
+  "case_id": "L3B-21",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "3": {
+  "A": "template",
+  "B": "edge",
+  "case_id": "L3B-04",
+  "prompt_variant": "natural",
+  "set": "valid"
+ },
+ "4": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3A-12",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "5": {
+  "A": "template",
+  "B": "edge",
+  "case_id": "L3A-20",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "6": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3B-05",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "7": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3B-07",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ },
+ "8": {
+  "A": "template",
+  "B": "edge",
+  "case_id": "L3B-13",
+  "prompt_variant": "natural",
+  "set": "shadow"
+ },
+ "9": {
+  "A": "edge",
+  "B": "template",
+  "case_id": "L3B-15",
+  "prompt_variant": "allowlist",
+  "set": "shadow"
+ }
+}

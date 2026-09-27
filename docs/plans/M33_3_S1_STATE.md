@@ -204,3 +204,8 @@ Parity reference (informational, not protected by this file): `uri_core/core/arn
 - `S1_IMPLEMENTATION_AUTHORIZED: YES` (same package).
 - `S1_IMPLEMENTATION_STATE: S1_CLOSED_FROZEN` (repair and requalification evidence: `docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`). This is not full M33.3 closure.
 - S2–S13 remain unauthorized. No `INT-*` event. `URI-RAR` not adopted.
+
+
+## Amendment S1-A1 (2026-09-27, M33.3-R, User-authorized)
+
+At the M33.3-R S5 touchpoint the User authorized reopening S1 for one bounded change: the RenderValidator `_ALLOW` set gains closed-class English function words and generic clarification verbs (no numbers, dates, names, extensions or domain nouns). All other S1 behavior is unchanged. S1/S2/S3 requalified (S3 82/82). Anchor re-pin `903ef9fe…` -> `4a29cc25…`. Record: `docs/plans/M33_3_R_S1_A1_VALIDATOR_AMENDMENT.md`. S1 otherwise stays closed/frozen; the amendment awaits the M33.3 independent closing audit.

@@ -1,0 +1,2845 @@
+{
+ "cases": [
+  {
+   "case_id": "L3A-01",
+   "category": "same_name_people",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "person",
+      "id": "person-1-0",
+      "is_attachment": false,
+      "owner": "Unit 0",
+      "recency_rank": 0,
+      "title": "Alex Morgan"
+     },
+     {
+      "candidate_type": "person",
+      "id": "person-1-1",
+      "is_attachment": false,
+      "owner": "Unit 1",
+      "recency_rank": 0,
+      "title": "Alex Morgan"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "Alex Morgan",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "person-1-0",
+     "person-1-1"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-001"
+  },
+  {
+   "case_id": "L3A-02",
+   "category": "same_name_people",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "person",
+      "id": "person-2-0",
+      "is_attachment": false,
+      "owner": "Unit 0",
+      "recency_rank": 0,
+      "title": "Alex Morgan"
+     },
+     {
+      "candidate_type": "person",
+      "id": "person-2-1",
+      "is_attachment": false,
+      "owner": "Unit 1",
+      "recency_rank": 0,
+      "title": "Alex Morgan"
+     },
+     {
+      "candidate_type": "person",
+      "id": "person-2-2",
+      "is_attachment": false,
+      "owner": "Unit 2",
+      "recency_rank": 0,
+      "title": "Alex Morgan"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "Alex Morgan",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "person-2-0",
+     "person-2-1",
+     "person-2-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-002"
+  },
+  {
+   "case_id": "L3A-03",
+   "category": "same_name_people",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "person",
+      "id": "person-3-0",
+      "is_attachment": false,
+      "owner": "Unit 0",
+      "recency_rank": 0,
+      "title": "Alex Morgan"
+     },
+     {
+      "candidate_type": "person",
+      "id": "person-3-1",
+      "is_attachment": false,
+      "owner": "Unit 1",
+      "recency_rank": 0,
+      "title": "Alex Morgan"
+     },
+     {
+      "candidate_type": "person",
+      "id": "person-3-2",
+      "is_attachment": false,
+      "owner": "Unit 2",
+      "recency_rank": 0,
+      "title": "Alex Morgan"
+     },
+     {
+      "candidate_type": "person",
+      "id": "person-3-3",
+      "is_attachment": false,
+      "owner": "Unit 3",
+      "recency_rank": 0,
+      "title": "Alex Morgan"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "Alex Morgan",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "person-3-0",
+     "person-3-1",
+     "person-3-2",
+     "person-3-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-003"
+  },
+  {
+   "case_id": "L3A-04",
+   "category": "similar_files",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "file-0-0",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Budget 2024.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "file-0-1",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Budget 2025.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the budget file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "file-0-0",
+     "file-0-1"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-004"
+  },
+  {
+   "case_id": "L3A-05",
+   "category": "similar_files",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "file-1-0",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Budget 2024.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "file-1-1",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Budget 2025.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "file-1-2",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Budget 2026.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the budget file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "file-1-0",
+     "file-1-1",
+     "file-1-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-005"
+  },
+  {
+   "case_id": "L3A-06",
+   "category": "similar_files",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "file-2-0",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Budget 2024-rev.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "file-2-1",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Budget 2025-rev.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "file-2-2",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Budget 2026-rev.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "file-2-3",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Budget 2027-rev.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the budget file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "file-2-0",
+     "file-2-1",
+     "file-2-2",
+     "file-2-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-006"
+  },
+  {
+   "case_id": "L3A-07",
+   "category": "temporal",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "time-0-0",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Minute 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "time-0-1",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 1,
+      "title": "Minute 2.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "latest",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "time-0-0",
+     "time-0-1"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-007"
+  },
+  {
+   "case_id": "L3A-08",
+   "category": "temporal",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "time-1-0",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Minute 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "time-1-1",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 1,
+      "title": "Minute 2.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "time-1-2",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 2,
+      "title": "Minute 3.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "earlier",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "time-1-0",
+     "time-1-1",
+     "time-1-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-008"
+  },
+  {
+   "case_id": "L3A-09",
+   "category": "temporal",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "time-2-0",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Minute 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "time-2-1",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 1,
+      "title": "Minute 2.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "time-2-2",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 2,
+      "title": "Minute 3.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "time-2-3",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 3,
+      "title": "Minute 4.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "first",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "time-2-0",
+     "time-2-1",
+     "time-2-2",
+     "time-2-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-009"
+  },
+  {
+   "case_id": "L3A-10",
+   "category": "attachments",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "attachment-0-0",
+      "is_attachment": true,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Attachment 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "attachment-0-1",
+      "is_attachment": true,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Attachment 2.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the attachment",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "attachment-0-0",
+     "attachment-0-1"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-010"
+  },
+  {
+   "case_id": "L3A-11",
+   "category": "attachments",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "attachment-1-0",
+      "is_attachment": true,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Attachment 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "attachment-1-1",
+      "is_attachment": true,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Attachment 2.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "attachment-1-2",
+      "is_attachment": true,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Attachment 3.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the attachment",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "attachment-1-0",
+     "attachment-1-1",
+     "attachment-1-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-011"
+  },
+  {
+   "case_id": "L3A-12",
+   "category": "attachments",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "attachment-2-0",
+      "is_attachment": true,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Attachment 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "attachment-2-1",
+      "is_attachment": true,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Attachment 2.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "attachment-2-2",
+      "is_attachment": true,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Attachment 3.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "attachment-2-3",
+      "is_attachment": true,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Attachment 4.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the attachment",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "attachment-2-0",
+     "attachment-2-1",
+     "attachment-2-2",
+     "attachment-2-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-012"
+  },
+  {
+   "case_id": "L3A-13",
+   "category": "emails_threads",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "email",
+      "id": "email-0-0",
+      "is_attachment": false,
+      "owner": "Sender 1",
+      "recency_rank": 0,
+      "title": "Email thread 1"
+     },
+     {
+      "candidate_type": "email",
+      "id": "email-0-1",
+      "is_attachment": false,
+      "owner": "Sender 2",
+      "recency_rank": 0,
+      "title": "Email thread 2"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the email thread",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "email-0-0",
+     "email-0-1"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-013"
+  },
+  {
+   "case_id": "L3A-14",
+   "category": "emails_threads",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "email",
+      "id": "email-1-0",
+      "is_attachment": false,
+      "owner": "Sender 1",
+      "recency_rank": 0,
+      "title": "Email thread 1"
+     },
+     {
+      "candidate_type": "email",
+      "id": "email-1-1",
+      "is_attachment": false,
+      "owner": "Sender 2",
+      "recency_rank": 0,
+      "title": "Email thread 2"
+     },
+     {
+      "candidate_type": "email",
+      "id": "email-1-2",
+      "is_attachment": false,
+      "owner": "Sender 3",
+      "recency_rank": 0,
+      "title": "Email thread 3"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the email thread",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "email-1-0",
+     "email-1-1",
+     "email-1-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-014"
+  },
+  {
+   "case_id": "L3A-15",
+   "category": "emails_threads",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "email",
+      "id": "email-2-0",
+      "is_attachment": false,
+      "owner": "Sender 1",
+      "recency_rank": 0,
+      "title": "Email thread 1"
+     },
+     {
+      "candidate_type": "email",
+      "id": "email-2-1",
+      "is_attachment": false,
+      "owner": "Sender 2",
+      "recency_rank": 0,
+      "title": "Email thread 2"
+     },
+     {
+      "candidate_type": "email",
+      "id": "email-2-2",
+      "is_attachment": false,
+      "owner": "Sender 3",
+      "recency_rank": 0,
+      "title": "Email thread 3"
+     },
+     {
+      "candidate_type": "email",
+      "id": "email-2-3",
+      "is_attachment": false,
+      "owner": "Sender 4",
+      "recency_rank": 0,
+      "title": "Email thread 4"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the email thread",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "email-2-0",
+     "email-2-1",
+     "email-2-2",
+     "email-2-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-015"
+  },
+  {
+   "case_id": "L3A-16",
+   "category": "document_versions",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "version-0-0",
+      "is_attachment": false,
+      "owner": "Office",
+      "recency_rank": 0,
+      "title": "Policy.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "version-0-1",
+      "is_attachment": false,
+      "owner": "Office",
+      "recency_rank": 1,
+      "title": "Policy.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the policy version",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "version-0-0",
+     "version-0-1"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-016"
+  },
+  {
+   "case_id": "L3A-17",
+   "category": "document_versions",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "version-1-0",
+      "is_attachment": false,
+      "owner": "Office",
+      "recency_rank": 0,
+      "title": "Policy.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "version-1-1",
+      "is_attachment": false,
+      "owner": "Office",
+      "recency_rank": 1,
+      "title": "Policy.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "version-1-2",
+      "is_attachment": false,
+      "owner": "Office",
+      "recency_rank": 2,
+      "title": "Policy.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the policy version",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "version-1-0",
+     "version-1-1",
+     "version-1-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-017"
+  },
+  {
+   "case_id": "L3A-18",
+   "category": "document_versions",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "version-2-0",
+      "is_attachment": false,
+      "owner": "Office",
+      "recency_rank": 0,
+      "title": "Policy.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "version-2-1",
+      "is_attachment": false,
+      "owner": "Office",
+      "recency_rank": 1,
+      "title": "Policy.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "version-2-2",
+      "is_attachment": false,
+      "owner": "Office",
+      "recency_rank": 2,
+      "title": "Policy.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "version-2-3",
+      "is_attachment": false,
+      "owner": "Office",
+      "recency_rank": 3,
+      "title": "Policy.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the policy version",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "version-2-0",
+     "version-2-1",
+     "version-2-2",
+     "version-2-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-018"
+  },
+  {
+   "case_id": "L3A-19",
+   "category": "zero_candidates",
+   "input": {
+    "candidates": [],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "missing report",
+    "resolution": "UNKNOWN",
+    "round_index": 1,
+    "scope": []
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-019"
+  },
+  {
+   "case_id": "L3A-20",
+   "category": "zero_candidates",
+   "input": {
+    "candidates": [],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "unknown attachment",
+    "resolution": "UNKNOWN",
+    "round_index": 1,
+    "scope": []
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-020"
+  },
+  {
+   "case_id": "L3A-21",
+   "category": "one_insufficient",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "one-CONSEQUENTIAL",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Proposal.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "CONSEQUENTIAL",
+    "reference": "which one",
+    "resolution": "RESOLVED",
+    "round_index": 1,
+    "scope": [
+     "one-CONSEQUENTIAL"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-021"
+  },
+  {
+   "case_id": "L3A-22",
+   "category": "five_candidates",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "five-0-0",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 0.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "five-0-1",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "five-0-2",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 2.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "five-0-3",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 3.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "five-0-4",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 4.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "one of five",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "five-0-0",
+     "five-0-1",
+     "five-0-2",
+     "five-0-3",
+     "five-0-4"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-023"
+  },
+  {
+   "case_id": "L3A-23",
+   "category": "five_candidates",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "five-1-0",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 0.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "five-1-1",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "five-1-2",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 2.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "five-1-3",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 3.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "five-1-4",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 4.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "one of five",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "five-1-0",
+     "five-1-1",
+     "five-1-2",
+     "five-1-3",
+     "five-1-4"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-024"
+  },
+  {
+   "case_id": "L3A-24",
+   "category": "display_overflow",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "overflow-0-0",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 0.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-0-1",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-0-2",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 2.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-0-3",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 3.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-0-4",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 4.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-0-5",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 5.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-0-6",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 6.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "one of many",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "overflow-0-0",
+     "overflow-0-1",
+     "overflow-0-2",
+     "overflow-0-3",
+     "overflow-0-4",
+     "overflow-0-5",
+     "overflow-0-6"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-025"
+  },
+  {
+   "case_id": "L3A-25",
+   "category": "display_overflow",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "overflow-1-0",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 0.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-1-1",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-1-2",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 2.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-1-3",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 3.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-1-4",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 4.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-1-5",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 5.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-1-6",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 6.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "overflow-1-7",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "File 7.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "one of many",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "overflow-1-0",
+     "overflow-1-1",
+     "overflow-1-2",
+     "overflow-1-3",
+     "overflow-1-4",
+     "overflow-1-5",
+     "overflow-1-6",
+     "overflow-1-7"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-026"
+  },
+  {
+   "case_id": "L3A-26",
+   "category": "conflicting_metadata",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "conflict-0-a",
+      "is_attachment": false,
+      "owner": "North",
+      "recency_rank": 0,
+      "title": "Record.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "conflict-0-b",
+      "is_attachment": false,
+      "owner": "South",
+      "recency_rank": 0,
+      "title": "Record.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "record",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "conflict-0-a",
+     "conflict-0-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-050"
+  },
+  {
+   "case_id": "L3A-27",
+   "category": "conflicting_metadata",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "conflict-1-a",
+      "is_attachment": false,
+      "owner": "North",
+      "recency_rank": 0,
+      "title": "Record.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "conflict-1-b",
+      "is_attachment": false,
+      "owner": "South",
+      "recency_rank": 0,
+      "title": "Record.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "record",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "conflict-1-a",
+     "conflict-1-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-051"
+  },
+  {
+   "case_id": "L3A-28",
+   "category": "exactly_two",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "two-0-a",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "First.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "two-0-b",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Second.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "which file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "two-0-a",
+     "two-0-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-052"
+  },
+  {
+   "case_id": "L3A-29",
+   "category": "exactly_two",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "two-1-a",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "First.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "two-1-b",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Second.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "which file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "two-1-a",
+     "two-1-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-053"
+  },
+  {
+   "case_id": "L3A-30",
+   "category": "negation_contrast",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "contrast-0-excluded",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Avoid 0.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "contrast-0-a",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "One.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "contrast-0-b",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Two.pdf"
+     }
+    ],
+    "excluded": [
+     "contrast-0-excluded"
+    ],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the other file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "contrast-0-a",
+     "contrast-0-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-054"
+  },
+  {
+   "case_id": "L3A-31",
+   "category": "negation_contrast",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "contrast-1-excluded",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Avoid 1.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "contrast-1-a",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "One.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "contrast-1-b",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Two.pdf"
+     }
+    ],
+    "excluded": [
+     "contrast-1-excluded"
+    ],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the other file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "contrast-1-a",
+     "contrast-1-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-055"
+  },
+  {
+   "case_id": "L3A-32",
+   "category": "negation_contrast",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "contrast-2-excluded",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Avoid 2.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "contrast-2-a",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "One.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "contrast-2-b",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Two.pdf"
+     }
+    ],
+    "excluded": [
+     "contrast-2-excluded"
+    ],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the other file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "contrast-2-a",
+     "contrast-2-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-056"
+  },
+  {
+   "case_id": "L3A-33",
+   "category": "edge_disabled",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "edge-0-a",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "One.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "edge-0-b",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Two.pdf"
+     }
+    ],
+    "edge_state": "OFF",
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "which file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "edge-0-a",
+     "edge-0-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-057"
+  },
+  {
+   "case_id": "L3A-34",
+   "category": "edge_disabled",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "edge-1-a",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "One.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "edge-1-b",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Two.pdf"
+     }
+    ],
+    "edge_state": "OFF",
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "which file",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "edge-1-a",
+     "edge-1-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-058"
+  },
+  {
+   "case_id": "L3A-35",
+   "category": "generator_unavailable",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "generator-0-a",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "One.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "generator-0-b",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Two.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "which file",
+    "renderer_availability": "UNAVAILABLE",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "generator-0-a",
+     "generator-0-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-059"
+  },
+  {
+   "case_id": "L3A-36",
+   "category": "generator_unavailable",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "generator-1-a",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "One.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "generator-1-b",
+      "is_attachment": false,
+      "owner": null,
+      "recency_rank": 0,
+      "title": "Two.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "which file",
+    "renderer_availability": "TIMEOUT",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "generator-1-a",
+     "generator-1-b"
+    ]
+   },
+   "layer": "L3",
+   "part": "A",
+   "source_case_id": "ARB-060"
+  },
+  {
+   "case_id": "L3B-01",
+   "category": "document_versions",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "doc-b1",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Q3 Budget.xlsx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "doc-b2",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 1,
+      "title": "Q3 Budget (draft).xlsx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "doc-b3",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 2,
+      "title": "Q3 Budget - board copy.xlsx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "doc-b1": [
+      {
+       "key": "modified",
+       "source": "file_store:doc-b1",
+       "value": "Sep 24"
+      },
+      {
+       "key": "version",
+       "source": "file_store:doc-b1",
+       "value": "v3"
+      }
+     ],
+     "doc-b2": [
+      {
+       "key": "modified",
+       "source": "file_store:doc-b2",
+       "value": "Sep 12"
+      },
+      {
+       "key": "version",
+       "source": "file_store:doc-b2",
+       "value": "v2"
+      }
+     ],
+     "doc-b3": [
+      {
+       "key": "modified",
+       "source": "file_store:doc-b3",
+       "value": "Sep 20"
+      },
+      {
+       "key": "version",
+       "source": "file_store:doc-b3",
+       "value": "v3"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "the budget",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "doc-b1",
+     "doc-b2",
+     "doc-b3"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Three versions; discriminators are version and modified date."
+  },
+  {
+   "case_id": "L3B-02",
+   "category": "document_versions",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "doc-p1",
+      "is_attachment": false,
+      "owner": "HR",
+      "recency_rank": 1,
+      "title": "Leave Policy 2025.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "doc-p2",
+      "is_attachment": false,
+      "owner": "HR",
+      "recency_rank": 0,
+      "title": "Leave Policy 2026.docx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "doc-p1": [
+      {
+       "key": "modified",
+       "source": "file_store:doc-p1",
+       "value": "Jan 8"
+      }
+     ],
+     "doc-p2": [
+      {
+       "key": "modified",
+       "source": "file_store:doc-p2",
+       "value": "Sep 2"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "the policy",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "doc-p1",
+     "doc-p2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Year in title plus modified date."
+  },
+  {
+   "case_id": "L3B-03",
+   "category": "emails_threads",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "email",
+      "id": "em-1",
+      "is_attachment": false,
+      "owner": "",
+      "recency_rank": 0,
+      "title": "Budget approval"
+     },
+     {
+      "candidate_type": "email",
+      "id": "em-2",
+      "is_attachment": false,
+      "owner": "",
+      "recency_rank": 1,
+      "title": "Invoice INV-2231 overdue"
+     },
+     {
+      "candidate_type": "email",
+      "id": "em-3",
+      "is_attachment": false,
+      "owner": "",
+      "recency_rank": 2,
+      "title": "Travel claims deadline"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "em-1": [
+      {
+       "key": "sender",
+       "source": "gmail:em-1",
+       "value": "Priya Nair"
+      },
+      {
+       "key": "modified",
+       "source": "gmail:em-1",
+       "value": "Sep 25"
+      }
+     ],
+     "em-2": [
+      {
+       "key": "sender",
+       "source": "gmail:em-2",
+       "value": "Accounts Payable"
+      },
+      {
+       "key": "modified",
+       "source": "gmail:em-2",
+       "value": "Sep 23"
+      }
+     ],
+     "em-3": [
+      {
+       "key": "sender",
+       "source": "gmail:em-3",
+       "value": "Priya Nair"
+      },
+      {
+       "key": "modified",
+       "source": "gmail:em-3",
+       "value": "Sep 19"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "the email from finance",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "em-1",
+     "em-2",
+     "em-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Sender repeats; subject and date discriminate."
+  },
+  {
+   "case_id": "L3B-04",
+   "category": "emails_threads",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "email",
+      "id": "th-1",
+      "is_attachment": false,
+      "owner": "",
+      "recency_rank": 0,
+      "title": "Re: Venue booking"
+     },
+     {
+      "candidate_type": "email",
+      "id": "th-2",
+      "is_attachment": false,
+      "owner": "",
+      "recency_rank": 1,
+      "title": "Re: Venue booking"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "th-1": [
+      {
+       "key": "sender",
+       "source": "gmail:th-1",
+       "value": "Dana Whitfield"
+      },
+      {
+       "key": "modified",
+       "source": "gmail:th-1",
+       "value": "Sep 26"
+      },
+      {
+       "key": "thread_subject",
+       "source": "gmail:th-1",
+       "value": "Venue booking - October offsite"
+      }
+     ],
+     "th-2": [
+      {
+       "key": "sender",
+       "source": "gmail:th-2",
+       "value": "Dana Whitfield"
+      },
+      {
+       "key": "modified",
+       "source": "gmail:th-2",
+       "value": "Aug 30"
+      },
+      {
+       "key": "thread_subject",
+       "source": "gmail:th-2",
+       "value": "Venue booking - September workshop"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "that thread with Dana",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "th-1",
+     "th-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Identical subject lines; thread subject and date discriminate."
+  },
+  {
+   "case_id": "L3B-05",
+   "category": "attachments",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "att-1",
+      "is_attachment": true,
+      "owner": "",
+      "recency_rank": 0,
+      "title": "signed_contract.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "att-2",
+      "is_attachment": true,
+      "owner": "",
+      "recency_rank": 0,
+      "title": "contract_redline.docx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "att-1": [
+      {
+       "key": "locator",
+       "source": "gmail:em-9",
+       "value": "attached to Contract renewal email"
+      }
+     ],
+     "att-2": [
+      {
+       "key": "locator",
+       "source": "gmail:em-9",
+       "value": "attached to Contract renewal email"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "the attachment",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "att-1",
+     "att-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Two attachments on one email."
+  },
+  {
+   "case_id": "L3B-06",
+   "category": "attachments",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "att-3",
+      "is_attachment": true,
+      "owner": "",
+      "recency_rank": 0,
+      "title": "headcount.xlsx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "att-4",
+      "is_attachment": true,
+      "owner": "",
+      "recency_rank": 1,
+      "title": "headcount_old.xlsx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "att-3": [
+      {
+       "key": "modified",
+       "source": "gmail:em-4",
+       "value": "Sep 21"
+      }
+     ],
+     "att-4": [
+      {
+       "key": "modified",
+       "source": "gmail:em-5",
+       "value": "Jun 3"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "the spreadsheet you sent",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "att-3",
+     "att-4"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": ""
+  },
+  {
+   "case_id": "L3B-07",
+   "category": "same_name_people",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "person",
+      "id": "per-1",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Sam Patel"
+     },
+     {
+      "candidate_type": "person",
+      "id": "per-2",
+      "is_attachment": false,
+      "owner": "Legal",
+      "recency_rank": 0,
+      "title": "Sam Okoro"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "Sam",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "per-1",
+     "per-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Distinct surnames, different teams."
+  },
+  {
+   "case_id": "L3B-08",
+   "category": "same_name_people",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "person",
+      "id": "per-3",
+      "is_attachment": false,
+      "owner": "Procurement",
+      "recency_rank": 0,
+      "title": "Jordan Lee"
+     },
+     {
+      "candidate_type": "person",
+      "id": "per-4",
+      "is_attachment": false,
+      "owner": "IT Support",
+      "recency_rank": 0,
+      "title": "Jordan Lee"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "Jordan Lee",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "per-3",
+     "per-4"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Identical names; team discriminates."
+  },
+  {
+   "case_id": "L3B-09",
+   "category": "temporal",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "rep-1",
+      "is_attachment": false,
+      "owner": "",
+      "recency_rank": 0,
+      "title": "Monthly Sales Report - August.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "rep-2",
+      "is_attachment": false,
+      "owner": "",
+      "recency_rank": 1,
+      "title": "Monthly Sales Report - July.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "rep-1": [
+      {
+       "key": "modified",
+       "source": "file_store:rep-1",
+       "value": "Sep 3"
+      }
+     ],
+     "rep-2": [
+      {
+       "key": "modified",
+       "source": "file_store:rep-2",
+       "value": "Aug 4"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "the latest report",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "rep-1",
+     "rep-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": ""
+  },
+  {
+   "case_id": "L3B-10",
+   "category": "temporal",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "min-1",
+      "is_attachment": false,
+      "owner": "Secretariat",
+      "recency_rank": 0,
+      "title": "Board minutes.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "min-2",
+      "is_attachment": false,
+      "owner": "PMO",
+      "recency_rank": 0,
+      "title": "Project steering minutes.docx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "min-1": [
+      {
+       "key": "modified",
+       "source": "file_store:min-1",
+       "value": "Sep 26"
+      }
+     ],
+     "min-2": [
+      {
+       "key": "modified",
+       "source": "file_store:min-2",
+       "value": "Sep 26"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "yesterday's minutes",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "min-1",
+     "min-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": ""
+  },
+  {
+   "case_id": "L3B-11",
+   "category": "similar_files",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "chk-1",
+      "is_attachment": false,
+      "owner": "HR",
+      "recency_rank": 0,
+      "title": "Onboarding checklist.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "chk-2",
+      "is_attachment": false,
+      "owner": "HR",
+      "recency_rank": 0,
+      "title": "Onboarding checklist - contractors.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "chk-3",
+      "is_attachment": false,
+      "owner": "IT Support",
+      "recency_rank": 0,
+      "title": "IT onboarding checklist.xlsx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the onboarding checklist",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "chk-1",
+     "chk-2",
+     "chk-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": ""
+  },
+  {
+   "case_id": "L3B-12",
+   "category": "similar_files",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "image",
+      "id": "img-1",
+      "is_attachment": false,
+      "owner": "Design",
+      "recency_rank": 0,
+      "title": "uri_logo.png"
+     },
+     {
+      "candidate_type": "image",
+      "id": "img-2",
+      "is_attachment": false,
+      "owner": "Design",
+      "recency_rank": 0,
+      "title": "uri_logo_dark.png"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the logo",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "img-1",
+     "img-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": ""
+  },
+  {
+   "case_id": "L3B-13",
+   "category": "negation_contrast",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "inv-1",
+      "is_attachment": false,
+      "owner": "Vendor A",
+      "recency_rank": 0,
+      "title": "Invoice INV-2231.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "inv-2",
+      "is_attachment": false,
+      "owner": "Vendor B",
+      "recency_rank": 0,
+      "title": "Invoice INV-2240.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "inv-3",
+      "is_attachment": false,
+      "owner": "Vendor C",
+      "recency_rank": 0,
+      "title": "Invoice INV-2252.pdf"
+     }
+    ],
+    "excluded": [
+     "inv-1"
+    ],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the other invoice",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "inv-2",
+     "inv-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "The first invoice is excluded by contrast and must not appear."
+  },
+  {
+   "case_id": "L3B-14",
+   "category": "negation_contrast",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "doc-b1",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Q3 Budget.xlsx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "doc-b2",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Q3 Budget (draft).xlsx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "doc-b3",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Q3 Budget - board copy.xlsx"
+     }
+    ],
+    "excluded": [
+     "doc-b2"
+    ],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "not the draft, the other budget",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "doc-b1",
+     "doc-b3"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": ""
+  },
+  {
+   "case_id": "L3B-15",
+   "category": "display_overflow",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "prop-0",
+      "is_attachment": false,
+      "owner": "Procurement",
+      "recency_rank": 0,
+      "title": "Vendor proposal - Acme.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "prop-1",
+      "is_attachment": false,
+      "owner": "Procurement",
+      "recency_rank": 1,
+      "title": "Vendor proposal - Birch.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "prop-2",
+      "is_attachment": false,
+      "owner": "R&D",
+      "recency_rank": 2,
+      "title": "Research proposal.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "prop-3",
+      "is_attachment": false,
+      "owner": "R&D",
+      "recency_rank": 3,
+      "title": "Grant proposal draft.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "prop-4",
+      "is_attachment": false,
+      "owner": "Facilities",
+      "recency_rank": 4,
+      "title": "Office move proposal.pptx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "prop-5",
+      "is_attachment": false,
+      "owner": "HR",
+      "recency_rank": 5,
+      "title": "Training proposal.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "prop-6",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 6,
+      "title": "Budget proposal FY27.xlsx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the proposal",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "prop-0",
+     "prop-1",
+     "prop-2",
+     "prop-3",
+     "prop-4",
+     "prop-5",
+     "prop-6"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Seven candidates; five shown plus overflow."
+  },
+  {
+   "case_id": "L3B-16",
+   "category": "exactly_two",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "ag-1",
+      "is_attachment": false,
+      "owner": "PMO",
+      "recency_rank": 0,
+      "title": "Team meeting agenda.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "ag-2",
+      "is_attachment": false,
+      "owner": "Secretariat",
+      "recency_rank": 1,
+      "title": "AGM agenda.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the agenda",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "ag-1",
+     "ag-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": ""
+  },
+  {
+   "case_id": "L3B-17",
+   "category": "conflicting_metadata",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "rp-1",
+      "is_attachment": false,
+      "owner": "Maria Chen",
+      "recency_rank": 0,
+      "title": "Quarterly report.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "rp-2",
+      "is_attachment": false,
+      "owner": "Maria Santos",
+      "recency_rank": 1,
+      "title": "Quarterly report.docx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "rp-1": [
+      {
+       "key": "modified",
+       "source": "file_store:rp-1",
+       "value": "Sep 22"
+      }
+     ],
+     "rp-2": [
+      {
+       "key": "modified",
+       "source": "file_store:rp-2",
+       "value": "Sep 22"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "Maria's report",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "rp-1",
+     "rp-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Same title and date; owner discriminates."
+  },
+  {
+   "case_id": "L3B-18",
+   "category": "five_candidates",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "form-0",
+      "is_attachment": false,
+      "owner": "HR",
+      "recency_rank": 0,
+      "title": "Leave request form.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "form-1",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 1,
+      "title": "Expense claim form.xlsx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "form-2",
+      "is_attachment": false,
+      "owner": "IT Support",
+      "recency_rank": 2,
+      "title": "Access request form.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "form-3",
+      "is_attachment": false,
+      "owner": "Procurement",
+      "recency_rank": 3,
+      "title": "Purchase request form.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "form-4",
+      "is_attachment": false,
+      "owner": "PMO",
+      "recency_rank": 4,
+      "title": "Feedback form.docx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the form",
+    "resolution": "AMBIGUOUS",
+    "round_index": 1,
+    "scope": [
+     "form-0",
+     "form-1",
+     "form-2",
+     "form-3",
+     "form-4"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": ""
+  },
+  {
+   "case_id": "L3B-19",
+   "category": "reasoning_escalation",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "ct-1",
+      "is_attachment": false,
+      "owner": "Legal",
+      "recency_rank": 0,
+      "title": "Supplier contract - Acme.pdf"
+     },
+     {
+      "candidate_type": "document",
+      "id": "ct-2",
+      "is_attachment": false,
+      "owner": "Legal",
+      "recency_rank": 1,
+      "title": "Supplier contract - Birch.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the contract",
+    "resolution": "AMBIGUOUS",
+    "round_index": 3,
+    "scope": [
+     "ct-1",
+     "ct-2"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Third round without resolution; R1.8 hand-off class."
+  },
+  {
+   "case_id": "L3B-20",
+   "category": "reasoning_escalation",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "dx-1",
+      "is_attachment": false,
+      "owner": "PMO",
+      "recency_rank": 0,
+      "title": "Risk register.xlsx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "dx-2",
+      "is_attachment": false,
+      "owner": "Audit",
+      "recency_rank": 1,
+      "title": "Audit findings.docx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "dx-3",
+      "is_attachment": false,
+      "owner": "Board",
+      "recency_rank": 2,
+      "title": "Risk appetite statement.pdf"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "that document Alex mentioned",
+    "resolution": "AMBIGUOUS",
+    "round_index": 3,
+    "scope": [
+     "dx-1",
+     "dx-2",
+     "dx-3"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Third round without resolution; R1.8 hand-off class."
+  },
+  {
+   "case_id": "L3B-21",
+   "category": "reasoning_escalation",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "doc-b1",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Q3 Budget.xlsx"
+     },
+     {
+      "candidate_type": "document",
+      "id": "doc-b3",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 1,
+      "title": "Q3 Budget - board copy.xlsx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "doc-b1": [
+      {
+       "key": "version",
+       "source": "file_store:doc-b1",
+       "value": "v3"
+      }
+     ],
+     "doc-b3": [
+      {
+       "key": "version",
+       "source": "file_store:doc-b3",
+       "value": "v3"
+      }
+     ]
+    },
+    "impact": "RECOVERABLE",
+    "reference": "the budget",
+    "resolution": "AMBIGUOUS",
+    "round_index": 3,
+    "scope": [
+     "doc-b1",
+     "doc-b3"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Third round without resolution; R1.8 hand-off class."
+  },
+  {
+   "case_id": "L3B-22",
+   "category": "zero_candidates",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "unrelated-1",
+      "is_attachment": false,
+      "owner": "",
+      "recency_rank": 0,
+      "title": "Weekly roster.xlsx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "RECOVERABLE",
+    "reference": "the Henderson file",
+    "resolution": "UNKNOWN",
+    "round_index": 1,
+    "scope": []
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Nothing matches."
+  },
+  {
+   "case_id": "L3B-23",
+   "category": "one_insufficient",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "doc-b3",
+      "is_attachment": false,
+      "owner": "Finance",
+      "recency_rank": 0,
+      "title": "Q3 Budget - board copy.xlsx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {},
+    "impact": "CONSEQUENTIAL",
+    "reference": "send it to the board",
+    "resolution": "RESOLVED",
+    "round_index": 1,
+    "scope": [
+     "doc-b3"
+    ]
+   },
+   "layer": "L3",
+   "part": "B",
+   "semantic_notes": "Single candidate but consequential action; confirm."
+  },
+  {
+   "case_id": "L3B-24",
+   "category": "one_insufficient",
+   "input": {
+    "candidates": [
+     {
+      "candidate_type": "document",
+      "id": "ros-1",
+      "is_attachment": false,
+      "owner": "Operations",
+      "recency_rank": 0,
+      "title": "Weekly roster - 2025.xlsx"
+     }
+    ],
+    "excluded": [],
+    "extra_facts": {
+     "ros-1": [
+      {
+       "key": "modified",
+       "source": "file_store:ros-1",
+       "value": "Dec 19"
+      }
+     ]
+    },
+    "impact": "CONSEQUENTIAL",
+    "reference": "delete the old roster",
+    "resolution": "RESOLVED",
+    "round_index": 1,
+    "scope": [
+     "ros-1"
+    ]
+   },
+   "layer": "L3",
+   "part": "B"
+  }
+ ],
+ "schema_version": "m33.3-r.s5.l3.v1"
+}

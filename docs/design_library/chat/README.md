@@ -65,5 +65,7 @@ page still includes a contact/conversation list down the left side.
 
 ## Decisions
 
-None yet. Record a decision under `../approved/` or `../rejected/` once a
+- 2026-09-27 (M33.3-R S12): inline reference-clarification card, fixture-backed only — `../approved/clarification_card_2026-09-27.md`. Not a Chat workspace layout decision.
+
+No Chat workspace layout decision yet. Record one under `../approved/` or `../rejected/` once a
 concrete Chat workspace design is chosen or turned down.

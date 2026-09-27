@@ -106,10 +106,28 @@ class RuntimeInventory:
     models: Tuple[str, ...] = ()
 
 
+LEASE_OWNER_URI = "URI"            # URI created this lease and may release it
+LEASE_OWNER_EXTERNAL = "EXTERNAL"  # loaded by the user or another application
+LEASE_OWNER_UNKNOWN = "UNKNOWN"    # provenance not established; never released by URI
+LEASE_OWNER_KINDS = frozenset({LEASE_OWNER_URI, LEASE_OWNER_EXTERNAL, LEASE_OWNER_UNKNOWN})
+
+
 @dataclass(frozen=True)
 class RuntimeLease:
     lease_id: str
     runtime_id: str
+    # M33.3-R S10 additive owner provenance (Plan B R1.6: "URI owns its leases,
+    # not the whole runtime"). Defaults keep the original two-field constructor.
+    owner_kind: str = LEASE_OWNER_UNKNOWN
+    owner_id: Optional[str] = None
+    model_id: Optional[str] = None
+    provider_instance_id: Optional[str] = None
+    acquired_at: Optional[str] = None
+    placement: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        if self.owner_kind not in LEASE_OWNER_KINDS:
+            raise ValueError("unknown lease owner kind")
 
 
 RuntimeStatus = EdgeHealth

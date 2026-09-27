@@ -1,0 +1,740 @@
+[
+ {
+  "item": 1,
+  "need_class": "EXPLAIN",
+  "reference": "the policy version",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "None of these / Enter something else"
+    ],
+    "question": "which recency you mean"
+   },
+   "B": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "None of these / Enter something else"
+    ],
+    "question": "Which recency matches \"the policy version\"?"
+   }
+  }
+ },
+ {
+  "item": 2,
+  "need_class": "EXPLAIN",
+  "reference": "the policy version",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "recency 3",
+     "None of these / Enter something else"
+    ],
+    "question": "Which recency do you mean?"
+   },
+   "B": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "recency 3",
+     "None of these / Enter something else"
+    ],
+    "question": "Which recency matches \"the policy version\"?"
+   }
+  }
+ },
+ {
+  "item": 3,
+  "need_class": "EXPLAIN",
+  "reference": "that thread with Dana",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "None of these / Enter something else"
+    ],
+    "question": "Which recency matches \"that thread with Dana\"?"
+   },
+   "B": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "None of these / Enter something else"
+    ],
+    "question": "Which recency do you mean?"
+   }
+  }
+ },
+ {
+  "item": 4,
+  "need_class": "SIMPLE",
+  "reference": "the attachment",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "attachment title is attachment 1.pdf",
+     "attachment title is attachment 2.pdf",
+     "attachment title is attachment 3.pdf",
+     "attachment title is attachment 4.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "which option you mean."
+   },
+   "B": {
+    "options": [
+     "Attachment 1.pdf · recency 0 · document",
+     "Attachment 2.pdf · recency 0 · document",
+     "Attachment 3.pdf · recency 0 · document",
+     "Attachment 4.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the attachment\"?"
+   }
+  }
+ },
+ {
+  "item": 5,
+  "need_class": "SIMPLE",
+  "reference": "unknown attachment",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "None of these / Enter something else"
+    ],
+    "question": "I could not find what \"unknown attachment\" refers to. What should I use?"
+   },
+   "B": {
+    "options": [
+     "None of these / Enter something else"
+    ],
+    "question": "What is the title of the document?"
+   }
+  }
+ },
+ {
+  "item": 6,
+  "need_class": "SIMPLE",
+  "reference": "the attachment",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "signed_contract.pdf",
+     "contract_redline.docx",
+     "None of these / Enter something else"
+    ],
+    "question": "which option you mean."
+   },
+   "B": {
+    "options": [
+     "signed_contract.pdf · recency 0 · attached to Contract renewal email · document",
+     "contract_redline.docx · recency 0 · attached to Contract renewal email · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the attachment\"?"
+   }
+  }
+ },
+ {
+  "item": 7,
+  "need_class": "SIMPLE",
+  "reference": "Sam",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "Finance owner",
+     "Legal owner",
+     "None of these / Enter something else"
+    ],
+    "question": "Which option you mean."
+   },
+   "B": {
+    "options": [
+     "Sam Patel · Finance · recency 0 · person",
+     "Sam Okoro · Legal · recency 0 · person",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"Sam\"?"
+   }
+  }
+ },
+ {
+  "item": 8,
+  "need_class": "EXPLAIN",
+  "reference": "the other invoice",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "Invoice INV-2240.pdf · Vendor B · recency 0 · document",
+     "Invoice INV-2252.pdf · Vendor C · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the other invoice\"?"
+   },
+   "B": {
+    "options": [
+     "Vendor B",
+     "Vendor C",
+     "None of these / Enter something else"
+    ],
+    "question": "Which invoice should you choose?"
+   }
+  }
+ },
+ {
+  "item": 9,
+  "need_class": "EXPLAIN",
+  "reference": "the proposal",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "Procurement",
+     "R&D",
+     "Facilities",
+     "HR",
+     "Finance",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner does the proposal refer to?"
+   },
+   "B": {
+    "options": [
+     "Procurement",
+     "R&D",
+     "Facilities",
+     "HR",
+     "Finance",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner matches \"the proposal\"?"
+   }
+  }
+ },
+ {
+  "item": 10,
+  "need_class": "EXPLAIN",
+  "reference": "the agenda",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "owner is PMO and title is Team meeting agenda.docx",
+     "owner is Secretariat and title is AGM agenda.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "which document should you use for the meeting?"
+   },
+   "B": {
+    "options": [
+     "Team meeting agenda.docx · PMO · recency 0 · document",
+     "AGM agenda.pdf · Secretariat · recency 1 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the agenda\"?"
+   }
+  }
+ },
+ {
+  "item": 11,
+  "need_class": "EXPLAIN",
+  "reference": "the form",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "HR owner",
+     "Finance owner",
+     "IT Support owner",
+     "Procurement owner",
+     "PMO owner",
+     "None of these / Enter something else"
+    ],
+    "question": "which option you mean."
+   },
+   "B": {
+    "options": [
+     "Leave request form.docx · HR · recency 0 · document",
+     "Expense claim form.xlsx · Finance · recency 1 · document",
+     "Access request form.pdf · IT Support · recency 2 · document",
+     "Purchase request form.docx · Procurement · recency 3 · document",
+     "Feedback form.docx · PMO · recency 4 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the form\"?"
+   }
+  }
+ },
+ {
+  "item": 12,
+  "need_class": "REASONING",
+  "reference": "the contract",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "Document with recency 0",
+     "Document with recency 1",
+     "None of these / Enter something else"
+    ],
+    "question": "Which document should you select?"
+   },
+   "B": {
+    "options": [
+     "Supplier contract - Acme.pdf · Legal · recency 0 · document",
+     "Supplier contract - Birch.pdf · Legal · recency 1 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the contract\"?"
+   }
+  }
+ },
+ {
+  "item": 13,
+  "need_class": "SIMPLE",
+  "reference": "first",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Minute 1.pdf · recency 0 · document",
+     "Minute 2.pdf · recency 1 · document",
+     "Minute 3.pdf · recency 2 · document",
+     "Minute 4.pdf · recency 3 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"first\"?"
+   },
+   "B": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "recency 3",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean?"
+   }
+  }
+ },
+ {
+  "item": 14,
+  "need_class": "SIMPLE",
+  "reference": "missing report",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "None of these / Enter something else"
+    ],
+    "question": "What do you mean by missing report?"
+   },
+   "B": {
+    "options": [
+     "None of these / Enter something else"
+    ],
+    "question": "I could not find what \"missing report\" refers to. What should I use?"
+   }
+  }
+ },
+ {
+  "item": 15,
+  "need_class": "SIMPLE",
+  "reference": "which file",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "First.pdf · recency 0 · document",
+     "Second.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"which file\"?"
+   },
+   "B": {
+    "options": [
+     "First.pdf",
+     "Second.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which file do you mean?"
+   }
+  }
+ },
+ {
+  "item": 16,
+  "need_class": "SIMPLE",
+  "reference": "which file",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "One.pdf · recency 0 · document",
+     "Two.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"which file\"?"
+   },
+   "B": {
+    "options": [
+     "One.pdf",
+     "Two.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which file do you mean?"
+   }
+  }
+ },
+ {
+  "item": 17,
+  "need_class": "EXPLAIN",
+  "reference": "the policy version",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "recency 3",
+     "None of these / Enter something else"
+    ],
+    "question": "Which recency matches \"the policy version\"?"
+   },
+   "B": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "recency 3",
+     "None of these / Enter something else"
+    ],
+    "question": "which recency do you mean"
+   }
+  }
+ },
+ {
+  "item": 18,
+  "need_class": "EXPLAIN",
+  "reference": "one of many",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "File 0.pdf",
+     "File 1.pdf",
+     "File 2.pdf",
+     "File 3.pdf",
+     "File 4.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which file do you mean?"
+   },
+   "B": {
+    "options": [
+     "File 0.pdf · recency 0 · document",
+     "File 1.pdf · recency 0 · document",
+     "File 2.pdf · recency 0 · document",
+     "File 3.pdf · recency 0 · document",
+     "File 4.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"one of many\"? There are 3 other matches; you can enter one."
+   }
+  }
+ },
+ {
+  "item": 19,
+  "need_class": "EXPLAIN",
+  "reference": "the other file",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "One.pdf · recency 0 · document",
+     "Two.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the other file\"?"
+   },
+   "B": {
+    "options": [
+     "One.pdf",
+     "Two.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which file do you mean?"
+   }
+  }
+ },
+ {
+  "item": 20,
+  "need_class": "EXPLAIN",
+  "reference": "the other invoice",
+  "set": "valid",
+  "variants": {
+   "A": {
+    "options": [
+     "Invoice INV-2240.pdf · Vendor B · recency 0 · document",
+     "Invoice INV-2252.pdf · Vendor C · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the other invoice\"?"
+   },
+   "B": {
+    "options": [
+     "owner Vendor B",
+     "owner Vendor C",
+     "None of these / Enter something else"
+    ],
+    "question": "Which invoice do you mean?"
+   }
+  }
+ },
+ {
+  "item": 21,
+  "need_class": "SIMPLE",
+  "reference": "earlier",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "recency 2",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item matches recency 0, recency 1, or recency 2?"
+   },
+   "B": {
+    "options": [
+     "Minute 1.pdf · recency 0 · document",
+     "Minute 2.pdf · recency 1 · document",
+     "Minute 3.pdf · recency 2 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"earlier\"?"
+   }
+  }
+ },
+ {
+  "item": 22,
+  "need_class": "SIMPLE",
+  "reference": "one of five",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "File 0.pdf",
+     "File 1.pdf",
+     "File 2.pdf",
+     "File 3.pdf",
+     "File 4.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which option do you mean?"
+   },
+   "B": {
+    "options": [
+     "File 0.pdf · recency 0 · document",
+     "File 1.pdf · recency 0 · document",
+     "File 2.pdf · recency 0 · document",
+     "File 3.pdf · recency 0 · document",
+     "File 4.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"one of five\"?"
+   }
+  }
+ },
+ {
+  "item": 23,
+  "need_class": "SIMPLE",
+  "reference": "one of five",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "File 0.pdf · recency 0 · document",
+     "File 1.pdf · recency 0 · document",
+     "File 2.pdf · recency 0 · document",
+     "File 3.pdf · recency 0 · document",
+     "File 4.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"one of five\"?"
+   },
+   "B": {
+    "options": [
+     "File 0.pdf",
+     "File 1.pdf",
+     "File 2.pdf",
+     "File 3.pdf",
+     "File 4.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Which option do you mean?"
+   }
+  }
+ },
+ {
+  "item": 24,
+  "need_class": "SIMPLE",
+  "reference": "which file",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "First.pdf · recency 0 · document",
+     "Second.pdf · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"which file\"?"
+   },
+   "B": {
+    "options": [
+     "First.pdf",
+     "Second.pdf",
+     "None of these / Enter something else"
+    ],
+    "question": "Do you mean First.pdf or Second.pdf?"
+   }
+  }
+ },
+ {
+  "item": 25,
+  "need_class": "EXPLAIN",
+  "reference": "record",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "North",
+     "South",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner do you mean, North or South?"
+   },
+   "B": {
+    "options": [
+     "North",
+     "South",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner matches \"record\"?"
+   }
+  }
+ },
+ {
+  "item": 26,
+  "need_class": "EXPLAIN",
+  "reference": "that thread with Dana",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "None of these / Enter something else"
+    ],
+    "question": "Which recency matches \"that thread with Dana\"?"
+   },
+   "B": {
+    "options": [
+     "recency 0",
+     "recency 1",
+     "None of these / Enter something else"
+    ],
+    "question": "Which recency do you mean: that thread with Dana at recency 0 or that thread with Dana at recency 1?"
+   }
+  }
+ },
+ {
+  "item": 27,
+  "need_class": "EXPLAIN",
+  "reference": "the other invoice",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "from Vendor B",
+     "from Vendor C",
+     "None of these / Enter something else"
+    ],
+    "question": "Which invoice do you mean?"
+   },
+   "B": {
+    "options": [
+     "Invoice INV-2240.pdf · Vendor B · recency 0 · document",
+     "Invoice INV-2252.pdf · Vendor C · recency 0 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the other invoice\"?"
+   }
+  }
+ },
+ {
+  "item": 28,
+  "need_class": "EXPLAIN",
+  "reference": "Maria's report",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "Maria Chen",
+     "Maria Santos",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner matches \"Maria's report\"?"
+   },
+   "B": {
+    "options": [
+     "Maria Chen",
+     "Maria Santos",
+     "None of these / Enter something else"
+    ],
+    "question": "Which owner do you mean, Maria Chen or Maria Santos?"
+   }
+  }
+ },
+ {
+  "item": 29,
+  "need_class": "REASONING",
+  "reference": "the budget",
+  "set": "shadow",
+  "variants": {
+   "A": {
+    "options": [
+     "Finance owner with recency 0 and title Q3 Budget.xlsx",
+     "Finance owner with recency 1 and title Q3 Budget - board copy.xlsx",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item matches the budget?"
+   },
+   "B": {
+    "options": [
+     "Q3 Budget.xlsx · Finance · recency 0 · v3 · document",
+     "Q3 Budget - board copy.xlsx · Finance · recency 1 · v3 · document",
+     "None of these / Enter something else"
+    ],
+    "question": "Which item do you mean by \"the budget\"?"
+   }
+  }
+ }
+]
