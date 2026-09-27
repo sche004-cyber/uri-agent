@@ -147,12 +147,33 @@ def _anchor(snapshot: SourceSnapshot, envelope: EvidenceEnvelope) -> tuple[RARDe
                                    ("current_attachment", unique_attachment)) if value)
 
 
+def _scope_to_reference(anchor: RARDeterministicAnchor | None, origin: str, envelope: EvidenceEnvelope,
+                        reference_expression: str) -> tuple[RARDeterministicAnchor | None, str]:
+    """A RARQuery resolves one reference expression, so a lexical ID/title anchor is
+    delivered only to a span that itself contains that ID/title intact. The turn-level
+    attachment anchor stays turn-scoped (User decision, 2026-09-27 S4 audit)."""
+    if anchor is None:
+        return None, origin
+    exact_id = anchor.exact_id if anchor.exact_id and _intact(reference_expression, anchor.exact_id) else None
+    title_id = None
+    if anchor.unique_title_match:
+        title = next(r.title for r in envelope.records if r.candidate_id == anchor.unique_title_match)
+        title_id = anchor.unique_title_match if _intact(reference_expression, title) else None
+    attachment = anchor.current_attachment_id
+    labels = [label for label, value in (("exact_id", exact_id), ("unique_title", title_id),
+                                         ("current_attachment", attachment)) if value]
+    if not labels:
+        return None, "turn_anchor_not_in_span"
+    return RARDeterministicAnchor(exact_id=exact_id, unique_title_match=title_id,
+                                  current_attachment_id=attachment), "+".join(labels)
+
+
 def project(snapshot: SourceSnapshot, envelope: EvidenceEnvelope, reference_expression: str,
             recency_hint: str | None = None, negation_spans: Sequence[str] = (),
             target_type_hint: str | None = None) -> tuple[RARQuery, str]:
     if envelope.authorized_ids != snapshot.candidate_ids:
         raise SourceBoundaryError("envelope authorization mismatch")
-    anchor, origin = _anchor(snapshot, envelope)
+    anchor, origin = _scope_to_reference(*_anchor(snapshot, envelope), envelope, reference_expression)
     candidates = tuple(RARCandidate(id=r.candidate_id, title=r.title, candidate_type=r.candidate_type,
                                     recency_rank=0, domain_tags=r.domain_tags, owner=r.owner,
                                     is_attachment=r.is_attachment) for r in envelope.records)

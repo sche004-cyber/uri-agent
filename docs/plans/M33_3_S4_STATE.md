@@ -1,5 +1,12 @@
 # M33.3 S4 — offline source-to-candidate replay state
 
+**State:** `S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN` (2026-09-27, independent audit/repair/requalification; was `S4_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT`).
+**S4_PLAN_PREAUDITED:** YES. **S4_IMPLEMENTATION_COMPLETE:** YES. **S4_IMPLEMENTATION_AUDITED:** YES. **S4_REPAIRS_REQUIRED:** YES (A-F1 turn-scoped lexical anchor contamination; A-F2 unmeasured authority gate). **S4_REPAIRS_VERIFIED:** YES. **S4_SAFETY_GATE_PASSED:** NO. **S4_AUDIT_PENDING:** NO. **S4_CLOSED_FROZEN:** NO. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+
+Independent audit evidence: `M33_3_S4_INDEPENDENT_AUDIT_REPAIR_REQUALIFICATION_REPORT.md`; requalified telemetry `M33_3_S4_R1_TELEMETRY.json` / `M33_3_S4_R1_AGGREGATES.json` (the implementer's `M33_3_S4_TELEMETRY.json` / `M33_3_S4_AGGREGATES.json` are preserved as pre-repair evidence). The audit repaired the producer so exact-ID/unique-title anchors reach only the span that contains the ID/title; per User decision (2026-09-27) the current-attachment anchor stays turn-scoped and its certainty exposure (8 unattributed rows) is disclosed. Annotated results are unchanged. The two annotated wrong-binding cases (`NB-B-05:r1` D1R/D1RQ×C2, `NB-H-06:r1` D1R/D1RQ×C1; 8 rows, identical in control and producer) were root-caused to frozen D1R/D1RQ detector and frozen RAR Level 4a/4b behavior, known since A2.8I/A2.8J, which S4 may not change. The safety gate therefore still fails and S4 is not closed or frozen. Closing S4 would require either an authorized repair of those frozen mechanisms outside S4 or an explicit User governance decision about S4's closure criteria; neither exists.
+
+## History (implementer record, preserved)
+
 **State:** `S4_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT`.
 **S4_PLAN_PREAUDITED:** YES (initial independent `BLOCKING_REPAIR_REQUIRED`, F1/F2 repaired; focused and final checks `ACCEPT`; scorer-only §5 amendment independently `ACCEPT`).
 **S4_IMPLEMENTATION_COMPLETE:** YES. **S4_IMPLEMENTER_QUALIFICATION_RUN:** YES. **S4_SAFETY_GATE_PASSED:** NO. **S4_AUDIT_PENDING:** YES. **S4_CLOSED_FROZEN:** NO. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.

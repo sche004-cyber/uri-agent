@@ -24,11 +24,12 @@ from m35_a2_8f_run import (  # noqa: E402
 from m35_a2_8j_rar_safe_battery import run_d1rq_case  # noqa: E402
 from m35_rar_natural_boundary_harness import build_candidate_pool  # noqa: E402
 from m33_3_s4_source_to_candidate import build_snapshot, make_envelope, project  # noqa: E402
+from uri_v1.reference_clarification.authority import classify_authority  # noqa: E402
 from uri_v1.turn.rar_deterministic import resolve_rar_deterministic_extended  # noqa: E402
 
 CORPUS = ROOT / "uri_v1/turn/rar_natural_boundary_raw_turn_fixtures.json"
-TELEMETRY = ROOT / "docs/plans/M33_3_S4_TELEMETRY.json"
-AGGREGATES = ROOT / "docs/plans/M33_3_S4_AGGREGATES.json"
+TELEMETRY = ROOT / "docs/plans/M33_3_S4_R1_TELEMETRY.json"
+AGGREGATES = ROOT / "docs/plans/M33_3_S4_R1_AGGREGATES.json"
 ANCHORS = {
     "uri_v1/turn/rar_natural_boundary_raw_turn_fixtures.json": "0ea5447354481041181538244ef70b6dc58a72267dd95263d61dbdb55ab07380",
     "uri_v1/turn/rar_deterministic.py": "e02af25bb7009d12d829c8b8fc92e487d3da75aeaa160092db617458278fb649",
@@ -65,6 +66,14 @@ def classify(expected: str, intended: list[str], outcome: str, candidate_id: str
     if expected in ("AMBIGUOUS", "UNKNOWN"):
         return "CORRECT_ABSTENTION" if outcome == expected else "ABSTENTION_FAMILY_MISMATCH"
     return "UNCLASSIFIED"
+
+
+WRONG_BINDING = ("INCORRECT_CONFIDENT_BINDING", "FALSE_POSITIVE_BINDING")
+
+
+def _producer_only(wrong: list[dict]) -> list[dict]:
+    control = {(r["case_id"], r["arm"], r["condition"], r["ref_key"]) for r in wrong if r["path"] == "control"}
+    return [r for r in wrong if r["path"] == "producer" and (r["case_id"], r["arm"], r["condition"], r["ref_key"]) not in control]
 
 
 def _percentile(values: list[float], percentile: float) -> float | None:
@@ -156,7 +165,8 @@ def replay() -> tuple[dict, dict]:
                         for path in ("control", "producer"):
                             rows.append({**common, "path": path, "detected": False,
                                          "outcome": "NO_DETECTION", "candidate_id": None,
-                                         "rule_used": None, "anchor_origin": "none", "project_us": 0,
+                                         "rule_used": None, "anchor_origin": "none", "authority_class": None,
+                                         "project_us": 0,
                                          "resolver_us": 0, "full_boundary_us": round(detector_us + snapshot_us, 3),
                                          "classification": classify(expected, intended, "NO_DETECTION", None)})
                         continue
@@ -187,6 +197,7 @@ def replay() -> tuple[dict, dict]:
                                      "outcome": outcome, "candidate_id": result.candidate_id,
                                      "ambiguous_candidate_ids": list(result.ambiguous_candidate_ids),
                                      "rule_used": trace.rule_used.value, "anchor_origin": anchor_origin,
+                                     "authority_class": classify_authority(result, query).value,
                                      "project_us": round(project_us, 3), "resolver_us": round(resolver_us, 3),
                                      "full_boundary_us": round(detector_us + snapshot_us + project_us + resolver_us, 3),
                                      "classification": classify(expected, intended, outcome, result.candidate_id)})
@@ -207,11 +218,24 @@ def replay() -> tuple[dict, dict]:
             "grounded_target_coverage": sum(r["grounded_target_present"] for r in target_rows),
             "grounded_target_denominator": len(target_rows),
             "incorrect_confident_bindings": counts["INCORRECT_CONFIDENT_BINDING"] + counts["FALSE_POSITIVE_BINDING"],
+            "certainty_authority_rows": sum(r["authority_class"] == "CERTAINTY" for r in subset),
             "preparation_p50_us": _percentile(prep, .5), "preparation_p95_us": _percentile(prep, .95),
             "full_boundary_p50_us": _percentile(times, .5), "full_boundary_p95_us": _percentile(times, .95),
         }
+    wrong = [r for r in rows if r["classification"] in WRONG_BINDING]
     summary = {
-        "schema": "m33.3.s4.offline_replay.v1", "case_count": len(corpus["cases"]),
+        "schema": "m33.3.s4.offline_replay.v2",
+        "gates": {
+            "candidate_invention_or_unauthorized_source": 0,  # enforced by fail-closed runtime checks above
+            "protected_hashes_unchanged": post_hashes == pre_hashes,
+            "false_certainty_authority_on_scored_rows": sum(r["authority_class"] == "CERTAINTY" for r in wrong),
+            "certainty_authority_on_unattributed_rows": sum(
+                r["authority_class"] == "CERTAINTY" and r["classification"] == "UNATTRIBUTED_DETECTOR_FIND" for r in rows),
+            "annotated_wrong_binding_rows": len(wrong),
+            "annotated_wrong_binding_cases": sorted({f"{r['case_id']}:{r['ref_key'] or '-'}" for r in wrong}),
+            "producer_only_wrong_binding_rows": len(_producer_only(wrong)),
+            "safety_gate_passed": not wrong,
+        }, "case_count": len(corpus["cases"]),
         "row_count": len(rows), "frozen_hashes": pre_hashes, "groups": aggregates,
         "provider_coverage": "UNMEASURED", "cpu_ram_resource_cost": "UNMEASURED",
         "promotion_eligible": False,

@@ -117,11 +117,26 @@ def test_frozen_corpus_projection_and_replay_gate() -> None:
     assert set(aggregate["groups"]) == {f"{a}:{c}:{p}" for a in ("D0", "D1R", "D1RQ")
                                          for c in ("C1", "C2", "C3") for p in ("control", "producer")}
     assert aggregate["promotion_eligible"] is False
-    assert any(v["incorrect_confident_bindings"] for v in aggregate["groups"].values())
+    gates = aggregate["gates"]
+    # Known frozen-mechanism residuals (A2.8I/A2.8J): present in control and producer alike.
+    assert gates["annotated_wrong_binding_cases"] == ["NB-B-05:r1", "NB-H-06:r1"]
+    assert gates["annotated_wrong_binding_rows"] == 8
+    assert gates["producer_only_wrong_binding_rows"] == 0
+    assert gates["false_certainty_authority_on_scored_rows"] == 0
+    assert gates["certainty_authority_on_unattributed_rows"] == 8  # turn-scoped attachment anchor (User decision)
+    assert gates["protected_hashes_unchanged"] is True
+    assert gates["safety_gate_passed"] is False
     for row in telemetry["rows"]:
         assert row["candidate_id"] is None or row["candidate_id"] in row["source_ids"]
         assert all(p["candidate_id"] in row["source_ids"] for p in row["provenance"])
         assert "raw_user_text" not in row and "reason" not in row
+        if row["anchor_origin"] in ("exact_id", "unique_title") or "exact_id+" in row["anchor_origin"]:
+            assert row["rule_used"] in ("EXACT_ID", "EXACT_TITLE")
+    by_case = {(r["case_id"], r["arm"], r["condition"]): r for r in telemetry["rows"]
+               if r["path"] == "producer" and r["ref_key"] is None and r["case_id"] == "NB-L-01"
+               and r["condition"] != "C3"}
+    # "the Q2 one"/"the Q3 one" never inherit the Q2 filename's title anchor.
+    assert by_case and all(r["anchor_origin"] == "turn_anchor_not_in_span" for r in by_case.values())
 
 
 def test_scorer_never_calls_wrong_binding_a_success() -> None:
@@ -131,3 +146,29 @@ def test_scorer_never_calls_wrong_binding_a_success() -> None:
     assert classify("UNATTRIBUTED_DETECTOR_FIND", [], "RESOLVED", "a") == "UNATTRIBUTED_DETECTOR_FIND"
     assert classify("NO_REFERENCE", [], "NO_DETECTION", None) == "CORRECT_NO_REFERENCE"
     assert classify("RESOLVED", ["a"], "UNKNOWN", None) == "MISSED_RESOLVABLE_CASE"
+
+
+def test_lexical_anchor_is_scoped_to_the_reference_expression() -> None:
+    library = _library()
+    snap = build_snapshot("Open Quarterly report and send it, not the other one", {}, ["a", "b"], library)
+    envelope = make_envelope(snap)
+    query, origin = project(snap, envelope, "Quarterly report")
+    assert query.deterministic_anchor.unique_title_match == "a" and origin == "unique_title"
+    for span in ("it", "the other one"):
+        query, origin = project(snap, envelope, span)
+        assert query.deterministic_anchor is None
+        assert origin == "turn_anchor_not_in_span"
+    snap = build_snapshot("use a for this", {}, ["a", "b"], library)
+    query, origin = project(snap, make_envelope(snap), "this")
+    assert query.deterministic_anchor is None and origin == "turn_anchor_not_in_span"
+
+
+def test_attachment_anchor_stays_turn_scoped_and_lexical_part_is_dropped() -> None:
+    library = {"f": {"candidate_id": "f", "representation": "file_reference_shape",
+                     "file_reference": {"file_id": "f", "filename": "photo.pdf"},
+                     "benchmark_added": {"object_type": "pdf", "created_at": "2026-09-01"}}}
+    snap = build_snapshot("log photo.pdf as this expense", {"turn_attachments": ["f"]}, ["f"], library)
+    query, origin = project(snap, make_envelope(snap), "this expense")
+    anchor = query.deterministic_anchor
+    assert anchor.current_attachment_id == "f" and anchor.unique_title_match is None
+    assert origin == "current_attachment"

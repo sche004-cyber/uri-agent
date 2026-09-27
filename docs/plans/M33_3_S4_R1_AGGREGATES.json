@@ -1,0 +1,410 @@
+{
+  "case_count": 79,
+  "cpu_ram_resource_cost": "UNMEASURED",
+  "frozen_hashes": {
+    "fixtures/m33_3_batch_a/battery.json": "06d0dfffd8ecabff8b98ea7d24c1574904aa16fa172a3956e0a5fb95d6d1c3fa",
+    "scripts/m35_a2_8f_detector_d1r.py": "0347977372a3dfefa9d42780168b7724ce857eb8941696ec21e590fbff41be75",
+    "scripts/m35_a2_8h_detector_d1rq.py": "49f5faa9b37051fec876f5523383b4e965422976562c52e12fc38c970bfa6b82",
+    "uri_v1/turn/rar_attachment_order_experimental.py": "90d89c372e7618f3476719ed1acebcb81cdb0907b4723b695ec6d4a4f289f79c",
+    "uri_v1/turn/rar_attachment_order_factorial_fixtures.py": "3657070635827bf9850d11aafe7cdd0c47bd7c7c7747025de6cb17227566315a",
+    "uri_v1/turn/rar_contracts.py": "4cc9aa43726a870ca2e9ab1b19f6bf9d72dcb74c8a2818856776af95195b6819",
+    "uri_v1/turn/rar_deterministic.py": "e02af25bb7009d12d829c8b8fc92e487d3da75aeaa160092db617458278fb649",
+    "uri_v1/turn/rar_natural_boundary_raw_turn_fixtures.json": "0ea5447354481041181538244ef70b6dc58a72267dd95263d61dbdb55ab07380"
+  },
+  "gates": {
+    "annotated_wrong_binding_cases": [
+      "NB-B-05:r1",
+      "NB-H-06:r1"
+    ],
+    "annotated_wrong_binding_rows": 8,
+    "candidate_invention_or_unauthorized_source": 0,
+    "certainty_authority_on_unattributed_rows": 8,
+    "false_certainty_authority_on_scored_rows": 0,
+    "producer_only_wrong_binding_rows": 0,
+    "protected_hashes_unchanged": true,
+    "safety_gate_passed": false
+  },
+  "groups": {
+    "D0:C1:control": {
+      "certainty_authority_rows": 0,
+      "classification_counts": {
+        "CORRECT_ABSTENTION": 4,
+        "CORRECT_NO_REFERENCE": 5,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 2,
+        "MISSED_RESOLVABLE_CASE": 9,
+        "NO_DETECTION_ABSTENTION": 16,
+        "SILENT_DETECTION_MISS": 55,
+        "UNATTRIBUTED_DETECTOR_FIND": 16
+      },
+      "full_boundary_p50_us": 256.3,
+      "full_boundary_p95_us": 383.08,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 244.3,
+      "preparation_p95_us": 364.9,
+      "rows": 107
+    },
+    "D0:C1:producer": {
+      "certainty_authority_rows": 1,
+      "classification_counts": {
+        "CORRECT_ABSTENTION": 4,
+        "CORRECT_NO_REFERENCE": 5,
+        "CORRECT_RESOLUTION": 1,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 2,
+        "MISSED_RESOLVABLE_CASE": 8,
+        "NO_DETECTION_ABSTENTION": 16,
+        "SILENT_DETECTION_MISS": 55,
+        "UNATTRIBUTED_DETECTOR_FIND": 16
+      },
+      "full_boundary_p50_us": 258.1,
+      "full_boundary_p95_us": 479.83,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 249.1,
+      "preparation_p95_us": 437.98,
+      "rows": 107
+    },
+    "D0:C2:control": {
+      "certainty_authority_rows": 0,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 1,
+        "CORRECT_ABSTENTION": 3,
+        "CORRECT_NO_REFERENCE": 5,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 2,
+        "MISSED_RESOLVABLE_CASE": 9,
+        "NO_DETECTION_ABSTENTION": 22,
+        "SILENT_DETECTION_MISS": 49,
+        "UNATTRIBUTED_DETECTOR_FIND": 16
+      },
+      "full_boundary_p50_us": 280.2,
+      "full_boundary_p95_us": 444.08,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 251.4,
+      "preparation_p95_us": 374.8,
+      "rows": 107
+    },
+    "D0:C2:producer": {
+      "certainty_authority_rows": 1,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 1,
+        "CORRECT_ABSTENTION": 3,
+        "CORRECT_NO_REFERENCE": 5,
+        "CORRECT_RESOLUTION": 1,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 2,
+        "MISSED_RESOLVABLE_CASE": 8,
+        "NO_DETECTION_ABSTENTION": 22,
+        "SILENT_DETECTION_MISS": 49,
+        "UNATTRIBUTED_DETECTOR_FIND": 16
+      },
+      "full_boundary_p50_us": 280.2,
+      "full_boundary_p95_us": 614.02,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 264.6,
+      "preparation_p95_us": 501.9,
+      "rows": 107
+    },
+    "D0:C3:control": {
+      "certainty_authority_rows": 0,
+      "classification_counts": {
+        "CORRECT_ABSTENTION": 13,
+        "CORRECT_NO_REFERENCE": 5,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 2,
+        "NO_DETECTION_ABSTENTION": 71,
+        "UNATTRIBUTED_DETECTOR_FIND": 16
+      },
+      "full_boundary_p50_us": 227.8,
+      "full_boundary_p95_us": 351.37,
+      "grounded_target_coverage": 0,
+      "grounded_target_denominator": 0,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 223.5,
+      "preparation_p95_us": 347.54,
+      "rows": 107
+    },
+    "D0:C3:producer": {
+      "certainty_authority_rows": 0,
+      "classification_counts": {
+        "CORRECT_ABSTENTION": 13,
+        "CORRECT_NO_REFERENCE": 5,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 2,
+        "NO_DETECTION_ABSTENTION": 71,
+        "UNATTRIBUTED_DETECTOR_FIND": 16
+      },
+      "full_boundary_p50_us": 227.8,
+      "full_boundary_p95_us": 350.95,
+      "grounded_target_coverage": 0,
+      "grounded_target_denominator": 0,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 224.4,
+      "preparation_p95_us": 347.54,
+      "rows": 107
+    },
+    "D1R:C1:control": {
+      "certainty_authority_rows": 2,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 3,
+        "CORRECT_ABSTENTION": 15,
+        "CORRECT_NO_REFERENCE": 1,
+        "CORRECT_RESOLUTION": 16,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "MISSED_RESOLVABLE_CASE": 40,
+        "NO_DETECTION_ABSTENTION": 1,
+        "SILENT_DETECTION_MISS": 8,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 154.55,
+      "full_boundary_p95_us": 235.07,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 1,
+      "preparation_p50_us": 111.2,
+      "preparation_p95_us": 181.145,
+      "rows": 150
+    },
+    "D1R:C1:producer": {
+      "certainty_authority_rows": 7,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 3,
+        "CORRECT_ABSTENTION": 15,
+        "CORRECT_NO_REFERENCE": 1,
+        "CORRECT_RESOLUTION": 18,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "MISSED_RESOLVABLE_CASE": 38,
+        "NO_DETECTION_ABSTENTION": 1,
+        "SILENT_DETECTION_MISS": 8,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 171.05,
+      "full_boundary_p95_us": 270.6,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 1,
+      "preparation_p50_us": 136.7,
+      "preparation_p95_us": 215.53,
+      "rows": 150
+    },
+    "D1R:C2:control": {
+      "certainty_authority_rows": 2,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 8,
+        "CORRECT_ABSTENTION": 17,
+        "CORRECT_NO_REFERENCE": 1,
+        "CORRECT_RESOLUTION": 9,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "MISSED_RESOLVABLE_CASE": 40,
+        "NO_DETECTION_ABSTENTION": 1,
+        "SILENT_DETECTION_MISS": 8,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 194.4,
+      "full_boundary_p95_us": 323.045,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 1,
+      "preparation_p50_us": 123.95,
+      "preparation_p95_us": 191.11,
+      "rows": 150
+    },
+    "D1R:C2:producer": {
+      "certainty_authority_rows": 7,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 8,
+        "CORRECT_ABSTENTION": 17,
+        "CORRECT_NO_REFERENCE": 1,
+        "CORRECT_RESOLUTION": 11,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "MISSED_RESOLVABLE_CASE": 38,
+        "NO_DETECTION_ABSTENTION": 1,
+        "SILENT_DETECTION_MISS": 8,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 227.4,
+      "full_boundary_p95_us": 386.075,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 1,
+      "preparation_p50_us": 162.5,
+      "preparation_p95_us": 242.9,
+      "rows": 150
+    },
+    "D1R:C3:control": {
+      "certainty_authority_rows": 0,
+      "classification_counts": {
+        "CORRECT_ABSTENTION": 75,
+        "CORRECT_NO_REFERENCE": 1,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "NO_DETECTION_ABSTENTION": 9,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 110.55,
+      "full_boundary_p95_us": 183.95,
+      "grounded_target_coverage": 0,
+      "grounded_target_denominator": 0,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 100.05,
+      "preparation_p95_us": 172.0,
+      "rows": 150
+    },
+    "D1R:C3:producer": {
+      "certainty_authority_rows": 0,
+      "classification_counts": {
+        "CORRECT_ABSTENTION": 75,
+        "CORRECT_NO_REFERENCE": 1,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "NO_DETECTION_ABSTENTION": 9,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 111.25,
+      "full_boundary_p95_us": 184.355,
+      "grounded_target_coverage": 0,
+      "grounded_target_denominator": 0,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 101.65,
+      "preparation_p95_us": 173.8,
+      "rows": 150
+    },
+    "D1RQ:C1:control": {
+      "certainty_authority_rows": 2,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 3,
+        "CORRECT_ABSTENTION": 15,
+        "CORRECT_NO_REFERENCE": 1,
+        "CORRECT_RESOLUTION": 22,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "MISSED_RESOLVABLE_CASE": 34,
+        "NO_DETECTION_ABSTENTION": 1,
+        "SILENT_DETECTION_MISS": 8,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 156.55,
+      "full_boundary_p95_us": 240.055,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 1,
+      "preparation_p50_us": 113.25,
+      "preparation_p95_us": 177.4,
+      "rows": 150
+    },
+    "D1RQ:C1:producer": {
+      "certainty_authority_rows": 7,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 3,
+        "CORRECT_ABSTENTION": 15,
+        "CORRECT_NO_REFERENCE": 1,
+        "CORRECT_RESOLUTION": 24,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "MISSED_RESOLVABLE_CASE": 32,
+        "NO_DETECTION_ABSTENTION": 1,
+        "SILENT_DETECTION_MISS": 8,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 172.0,
+      "full_boundary_p95_us": 262.765,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 1,
+      "preparation_p50_us": 135.6,
+      "preparation_p95_us": 209.07,
+      "rows": 150
+    },
+    "D1RQ:C2:control": {
+      "certainty_authority_rows": 2,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 8,
+        "CORRECT_ABSTENTION": 17,
+        "CORRECT_NO_REFERENCE": 1,
+        "CORRECT_RESOLUTION": 13,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "MISSED_RESOLVABLE_CASE": 36,
+        "NO_DETECTION_ABSTENTION": 1,
+        "SILENT_DETECTION_MISS": 8,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 194.15,
+      "full_boundary_p95_us": 315.555,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 1,
+      "preparation_p50_us": 122.5,
+      "preparation_p95_us": 188.11,
+      "rows": 150
+    },
+    "D1RQ:C2:producer": {
+      "certainty_authority_rows": 7,
+      "classification_counts": {
+        "ABSTENTION_FAMILY_MISMATCH": 8,
+        "CORRECT_ABSTENTION": 17,
+        "CORRECT_NO_REFERENCE": 1,
+        "CORRECT_RESOLUTION": 15,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "MISSED_RESOLVABLE_CASE": 34,
+        "NO_DETECTION_ABSTENTION": 1,
+        "SILENT_DETECTION_MISS": 8,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 226.1,
+      "full_boundary_p95_us": 367.595,
+      "grounded_target_coverage": 76,
+      "grounded_target_denominator": 76,
+      "incorrect_confident_bindings": 1,
+      "preparation_p50_us": 161.25,
+      "preparation_p95_us": 239.455,
+      "rows": 150
+    },
+    "D1RQ:C3:control": {
+      "certainty_authority_rows": 0,
+      "classification_counts": {
+        "CORRECT_ABSTENTION": 75,
+        "CORRECT_NO_REFERENCE": 1,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "NO_DETECTION_ABSTENTION": 9,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 112.75,
+      "full_boundary_p95_us": 179.095,
+      "grounded_target_coverage": 0,
+      "grounded_target_denominator": 0,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 100.85,
+      "preparation_p95_us": 168.5,
+      "rows": 150
+    },
+    "D1RQ:C3:producer": {
+      "certainty_authority_rows": 0,
+      "classification_counts": {
+        "CORRECT_ABSTENTION": 75,
+        "CORRECT_NO_REFERENCE": 1,
+        "FALSE_POSITIVE_SAFE_ABSTENTION": 7,
+        "NO_DETECTION_ABSTENTION": 9,
+        "UNATTRIBUTED_DETECTOR_FIND": 58
+      },
+      "full_boundary_p50_us": 113.0,
+      "full_boundary_p95_us": 180.25,
+      "grounded_target_coverage": 0,
+      "grounded_target_denominator": 0,
+      "incorrect_confident_bindings": 0,
+      "preparation_p50_us": 102.55,
+      "preparation_p95_us": 170.31,
+      "rows": 150
+    }
+  },
+  "limitation": "Synthetic fixed corpus predates producer, but D1R/D1RQ were previously run on it; no live-provider or independent detector-generalization claim.",
+  "promotion_eligible": false,
+  "provider_coverage": "UNMEASURED",
+  "row_count": 2442,
+  "schema": "m33.3.s4.offline_replay.v2"
+}
