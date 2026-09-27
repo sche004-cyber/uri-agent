@@ -1,5 +1,11 @@
 # M33.3 S4 — offline source-to-candidate replay state
 
+**Current state:** `S4_CLOSED_FROZEN` (2026-09-27 independent recovery audit, bounded replay-dependency repair, and requalification). **S4_IMPLEMENTATION_AUDITED:** YES. **S4_REPAIRS_REQUIRED:** YES. **S4_REPAIRS_VERIFIED:** YES. **S4_SAFETY_GATE_PASSED:** YES (independently reproduced). **S4_AUDIT_PENDING:** NO. **S4_CLOSED_FROZEN:** YES. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+
+Independent evidence: `M33_3_S4_RECOVERY_INDEPENDENT_AUDIT_REQUALIFICATION_REPORT.md`. The audited replay imports tracked sources only; the previously untracked A2.8F harness is not needed. Two fresh replays matched the committed R2 decisions and all safety gates. Batch A's old G-R2 hash pin correctly reports `REPRODUCTION_BASELINE_UNMATCHED` after the authorized RAR repair; its frozen historical evidence remains unchanged and current `run_det` decisions match the frozen record. This S4 experimental freeze grants no production adoption or later-slice authorization.
+
+## History (implementer recovery candidate, preserved)
+
 **State:** `S4_RECOVERY_CANDIDATE_REQUALIFIED_AWAITING_INDEPENDENT_AUDIT` (2026-09-27, implementer upstream recovery batch under User Option B; was `S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN`).
 **S4_UPSTREAM_REPAIR_APPLIED:** YES (D1R/D1RQ noun-phrase preposition boundary; RAR RC-5 contrast shortcut requires demonstrated exclusion). **S4_REQUALIFIED_BY_IMPLEMENTER:** YES. **S4_SAFETY_GATE_PASSED:** YES (implementer R2 replay; not independently reproduced). **S4_AUDIT_PENDING:** YES. **S4_CLOSED_FROZEN:** NO. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
 

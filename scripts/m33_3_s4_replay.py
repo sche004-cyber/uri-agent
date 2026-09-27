@@ -14,18 +14,19 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from m35_a2_8f_run import (  # noqa: E402
+from m35_a2_8j_rar_safe_battery import (  # noqa: E402
     boundary_violation,
     build_query,
     find_matching_found_expr,
-    run_d0_case,
-    run_d1r_case,
+    run_d1rq_case,
 )
-from m35_a2_8j_rar_safe_battery import run_d1rq_case  # noqa: E402
+from m35_a2_8f_detector_d1r import detect_references as d1r_detect  # noqa: E402
 from m35_rar_natural_boundary_harness import build_candidate_pool  # noqa: E402
 from m33_3_s4_source_to_candidate import build_snapshot, make_envelope, project  # noqa: E402
 from uri_v1.reference_clarification.authority import classify_authority  # noqa: E402
+from uri_v1.turn.contracts import AttachmentReference  # noqa: E402
 from uri_v1.turn.rar_deterministic import resolve_rar_deterministic_extended  # noqa: E402
+from uri_v1.turn.turn_frame_builder import build_turn_frame  # noqa: E402
 
 CORPUS = ROOT / "uri_v1/turn/rar_natural_boundary_raw_turn_fixtures.json"
 # R2 = upstream recovery replay. R1 files are kept as the pre-recovery evidence.
@@ -43,6 +44,28 @@ ANCHORS = {
     "scripts/m35_a2_8f_detector_d1r.py": "0986503dd46e87773f2303e612ed8b552500588f9a027b5c9aab6795615ec8b3",
     "scripts/m35_a2_8h_detector_d1rq.py": "42332d28eca4db3533a54174a3386e573b4e5495120ad3d537dd918d8aa80862",
 }
+
+
+def run_d0_case(raw_text: str, turn_attachments):
+    frame = build_turn_frame(
+        raw_text,
+        attachments=tuple(AttachmentReference(identifier=a) for a in turn_attachments),
+    )
+    return [
+        {"span": ref.expression,
+         "recency_hint": "same" if ref.expression in ("same", "same thing") else None,
+         "negation_spans": frame.negation_spans, "coarse_type": None}
+        for ref in frame.candidate_references
+    ]
+
+
+def run_d1r_case(raw_text: str):
+    return [
+        {"span": ref.span, "recency_hint": ref.recency_hint,
+         "negation_spans": ref.negation_spans, "coarse_type": ref.coarse_type,
+         "mechanism": ref.mechanism}
+        for ref in d1r_detect(raw_text)
+    ]
 
 
 def verify_anchors() -> dict[str, str]:

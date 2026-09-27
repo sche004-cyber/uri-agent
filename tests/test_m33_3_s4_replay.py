@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from dataclasses import asdict
 
 import pytest
@@ -14,6 +16,25 @@ from scripts.m33_3_s4_source_to_candidate import (
     project,
 )
 from scripts.m33_3_s4_replay import CORPUS, classify, replay, verify_anchors
+
+
+def test_replay_runs_without_untracked_a2_8f_harness() -> None:
+    # A fresh checkout lacks these A2.8F/A2.8D scripts; fail imports explicitly.
+    code = """
+import importlib.abc
+class RejectUntracked(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname in {'m35_a2_8f_run', 'm35_a2_8d_detector_d1', 'm35_a2_8d_detector_d2_needle'}:
+            raise ImportError(fullname)
+sys.meta_path.insert(0, RejectUntracked())
+from scripts.m33_3_s4_replay import replay
+assert replay()[1]['row_count'] == 2466
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", "import sys\n" + code],
+        cwd=CORPUS.parents[2], capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def _library() -> dict:
