@@ -2290,6 +2290,42 @@
       },
       "operation": "render",
       "passed": true
+    },
+    {
+      "case_id": "ARB-081",
+      "category": "hallucinated_id",
+      "expected": {
+        "flag": "V-SLOT-UNKNOWN",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SLOT-UNKNOWN",
+          "V-SLOT-MISSING"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
+    },
+    {
+      "case_id": "ARB-082",
+      "category": "invented_option",
+      "expected": {
+        "flag": "V-SLOT-UNKNOWN",
+        "valid": false
+      },
+      "level": "L2",
+      "observed": {
+        "flags": [
+          "V-SLOT-UNKNOWN",
+          "V-EXTRA-OPTION"
+        ],
+        "valid": false
+      },
+      "operation": "render",
+      "passed": true
     }
   ]
 }

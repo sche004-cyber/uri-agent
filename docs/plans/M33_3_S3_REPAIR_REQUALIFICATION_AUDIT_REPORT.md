@@ -1,5 +1,7 @@
 # M33.3 S3 — Independent Audit, Repair, and Requalification Report
 
+> **Correction (2026-09-27):** the verdict below ("no repair required") is superseded. An independent re-audit found that Plan A §10 rows 18/19 were below their mandatory minimum (§E's "thin but not disqualifying" reasoning is withdrawn) and that `URI_STATE.yaml` carried a stale S3 scope line. Bounded repair and requalification are recorded in `docs/plans/M33_3_S3_REAUDIT_CORRECTION_REQUALIFICATION_REPORT.md`. This report is otherwise preserved unchanged as history.
+
 **Auditor:** Claude Code, acting under the repository's AO-4 development cycle final-audit / bounded-fix / release authority.
 **Date:** 2026-09-26.
 **Verdict:** `S3_INDEPENDENT_AUDIT_REQUALIFICATION_ACCEPTED` — no repair required.

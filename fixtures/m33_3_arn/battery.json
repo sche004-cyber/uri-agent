@@ -3764,7 +3764,71 @@
       "layer": "L2",
       "operation": "render",
       "source": "Plan A §§6,10-11; S1 RenderValidator contract"
+    },
+    {
+      "case_id": "ARB-081",
+      "category": "hallucinated_id",
+      "expected": {
+        "flag": "V-SLOT-UNKNOWN",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "candidate_id_as_slot"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11 rows 18-19; S1 RenderValidator contract; S3 re-audit correction F1"
+    },
+    {
+      "case_id": "ARB-082",
+      "category": "invented_option",
+      "expected": {
+        "flag": "V-SLOT-UNKNOWN",
+        "valid": false
+      },
+      "input": {
+        "candidates": [
+          {
+            "candidate_type": "document",
+            "id": "a",
+            "is_attachment": false,
+            "owner": "Alice",
+            "recency_rank": 0,
+            "title": "Budget.pdf"
+          },
+          {
+            "candidate_type": "document",
+            "id": "b",
+            "is_attachment": false,
+            "owner": "Bob",
+            "recency_rank": 0,
+            "title": "Forecast.pdf"
+          }
+        ],
+        "mutation": "renderer_escape_slot"
+      },
+      "layer": "L2",
+      "operation": "render",
+      "source": "Plan A §§6,10-11 rows 18-19; S1 RenderValidator contract; S3 re-audit correction F1"
     }
   ],
-  "schema_version": "m33.3.s3.l1l2.v1"
+  "schema_version": "m33.3.s3.l1l2.v2"
 }

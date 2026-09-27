@@ -1,12 +1,13 @@
 {
-  "battery_bytes": 95085,
+  "battery_bytes": 96811,
   "battery_file": "battery.json",
-  "battery_lf_sha256": "7601125b77569ef3c8020b473ceabb32443cd8bec3ccd02263bbdd733d32fa7e",
-  "case_count": 80,
+  "battery_lf_sha256": "3a0250aa92af755e64151a08dca0a5ea3f42f8cd767560471d720fb10af83b01",
+  "case_count": 82,
   "hash_rule": "SHA-256 over UTF-8 bytes with CRLF normalized to LF",
   "l1_count": 60,
-  "l2_count": 20,
+  "l2_count": 22,
   "privacy": "synthetic-only",
   "provenance": "Synthetic S3 cases authored from Plan A R4, S1/S2 frozen contracts; no private data",
-  "schema_version": "m33.3.s3.l1l2.v1"
+  "schema_version": "m33.3.s3.l1l2.v2",
+  "supersedes": "m33.3.s3.l1l2.v1 (80 cases, LF SHA-256 7601125b77569ef3c8020b473ceabb32443cd8bec3ccd02263bbdd733d32fa7e, 95085 bytes); superseded by S3 re-audit correction F1 (Plan A rows 18/19 minimums); v1 has no frozen status"
 }

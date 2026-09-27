@@ -1,10 +1,10 @@
 # M33.3 S3 — frozen L1/L2 clarification qualification plan
 
-**Current state:** `S3_CLOSED_FROZEN` after independent audit and requalification (no repair required).
-**S3_PLAN_FROZEN:** YES. **S3_IMPLEMENTATION_COMPLETE:** YES. **S3_IMPLEMENTATION_AUDITED:** YES. **S3_REPAIRS_REQUIRED:** NO. **S3_REPAIRS_VERIFIED:** N/A. **S3_AUDIT_PENDING:** NO. **S3_CLOSED_FROZEN:** YES. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+**Current state:** `S3_CLOSED_FROZEN` after independent audit, 2026-09-27 re-audit correction, bounded repair, and requalification (see §9).
+**S3_PLAN_FROZEN:** YES. **S3_IMPLEMENTATION_COMPLETE:** YES. **S3_IMPLEMENTATION_AUDITED:** YES. **S3_REPAIRS_REQUIRED:** YES (corrected 2026-09-27; recorded NO at 8a2656a). **S3_REPAIRS_VERIFIED:** YES. **S3_AUDIT_PENDING:** NO. **S3_CLOSED_FROZEN:** YES. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
 **Authorization:** User S3 Plan + Implement instruction, starting at `98ce66cfe5298741905b5bd40fe6439b46d225c4`. S3 only. S1/S2 stay closed and frozen; S4–S13 remain unauthorized.
 **Workstream:** `URI-REFERENCE-CLARIFICATION`.
-**Independent audit and freeze evidence:** `docs/plans/M33_3_S3_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`.
+**Independent audit and freeze evidence:** `docs/plans/M33_3_S3_REPAIR_REQUALIFICATION_AUDIT_REPORT.md` (verdict corrected); re-audit correction and requalification: `docs/plans/M33_3_S3_REAUDIT_CORRECTION_REQUALIFICATION_REPORT.md`.
 
 ## 1. Authority and objective
 
@@ -73,3 +73,16 @@ At Pass-1 completion record `S3_PLAN_FROZEN: YES`, `S3_IMPLEMENTATION_COMPLETE: 
 Independent audit reproduced qualification (80/80: L1 60/60, L2 20/20), the full S1/S2/S3/RAR/governance regression suite (351 passed, 64 subtests), and the governance validator (`VALID`) from a clean worktree at HEAD `4f600e2`. Battery hash, telemetry/aggregate determinism, and all three protected anchors (`rar_deterministic.py`, `rar_contracts.py`, `fixtures/m33_3_batch_a/battery.json`) were independently recomputed and matched exactly. An independent Plan A §10 category-minimum tabulation found 27 of 29 applicable rows cleanly satisfied; two rows ("Hallucinated slot or ID" / "Invented extra candidate," and "Omitted escape option") are thinner than the literal minimum but non-zero and justified against the actual `render_validator.py` mechanism and `check_build`'s positive escape-presence invariant. Ten independent adversarial probes beyond the frozen battery found no disqualifying defect; one non-blocking, non-`FROZEN_REQUIRED` gap was disclosed (a zero-width-space-only label passes validation with no flags). Full detail: `docs/plans/M33_3_S3_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`.
 
 `S3_IMPLEMENTATION_AUDITED: YES`; `S3_REPAIRS_REQUIRED: NO`; `S3_REPAIRS_VERIFIED: N/A`; `S3_CLOSED_FROZEN: YES`; `M33_3_COMPLETE: NO`; `NEXT_SLICE_AUTHORIZED: NO`.
+
+## 9. Re-audit correction, bounded repair, and re-freeze (2026-09-27)
+
+This section corrects §8; §8 is preserved as history. An independent re-audit of the `8a2656a` closure found:
+
+- **F1 (blocking under §3).** Plan A §10 row 18 "Hallucinated slot or ID" (L2, minimum 2) and row 19 "Invented extra candidate" (L2, minimum 2) had one case each (ARB-064, ARB-065). §3 makes Plan A minima mandatory where the frozen S1 path supports them, and `validate_render` supports both. §8 accepted the shortfall as "thin but non-zero"; that reasoning is withdrawn.
+- **F2 (governance contradiction).** `URI_STATE.yaml` M33.3 `scope` still said S3 awaited audit and was not closed/frozen.
+
+User direction (2026-09-27): reopen S3, add two L2 cases, requalify, re-freeze. Repair: ARB-081 (`hallucinated_id`, mutation `candidate_id_as_slot`) and ARB-082 (`invented_option`, mutation `renderer_escape_slot`), both expecting `V-SLOT-UNKNOWN` and `valid=false`; runner gained only those two mutations. ARB-001..080 are byte-for-byte unchanged in content. Battery version bumped to `m33.3.s3.l1l2.v2`: 82 cases (60 L1 / 22 L2), 96811 LF bytes, SHA-256 `3a0250aa92af755e64151a08dca0a5ea3f42f8cd767560471d720fb10af83b01`. The v1 hash `7601125b77569ef3c8020b473ceabb32443cd8bec3ccd02263bbdd733d32fa7e` is superseded and has no frozen status. Plan A row 22 (omitted escape) remains covered by the positive `escape_appended` invariant on every contract-bearing L1 case; not changed.
+
+Requalification: 82/82 (L1 60/60, L2 22/22), telemetry/aggregates byte-identical across two fresh `--write` runs, focused suite 355 passed / 64 subtests, governance validator `VALID`, protected anchors unchanged. Evidence: `docs/plans/M33_3_S3_REAUDIT_CORRECTION_REQUALIFICATION_REPORT.md`.
+
+`S3_REPAIRS_REQUIRED: YES`; `S3_REPAIRS_VERIFIED: YES`; `S3_CLOSED_FROZEN: YES`; `M33_3_COMPLETE: NO`; `NEXT_SLICE_AUTHORIZED: NO`. S4–S13 remain unauthorized.

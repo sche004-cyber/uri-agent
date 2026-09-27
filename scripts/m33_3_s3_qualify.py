@@ -18,7 +18,7 @@ from uri_core.capabilities.wrong_binding import (ReferenceBinding, ReferenceBind
                                                   evaluate_wrong_binding_gate)
 from uri_v1.turn.rar_contracts import (RARBasis, RARCandidate, RAROutcome, RARQuery,
                                         RARResolution)
-from uri_v1.turn.rar_clarification_contract import ClarificationResponse, ResponseKind
+from uri_v1.turn.rar_clarification_contract import ClarificationResponse, ESCAPE_LABEL, ResponseKind
 from uri_v1.reference_clarification.binding import BindingService
 from uri_v1.reference_clarification.builder import build_clarification
 from uri_v1.reference_clarification.render_contracts import RenderOutput
@@ -196,6 +196,8 @@ def check_render(case: dict) -> dict:
         if mutation in ("unknown_slot", "extra_slot"):
             keys[0] = "invented" if mutation == "unknown_slot" else keys[0]
             if mutation == "extra_slot": keys.append("invented"); labels.append("Invented")
+        elif mutation == "candidate_id_as_slot": keys[0] = contract.candidates[0].candidate_id
+        elif mutation == "renderer_escape_slot": keys.append("escape"); labels.append(ESCAPE_LABEL)
         elif mutation == "reverse_order": keys.reverse(); labels.reverse()
         elif mutation == "omit_first": keys.pop(0); labels.pop(0)
         elif mutation == "omit_second": keys.pop(); labels.pop()
