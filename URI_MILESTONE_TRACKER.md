@@ -1,5 +1,13 @@
 # URI Milestone Tracker
 
+**Planning handoff — 2026-09-28: M36 A2 ready for focused PG-M1 re-check.**
+PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS (F-1…F-11); bounded documentation repairs
+recorded in [M36 plan §17](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md) and
+[M36 state](docs/plans/M36_STATE.md). Current status:
+PLAN_A2_REPAIRED_AWAITING_PG_M1_FOCUSED_RECHECK. PG-M1 is not fully accepted;
+PG-M2 remains blocked pending focused re-check. No Memory implementation or
+milestone completion is claimed. The M33.3 delivery checkpoint below is unchanged.
+
 **Latest delivery checkpoint — 2026-09-28: M33.3 `CLOSED_FROZEN`,
 `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`.** Independent audit of `d1feaf7`, bounded
 repairs and requalification completed under the User's direct session authority.

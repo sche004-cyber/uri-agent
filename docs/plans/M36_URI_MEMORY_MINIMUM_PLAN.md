@@ -1,6 +1,6 @@
 # M36 — URI-Memory Minimum (pre-Office demonstrator)
 
-**Status:** `PLAN_DRAFTED_AWAITING_INDEPENDENT_PREAUDIT`. Implementation is **not** authorized by this document.
+**Status:** `PLAN_A2_REPAIRED_AWAITING_PG_M1_FOCUSED_RECHECK`. PG-M1 verdict: `PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS`; A2 is ready for focused independent re-check, not fully accepted. Implementation is **not** authorized by this document.
 **Date:** 2026-09-28.
 **Author:** Claude Code (Opus 5.5), Architect / Pre-Auditor role. Not independent of this plan.
 **Starting HEAD:** `291c9daa48435200c4b56857d0e3bc630016e82a` on `m35-uri-v1-parallel-architecture` (local = `origin`, 0/0).
@@ -9,6 +9,8 @@
 **State file:** `docs/plans/M36_STATE.md`.
 
 Intended sequence (User, 2026-09-28): M33.3 CLOSED_FROZEN → **Memory minimum (this plan)** → Edge minimum → isolated URI Office vertical demonstrator → iterate from real evidence.
+
+**A2 reading rule (2026-09-28):** §17 is the controlling repair specification for F-1…F-11 in `M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md`. Draft wording retained below is historical wherever expressly superseded by §17. The original §15/§16 self-review claims are not evidence of current acceptance. No Memory implementation or PG-M2 work is authorized.
 
 ---
 
@@ -143,7 +145,7 @@ Not researched: embedding/vector retrieval engines. Semantic retrieval is deferr
 | G-7 | No `uri_v1` registry of real files; S12 is fixture-backed | M36 adds an authorized-root source registry (§7.3) |
 | G-8 | S1 `CandidateFact` grounds only title/type/owner/recency | Memory cannot show "last used in task X" in clarification without reopening S1. M36 encodes it as `recency_rank` only; richer display deferred |
 | G-9 | A3 §14 forbids calling a component reusable before cross-agent qualification | M36 contract stays URI-internal; status at most `EXPERIMENTAL` |
-| G-10 | Memory-sourced candidates carry no deterministic anchors unless produced by a qualified producer | M36 passes only `current_attachment_id` through. A typed exact filename resolves at most TENTATIVE. Acceptable for reversible demo actions; anchor production deferred (§8) |
+| G-10 | **Historical draft claim, disproved by PG-M1 F-1; superseded by A2 §17.1.** Memory-sourced candidates carry no deterministic anchors unless produced by a qualified producer | Original claim: "A typed exact filename resolves at most TENTATIVE." Frozen S1 can confer CERTAINTY on a unique verbatim title in the supplied subset without an explicit anchor. Exact-name collision completeness must therefore be established before projection; merely omitting anchors is insufficient. |
 | G-11 | Harness strategy research is untracked | Cited as research input only; Execution Capsule is not adopted by M36. M36's context package is shaped so a future capsule `context` field can consume it. *Update 2026-09-28 (A1):* harness role now governed by User ruling D-A (OD-1); the research stays untracked and non-authoritative (§16) |
 
 ---
@@ -174,7 +176,7 @@ Deferred with demo consequence: semantic "the one about budgets" matching withou
 
 | Mechanism | Decision | Reason |
 |---|---|---|
-| `uri_v1/user_storage.py` | **REUSE as-is** | Path scoping and locked append already qualified |
+| `uri_v1/user_storage.py` | **REUSE as-is**, with Memory-local append protocol | Path scoping and locking reused; `locked_append` does not repair torn tails. A2 §17.8 adds boundary recovery and read-back in `memory/log.py`, without changing the frozen helper. |
 | `uri_v1/results/version_ledger.py` (S11) | **REUSE as-is** for derivative content | Content-addressed, append-only, per-user. Memory stores only `result_id`/`version`/SHA |
 | `uri_v1/evaluation/` (S7) | **REUSE by reference** | Corrections cite `event_id`; `trace_id` via `trace_context.require_trace_id`; durable ON/OFF pattern mirrored |
 | S7 store layout (month-partitioned JSONL, best-effort writes) | **ADAPT pattern** | Memory log differs: it must not silently drop writes (§7.10) |
@@ -220,6 +222,8 @@ uri_v1/memory/uri_adapter/
 A new AST test enforces this split (§11, T-BOUNDARY).
 
 ### 7.2 Contracts (`contracts.py`)
+
+**A2 supersession notice:** the draft provenance/authority table, TASK_STATE/OUTCOME/CORRECTION semantics and freshness vocabulary below are replaced or extended by §17.2, §17.3, §17.6 and §17.11. Their closed matrices govern; draft "any / MODEL_DERIVED" does not authorize arbitrary kinds.
 
 Plain frozen dataclasses, `from __future__ import annotations`, closed enums, the style of `uri_v1/results/version_ledger.py`. `MEMORY_SCHEMA_VERSION = "m36.memory.v1"`.
 
@@ -269,6 +273,8 @@ No record stores document or email body text. Derivative text lives in the S11 b
 
 ### 7.3 Sources: files as durable memory (`sources.py`)
 
+**A2 supersession notice:** scan/path containment, hash-cap handling and source eligibility below are replaced by §17.1, §17.3 and §17.7. "Skip symlinks" and a string prefix check are not sufficient on Windows.
+
 - The user registers **authorized roots** (local folders) explicitly. `root_id` = uuid4 hex. Roots live in a small per-user `memory/sources.json` (schema-versioned, written atomically with `os.replace`), not in the record log. Removing a root is allowed; records that cite it stay in the log and read `SOURCE_MISSING`. Nothing outside a registered root is ever scanned or referenced.
 - `source_id` = `sha256(root_id + "\0" + normalized_relpath)[:32]`. Stable across sessions while the file stays at the same path. Rename or move produces a new `source_id`; the old one reads `SOURCE_MISSING` (move detection by hash is deferred).
 - `scan(root_id, *, max_files, max_depth, extensions)` is bounded, deterministic (sorted), skips symlinks and hidden/system files, and never follows paths outside the root (resolved-path prefix check).
@@ -276,6 +282,8 @@ No record stores document or email body text. Derivative text lives in the S11 b
 - A `SOURCE_OBSERVED` record is appended only when a source is actually used (bound, read, or produced), not for every scanned file. This avoids duplicating the file system into memory (principle 4).
 
 ### 7.4 Log and index (`log.py`, `index.py`)
+
+**A2 supersession notice:** append success, quarantine, currentness and TASK_STATE selection below are replaced by §17.2, §17.8 and §17.11. Latest timestamp alone never determines task currentness; successful append alone never establishes persistence.
 
 - Storage: `user_scoped_path(user_id, "memory", root)` → `memory/log-YYYY-MM.jsonl`, one JSON object per line, written through `locked_append`, `fsync` before returning success.
 - **Write failures are not swallowed** (differs from S7's best-effort policy): `append()` returns `WriteResult(persisted: bool, reason)`. The caller must surface `persisted=False` (for example, "outcome not saved"). Tests enforce that a failed write never reports success.
@@ -290,6 +298,8 @@ No record stores document or email body text. Derivative text lives in the S11 b
 
 ### 7.5 Retrieval path (`retrieval.py`) — session-first
 
+**A2 supersession notice:** the numbered draft retrieval algorithm and ranking below are replaced by §17.1, §17.3, §17.5, §17.9 and §17.10. In particular, changed live sources are rediscovered, temporal/task filters are defined, exact names require collision completeness, and clarification snapshots cannot be re-ranked.
+
 Input `MemoryQuery(user_id, session_id, reference_expression, type_hint?, task_id?, turn_attachment_source_ids, session_working_set, max_candidates=16, max_bytes=16384)`. `session_working_set` is supplied by the caller (from `ActiveContext` or the demonstrator session); memory does not own session state.
 
 1. **Session tier.** Candidates = current-turn attachments ∪ session working set. If the caller reports an in-session CONFIRMED binding for this `ref_key`, durable retrieval is **skipped** and telemetry records `SKIPPED_SESSION_CONFIRMED`.
@@ -302,6 +312,8 @@ Input `MemoryQuery(user_id, session_id, reference_expression, type_hint?, task_i
 Order is tier order, then last-used time. `recency_rank` = position in that order (0 = most recent), which is the only way durable history influences RAR (factual recency, D4-R1).
 
 ### 7.6 Interaction with RAR / ARN / S1 (`uri_adapter/envelope.py`)
+
+**A2 supersession notice:** attachment anchor production is governed by §17.4; candidate eligibility by §17.1/§17.3; binding capture and source revalidation by §17.9/§17.10. The draft "one attachment matching the type hint" rule is withdrawn. RAR/ARN/S1 remain read-only consumers.
 
 - `MemoryEvidenceEnvelope`: immutable; `candidates` (tuple of `{source_id, SourceRef, tier, last_used_at, provenance_locator}`), `authorized_ids`, `current_turn_attachment_ids`, `authorization_basis = "memory_authorized_roots"`, `stale`, `telemetry_ref`.
 - `project(envelope, reference_expression, local_evidence) -> RARQuery`: `RARCandidate(id=source_id, title=basename, candidate_type=media class, recency_rank, is_attachment, owner=None, exact_aliases=(), domain_tags=())`. `deterministic_anchor` carries only `current_attachment_id` when exactly one current-turn attachment matches the type hint. No other anchors (G-10).
@@ -329,11 +341,15 @@ Only records for the current task and its bound sources appear. No other task's 
 
 ### 7.8 Execution and outcome
 
+**A2 supersession notice:** caller-provided provenance and `verifier_id` are not authority. §17.6 replaces the draft verifier-admission rule; §17.3 and §17.11 govern stale/superseded outcome and derivative views.
+
 - `recorder.outcome(...)` accepts `verification_status=VERIFIED` only with provenance `VERIFIER_RESULT` and a `verifier_id`. Anything a model or harness claims is recorded as `CLAIMED_ONLY` with provenance `EXECUTION_OUTCOME`.
 - Produced files inside an authorized root are fingerprinted and recorded as `SOURCE_OBSERVED` plus `DERIVATIVE` (with `derived_from` input hashes). Produced text (for example a summary) is written to the S11 ledger by the caller; memory records `DERIVATIVE` with the S11 `result_id`/`version`/SHA.
 - `DERIVATIVE_STALE`: at read time, if any `derived_from` source hash differs from the live source hash, the derivative is marked stale in the package.
 
 ### 7.9 Privacy and authority
+
+**A2 supersession notice:** the final draft generic supersession paragraph is replaced by the closed, kind-specific matrix in §17.2 and URI-owned verifier boundary in §17.6. Typed trusted entry points derive provenance; it is not a caller obligation that an untrusted model can satisfy by declaring a string.
 
 - Per-user storage through `user_scoped_path` (UUID-only). Cross-user reads are impossible by path construction; a test proves it.
 - Only `Scope.PRIVATE` is writable. `SHAREABLE` exists so records are forward-compatible with a future shared-knowledge network (uuid record IDs, content hashes, provenance, append-only log are all replication-friendly). No network code, no server.
@@ -342,6 +358,8 @@ Only records for the current task and its bound sources appear. No other task's 
 - A model can only reach memory writes through the recorder with provenance `MODEL_DERIVED`, which can never supersede a `USER_ASSERTED`, `AUTHORITATIVE_SOURCE`, or `VERIFIED_OUTCOME` record (recorder rejects it). Only `USER_CORRECTION` or `VERIFIER_RESULT` records may supersede those.
 
 ### 7.10 Failure and fallback
+
+**A2 supersession notice:** source/hash failures follow §17.1/§17.3/§17.7, malformed storage follows §17.8, and task conflict/correction follows §17.2/§17.11. The historical table below must be read with those stricter rules.
 
 | Failure | Behaviour |
 |---|---|
@@ -404,6 +422,8 @@ Per standing roles: Claude plans and audits; implementation is routed (Codex pre
 
 ## 11. Tests and qualification gates
 
+**A2 qualification rule:** §17.12 adds mandatory objective cases for every F-1…F-11 repair. It replaces the draft stale-source exclusion test and strengthens Q-3/Q-5/Q-6/Q-7/Q-8/Q-9/Q-10. Original gates remain mandatory with the corrected pass criteria in §17.12; no new implementation tests are written by this planning repair.
+
 Unit/lane tests (`tests/test_m36_memory_<lane>.py`):
 
 - **T-BOUNDARY**: AST checks: no `uri_core` import anywhere in `uri_v1/memory`; core modules import only stdlib and `uri_v1.user_storage`; only `uri_adapter/` imports `uri_v1.turn.rar_contracts`, `uri_v1.reference_clarification`, `uri_v1.results`, `uri_v1.evaluation`; nothing imports `rar_deterministic`; no network/model libraries (`ollama`, `openai`, `anthropic`, `requests`, `httpx`, `socket`).
@@ -459,11 +479,13 @@ Regression: full tracked `uri_v1` suites, S1–S12 suites, governance validator 
 M36 is demonstrator-ready when:
 - **E-1** F-A can run end to end on real files: resolve → read → summarize → record derivative → recall in a new session, with provenance and freshness.
 - **E-2** F-B can record two bound references, a claimed then verified outcome, a user correction, a pause, and a resume in a new process with exact state.
-- **E-3** Stale and superseded context is visibly flagged and never enters the RAR candidate set.
+- **E-3 (A2 correction, §17.3/§17.11):** missing or unsafe sources never enter the RAR candidate set. Edited live sources remain rediscoverable with fresh/degraded identity; stale or superseded historical claims never appear as current grounding or current task references.
 - **E-4** Gates in §11 pass and the independent audit closes.
 - **E-5** The Edge minimum milestone can consume `MemoryContextPackage` without a Memory contract change (checked at Edge-minimum planning).
 
 ## 15. Self-review against §0 (draft → repair → re-check)
+
+**Historical self-review, superseded as a current acceptance claim by PG-M1 and §17.13.** In particular, item 3 and "all satisfied" below missed F-1; PA-10 also had F-2/F-11 gaps. These original claims are retained only as audit history.
 
 First-draft defects found and repaired before publishing:
 1. Draft said memory would "reuse FileStore". Violates PA-6 (import ban). Repaired: authorized-root registry in `uri_v1`; legacy FileStore deferred (G-2).
@@ -484,6 +506,8 @@ Re-check: PA-1 (paths labelled `_V1 uri_core/` / `uri_v1/`), PA-2 (§6), PA-3/PA
 ---
 
 ## 16. Amendment A1 (2026-09-28): external-harness rulings and PG-M1 readiness
+
+**A2 supersession notice:** A1 decisions remain binding. A1's claims of already enforced verifier authority (§16.1), E-6 already being met (§16.4), stale-file exclusion (§16.5 item 6), readiness (§16.6), and completeness of self-review (§16.7) are historical and superseded by §17.3, §17.6 and §17.14. E-6 remains conditional on the later OD-3 output representation; Edge sufficiency remains unverified until an Edge plan exists. The auditor accepted §16.2 deferral; its in-M36 fallback is not selected.
 
 **Nature:** additive. Sections 0–15 above are the plan as drafted at `1f3ec48`. They are not rewritten, except for two one-line pointers (§2.5 last bullet, G-11 row), each marked "A1". This amendment does **not** change the Memory boundary, the package layout, the contracts, the waves, or the gates.
 
@@ -588,3 +612,279 @@ Checked against §0:
 One defect found in the first A1 draft and repaired: it added `harness_run_ref` to the v1 schema immediately. That conflicted with the minimality goal and with Q-E2E, because no real target record exists. It is now "deferred, reserved", with a stated fallback for the auditor.
 
 Unverified: whether the Harness Execution minimum will register scratch workspaces as temporary authorized roots (§16.1, OD-3 row). That decision is left to that plan and does not affect M36 acceptance.
+
+---
+
+## 17. Amendment A2 (2026-09-28): PG-M1 bounded planning repairs
+
+**Status:** PLAN_A2_REPAIRED_AWAITING_PG_M1_FOCUSED_RECHECK.
+**Repair implementer:** Codex, bounded planning-repair role authorized by the User.
+**Planning baseline:** e26d98c5b6827946c3e546663758a94bf1be7033, branch m35-uri-v1-parallel-architecture.
+**Frozen baseline:** 291c9daa48435200c4b56857d0e3bc630016e82a.
+**Input verdict:** PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS, report [M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md](M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md), §4 F-1…F-11 and §6 R-1…R-11. The report is preserved unchanged.
+
+This is an additive text/specification repair within the existing §7.1 modules. Where A2 differs from §0–§16, A2 governs; the in-place notices above identify superseded draft rules. No Memory, Edge, harness, Office, S13, INT-*, M31 or frozen M33.3 implementation is changed or authorized. D-A, OD-2…OD-5, VG-1, LF-1, D3/D5 and D4-R1 retain their accepted meaning. The remaining low-severity PG-M1 findings F-12…F-19 are not silently declared repaired; the scope here is the eleven required repairs (with historical acceptance claims corrected and frozen scope checked).
+
+### 17.1 F-1 — exact-name completeness before Memory-to-S1 projection
+
+**Interpretation:** frozen S1 can grade one exact verbatim title as CERTAINTY within the supplied candidate set (authority.py:35–43). That set does not establish uniqueness across the searched authorized scope. No change to S1 is needed or permitted.
+
+For an unqualified basename/title request the relevant scope is **all currently registered roots for this user**, plus authorized current-turn attachments and session sources, not just recent history, one tier, one folder, a type-filtered subset or the first matching root. A user may explicitly narrow the searched scope to a named authorized folder/root; the scope must be recorded and shown as such, never inferred from recency or a model hint. "Globally unique" below means within this declared authorized scope, not the entire machine.
+
+Before project() can expose any candidate whose title or frozen RAR stem normalization exactly matches the stripped/casefolded reference expression:
+
+1. Enumerate the entire declared scope for title/basename **and stem** collisions, irrespective of task, recency, type, history status or hash freshness. Use the frozen resolver's lexical matching semantics by lineage in the adapter; no import of rar_deterministic into Memory.
+2. Build a deterministic collision-completeness receipt in the immutable envelope: scope root IDs, scan/authorization snapshot, matching source IDs, completion status and failure reason. It is query-local evidence, never a binding grant. Only COMPLETE receipts may pass the exact-name projection precondition.
+3. Include **every live matching source** in the projected candidate set, even if absent from history or initially removed by a lexical/type/task filter. Multiple live matches remain ambiguous; last-used rank cannot remove a collision. Changed live sources are refreshed under §17.3.
+4. A stale historic locator, inaccessible directory/file, unscanned depth, excluded hidden/system/reparse branch or size/file-count/byte/time bound must not silently make a surviving match unique. A proved-missing historical file is not live; an unverifiable historic match or an excluded branch in the declared scope makes the receipt INCOMPLETE unless absence of matching names can be independently established. Merely filtering it out is not such proof.
+5. On INCOMPLETE, unavailable scope, source-identity uncertainty, or inability to include all matches within 16 candidates/16,384 bytes, return no exact-name RARQuery: BUDGET_EXCEEDED or degraded=COLLISION_SCOPE_INCOMPLETE. The caller requests scope/file clarification. A completeness flag alone cannot downgrade frozen S1, so a partial exact-title query must **not** be sent to it. Generic tentative resolution is permissible only on a subsequent non-exact expression through the unchanged S1 rules, or after explicit user clarification resolves the scope.
+6. Immediately before final binding/use, revalidate the receipt and selected live source (§17.9). Changed scope membership or an expired receipt requires a new query/ambiguity round.
+
+Only a collision-checked match is eligible for exact-title certainty. Memory still produces no new exact-title/ID anchor. The session-confirmed retrieval optimization may skip the durable history log, but cannot skip live identity or exact-name completeness checks when forming a new query.
+
+### 17.2 F-2 — controlled task-state domain and closed supersession rules
+
+**Interpretation:** generic provenance supersession either blocks ordinary progress or permits a latest-timestamp MODEL_DERIVED bypass. Task currentness is a validated transition chain.
+
+Keep TaskStatus = OPEN, WAITING_USER, PAUSED, COMPLETED, FAILED, ABANDONED. Add URI_RECORDED provenance and RUNTIME_RECORDED authority for deterministic URI observations, plus VERIFIER_ATTESTED authority for negative/partial verifier verdicts (§17.6). They do not confer execution or binding authority.
+
+All write APIs are typed. Authenticated URI callers supply trusted user-input evidence to a user method, URI-owned runtime observations to a runtime method, or a registered verifier receipt to the internal verifier method. Model/harness request dictionaries cannot select provenance/authority. A validated model proposal can cause URI to act, but the model's claim alone is never a state transition.
+
+Closed-schema A2 extensions to §7.2: TASK_STATE carries opening_record_id, transition_evidence_ids and correction_record_id?; CORRECTION carries prior_task_state_record_id, old/new SourceRefs, new_binding_id/tier and correction_operation_id; the paired TASK_STATE carries that same operation ID. OUTCOME verifier payloads carry verifier_type/version, invocation_id, assessed_outcome_record_id, acceptance_evidence_ref/digest and attestation_ref. TASK_OPENED may carry explicit_user_labels only from actual user input. SourceRef.identity_status and the query/envelope receipt/snapshot fields are as defined below. Unknown keys remain rejected. Each transition evidence ID must resolve to the trusted user/runtime/verifier event asserted by the typed caller; a model-supplied trace string alone is not evidence.
+
+Authority derivation is pure over the validated kind/provenance plus verification_status where applicable; validation of the trusted entry path/receipt precedes it. Loader applies the same matrices. Extend the context package's fixed provenance legend and item labels for RUNTIME_RECORDED, VERIFIER_ATTESTED, explicit identity degradation and HISTORICAL_BINDING; these labels never become execution authority.
+
+| From | To | Required actor/evidence; stored provenance |
+|---|---|---|
+| No task | OPEN | User task request validated by URI; TASK_OPENED / USER_PROVIDED and initial TASK_STATE / URI_RECORDED linked to its origin trace |
+| OPEN | PAUSED | Explicit user pause (USER_PROVIDED), or URI-observed durable interruption checkpoint (URI_RECORDED) |
+| OPEN | WAITING_USER | URI actually emitted a clarification/required-input request, trace-linked (URI_RECORDED) |
+| WAITING_USER | PAUSED | Explicit user pause or URI interruption checkpoint, same evidence rule as OPEN |
+| WAITING_USER or PAUSED | OPEN | Explicit user resume/input accepted by URI, with a runtime resume trace (URI_RECORDED); loading storage alone is not a resume |
+| OPEN, WAITING_USER or PAUSED | COMPLETED | Explicit user declaration (USER_PROVIDED, visibly user-asserted completion, not VERIFIED), or URI_RECORDED transition linked to a valid registered VERIFIER_RESULT / VERIFIED outcome covering the task's current references/acceptance evidence |
+| OPEN, WAITING_USER or PAUSED | FAILED | URI-observed execution failure (URI_RECORDED, not a verifier success), registered verifier failure via a URI-recorded transition, or explicit user declaration (USER_PROVIDED) |
+| OPEN, WAITING_USER or PAUSED | ABANDONED | Explicit user cancellation only (USER_PROVIDED) |
+| Any existing state | Same state | Validated source binding, outcome or next-step checkpoint through URI_RECORDED, or user correction; no implicit reference replacement |
+| COMPLETED, FAILED or ABANDONED | Any different state | Normal regression rejected. Only explicit USER_CORRECTION of an earlier incorrect state with reason and target head may replace it; redoing completed work normally opens a new task |
+| Any | Any | MODEL_DERIVED / EXECUTION_OUTCOME cannot create TASK_STATE or make a state current; they may propose to URI |
+
+Initial TASK_STATE must have no prior head and cite TASK_OPENED. Every later state must supersede exactly the current TASK_STATE head of the same task and user; the caller passes expected_head_record_id. Compare that head and validate under the per-user write lock immediately before append. A mismatched expected head returns CONFLICT without writing. Invalid transitions return INVALID_TRANSITION without changing current state. No last-timestamp override.
+
+The per-user guard is a stable Memory-local lock file, not the current monthly partition: use locked_append on that guard once, then open/read/append the relevant partition(s) separately while it is held. Do not nest locked_append (its thread lock is not reentrant). All Memory writers, root-registration changes and correction pairs use this same guard. This serializes expected-head checks even across a month boundary and leaves user_storage.py unchanged.
+
+Allowed (kind, provenance) and supersession matrix; any unlisted pair/edge is rejected on write and load:
+
+| Kind / admitted provenance | Authority | Permitted supersession |
+|---|---|---|
+| SOURCE_OBSERVED / SOURCE_OBSERVED | AUTHORITATIVE_SOURCE for the observed pointer; freshness separate | None; latest **validated** observation per source_id is current metadata by log order, not a task head |
+| TASK_OPENED / USER_PROVIDED | USER_ASSERTED | None; one validated opening per task |
+| TASK_STATE / URI_RECORDED, USER_PROVIDED, USER_CORRECTION | RUNTIME_RECORDED or USER_ASSERTED respectively | Previous same-task TASK_STATE head only, governed by the transition table |
+| OUTCOME / EXECUTION_OUTCOME | CLAIMED_OUTCOME | None; each attempt is a new claim and cannot hide a verifier verdict |
+| OUTCOME / VERIFIER_RESULT | VERIFIED_OUTCOME or VERIFIER_ATTESTED | Claimed OUTCOME it assesses; a prior verifier verdict only for the same assessed attempt/evidence chain through the URI verifier entry point (§17.6) |
+| DERIVATIVE / MODEL_DERIVED | DERIVED_NON_AUTHORITATIVE | None; versions remain historical; current usability is derived from input/ref lineage and S11 version |
+| CORRECTION / USER_CORRECTION | USER_ASSERTED | Earlier compatible CORRECTION for the same task/ref or same target, or correction target as specified in §17.11; never a verifier verdict or source observation |
+| TOMBSTONE / USER_PROVIDED | USER_ASSERTED hide instruction, no change to target authority | None; hide-only semantics of §7.4 remain |
+
+MODEL_DERIVED next_step text is only a separately labelled subfield of a URI-created checkpoint and cannot set status/references/last_outcome. Supersession targets must exist earlier in canonical partition/log order, be valid, same-user and same-task where applicable, have compatible kind/ref/attempt and be current where required. Forward references, cycles, cross-user/task replacements and forged authority are rejected. Loader re-derives authority, validates evidence/transition/supersession, and quarantines mismatches; a fork is CONFLICT, never auto-merged. Restart reconstructs the validated head exactly; no automatic completion/resume. This is minimal history/resume state, with no scheduler, executable workflow, dependencies or automatic work dispatch.
+
+### 17.3 F-3 — rediscovery, freshness and degraded identity
+
+**Interpretation:** old content at a stable path is stale evidence, but the edited live file at that path is still a source. The draft candidate exclusion conflated these.
+
+The identity remains root_id plus canonical relpath (§17.7); SourceRef gains explicit identity_status = HASH_VERIFIED, HASH_UNAVAILABLE_SIZE_CAP, HASH_UNAVAILABLE_POLICY, SOURCE_MISSING or UNSAFE_IDENTITY. content_sha256 is null only for an explicitly degraded/missing status. SOURCE_CHANGED is a comparison to an item's recorded hash, not a blanket exclusion. Freshness of **each** historical reference/outcome/derivative is assessed against the hash it recorded, never merely against the latest SOURCE_OBSERVED.
+
+Retrieval order: discover authorized live locators from session/task/history; refresh those locators from the registry **before** eligibility exclusion; fingerprint live sources if possible; then evaluate historical item freshness. If no live eligible candidate survives, run registry lexical discovery and repeat refresh. Exact-name requests run the complete collision lookup regardless of tier (§17.1).
+
+| Observation | Candidate and history behaviour |
+|---|---|
+| Same canonical source exists, hash changed | Fresh SourceRef remains a usable discovery candidate subject to S1/clarification. Historical ref/outcome claims at the old hash are STALE_SOURCE; derivatives are DERIVATIVE_STALE. Do not silently update their stored hashes or represent the old outcome as current |
+| Source proved missing / root removed | SOURCE_MISSING; excluded as live candidate, preserved in stale/history context |
+| Temporarily inaccessible source/root | Unavailable, excluded from live binding; exact-name completeness fails closed rather than declaring it missing |
+| File > configured hash cap (default 64 MiB) | HASH_UNAVAILABLE_SIZE_CAP, explicit package/telemetry reason and UNKNOWN freshness; compare recorded size_bytes/mtime_ns only to detect change, never to prove unchanged |
+| Offline/recall-on-access or hashing forbidden by policy | HASH_UNAVAILABLE_POLICY; no automatic hydration, UNKNOWN freshness |
+| Identity/containment cannot be verified or changes during fingerprint | UNSAFE_IDENTITY; no candidate projection/use |
+
+For degraded hash identity, a locator may be displayed to ask for clarification and an explicitly approved reversible read/open of the live path may proceed as visibly degraded/TENTATIVE, after containment and metadata recheck. **No exact-title or attachment certainty projection** of that source; no consequential execution/copy-in/write-back based on that identity until a hash is obtained under an explicitly permitted cap/policy. No VERIFIED outcome/current derivative is derived from size/mtime alone. If frozen S1 could confer certainty, withhold projection and clarify outside that query (§17.1). Unknown old hashes never compare equal by virtue of both being null.
+
+### 17.4 F-4 — deterministic attachment evidence and per-reference scope
+
+**Interpretation:** S4 counts all current-turn attachments, not only attachments surviving a type filter, and its attachment anchor is turn-scoped. Applying that anchor to both slots in F-B needs a stricter M36 guard.
+
+The controlling rule is: current_attachment_id may be emitted only when **the entire turn contains exactly one current-turn attachment**, its authorization/live hash identity is verified, and no anchor/explicit ID/title conflicts exist. For a single-reference turn, this follows the S4-qualified count rule. For a multiple-reference turn, add a conservative per-slot guard: the raw user-authored reference span must contain a deterministic explicit type word matching the attachment's extension-derived class. No such word, ambiguous class, different class, or missing raw span means no attachment anchor for that slot. If multiple slots qualify for the same attachment while the user requests distinct files, suppress anchors and clarify. This narrowing is independently qualified in Q-A2-4; it is not a claim that frozen S4 already tested M36 multi-slot behaviour.
+
+Closed M36 type map: .xlsx/.xls/.xlsm/.csv/.ods → spreadsheet; .py → script; .docx/.doc/.pdf/.md/.txt/.odt → document; other extensions → unknown. Explicit span words: spreadsheet/workbook → spreadsheet; script → script; document → document. Casefold whole words only. More than one class in a span is ambiguous. Vocabulary expansion requires later qualification.
+
+| Type source | M36 authority/use |
+|---|---|
+| Filename extension, read from the authorized canonical filename | Deterministic candidate class for the guard; not a claim about internal format validity |
+| MIME metadata from a URI-controlled attachment ingestion path | Independent consistency check only, with recorded provenance; matching MIME cannot turn multiple attachments into one |
+| Deterministic URI inspection, if actually available | Consistency evidence; no inspection module is added here. Unknown result supplies no positive anchor |
+| Explicit user assertion | User clue for narrowing/clarification; cannot override conflicting extension/MIME/inspection silently |
+| Model/decoder type_hint | Untrusted proposal; never an anchor enabling fact, never a completeness scope/filter; derive trusted type words again from the raw span |
+
+Known disagreement between extension, trusted MIME or deterministic inspection suppresses the anchor and triggers clarification. Missing extension/unknown class suppresses the multi-slot anchor; misleading or missing type hints never manufacture a deterministic match. is_attachment and current-turn membership must come from the URI-owned attachment manifest, not model flags. No frozen S4 or S1 file is changed.
+
+### 17.5 F-5 — deterministic task-relative cross-session retrieval
+
+**Interpretation:** "spreadsheet from yesterday's task" has no necessary filename token overlap. Resolve structured task/time predicates before source lexical filtering.
+
+Use existing index.py/retrieval.py, rebuilt from validated log records, for task_id, exact user-provided objective_label/title tokens, optional explicit user labels (bounded; not inferred preferences), opened_at, last_state_at, last-used timestamp, current status, current ref_key → source_id links, source media class and typed outcome/output links. Only validated current task heads/current reference relationships supply a task's current files; historical corrected links remain available only on an explicit history query.
+
+MemoryQuery adds a query-time now_utc, user timezone, optional structured task selector/status/source-class filters and raw user span/type-hint provenance. The model may propose these selectors; URI validates them against the raw request and the closed supported grammar. Unsupported/freeform temporal language returns clarification rather than invented dates or semantic search.
+
+Supported temporal predicates: "today", "yesterday", "last week". "Yesterday" is the previous local calendar date at query time, [local midnight, next local midnight); today is the current such interval; last week is the previous ISO Monday–Sunday calendar week. Convert boundaries to UTC using the supplied valid IANA timezone, with daylight-saving boundaries respected. Missing/invalid timezone or unresolved date ambiguity requires clarification. Snapshot now/timezone for repeatability.
+
+A "task from yesterday" qualifies when its validated TASK_OPENED timestamp lies in that interval; merely being touched yesterday does not silently select an older task. Requests expressly saying "last updated/used yesterday" instead filter the corresponding validated timestamp. For "spreadsheet from yesterday's task", discover all matching tasks, then current linked references and recorded output sources of class spreadsheet; deduplicate source IDs while retaining task lineage. One qualifying source is eligible subject to §17.1/§17.3. Multiple tasks or files are surfaced for task/file clarification; recency orders options but does not guess a task.
+
+Durable tier-3 rule: after validated task/time/status/source-class filters, normalize word-final possessive 's/’s away (so "yesterday's" becomes "yesterday"), then derive substantive tokens by casefolded whole-word lexical tokenization. Exclude the closed stopword set (the, a, an, from, of, in, on, my, task, tasks, file, files, this, that, yesterday, today, last, week, resume, continue, paused) and the type words in §17.4. If substantive tokens remain, require lexical overlap with the explicit task labels for task discovery, and title/relpath stem for a non-task file search. If none remain, use structured class/time/task filters only. Do not require a file name to overlap the label of a task that already explicitly links it.
+
+Query/index traversal is bounded. Apply filters before the projection budget. All remaining matches are deterministically ordered by tier, descending validated last-used time, then stable source_id (tasks by last_state_at then task_id). If a matching result tier exceeds the budget, whole-query BUDGET_EXCEEDED with no partial projection; user narrows date/label/root. Do not take top-N and imply completeness. At least 20 unrelated historical tasks must not prevent recall of the one in the selected window. No embeddings, learned preference/frequency weights or model ranking.
+
+### 17.6 F-6 — URI-owned verifier admission and verdict authority
+
+**Interpretation:** VERIFIER_RESULT plus an arbitrary verifier_id string is forgeable. Registration must establish trusted execution identity, not just a naming convention.
+
+Within contracts.py/recorder.py (no new module), define a closed URI-owned verifier registration table populated only by trusted application bootstrap/code, never by Memory records, harness/model/user parameters, tools or a public registration API. Each entry has verifier_id, verifier_type, version and the allowed URI-controlled producer/callable. A namespace such as uri.verifier.* is descriptive only; matching it is insufficient.
+
+Only the URI-owned invocation/receipt path may call the internal verifier writer using a process-local opaque registration capability unavailable to normal callers and non-serializable. Receipt fields are constructed from the trusted invocation: registry identity/type/version, invocation/trace ID, assessed_outcome_record_id, exact input/output hashes, acceptance-evidence reference/digest and nonempty evidence_ids. Caller-supplied verifier_id/provenance/capability claims are rejected, including a copied legitimate ID. This boundary protects against normal model/harness/user data callers, not arbitrary malicious Python already running inside URI's trusted process. Trusted-process compromise is outside the M36 threat boundary.
+
+Source-root registration must reject overlap with URI's private Memory/attestation storage; it cannot expose that store as an authorized editable source or harness workspace. Registry/attestation mutations have no model, harness or user-data API.
+
+Validate the registration capability and actual producer, receipt linkage, same user/task/attempt, trace syntax, verdict and exact assessed inputs/outputs before deriving authority. Persist URI-issued attestation evidence under the user-scoped store owned by the trusted recorder, outside every scanned/harness-writable root; normal caller APIs can neither write nor register attestations. A URI-issued opaque receipt ID resolves to the exact verdict/evidence digest in that protected attestation store. Persist/read-back the attestation before appending its outcome; an orphaned attestation grants no current outcome. Loader validates the receipt against the registry/version and exact attestation content, never trusts serialized authority or an ID alone. Unsupported verifier/version or absent/invalid/mismatched receipt is quarantined/non-authoritative and cannot produce VERIFIED. This receipt integrity lives in existing log/index paths; it does not implement a domain verifier. M36 does not claim integrity against arbitrary filesystem edits to URI's protected storage by an attacker outside the normal-caller boundary.
+
+| Provenance admitted through its typed path | Allowed verification_status | Authority / supersession |
+|---|---|---|
+| EXECUTION_OUTCOME (harness, model, unverified execution claim) | CLAIMED_ONLY, FAILED (claimed failure) | CLAIMED_OUTCOME; cannot replace any verifier verdict |
+| VERIFIER_RESULT (registered URI invocation only) | VERIFIED | VERIFIED_OUTCOME; linked assessment may supersede its claimed outcome |
+| VERIFIER_RESULT (registered URI invocation only) | PARTIALLY_VERIFIED, FAILED, UNVERIFIABLE | VERIFIER_ATTESTED, visibly a verifier verdict rather than a claim; same protection as VERIFIED |
+| USER_PROVIDED, USER_CORRECTION, URI_RECORDED, MODEL_DERIVED, SOURCE_OBSERVED on OUTCOME | None | Rejected; typed claim method maps any unverified success proposal to EXECUTION_OUTCOME / CLAIMED_ONLY |
+
+Every verdict including negative/partial/unverifiable ones is protected from a later harness claim. A later attempt is distinct; it cannot silently remove the earlier verdict. Only a registered URI verifier may replace its verdict with another linked assessment of that same attempt, preserving history. A user can correct task intent or declare completion, but cannot self-issue VERIFIED or hide a verifier failure. M36 qualification uses a URI-owned deterministic test verifier against actual hashed temp-file evidence; no fake harness-run field or Office verifier is introduced.
+
+### 17.7 F-7 — Windows traversal and canonical identity
+
+**Interpretation:** on this machine Python 3.13.15 traverses junctions with os.walk(followlinks=False); Path.is_symlink() is false for them. Those checks alone cannot enforce root containment.
+
+Use bounded, sorted os.scandir traversal. Reject a registered root that is itself a symlink/junction/reparse point; establish its real canonical path once. For every directory/file entry, inspect without following: is_symlink(), platform is_junction() (where available), and Windows FILE_ATTRIBUTE_REPARSE_POINT. Never descend or hash a symlink, junction, mount/reparse point; unknown/unreadable classification fails closed. The collision scan records excluded branches as incomplete under §17.1.
+
+Resolve(strict=True) and normalize case using os.path.normcase on both root and each traversed directory/file, then perform a path-component is_relative_to containment check. Never use a string prefix (root2 is not inside root). Derive relpath from the resolved on-disk name before source_id generation. Reject absolute/UNC/device-prefixed or drive-qualified relative paths, "..", alternate-data-stream ":", trailing dot/space components and Windows reserved device names (including names with extensions); do not accept alternate spellings as independent identities.
+
+Recheck canonical containment, reparse attributes and size/mtime before fingerprint and use. Hash from an opened handle whose identity/real path is checked against the authorized source, then check attributes/stat/identity again; concurrent replacement/reparse substitution or inability to establish safe handle identity fails closed. A pre-open Path.resolve check alone is insufficient for a race. These safety checks are in sources.py; no frozen helper changes. Offline/recall-on-data-access flags are not hydrated or hashed, and produce HASH_UNAVAILABLE_POLICY (§17.3).
+
+Qualification requires ordinary folders, a real Windows junction to an outside folder (creation through native Windows tooling), containment escapes and path alias tricks. Where symlink creation is unavailable, record a skip with its exact reason, not a passing assertion; junction coverage cannot be replaced by a symlink-only test.
+
+### 17.8 F-8 — recovery-safe append and truthful persistence
+
+**Interpretation:** a successful append/fsync can concatenate a new JSON record onto an unterminated fragment and render both unreadable. Memory-local framing and read-back are mandatory.
+
+Keep monthly JSONL and frozen locked_append. In log.py, while holding the stable per-user guard through that helper (§17.2), append to a separately opened binary partition stream:
+
+1. Inspect the existing partition through a separate read handle (binary append streams are not readable), validate its final physical line and detect missing newline/malformed JSON. If it is nonempty and lacks a newline, append a separator newline **before** the new record. Even valid JSON without a terminating newline is first separated. Never truncate/overwrite original evidence.
+2. Preserve corrupt fragments/earlier invalid lines as original bytes plus an audit quarantine copy identified by partition, byte offset and fragment hash; deduplicate quarantine on reload. A valid unterminated tail is recoverable by separation, not treated as a fresh unvalidated record.
+3. Reload/revalidate the repaired tail under the guard before checking the new record's expected head and authority (a recovered prior valid record may change that head). Serialize one canonical JSON object and terminating newline, flush and fsync the partition before unlock. Recover separators are flushed with the record. If a new partition is created, require platform-supported durable creation semantics; if that guarantee cannot be established, surface failure/degradation rather than assert it.
+4. Reopen/read the exact new record at the recorded boundary, validate its ID, schema, payload, authority/evidence and hash against the intended bytes. Set persisted=True only after this read-back succeeds. On write, flush, fsync or read/validation failure return persisted=False and a precise reason. An uncertain result is not a permission to blindly replay.
+
+Startup/load streams partitions in canonical order and validates complete lines independently. Malformed/torn lines are detected, quarantined and surfaced as degraded with counts/opaque recovery IDs; later valid records are still parsed. A trailing incomplete record is never accepted as a current state. Recover next append by inserting the newline under lock; no database/compaction is introduced.
+
+WriteResult adds record_ids and per-record persistence/recovery evidence. Retrying an uncertain write uses the same record ID and exact payload: if an identical validated record exists return its confirmed status; if bytes differ reject ID_CONFLICT. A correction pair uses §17.11; absence of its state record never reports logical success. Tests must exercise crash/fault injection at write/newline/flush and read-back failures, not merely a syscall exception.
+
+### 17.9 F-9 — stable clarification snapshots and revalidation at use
+
+**Interpretation:** recency is in frozen candidate_fingerprint; recorder writes during the two-reference F-B turn can invalidate a rendered choice if Memory re-queries and re-ranks it.
+
+Create an immutable turn retrieval snapshot before the first S1 clarification is rendered. It records scope/receipt, SourceRefs/hashes, IDs, ordering, recency_rank, candidate fields, locators, query time/filters and the projected queries for each reference slot. Each clarification round retains the exact candidate scope/query/ID mapping that produced its question. No recorder update, other task activity, new retrieval or newly uploaded source may mutate these beneath an open round; reuse the snapshot as current_query when answering frozen S1.
+
+Recency-only changes are applied on the next turn/snapshot, never within the current turn. A fresh round may narrow a prior snapshot through explicit user clues under S1; it may not silently reorder the surviving IDs. Material source content/identity, authorization or collision membership change invalidates the affected old round. The caller discards it and renders a new ambiguity round from a fresh snapshot; it never reuses an old clickable option number with new meaning.
+
+Before final selection/binding, independently revalidate the chosen source and completeness receipt. If its hash/path/authorization changed, do not commit a task binding from the old snapshot; refresh and ask through a new round. Before any read/execution/copy-in, the consumer must call sources.verify_source(source_id, expected_sha, scope_receipt) and recheck safe identity/live hash. Reversible use of a changed source requires visible fresh/degraded confirmation under §17.3; consequential use is blocked until a fresh S1/user binding and hash exist. Hash changes after binding never inherit its old certainty. The helper is a live-identity check, not a Memory binding authority.
+
+### 17.10 F-10 — paused-task discovery and restart authority
+
+**Interpretation:** restoring a known task_id is not discovering a paused task, and persisted CONFIRMED is a historical fact rather than new-session execution authority.
+
+Add index.open_tasks(user_id, status_filter?, time_window?, label_tokens?, source_class?) returning bounded summaries from validated current heads: task_id, objective_label/explicit labels, opened_at, last_state_at, status and linked source IDs/classes. Default states OPEN/WAITING_USER/PAUSED; "resume/continue the paused…" explicitly filters PAUSED. For an unqualified "resume", search unfinished states only; COMPLETED/FAILED/ABANDONED never outrank them or automatically reopen.
+
+Use §17.5 deterministic exact IDs, whole-word explicit labels, local time window and linked source class. "Resume yesterday's spreadsheet task" filters unfinished tasks opened yesterday with a current spreadsheet link; "continue the paused budget task" filters PAUSED with explicit label token budget. The model cannot invent a label or choose between matches. One match is offered/restored following user intent; multiple matches require task clarification; zero matches returns NO_MATCH and asks for a task identifier/narrowing clue without selecting a completed task. Over-budget returns a narrowing request, not an implicit recency winner.
+
+New-process Q-9 starts with no task_id or session working set, discovers through open_tasks, and reconstructs only its validated current head. Restored references, binding IDs/tiers and their timestamps remain labelled HISTORICAL_BINDING (separate from the copied BindingTier value). Reversible use can proceed visibly TENTATIVE after live source checks; consequential action requires fresh S1 rebinding or explicit user confirmation against a current snapshot/hash. A resume event creates PAUSED/WAITING_USER → OPEN under §17.2 after URI validates the user request; loading alone does not. History/pending next-step text is context, never an executable continuation command.
+
+### 17.11 F-11 — append-only correction of current task references
+
+**Interpretation:** a correction about A→B must change the validated current ref for T, not merely add a disconnected note while task(T) still returns A.
+
+The typed user-correction call accepts task_id, ref_key, expected_head_record_id and URI-validated user-input provenance/trace. B must be resolved through a fresh S1 binding/user clarification and live identity checks; the correction does not grant binding authority itself. Reject an arbitrary/model replacement, cross-task target, missing ref_key or stale head without changing the current view.
+
+For a status-only correction of an earlier incorrect task state (§17.2), the same paired protocol targets the prior TASK_STATE record_id and stores the explicit reason in CORRECTION.note; source/binding replacement fields are absent, references are copied unchanged, and only the corrected status changes. This exception does not let a source correction change status without a separate explicit user instruction.
+
+Within one serialized recorder call, prepare two immutable records with a shared correction operation ID:
+
+1. CORRECTION / USER_CORRECTION targets {task_id, ref_key, prior_task_state_record_id}; records wrong_source_id=A, right_source_id=B, old/new hashes and new binding evidence. It supersedes the prior correction for the same slot if present, preserving its full chain; the first correction has no prior correction to supersede.
+2. TASK_STATE / USER_CORRECTION supersedes exactly the prior TASK_STATE head and cites correction_record_id. Copy unchanged task fields/status and other slots, replacing only that slot with B's validated reference. Status correction, if requested, follows the explicit §17.2 exception.
+
+Write correction then state under the same per-user lock, with §17.8 boundary/fsync/read-back guarantees and per-record persistence statuses. A correction is effective only when both valid records/links exist. If interrupted between them, retain the first as PENDING_CORRECTION, surface recovery/degradation and keep the old head; do not claim success or silently substitute B. Idempotent retry/recovery with the same operation/record IDs writes only the missing state, after checking the expected head; a changed head returns CONFLICT. Loader never promotes an orphaned correction or a state without its complete correction pair.
+
+task(T), open_tasks and current-reference retrieval derive B from the validated head. A's historical relationship remains in the log/history, but is suppressed as the current source for T (including task-relative outcome/derivative retrieval). A may remain a live source for another task or an explicit independent filesystem query. Derivatives/outcomes whose input lineage depends on T's old A reference become SUPERSEDED_REFERENCE context for T; if bytes also changed, mark DERIVATIVE_STALE/STALE_SOURCE. They must never appear as fresh derivatives of B. Repeated A→B→C corrections retain every relationship while only C is current. S7 event links are supporting IDs; the correction payload/trace and state linkage are self-sufficient if an event is unavailable.
+
+### 17.12 Mandatory A2 qualification mapping
+
+These are **future implementation gates**, not tests claimed to have run in this text-only task. Extend the existing §11 battery/lane tests; every required finding has an objective case and pass condition.
+
+| Finding / gate | Required cases | Objective pass |
+|---|---|---|
+| F-1 → Q-A2-1 / Q-3 | Two budget.xlsx files in different folders with only one in history; same basename across roots; stem collisions; filtered/inaccessible/stale/excluded second match; truncated scan/budget | Complete live collisions exposed; incomplete receipts yield no exact-title query; 0 wrong CONFIRMED |
+| F-2 → Q-A2-2 / Q-9 | OPEN→PAUSED→OPEN; OPEN/PAUSED→COMPLETED by user or registered verifier evidence; each allowed edge; normal terminal regression; explicit state correction; MODEL_DERIVED task-state attempt; concurrent expected-head mismatch including month rollover; illegal load supersession/cycle/user/kind | Valid chains restore identical heads; invalid writes do not change state; invalid serialized authority quarantined; no model-current state |
+| F-3 → Q-A2-3 / Q-5/Q-6/Q-10 | Spreadsheet edited between sessions; old derivative/outcome hashes; missing file; >64 MiB file unchanged metadata and changed metadata; null hash comparisons | Edited live path rediscovered with refreshed SourceRef; old claims stale; missing excluded; cap explicit/degraded, never CURRENT/VERIFIED by null or metadata |
+| F-4 → Q-A2-4 / Q-3 | Two total attachments but only one type match; single attachment with script+spreadsheet slots; conflicting explicit span classes; absent/misleading model type hint; extension/MIME/inspection disagreement; missing extension | No unqualified anchor; only correct per-slot deterministic guard anchors; 0 wrong CONFIRMED; frozen S4 untouched |
+| F-5 → Q-A2-5 / Q-5 | New process, yesterday spreadsheet query, no file-name overlap; 20+ unrelated tasks; boundary midnight/timezone cases; multiple tasks/files; overflow | All qualifying current sources returned when within bounds; ambiguity/narrowing when needed; no guessed date/task, no semantic retrieval |
+| F-6 → Q-A2-6 / Q-7 | Harness self-verifies; model writes VERIFIED; unknown ID; copied registered ID without capability/receipt; user string impersonation; registered deterministic verifier with real temp-file evidence; verifier negative followed by harness success; reload tampered authority/receipt | All impersonations rejected; only URI registered evidence yields VERIFIED; negative/partial verdicts protected and labelled VERIFIER_ATTESTED |
+| F-7 → Q-A2-7 / Q-2 | Ordinary folder; symlink when possible; real Windows junction; mount/reparse/unknown classification; outside-root escape; root-prefix sibling; trailing dot/space/device/ADS aliases; replacement during hash | 0 outside-root candidates/reads; rejected/unclassifiable paths fail closed; symlink skip explicit; junction assertion actually executes |
+| F-8 → Q-A2-8 / log/Q-9 | Clean append; torn tail; truncated JSON; crash/fault between write/newline/flush; fsync/read-back failure; next append; corrupt earlier entry; repeated reload/retry | Every persisted=True record independently reloads/validates; later valid entry never disappears; original corruption retained, quarantine deduplicated; uncertain write not called persisted |
+| F-9 → Q-A2-9 / Q-3/Q-DET | Two-reference F-B with recency update after question render and script binding before spreadsheet selection; source mutation/new collision while question open; edit after binding before use | Old clickable IDs/order/fingerprints stay stable for recency-only change; material changes trigger new round/block stale use; no wrong confirmed binding |
+| F-10 → Q-A2-10 / Q-9 | New process without task_id: one paused match; multiple; none; completed newer than paused; budget and timezone narrowing; persisted CONFIRMED then source edit | Deterministic discovery/clarification; completed never silently resumed; exact state restored with historical binding label; consequential resume rebinds |
+| F-11 → Q-A2-11 / Q-8 | A→B, B→C; restart; stale expected head; model correction; crash after first pair record; retry after uncertain read-back; A-dependent derivatives | Full append-only history; only valid complete pair changes current ref; corrected source/package is B then C; old derivatives never masquerade as B/C; partial pair visible/pending |
+
+Corrected existing gates:
+
+- Q-5: correct current live source(s) included in 100% of bounded, supported deterministic cases; edited-source rediscovery required. "Top recency 100%" is meaningful only for unambiguous cases; multi-match must clarify.
+- Q-6: 100% of items carry authority and either a verified source hash or explicit degraded/missing identity reason; never a silently null "verified" hash.
+- Q-9: restore after discovery without pre-known task_id, including pause/resume/correction chains and historical binding authority.
+- Q-10: 0 missing/unsafe candidates; 100% of stale historical content labelled/suppressed from current grounding; edited live candidates are allowed with refreshed identity.
+- The draft unit test "stale excluded" means stale **claims/derivatives**, not all changed live sources. The draft envelope test "only attachment anchor" must include the §17.4 deterministic guard and §17.1 completeness precondition.
+
+Retain 0 wrong CONFIRMED binding (Q-3), 0 private leakage (Q-12), deterministic repeatability (Q-DET), process-restart resume, frozen integrity (Q-1/T-FROZEN) and Q-E2E real S1/S7/S11 recorder-driven evidence, not hand-built-only success fixtures. Negative fault fixtures are allowed for rejection/recovery tests. Qualification uses a real URI-owned deterministic test verifier and actual hashed temp-file artifacts; it does not add a future Office verifier or fake harness-run lineage. Full M33.3 code/test/fixture scope must also be compared to the frozen baseline, since hash anchors alone cover fewer than all slices.
+
+### 17.13 Focused self-review and contradiction disposition
+
+Self-review performed after drafting A2; this is an implementer's consistency review, **not independent PG-M1 acceptance**.
+
+| Check | Result / controlling text |
+|---|---|
+| F-1 preserves S1 | Withhold incomplete exact-title queries upstream, include all collisions; §17.1 changes Memory assembly only |
+| F-2 bounded semantics | Six existing statuses, validated head/evidence chain, no scheduler/workflow executor; §17.2 |
+| F-3 rediscovery vs stale claims | Registry refresh precedes exclusion; per-item recorded hashes stay historical; §17.3 |
+| F-6 arbitrary callers | Typed paths + bootstrap registration capability + linked receipt validation, no caller ID authority; §17.6 |
+| F-7 junction containment | Reparse/junction checks on every entry and safe handle identity; §17.7 |
+| F-8 readable persistence | Framed append, fsync and exact record read-back; §17.8 |
+| F-9 stable IDs | Immutable turn/round queries, revalidation separate from recency re-ranking; §17.9 |
+| F-10 discovery | Structured open_tasks and new-process unknown-task gate; §17.10 |
+| F-11 correction history | Complete paired append with recovery and validated head; §17.11 |
+
+Contradiction search disposition: G-10 corrected with original claim retained as history; §6 locked_append reuse qualified; §7.2–§7.6, §7.8–§7.10 and §11 carry explicit controlling-A2 notices; E-3 corrected; §15 "all satisfied" and anchor-only reasoning marked historical; A1 §16.1 verifier enforcement, §16.4 "E-6 already met", §16.5 stale exclusion, §16.6 readiness and §16.7 self-review superseded explicitly. No normative "latest state wins", generic verifier-id sufficiency, whole-source stale exclusion, one-type-matching-attachment anchor or raw-syscall persistence guarantee remains operative.
+
+During self-review, the initial A2 drafting choices were tightened in place: incomplete exact-name evidence withholds projection (a flag cannot downgrade S1); copied registered verifier IDs require trusted invocation evidence; clarification snapshots distinguish recency changes from actual source/scope changes; correction-pair crashes leave a visible pending operation rather than falsely current B. These are safety semantics within the already chosen modules.
+
+### 17.14 Boundary, limitations and handoff
+
+Memory boundary unchanged: core plus thin URI adapter, per-user append-only local history, session-first deterministic retrieval, sources/derivatives distinct, history yes/learning no, Memory never binds, SHAREABLE fail-closed. No new module, semantic retrieval, domain verifier, general workflow engine or production integration.
+
+harness_run_ref remains **DEFERRED**, with §16.2 reserved name/constraints unchanged: lineage only, non-authoritative, no retrieval/ranking/transcript/harness-session content, harmless loss, later additive schema with v1 reader. PG-M1 accepted this deferral; no empty/fake harness fixtures are added.
+
+Edge-minimum sufficiency is **unverified**, not a defect: no Edge plan exists. E-5 is a future Edge-planning check. E-6 is a minimum Memory interface claim for typed claims/registered verifier results, derivatives and source hashes, **conditional** on future OD-3 workspace/output representation. Harness/Office end-to-end sufficiency and actual hashing/scan latency remain future evidence; this repair neither pre-designs Edge nor declares a demonstrator ready. Low findings F-12…F-18 remain advisory/unresolved unless addressed by a later explicitly scoped task; F-19's overstatements are corrected as history, without claiming an independent re-audit. All Q-A2 gates still require future implementation and real execution.
+
+Governance records the audit verdict, F-1…F-11 repair mapping, A2 readiness and **PG-M2 blocked pending focused PG-M1 re-check**. PG-M1 is not fully accepted. Stop here; do not request PG-M2.
+
+**Recommended focused PG-M1 re-check prompt:**
+
+> You are the independent focused PG-M1 re-checker for URI M36 Amendment A2 in C:\Users\cheta\Development\Uri\_V1 on branch m35-uri-v1-parallel-architecture. Planning baseline e26d98c5b6827946c3e546663758a94bf1be7033; frozen M33.3 baseline 291c9daa48435200c4b56857d0e3bc630016e82a. Read M36_URI_MEMORY_MINIMUM_PLAN.md §17 and its in-place supersession notices, M36_STATE.md, URI_STATE.yaml, and the unchanged M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md §4/§6. Independently inspect the cited frozen S1/S4/RAR/storage code as needed. Re-check only required F-1…F-11 / R-1…R-11 for presence, consistency, buildability and objective Q-A2-1…Q-A2-11 coverage. Confirm exact-name completeness cannot create false certainty; authorized task heads cannot be model/timestamp-selected; edited sources remain discoverable with stale claims separated; anchors use deterministic per-slot evidence; temporal and paused-task discovery are achievable without semantic retrieval; only registered URI invocations attest verifier results; junction/reparse escape fails closed; persisted=True requires parseable read-back; clarification IDs remain stable; and paired corrections retain history and recover safely. Verify no frozen/code/test changes, Memory boundary or accepted D-A/OD-2…OD-5/VG-1/LF-1 changes. Preserve harness_run_ref deferral and disclose Edge sufficiency as unverified. Do not implement, repeat the full PG-M1 audit, begin/request PG-M2, commit or push. Return each finding's determination, any concrete remaining bounded defect, and a focused verdict: PG_M1_ACCEPTED if all required repairs hold, PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS if concrete required defects remain, or PG_M1_REJECTED with reasons. Report actual checks and limitations; do not trust the repairer's self-review.
+
+**Readiness:** M36_A2_READY_FOR_PG_M1_FOCUSED_RECHECK.

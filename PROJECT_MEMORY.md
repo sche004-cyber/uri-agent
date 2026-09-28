@@ -1,5 +1,17 @@
 # URI Project Memory
 
+**Planning resume point — 2026-09-28: M36 A2.**
+User-authorized bounded plan/governance repairs follow
+PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS (F-1…F-11). Current status:
+PLAN_A2_REPAIRED_AWAITING_PG_M1_FOCUSED_RECHECK; readiness
+M36_A2_READY_FOR_PG_M1_FOCUSED_RECHECK. Read
+[M36 plan §17](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md),
+[M36 state](docs/plans/M36_STATE.md) and the unchanged
+[PG-M1 report](docs/plans/M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md).
+PG-M1 is not fully accepted; PG-M2 remains blocked. Memory boundary unchanged,
+harness_run_ref deferred, Edge sufficiency unverified. Next step is the independent
+focused re-check using plan §17.14; no implementation or release is authorized.
+
 **Latest delivery checkpoint — 2026-09-28: M33.3 `CLOSED_FROZEN`,
 `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`.** Independent audit of `d1feaf7`, bounded
 repairs and requalification completed under the User's direct session authority.
