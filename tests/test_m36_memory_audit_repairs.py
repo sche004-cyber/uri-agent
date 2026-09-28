@@ -23,6 +23,18 @@ from tests.test_m36_memory_verifier import bootstrap,claimed,fixture_verifier
     ("instead of budget.xlsx use the report",None),
     ("rather than budget.xlsx",None),
     ("not budget.xlsx",(4,15)),  # span cropped past the cue
+    ("I wouldn't use budget.xlsx",None),
+    ("we haven't approved budget.xlsx",None),
+    ("it wasn't budget.xlsx",None),
+    ("donʼt use budget.xlsx",None),  # U+02BC modifier letter apostrophe
+    ("don‘t use budget.xlsx",None),  # U+2018 left single quote
+    ("don＇t use budget.xlsx",None),  # U+FF07 fullwidth apostrophe
+    ("ignore budget.xlsx",None),
+    ("leave out budget.xlsx",None),
+    ("neither budget.xlsx nor notes.txt",None),
+    ("anything besides budget.xlsx",None),
+    ("aside from budget.xlsx use report.docx",None),
+    ("except for budget.xlsx",None),
 ])
 def test_f1_negation_anywhere_in_turn_never_confirms(raw,span,tmp_path):
     log,sources,rec,root=setup(tmp_path,("budget.xlsx","report.docx"))
@@ -43,6 +55,12 @@ def test_f1_positive_literals_are_not_negations(raw):
     ("please don't cancel this","ABANDONED"),
     ("do not pause","PAUSED"),
     ("never failed before","FAILED"),
+    ("I haven't completed it","COMPLETED"),
+    ("it wasn't done","COMPLETED"),
+    ("they aren't done","COMPLETED"),
+    ("it isnʼt done","COMPLETED"),
+    ("hasn't failed","FAILED"),
+    ("I wouldn't cancel","ABANDONED"),
 ])
 def test_f2_negated_status_words_are_not_user_transitions(text,status,tmp_path):
     log,sources,rec,root=setup(tmp_path)
@@ -80,6 +98,12 @@ def test_f3_registry_mismatch_fails_closed_not_quarantined(registry,swap_registr
     assert not list(log.path.glob("quarantine/*.json"))
     write=claimed(rec,task,src)
     assert not write.persisted and write.reason=="VERIFIER_REGISTRY_MISMATCH"
+    ts_res=rec.task_state(task,head.record_id,intake=intake("pause"),status="PAUSED")
+    assert not ts_res.persisted and ts_res.reason=="VERIFIER_REGISTRY_MISMATCH"
+    fg_res=rec.forget((task,),intake=intake("forget"))
+    assert not fg_res.persisted and fg_res.reason=="VERIFIER_REGISTRY_MISMATCH"
+    ot_id,ot_res=rec.open_task(intake("open new task"),"open new task")
+    assert not ot_res.persisted and ot_res.reason=="VERIFIER_REGISTRY_MISMATCH"
     result=retrieval(log,s,"resume the budget task")
     assert result.degraded=="VERIFIER_REGISTRY_MISMATCH"
 

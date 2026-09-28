@@ -11,6 +11,7 @@ import re
 from types import MappingProxyType
 from collections.abc import Mapping
 from typing import Any
+import unicodedata
 import uuid
 
 MEMORY_SCHEMA_VERSION = "m36.memory.v1"
@@ -212,16 +213,27 @@ def bounded(value, limit=512):
     return value
 
 
-# Closed deterministic negation cues (audit F-1/F-2). Apostrophes are removed
-# before tokenizing so "don't" is the token "dont". Vocabulary expansion needs
-# later qualification; any hit fails closed to clarification.
-NEGATION_WORDS = frozenset(("not", "no", "never", "skip", "except", "excluding", "exclude", "without", "avoid",
-                            "dont", "doesnt", "didnt", "isnt", "wont", "cant", "cannot", "shouldnt"))
-NEGATION_PHRASES = ("other than", "instead of", "rather than", "apart from")
+# Closed deterministic negation cues (audit F-1/F-2, R-1/R-2). Apostrophes and
+# variants are stripped after NFKC normalization so contractions ("don't", "wouldn't",
+# "donʼt") tokenize cleanly. Any hit fails closed to clarification.
+_APOSTROPHES = re.compile(r"['’ʼ‘＇`´]")
+NEGATION_WORDS = frozenset((
+    "not", "no", "never", "skip", "except", "excluding", "exclude", "without", "avoid",
+    "dont", "doesnt", "didnt", "isnt", "wont", "cant", "cannot", "shouldnt",
+    "wouldnt", "havent", "hasnt", "hadnt", "wasnt", "werent", "arent", "aint",
+    "couldnt", "mightnt", "mustnt", "neednt", "shant", "darent",
+    "ignore", "neither", "nor"
+))
+NEGATION_PHRASES = (
+    "other than", "instead of", "rather than", "apart from",
+    "leave out", "anything besides", "aside from", "except for"
+)
 
 
 def negated(text: str) -> bool:
-    tokens = re.findall(r"\w+", re.sub(r"['’]", "", text.casefold()))
+    norm = unicodedata.normalize("NFKC", text)
+    cleaned = _APOSTROPHES.sub("", norm.casefold())
+    tokens = re.findall(r"\w+", cleaned)
     joined = " " + " ".join(tokens) + " "
     return bool(NEGATION_WORDS.intersection(tokens)) or any(" " + p + " " in joined for p in NEGATION_PHRASES)
 
