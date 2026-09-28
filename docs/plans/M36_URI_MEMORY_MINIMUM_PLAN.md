@@ -99,6 +99,7 @@ This plan is acceptable only if all of the following hold. §15 records the self
 - **D4-R1** (2026-09-28, this session, direct User answer): **history yes, learning no.** Recorded durable task/outcome/correction history may feed cross-session reference resolution as grounded candidates and factual recency. Learned preference or tie-break weights, frequency-based preference, and repetition-based auto-promotion stay deferred (S9).
 - **D3, D5** (unchanged): models never create binding authority; only certainty-tier RAR rules confirm.
 - Consequence-aware binding rule (User, 2026-09-26): reversible actions (read, open, summarize, draft) may proceed on a visible TENTATIVE binding; consequential actions need confirmation.
+- **Added 2026-09-28 after drafting (amendment A1, §16):** User rulings D-A (OD-1), OD-2, OD-3, OD-4, OD-5, requirement VG-1 and principle LF-1 on external execution harnesses. None changes the Memory boundary; §16 records how each bears on M36.
 
 ### 2.6 External research (research-before-build rule)
 
@@ -143,7 +144,7 @@ Not researched: embedding/vector retrieval engines. Semantic retrieval is deferr
 | G-8 | S1 `CandidateFact` grounds only title/type/owner/recency | Memory cannot show "last used in task X" in clarification without reopening S1. M36 encodes it as `recency_rank` only; richer display deferred |
 | G-9 | A3 §14 forbids calling a component reusable before cross-agent qualification | M36 contract stays URI-internal; status at most `EXPERIMENTAL` |
 | G-10 | Memory-sourced candidates carry no deterministic anchors unless produced by a qualified producer | M36 passes only `current_attachment_id` through. A typed exact filename resolves at most TENTATIVE. Acceptable for reversible demo actions; anchor production deferred (§8) |
-| G-11 | Harness strategy research is untracked | Cited as research input only; Execution Capsule is not adopted by M36. M36's context package is shaped so a future capsule `context` field can consume it |
+| G-11 | Harness strategy research is untracked | Cited as research input only; Execution Capsule is not adopted by M36. M36's context package is shaped so a future capsule `context` field can consume it. *Update 2026-09-28 (A1):* harness role now governed by User ruling D-A (OD-1); the research stays untracked and non-authoritative (§16) |
 
 ---
 
@@ -479,3 +480,111 @@ Re-check: PA-1 (paths labelled `_V1 uri_core/` / `uri_v1/`), PA-2 (§6), PA-3/PA
 - Windows junction/symlink traversal behaviour: to be proven by T-sources tests; affects the security gate if it fails.
 - Whether the Edge minimum will need fields beyond `MemoryContextPackage`: unknown until Edge planning (E-5).
 - The inaccessible older prototype (`E:\...\uri_prototype`) may hold further mechanisms; its absence does not change the verdict because the accessible legacy estate already covers the needed principles.
+
+---
+
+## 16. Amendment A1 (2026-09-28): external-harness rulings and PG-M1 readiness
+
+**Nature:** additive. Sections 0–15 above are the plan as drafted at `1f3ec48`. They are not rewritten, except for two one-line pointers (§2.5 last bullet, G-11 row), each marked "A1". This amendment does **not** change the Memory boundary, the package layout, the contracts, the waves, or the gates.
+
+**Inputs:**
+- `docs/plans/PAPERCLIP_URI_ARCHITECTURE_RECONNAISSANCE.md` (§18 Memory implications; §24 decision addendum). Paperclip is prior art only.
+- User rulings of 2026-09-28, registered in `docs/governance/URI_STATE.yaml` → `architecture_decisions`: `D-A` (OD-1), `OD-2`, `OD-3`, `OD-4`, `OD-5`, `VG-1`, `LF-1`.
+- `docs/plans/URI_EXTERNAL_HARNESS_VIABILITY_GATE.md`.
+
+### 16.1 Effect of each ruling on M36
+
+| Ruling | Effect on M36 | Change needed now? |
+|---|---|---|
+| D-A (OD-1): Claude Code / Codex may be execution harnesses; not the Brain; harness never verifies itself; never canonical Memory; result `CLAIMED_ONLY` until a URI verifier says otherwise | Already enforced by §7.8 (`VERIFIED` only with `VERIFIER_RESULT` + `verifier_id`; harness claims recorded as `CLAIMED_ONLY` / `EXECUTION_OUTCOME`) and §7.9 (only `USER_CORRECTION` / `VERIFIER_RESULT` may supersede `VERIFIED_OUTCOME`). Gate Q-7 tests it. | No |
+| OD-2: Brain is provider/transport-neutral; `BrainProvider` separate from `ProviderTransport/AuthMode` | M36 has no provider or model dependency (T-BOUNDARY forbids model/network libraries in `uri_v1/memory`). Memory records no Brain transport. | No |
+| OD-3: workspace default `COPY_IN_COPY_OUT`; `DIRECT_ORIGINAL` only by explicit per-task choice | Memory records sources by authorized root, relpath and SHA-256 (§7.3), so both the originals and a scratch copy can be referenced. A scratch workspace is **not** an authorized root by default. Whether the future harness milestone registers it as a temporary root, or reports results only through `DERIVATIVE` + S11, is a Harness Execution minimum decision. Input hashes (`OUTCOME.inputs`, `DERIVATIVE.derived_from`) already allow stale-derivative detection (§7.8). | No |
+| OD-4: restrictive default harness permissions, per-run elevation | No Memory effect. Elevation approvals belong to the approval layer, not Memory. | No |
+| OD-5: harness contract in `uri_v1/execution/`; no `uri_core` import; no shared abstraction layer yet | Compatible: M36 lives in `uri_v1/memory/` and keeps the import ban (PA-6). M36 does not import `uri_v1/execution/`; any reverse dependency is a future decision. | No |
+| VG-1: viability gate (Arms A/B/C; avoidance vs delegation advantage) | Memory is one of the Arm B layers whose overhead must be measurable. M36 telemetry (§7.11) already records ids-only latency and candidate counts per query, which is enough to attribute Memory overhead later. | No |
+| LF-1: local first, escalate minimally | Memory retrieval is local and deterministic (§7.5). No change. | No |
+
+**Conclusion: no structural change to M36 is required.**
+
+### 16.2 `harness_run_ref`: decision **DEFERRED (name and constraints reserved)**
+
+**Decision:** do not add a `harness_run_ref` field to the M36 v1 schema. Reserve the name and its constraints for a later, schema-versioned addition.
+
+**Why deferral is safe and minimal:**
+1. M36 can already record everything a harness run means for Memory without it:
+   - the claimed outcome as `OUTCOME` / `EXECUTION_OUTCOME` / `CLAIMED_ONLY`
+   - the verifier's result as a superseding `OUTCOME` / `VERIFIER_RESULT` / `VERIFIED` with `verifier_id`
+   - inputs as `source_id@sha`, and outputs as source hashes or S11 `result_id@version`
+   - `DERIVATIVE.derived_from` input hashes
+   - `trace_id` linking to S7
+2. No harness-run record exists yet to point at. `uri_v1/execution/` holds only a placeholder, and the Harness Execution minimum is not planned. A reference field with no real target cannot be tested in M36 without fixture-only records, which gate Q-E2E forbids.
+3. §13 already defines the upgrade path: every record carries `schema_version`, unknown versions are quarantined rather than misread, and "a v2 must ship a reader for v1". Adding an optional field in `m36.memory.v2` is therefore backward-compatible.
+
+**Reserved constraints** (binding on whichever future plan adds it):
+- Name `harness_run_ref`, allowed only on `OUTCOME` and `DERIVATIVE` payloads, optional.
+- Value: an opaque, bounded identifier of a URI-owned harness-run lineage record (in `uri_v1/execution/`). It is **not** a harness session id and **not** a transcript pointer.
+- **Lineage, not retrievable memory:**
+  - It never contributes to retrieval, ranking, candidate generation, `recency_rank`, or `MemoryContextPackage` content beyond an opaque link.
+  - It is never projected into `RARQuery` or `CandidateFact`.
+- **Non-authoritative:** it cannot change `Authority` or `VerificationStatus`. Only a `VERIFIER_RESULT` record produces `VERIFIED`.
+- **Loss-tolerant:** a missing, expired or unresolvable referenced run record must leave every Memory record valid and readable. URI knowledge lives in Memory records and S11 content, never in a harness run or harness session.
+- Harness transcripts and harness session ids are never stored in Memory records.
+
+The v1 closed payload schemas do not contain this name. Unknown keys stay rejected in v1 (§7.2).
+
+**If PG-M1 concludes otherwise:** if the independent auditor finds that deferral would force an incompatible change later, the smallest acceptable alternative inside M36 is to add the reserved field as optional and always absent in M36 flows, with a validation test. The auditor should state which option it accepts.
+
+### 16.3 Implications recorded for future Edge planning (not an Edge design)
+
+For the Edge minimum plan (the sequence item after M36; no plan file exists yet):
+- Qualified local completion is a first-class source of URI value (VG-1 Arm C, G1 avoidance advantage).
+- Deterministic and local mechanisms should run before external escalation where appropriate (LF-1).
+- Edge should contribute to harness avoidance only where it is genuinely qualified, and must not be forced to handle work beyond its demonstrated capability.
+- The viability benchmark must measure how much work avoids the external harness.
+- Frozen S6 routing semantics (`uri_core/core/edge/routing_policy.py`) are unchanged. External-harness escalation is a separate, later routing concern.
+- M36 exit criterion E-5 (Edge can consume `MemoryContextPackage` without a Memory contract change) is unchanged.
+
+### 16.4 Demonstrator-readiness addition
+
+- **E-6:** a future Harness Execution minimum can record a harness-claimed outcome and a later verifier result for F-B using only M36 v1 record kinds (a claimed `OUTCOME`, then a verified `OUTCOME` superseding it; `DERIVATIVE` with `derived_from`). `harness_run_ref` may be added later under §16.2 without changing the meaning of any v1 record.
+
+E-6 is already met by the §7.8 design. It is stated explicitly so that PG-M1 checks it. It adds no new gate and no code.
+
+### 16.5 Brief for the independent PG-M1 pre-audit
+
+PG-M1 must be run by a different model/session than this plan's author (Claude Code, Opus 5.5). It must inspect the repository directly rather than trust this plan. Required determinations:
+1. Is the recovered Memory state (§2, §3) accurate against the repository?
+2. Is the minimum boundary (§7, §8) genuinely minimal for the demonstrator (§5)?
+3. Does the design preserve frozen M33.3 boundaries (PA-3, PA-4, PA-6, T-FROZEN, hash anchors in `scripts/m33_3_r_anchors.py`)?
+4. Are provenance, authority and verification semantics correct (§7.2, §7.8, §7.9), including that harness claims can never become `VERIFIED` without `VERIFIER_RESULT`?
+5. Is cross-session recovery sufficient (R3, R8; Q-5, Q-9)?
+6. Is it impossible for stale files to silently become candidates (§7.5 step 5; Q-10)?
+7. Are corrections and supersession safe (§7.4, §7.9; Q-8)?
+8. Is authorized-folder scanning bounded and safe, including Windows symlink and junction traversal (§7.3)?
+9. Are privacy boundaries sufficient (§7.9; Q-12)?
+10. Is the minimum sufficient for the future Edge minimum (E-5), the future Harness Execution minimum (E-6, §16.2) and the Office demonstrator (§5, §14)?
+11. Does the plan avoid prematurely implementing shared or distributed memory (`SHAREABLE` fails closed; §8)?
+12. If `harness_run_ref` is needed, is it designed as lineage rather than retrievable semantic Memory (§16.2), and is deferral acceptable?
+
+Verdict vocabulary: `PG_M1_ACCEPTED`, `PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS` (listing each repair), or `PG_M1_REJECTED` (with reasons). PG-M1 does not authorize implementation. PG-M2 (explicit User authorization) is still required.
+
+### 16.6 Readiness marker
+
+`M36_READY_FOR_INDEPENDENT_PG_M1_PREAUDIT` as of amendment A1. Status stays `PLAN_DRAFTED_AWAITING_INDEPENDENT_PREAUDIT`. Implementation is not authorized.
+
+### 16.7 Self-review of A1
+
+Checked against §0:
+
+| Criterion | Result |
+|---|---|
+| PA-3 | No frozen file touched |
+| PA-5 | No harness, Edge or demonstrator code |
+| PA-6 | No new imports proposed |
+| PA-7 | `harness_run_ref` is excluded from any binding path |
+| PA-8 | No learning introduced |
+| PA-9 | E-6 maps to the existing Q-7 |
+
+One defect found in the first A1 draft and repaired: it added `harness_run_ref` to the v1 schema immediately. That conflicted with the minimality goal and with Q-E2E, because no real target record exists. It is now "deferred, reserved", with a stated fallback for the auditor.
+
+Unverified: whether the Harness Execution minimum will register scratch workspaces as temporary authorized roots (§16.1, OD-3 row). That decision is left to that plan and does not affect M36 acceptance.

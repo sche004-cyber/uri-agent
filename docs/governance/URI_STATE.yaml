@@ -174,6 +174,8 @@ product_milestones:
     component: "URI-Memory"
     planned_at_commit: "291c9daa48435200c4b56857d0e3bc630016e82a"
     note: "Added 2026-09-28 (planning only). Minimum Memory slice before the isolated URI Office vertical demonstrator (sequence: M33.3 CLOSED_FROZEN -> Memory minimum -> Edge minimum -> Office demonstrator). Gates: PG-M1 independent plan pre-audit, PG-M2 explicit User implementation authorization. No S13, no INT-* event, no uri_core wiring; S9 stays deferred under D4-R1."
+    pg_m1_readiness: "M36_READY_FOR_INDEPENDENT_PG_M1_PREAUDIT"
+    amendment_note: "Updated 2026-09-28 (additive): plan amendment A1 (plan section 16) records the effect of User rulings D-A, OD-2..OD-5, VG-1, LF-1. No structural change; harness_run_ref deferred with name and constraints reserved; exit criterion E-6 added; PG-M1 brief in plan section 16.5. Status unchanged; implementation not authorized."
 queued_initiatives:
   - id: "hybrid_ui"
     title: "URI Hybrid UI Implementation (\"Compact Chat Mode\")"
@@ -326,6 +328,20 @@ planning_artifacts:
     status: "S1_CLOSED_FROZEN"
     implementation_authorized: true
     note: "Frozen S1 scope per D5/D6 and F-1..F-6. User S1-only implementation authorization received 2026-09-26 at starting HEAD ad9e2a6fef7b12c4aa4ecfde93fa06d397de7682. Independent bounded repair/requalification accepted; evidence: docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md. No later slice authorized."
+  - id: "PAPERCLIP_URI_ARCHITECTURE_RECONNAISSANCE"
+    kind: "external_prior_art_reconnaissance"
+    title: "Paperclip (paperclipai/paperclip @ 0f14d261233c545aa6a8a38ec253c498a5130fff) external-harness prior-art reconnaissance and URI comparison"
+    path: "docs/plans/PAPERCLIP_URI_ARCHITECTURE_RECONNAISSANCE.md"
+    status: "RECONNAISSANCE_RETURNED_DECISIONS_RESOLVED"
+    implementation_authorized: false
+    note: "Added 2026-09-28. Prior art only: no Paperclip code, dependency, or organizational model adopted. Open decisions OD-1..OD-5 resolved by the User the same day (report section 24, additive; original sections 0-23 preserved)."
+  - id: "URI_EXTERNAL_HARNESS_VIABILITY_GATE"
+    kind: "qualification_requirement"
+    title: "URI External-Harness Viability Gate (Arms A/B/C; avoidance vs delegation advantage)"
+    path: "docs/plans/URI_EXTERNAL_HARNESS_VIABILITY_GATE.md"
+    status: "REQUIREMENT_RECORDED_NOT_IMPLEMENTED"
+    implementation_authorized: false
+    note: "Added 2026-09-28 from direct User instruction (decision VG-1). Future qualification requirement for the Harness Execution minimum, the Edge minimum avoidance share, and the Office demonstrator. No test implemented."
 
 # ---------------------------------------------------------------------------
 # Architecture decisions recorded from direct User instruction (2026-09-26).
@@ -387,6 +403,46 @@ architecture_decisions:
     status: "RECORDED_SUBJECT_TO_REAUDIT"
     decision: "G1: validated deterministic wording may be primary for SIMPLE clarification/confirmation; model wording for EXPLAIN/REASONING; the validator runs on every tier (section 3.1). G2: explicit selection routes substantive work to the selected model; qualified supporting Edge stays permitted; independent dimensions (sections 3 and 6). G3: route preference is not calibration and cannot change thresholds, qualify a failed route, or expand an unqualified role (section 9.1). M33.2 remains CLOSED_VERIFIED; no implementation reopened."
     rg0r_note: "Updated 2026-09-26 (additive). G1-G3 fidelity was within RG-0 scope and RG-0 raised no finding on it; RG-0R returned RG_0R_ACCEPTED. The RG-0R condition of gates PG-3 and PG-4 is satisfied. Status string kept as history; no implementation authorized."
+  # Decisions below: direct User instruction, 2026-09-28, resolving the open
+  # decisions of docs/plans/PAPERCLIP_URI_ARCHITECTURE_RECONNAISSANCE.md
+  # (full text in its section 24). The M31 Brain restriction is NOT modified.
+  - id: "D-A"
+    date: "2026-09-28"
+    status: "DECIDED"
+    alias: "OD-1"
+    decision: "ACCEPTED. Claude Code and Codex CLI (and future compatible harnesses) may serve as URI execution harnesses: separately launched external workers for bounded agentic execution. They are NOT the URI Brain; the M31 rule that the Brain itself must not shell out to Claude Code or Codex CLI stays unchanged. A harness receives a bounded URI Execution Capsule, works only within URI-defined task/workspace/permission boundaries, may use its own native reasoning and tools, returns claims/results to URI, does not decide that its own result is verified, and does not become URI canonical Memory. URI independently verifies consequential outcomes; a harness result stays CLAIMED_ONLY until a URI verifier establishes otherwise."
+    resolves: "Research decision D-A (docs/research/URI_HARNESS_STRATEGY/00_INDEX.md, untracked) and risk R-A8. Research decision D-C (harness-internal memory and self-created skills) is only partly settled: harness state is never canonical Memory; whether to allow or disable harness-internal memory/skills remains deferred."
+    recorded_in: "docs/plans/PAPERCLIP_URI_ARCHITECTURE_RECONNAISSANCE.md section 24"
+  - id: "OD-2"
+    date: "2026-09-28"
+    status: "DECIDED"
+    decision: "URI Brain access is provider- and transport-neutral. Where officially supported, users may choose subscription-backed provider channels, API-backed providers, local Ollama, local LM Studio, other compatible local runtimes, or future supported transports; subscription and API access are equally valid architectural options. The user chooses provider and access method. Do not couple BrainProvider with billing/auth method; keep BrainProvider + ProviderTransport/AuthMode as separate concepts. Brain access mode and harness access mode are separate concerns. No unsupported scraping or browser automation of ChatGPT, Claude.ai or Gemini web apps to reuse a consumer subscription."
+    recorded_in: "docs/plans/PAPERCLIP_URI_ARCHITECTURE_RECONNAISSANCE.md section 24"
+  - id: "OD-3"
+    date: "2026-09-28"
+    status: "DECIDED"
+    decision: "Workspace policy is user-selectable per task. Default COPY_IN_COPY_OUT: resolve exact required files; copy only those into a URI-owned scratch workspace; record their hashes; harness works only there; URI computes changed-artifact differences; URI verifies; write-back to originals only after the required approval. DIRECT_ORIGINAL only when the user explicitly selects it for that task; never silently the default."
+    recorded_in: "docs/plans/PAPERCLIP_URI_ARCHITECTURE_RECONNAISSANCE.md section 24"
+  - id: "OD-4"
+    date: "2026-09-28"
+    status: "DECIDED"
+    decision: "Harness permission profile is user-selectable per run. Restrictive default: workspace-write only; no network; no approval bypass; no unrestricted filesystem; no permission/sandbox bypass flags. URI may ask the user to elevate for a task/run (e.g. allow network, permit package installation, access an additional authorized folder, enable another specific capability). Paperclip permissive bypass defaults are not copied."
+    recorded_in: "docs/plans/PAPERCLIP_URI_ARCHITECTURE_RECONNAISSANCE.md section 24"
+  - id: "OD-5"
+    date: "2026-09-28"
+    status: "DECIDED"
+    decision: "The external harness contract belongs in uri_v1/execution/ for the current architecture. uri_core/external/ concepts may be studied and adapted by reference only; uri_v1 must not import across the frozen uri_core boundary. No new shared abstraction layer until implementation evidence shows the need."
+    recorded_in: "docs/plans/PAPERCLIP_URI_ARCHITECTURE_RECONNAISSANCE.md section 24"
+  - id: "VG-1"
+    date: "2026-09-28"
+    status: "DECIDED"
+    decision: "Formal future qualification requirement URI_EXTERNAL_HARNESS_VIABILITY_GATE: URI must show it is measurably worthwhile versus giving the same task directly to an external harness (Arm A direct harness, Arm B URI-mediated harness, Arm C URI local completion; avoidance vs delegation advantage). Pass principle: equal or better verified success plus a material advantage in at least one dimension without unacceptable regression elsewhere. The benchmark must not be manipulated; no-advantage results are reported honestly with the overhead layer named. Not implemented."
+    recorded_in: "docs/plans/URI_EXTERNAL_HARNESS_VIABILITY_GATE.md"
+  - id: "LF-1"
+    date: "2026-09-28"
+    status: "DECIDED"
+    decision: "Local first, escalate minimally. External-harness invocation is a cost URI must justify, not the default path: resolve locally, complete locally if qualified, otherwise escalate only the unresolved work, verify independently and locally where possible, record outcome and provenance. Correctness outranks avoiding escalation; Edge/local is never forced beyond demonstrated capability. Frozen S6 routing is unchanged; external-harness escalation is a separate later routing concern."
+    recorded_in: "docs/plans/URI_EXTERNAL_HARNESS_VIABILITY_GATE.md section 2; docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md section 16.3"
 
 # ---------------------------------------------------------------------------
 # Research experiments (EXP-*) — the M35 URIv1 A0-A9/A2.8x research line.
