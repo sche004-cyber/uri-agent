@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="11" skipped="0" tests="11" time="14.510" timestamp="2026-09-28T13:56:02.899484+05:30" hostname="ChetanPC"><testcase classname="test_capability_directory.PrivacyTests" name="test_no_credentials_tokens_or_secrets_appear_in_serialized_output" time="0.002"><failure message="AssertionError: 'credentials.json' unexpectedly found in '[{&quot;capability_id&quot;: &quot;extract_student_records&quot;, &quot;summary&quot;: &quot;retrieve a student\'s academic record by roll number, searched from indexed institutional spreadsheets.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;extract_student_records&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;fetch_drive_spreadsheet&quot;, &quot;summary&quot;: &quot;read rows from a google sheets spreadsheet by spreadsheet id and range.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: false, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: &quot;unavailable_runtime&quot;, &quot;connection_required&quot;: true, &quot;connection_state&quot;: &quot;google_drive_service_account: no google client secret (credentials.json) is configured on the uri server host.&quot;, &quot;permission_required&quot;: true, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;fetch_drive_spreadsheet&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;draft_institutional_note&quot;, &quot;summary&quot;: &quot;draft an institutional office note/noting: the brain composes the body from the request\'s purpose, the institution\'s configured conventions, the operating policy\'s drafting rules, and any attached-file evidence. structure adapts to purpose; not a fixed template.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;draft_institutional_note&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;draft_institutional_order&quot;, &quot;summary&quot;: &quot;draft an institutional office order: the brain composes the body from the request\'s purpose (e.g. appointment, cancellation, delegation), the institution\'s configured conventions, the operating policy\'s drafting rules, and any attached-file evidence. structure adapts to purpose; not a fixed template.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;draft_institutional_order&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;generate_document&quot;, &quot;summary&quot;: &quot;generate a real office file (docx, xlsx, pptx, or pdf) for a general request that is not an institutional note or order - the brain composes the content (reusing the same policy/evidence/institutional-conventions assembly as note/order drafting); the requested file format is detected from the request and rendered into a real, downloadable file. not a fixed template.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;generate_document&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;system_performance&quot;, &quot;summary&quot;: &quot;report the current pc\'s real cpu, memory, swap, and disk usage - a live read-only snapshot, never estimated.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;system_performance&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;remember_fact&quot;, &quot;summary&quot;: &quot;save a fact the user explicitly asked uri to remember or add to their profile (e.g. their workplace, a stated preference) - never triggered by an incidental mention, only an explicit save/remember request.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;remember_fact&quot;], &quot;foundational&quot;: true, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;recall_memory&quot;, &quot;summary&quot;: &quot;answer a question about what uri already remembers about the user (name, stated preferences, prior context) from their own confirmed memory entries - never invents an answer if nothing relevant is saved.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;recall_memory&quot;], &quot;foundational&quot;: true, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;convert_document&quot;, &quot;summary&quot;: &quot;convert an already-attached document into a different file format - today, an attached pdf into a real docx, using its actual extracted text (ocr fallback for scanned pages).&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;convert_document&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;read_attached_file&quot;, &quot;summary&quot;: &quot;read the text of a current-turn attachment the user attached to this conversation (pdf including scanned/ocr, plain text, csv, json, spreadsheet, image, or word document), returning the extracted text as evidence for the brain to reason from - never an answer uri composes itself.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;read_attached_file&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: true}, {&quot;capability_id&quot;: &quot;web_search&quot;, &quot;summary&quot;: &quot;search the public internet for real, current information via a real search api, returning titles/urls/content snippets as evidence for the brain to reason from - never an answer uri composes itself.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;web_search&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;drive_upload&quot;, &quot;summary&quot;: &quot;upload the most recently generated or attached file in this conversation to google drive as a new file - never overwrites, moves, renames, or deletes anything already in drive.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: false, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: &quot;blocked_by_permission&quot;, &quot;connection_required&quot;: true, &quot;connection_state&quot;: &quot;google_drive_file_write: no google client secret (credentials.json) is configured on the uri server host.&quot;, &quot;permission_required&quot;: true, &quot;approval_required&quot;: true, &quot;risk&quot;: &quot;high&quot;, &quot;actions&quot;: [&quot;drive_upload&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;fetch_url&quot;, &quot;summary&quot;: &quot;fetch one web page or document by url and extract its readable text as evidence (html, pdf, docx, xlsx, plain text, csv) - lets uri actually read a source web_search found (or one the user gave directly), not just cite its search-result snippet.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;fetch_url&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;pc_system_optimization&quot;, &quot;summary&quot;: &quot;inspect and optimize this device\'s performance (e.g. startup programs, disk/temp cleanup, resource-heavy processes) with explicit user approval before any change.&quot;, &quot;source&quot;: &quot;legacy&quot;, &quot;available&quot;: false, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: &quot;not_implemented&quot;, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: true, &quot;risk&quot;: &quot;high&quot;, &quot;actions&quot;: [&quot;pc_system_optimization&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;gmail&quot;, &quot;summary&quot;: &quot;search and inspect gmail messages, threads, labels, unread counts, and attachments; prepare email drafts but never send email.&quot;, &quot;source&quot;: &quot;multi_action&quot;, &quot;available&quot;: null, &quot;availability_known&quot;: false, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: null, &quot;connection_state&quot;: null, &quot;permission_required&quot;: true, &quot;approval_required&quot;: null, &quot;risk&quot;: null, &quot;actions&quot;: [&quot;list_labels&quot;, &quot;search_messages&quot;, &quot;read_message&quot;, &quot;read_thread&quot;, &quot;read_attachment&quot;, &quot;create_draft&quot;, &quot;apply_label&quot;, &quot;archive_message&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {&quot;list_labels&quot;: &quot;list gmail labels with total and unread email message counts; use for unread-count questions.&quot;, &quot;search_messages&quot;: &quot;find or search gmail messages using gmail search syntax such as unread, sender, subject, or attachment filters.&quot;, &quot;read_message&quot;: &quot;read one email\'s headers, subject, sender, date, snippet, body, thread id, and attachment inventory.&quot;, &quot;read_thread&quot;: &quot;read the full conversation in a gmail thread, including message and attachment inventory.&quot;, &quot;read_attachment&quot;: &quot;inspect an email attachment inventory or download one explicitly identified attachment as temporary evidence.&quot;, &quot;create_draft&quot;: &quot;prepare or create a gmail reply draft for the user to review in gmail. it never sends email.&quot;, &quot;apply_label&quot;: &quot;apply a gmail label to a message.&quot;, &quot;archive_message&quot;: &quot;archive a gmail message by removing it from inbox.&quot;}, &quot;intent_signals&quot;: [], &quot;category&quot;: &quot;communication&quot;, &quot;reads_current_attachments&quot;: false}, {&quot;capability_id&quot;: &quot;generic_evidence_drafting_workflow&quot;, &quot;summary&quot;: &quot;workflowplanner\'s one existing deterministic multi-step template (evidence retrieval through drafted output and review) - every keyword branch in workflow_planner.py\'s _create_steps() converges on this same sequence.&quot;, &quot;source&quot;: &quot;procedure&quot;, &quot;available&quot;: true, &quot;availability_known&quot;: true, &quot;availability_reason&quot;: null, &quot;connection_required&quot;: false, &quot;connection_state&quot;: null, &quot;permission_required&quot;: false, &quot;approval_required&quot;: false, &quot;risk&quot;: &quot;controlled&quot;, &quot;actions&quot;: [&quot;retrieve_evidence&quot;, &quot;verify_facts&quot;, &quot;identify_missing_information&quot;, &quot;prepare_decision_context&quot;, &quot;draft_output&quot;, &quot;review_result&quot;], &quot;foundational&quot;: false, &quot;aliases&quot;: [], &quot;action_descriptions&quot;: {}, &quot;intent_signals&quot;: [], &quot;category&quot;: null, &quot;reads_current_attachments&quot;: false}]'">self = &lt;test_capability_directory.PrivacyTests testMethod=test_no_credentials_tokens_or_secrets_appear_in_serialized_output&gt;
+
+    def test_no_credentials_tokens_or_secrets_appear_in_serialized_output(self):
+        feasibility = CapabilityFeasibility()
+        registry = MultiActionCapabilityRegistry([GmailCapability()])
+        directory = CapabilityDirectory(
+            capability_feasibility=feasibility, multi_action_registry=registry
+        )
+
+        serialized = json.dumps(directory.summaries())
+        for token_shaped in ("token.json", "credentials.json", "client_secret", "api_key", "access_token"):
+&gt;           self.assertNotIn(token_shaped, serialized.lower())
+E           AssertionError: 'credentials.json' unexpectedly found in '[{"capability_id": "extract_student_records", "summary": "retrieve a student\'s academic record by roll number, searched from indexed institutional spreadsheets.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["extract_student_records"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "fetch_drive_spreadsheet", "summary": "read rows from a google sheets spreadsheet by spreadsheet id and range.", "source": "legacy", "available": false, "availability_known": true, "availability_reason": "unavailable_runtime", "connection_required": true, "connection_state": "google_drive_service_account: no google client secret (credentials.json) is configured on the uri server host.", "permission_required": true, "approval_required": false, "risk": "controlled", "actions": ["fetch_drive_spreadsheet"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "draft_institutional_note", "summary": "draft an institutional office note/noting: the brain composes the body from the request\'s purpose, the institution\'s configured conventions, the operating policy\'s drafting rules, and any attached-file evidence. structure adapts to purpose; not a fixed template.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["draft_institutional_note"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "draft_institutional_order", "summary": "draft an institutional office order: the brain composes the body from the request\'s purpose (e.g. appointment, cancellation, delegation), the institution\'s configured conventions, the operating policy\'s drafting rules, and any attached-file evidence. structure adapts to purpose; not a fixed template.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["draft_institutional_order"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "generate_document", "summary": "generate a real office file (docx, xlsx, pptx, or pdf) for a general request that is not an institutional note or order - the brain composes the content (reusing the same policy/evidence/institutional-conventions assembly as note/order drafting); the requested file format is detected from the request and rendered into a real, downloadable file. not a fixed template.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["generate_document"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "system_performance", "summary": "report the current pc\'s real cpu, memory, swap, and disk usage - a live read-only snapshot, never estimated.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["system_performance"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "remember_fact", "summary": "save a fact the user explicitly asked uri to remember or add to their profile (e.g. their workplace, a stated preference) - never triggered by an incidental mention, only an explicit save/remember request.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["remember_fact"], "foundational": true, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "recall_memory", "summary": "answer a question about what uri already remembers about the user (name, stated preferences, prior context) from their own confirmed memory entries - never invents an answer if nothing relevant is saved.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["recall_memory"], "foundational": true, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "convert_document", "summary": "convert an already-attached document into a different file format - today, an attached pdf into a real docx, using its actual extracted text (ocr fallback for scanned pages).", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["convert_document"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "read_attached_file", "summary": "read the text of a current-turn attachment the user attached to this conversation (pdf including scanned/ocr, plain text, csv, json, spreadsheet, image, or word document), returning the extracted text as evidence for the brain to reason from - never an answer uri composes itself.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["read_attached_file"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": true}, {"capability_id": "web_search", "summary": "search the public internet for real, current information via a real search api, returning titles/urls/content snippets as evidence for the brain to reason from - never an answer uri composes itself.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["web_search"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "drive_upload", "summary": "upload the most recently generated or attached file in this conversation to google drive as a new file - never overwrites, moves, renames, or deletes anything already in drive.", "source": "legacy", "available": false, "availability_known": true, "availability_reason": "blocked_by_permission", "connection_required": true, "connection_state": "google_drive_file_write: no google client secret (credentials.json) is configured on the uri server host.", "permission_required": true, "approval_required": true, "risk": "high", "actions": ["drive_upload"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "fetch_url", "summary": "fetch one web page or document by url and extract its readable text as evidence (html, pdf, docx, xlsx, plain text, csv) - lets uri actually read a source web_search found (or one the user gave directly), not just cite its search-result snippet.", "source": "legacy", "available": true, "availability_known": true, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["fetch_url"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "pc_system_optimization", "summary": "inspect and optimize this device\'s performance (e.g. startup programs, disk/temp cleanup, resource-heavy processes) with explicit user approval before any change.", "source": "legacy", "available": false, "availability_known": true, "availability_reason": "not_implemented", "connection_required": null, "connection_state": null, "permission_required": false, "approval_required": true, "risk": "high", "actions": ["pc_system_optimization"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}, {"capability_id": "gmail", "summary": "search and inspect gmail messages, threads, labels, unread counts, and attachments; prepare email drafts but never send email.", "source": "multi_action", "available": null, "availability_known": false, "availability_reason": null, "connection_required": null, "connection_state": null, "permission_required": true, "approval_required": null, "risk": null, "actions": ["list_labels", "search_messages", "read_message", "read_thread", "read_attachment", "create_draft", "apply_label", "archive_message"], "foundational": false, "aliases": [], "action_descriptions": {"list_labels": "list gmail labels with total and unread email message counts; use for unread-count questions.", "search_messages": "find or search gmail messages using gmail search syntax such as unread, sender, subject, or attachment filters.", "read_message": "read one email\'s headers, subject, sender, date, snippet, body, thread id, and attachment inventory.", "read_thread": "read the full conversation in a gmail thread, including message and attachment inventory.", "read_attachment": "inspect an email attachment inventory or download one explicitly identified attachment as temporary evidence.", "create_draft": "prepare or create a gmail reply draft for the user to review in gmail. it never sends email.", "apply_label": "apply a gmail label to a message.", "archive_message": "archive a gmail message by removing it from inbox."}, "intent_signals": [], "category": "communication", "reads_current_attachments": false}, {"capability_id": "generic_evidence_drafting_workflow", "summary": "workflowplanner\'s one existing deterministic multi-step template (evidence retrieval through drafted output and review) - every keyword branch in workflow_planner.py\'s _create_steps() converges on this same sequence.", "source": "procedure", "available": true, "availability_known": true, "availability_reason": null, "connection_required": false, "connection_state": null, "permission_required": false, "approval_required": false, "risk": "controlled", "actions": ["retrieve_evidence", "verify_facts", "identify_missing_information", "prepare_decision_context", "draft_output", "review_result"], "foundational": false, "aliases": [], "action_descriptions": {}, "intent_signals": [], "category": null, "reads_current_attachments": false}]'
+
+test_capability_directory.py:228: AssertionError</failure></testcase><testcase classname="test_m20_feasibility_validation.UnavailableCapabilityIsNotPromotedTests" name="test_strict_single_action_proposal_for_unavailable_capability_falls_back" time="0.033"><failure message="AssertionError: Lists differ: [('web_search', {'session_id': 's1', 'file[107 chars]l'})] != []&#10;&#10;First list contains 1 additional elements.&#10;First extra element 0:&#10;('web_search', {'session_id': 's1', 'file_store': &lt;uri_core.core.file_store.FileStore object at 0x00000175FF487A10&gt;, 'request_text': 'search my gmail'})&#10;&#10;+ []&#10;- [('web_search',&#10;-   {'file_store': &lt;uri_core.core.file_store.FileStore object at 0x00000175FF487A10&gt;,&#10;-    'request_text': 'search my gmail',&#10;-    'session_id': 's1'})]">self = &lt;test_m20_feasibility_validation.UnavailableCapabilityIsNotPromotedTests testMethod=test_strict_single_action_proposal_for_unavailable_capability_falls_back&gt;
+
+    def test_strict_single_action_proposal_for_unavailable_capability_falls_back(
+        self,
+    ):
+        registry_path = os.path.join(
+            self.temp_dir.name, "capabilities_registry.json"
+        )
+        _write_registry(
+            registry_path,
+            {
+                "gmail_search": {
+                    "file_path": "x.py",
+                    "class_name": "X",
+                    "method": "run",
+                    "status": "implemented",
+                    "availability": "unavailable_missing_dependency",
+                }
+            },
+        )
+        registry = CapabilityRegistry(registry_path=registry_path)
+
+        gateway = ModelReasoningGateway(
+            registry_path=registry_path,
+            model_callable=lambda request_json: json.dumps(
+                {"action": {"capability": "gmail_search"}}
+            ),
+        )
+        orchestrator = self._orchestrator(gateway, registry)
+
+        dispatcher = _FakeDispatcher()
+        orchestrator.dispatcher.execute_tool = dispatcher.execute_tool
+
+        result = orchestrator.process_user_input(
+            session_id="s1", user_text="search my gmail"
+        )
+
+        # The unavailable capability was never dispatched - the
+        # deterministic CapabilityPlanner fallback ran instead (and
+        # found nothing confident either, since this registry only
+        # declares gmail_search).
+&gt;       self.assertEqual(dispatcher.calls, [])
+E       AssertionError: Lists differ: [('web_search', {'session_id': 's1', 'file[107 chars]l'})] != []
+E
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       ('web_search', {'session_id': 's1', 'file_store': &lt;uri_core.core.file_store.FileStore object at 0x00000175FF487A10&gt;, 'request_text': 'search my gmail'})
+E
+E       + []
+E       - [('web_search',
+E       -   {'file_store': &lt;uri_core.core.file_store.FileStore object at 0x00000175FF487A10&gt;,
+E       -    'request_text': 'search my gmail',
+E       -    'session_id': 's1'})]
+
+test_m20_feasibility_validation.py:146: AssertionError</failure></testcase><testcase classname="test_m20_recovery_loop.LearnedSkillFailureReachesRecoveryTests" name="test_learned_skill_failure_reaches_recovery_loop" time="0.019"><failure message="AssertionError: 'failed' != 'success'&#10;- failed&#10;+ success">self = &lt;test_m20_recovery_loop.LearnedSkillFailureReachesRecoveryTests testMethod=test_learned_skill_failure_reaches_recovery_loop&gt;
+
+    def test_learned_skill_failure_reaches_recovery_loop(self):
+        gateway = ModelReasoningGateway(
+            model_callable=_by_attempt_count(
+                {
+                    # Initial call: no fresh proposal at all, so the
+                    # learned skill below is used as the plan.
+                    0: {"action": None},
+                    # Recovery call: the Brain evaluates the real
+                    # failure and has nothing further to propose - a
+                    # valid, complete answer per REASONING_SYSTEM_PROMPT.
+                    1: {
+                        "evaluation": {
+                            "satisfied": False,
+                            "reason": (
+                                "gmail_search failed and no other "
+                                "registered capability can search "
+                                "email."
+                            ),
+                        },
+                        "action": None,
+                    },
+                }
+            )
+        )
+        orchestrator = self._orchestrator(model_reasoning_gateway=gateway)
+
+        orchestrator.skill_memory.find_matching_skill = (
+            lambda semantic_result: {
+                "tool_name": "gmail_search",
+                "task_type": "information retrieval",
+                "domain": "email",
+                "success_count": 3,
+            }
+        )
+
+        dispatcher = _FakeDispatcher(
+            {
+                "gmail_search": {
+                    "status": "error",
+                    "message": "Gmail is not connected.",
+                }
+            }
+        )
+        orchestrator.dispatcher.execute_tool = dispatcher.execute_tool
+
+        result = orchestrator.process_user_input(
+            session_id="s1", user_text="search my email for the invoice"
+        )
+
+&gt;       self.assertEqual(result["status"], "success")
+E       AssertionError: 'failed' != 'success'
+E       - failed
+E       + success
+
+test_m20_recovery_loop.py:156: AssertionError</failure></testcase><testcase classname="test_m20_recovery_loop.CapabilityPlannerFailureReachesRecoveryTests" name="test_capability_planner_failure_reaches_recovery_loop" time="0.016"><failure message="AssertionError: 'unavailable' != 'success'&#10;- unavailable&#10;+ success">self = &lt;test_m20_recovery_loop.CapabilityPlannerFailureReachesRecoveryTests testMethod=test_capability_planner_failure_reaches_recovery_loop&gt;
+
+    def test_capability_planner_failure_reaches_recovery_loop(self):
+        gateway = ModelReasoningGateway(
+            model_callable=_by_attempt_count(
+                {
+                    0: {"action": None},
+                    1: {
+                        "evaluation": {
+                            "satisfied": False,
+                            "reason": "The lookup failed; nothing else applies.",
+                        },
+                        "action": None,
+                    },
+                }
+            )
+        )
+        orchestrator = self._orchestrator(model_reasoning_gateway=gateway)
+
+        orchestrator.skill_memory.find_matching_skill = (
+            lambda semantic_result: None
+        )
+        orchestrator.capability_planner.plan = lambda sr: {
+            "status": "capability_selected",
+            "tool_name": "gmail_search",
+            "reason": "deterministic keyword match",
+        }
+
+        dispatcher = _FakeDispatcher(
+            {
+                "gmail_search": {
+                    "status": "unavailable",
+                    "message": "Gmail credentials missing.",
+                }
+            }
+        )
+        orchestrator.dispatcher.execute_tool = dispatcher.execute_tool
+
+        result = orchestrator.process_user_input(
+            session_id="s1", user_text="search my email for the invoice"
+        )
+
+&gt;       self.assertEqual(result["status"], "success")
+E       AssertionError: 'unavailable' != 'success'
+E       - unavailable
+E       + success
+
+test_m20_recovery_loop.py:219: AssertionError</failure></testcase><testcase classname="test_m20_semantic_interpreter_resilience.SemanticInterpreterFailureDegradesHonestlyTests" name="test_capability_planner_gets_the_degraded_result_without_raising" time="0.011"><failure message="AssertionError: 'failed' != 'success'&#10;- failed&#10;+ success">self = &lt;test_m20_semantic_interpreter_resilience.SemanticInterpreterFailureDegradesHonestlyTests testMethod=test_capability_planner_gets_the_degraded_result_without_raising&gt;
+
+    def test_capability_planner_gets_the_degraded_result_without_raising(self):
+        orchestrator = self._orchestrator(model_reasoning_gateway=None)
+
+        result = orchestrator.process_user_input(
+            session_id="s1", user_text="do something"
+        )
+
+        # The deterministic fallback correctly finds nothing confident
+        # to select - an honest "planning_required", not a crash.
+&gt;       self.assertEqual(result["status"], "success")
+E       AssertionError: 'failed' != 'success'
+E       - failed
+E       + success
+
+test_m20_semantic_interpreter_resilience.py:100: AssertionError</failure></testcase><testcase classname="test_m20_semantic_interpreter_resilience.SemanticInterpreterFailureDegradesHonestlyTests" name="test_raising_interpreter_does_not_fail_the_whole_turn" time="0.012"><failure message="AssertionError: 'failed' != 'success'&#10;- failed&#10;+ success">self = &lt;test_m20_semantic_interpreter_resilience.SemanticInterpreterFailureDegradesHonestlyTests testMethod=test_raising_interpreter_does_not_fail_the_whole_turn&gt;
+
+    def test_raising_interpreter_does_not_fail_the_whole_turn(self):
+        orchestrator = self._orchestrator(model_reasoning_gateway=None)
+
+        result = orchestrator.process_user_input(
+            session_id="s1", user_text="look up the record for roll 123"
+        )
+
+&gt;       self.assertEqual(result["status"], "success")
+E       AssertionError: 'failed' != 'success'
+E       - failed
+E       + success
+
+test_m20_semantic_interpreter_resilience.py:66: AssertionError</failure></testcase><testcase classname="test_m33_2_batch_b2_perception_benchmark" name="test_perception_corpus_schema_and_sha256_are_frozen[vision-categories0]" time="0.007"><failure message="AssertionError: assert '23b4f8f19c53...154370d7c98a7' == '0e8143395bab...5e33d2a6aa452'&#10;  &#10;  - 0e8143395bab304249cf77ecbaa508bab8eb4bd69b16eab7b6a5e33d2a6aa452&#10;  + 23b4f8f19c53e586fee3203f75eeeb62c55e8793ad3e5253e7c154370d7c98a7">modality = 'vision'
+categories = {'ambiguous_low_quality', 'escalate', 'field_extraction', 'screenshot_error', 'ui_state', 'vqa'}
+
+    @pytest.mark.parametrize(
+        ("modality", "categories"),
+        [
+            (
+                "vision",
+                {
+                    "screenshot_error",
+                    "field_extraction",
+                    "ui_state",
+                    "vqa",
+                    "ambiguous_low_quality",
+                    "escalate",
+                },
+            ),
+            ("audio", {"short_command", "dictation", "noisy_ambiguous", "escalate"}),
+        ],
+    )
+    def test_perception_corpus_schema_and_sha256_are_frozen(modality, categories):
+        manifest, corpus, corpus_path = _fixture(modality)
+        assert manifest["schema_version"] == "1.0"
+        assert manifest["modality"] == modality
+        assert manifest["privacy"] == "synthetic-only"
+        assert manifest["provenance"] == "URI-owned frozen fixture"
+        assert manifest["outbound_deny_required"] is True
+&gt;       assert hashlib.sha256(corpus_path.read_bytes()).hexdigest() == manifest["corpus_sha256"]
+E       AssertionError: assert '23b4f8f19c53...154370d7c98a7' == '0e8143395bab...5e33d2a6aa452'
+E
+E         - 0e8143395bab304249cf77ecbaa508bab8eb4bd69b16eab7b6a5e33d2a6aa452
+E         + 23b4f8f19c53e586fee3203f75eeeb62c55e8793ad3e5253e7c154370d7c98a7
+
+test_m33_2_batch_b2_perception_benchmark.py:60: AssertionError</failure></testcase><testcase classname="test_m33_2_batch_b2_perception_benchmark" name="test_perception_corpus_schema_and_sha256_are_frozen[audio-categories1]" time="0.011"><failure message="AssertionError: assert 'a980a0c1d833...f12cdf51bb5cf' == 'e457ab641d0f...7a736437f1087'&#10;  &#10;  - e457ab641d0fb58c6eee2c5712893fc5d71fd263570ac12a5ab7a736437f1087&#10;  + a980a0c1d8332dcd7f8f77ac0374454d2ac632ba1fc9d245091f12cdf51bb5cf">modality = 'audio'
+categories = {'dictation', 'escalate', 'noisy_ambiguous', 'short_command'}
+
+    @pytest.mark.parametrize(
+        ("modality", "categories"),
+        [
+            (
+                "vision",
+                {
+                    "screenshot_error",
+                    "field_extraction",
+                    "ui_state",
+                    "vqa",
+                    "ambiguous_low_quality",
+                    "escalate",
+                },
+            ),
+            ("audio", {"short_command", "dictation", "noisy_ambiguous", "escalate"}),
+        ],
+    )
+    def test_perception_corpus_schema_and_sha256_are_frozen(modality, categories):
+        manifest, corpus, corpus_path = _fixture(modality)
+        assert manifest["schema_version"] == "1.0"
+        assert manifest["modality"] == modality
+        assert manifest["privacy"] == "synthetic-only"
+        assert manifest["provenance"] == "URI-owned frozen fixture"
+        assert manifest["outbound_deny_required"] is True
+&gt;       assert hashlib.sha256(corpus_path.read_bytes()).hexdigest() == manifest["corpus_sha256"]
+E       AssertionError: assert 'a980a0c1d833...f12cdf51bb5cf' == 'e457ab641d0f...7a736437f1087'
+E
+E         - e457ab641d0fb58c6eee2c5712893fc5d71fd263570ac12a5ab7a736437f1087
+E         + a980a0c1d8332dcd7f8f77ac0374454d2ac632ba1fc9d245091f12cdf51bb5cf
+
+test_m33_2_batch_b2_perception_benchmark.py:60: AssertionError</failure></testcase><testcase classname="test_orchestrator_session_workflow.TestOrchestratorSessionWorkflow" name="test_session_facts_are_used_for_clarification" time="12.122"><failure message="AssertionError: 'unavailable' != 'success'&#10;- unavailable&#10;+ success">self = &lt;test_orchestrator_session_workflow.TestOrchestratorSessionWorkflow testMethod=test_session_facts_are_used_for_clarification&gt;
+
+    def test_session_facts_are_used_for_clarification(
+        self
+    ):
+
+        session = (
+            self.orchestrator.session_manager
+            .get_session(
+                self.session_id
+            )
+        )
+
+        session.current_facts[
+            "subject"
+        ] = "Insurance renewal"
+
+        workflow = {
+            "workflow_id": (
+                "session-facts-workflow"
+            ),
+            "status": "pending",
+            "steps": [
+                {
+                    "step_id": "step_1",
+                    "capability": "clarify",
+                    "status": "pending",
+                    "depends_on": []
+                }
+            ]
+        }
+
+        executor = WorkflowExecutor()
+
+        def clarify_handler(
+            step,
+            workflow
+        ):
+
+            return {
+                "status": "success",
+                "data": {
+                    "subject_available": (
+                        "subject"
+                        in session.current_facts
+                    )
+                }
+            }
+
+        executor.register_handler(
+            "clarify",
+            clarify_handler
+        )
+
+        self.orchestrator.workflow_executor = (
+            executor
+        )
+
+        self.orchestrator.workflow_planner.create_workflow = (
+            lambda semantic_result, request_text: {
+                "workflow": workflow
+            }
+        )
+
+        self.orchestrator.capability_planner.plan = (
+            lambda semantic_result: {
+                "status": "planning_required"
+            }
+        )
+
+        result = (
+            self.orchestrator.process_user_input(
+                self.session_id,
+                "Continue the insurance task"
+            )
+        )
+
+&gt;       self.assertEqual(
+            result["execution"]["status"],
+            "success"
+        )
+E       AssertionError: 'unavailable' != 'success'
+E       - unavailable
+E       + success
+
+test_orchestrator_session_workflow.py:134: AssertionError</failure></testcase><testcase classname="test_usage_import_boundary" name="test_orchestrator_newline_count_does_not_increase" time="0.001"><failure message="assert 6121 &lt;= 5460&#10; +  where 6121 = &lt;built-in method count of bytes object at 0x00000175D7AD2020&gt;(b'\n')&#10; +    where &lt;built-in method count of bytes object at 0x00000175D7AD2020&gt; = b'import json\r\nimport os\r\n\r\nfrom typing import Any, Dict, Optional\r\n\r\nfrom dataclasses import asdict, is_dat...s&quot;:\r\n                    False,\r\n\r\n                &quot;error&quot;:\r\n                    str(exc)\r\n            }\r\n'.count&#10; +      where b'import json\r\nimport os\r\n\r\nfrom typing import Any, Dict, Optional\r\n\r\nfrom dataclasses import asdict, is_dat...s&quot;:\r\n                    False,\r\n\r\n                &quot;error&quot;:\r\n                    str(exc)\r\n            }\r\n' = read_bytes()&#10; +        where read_bytes = (WindowsPath('C:/Users/cheta/.codex/worktrees/m36-baseline-check/_V1') / 'uri_core/core/orchestrator.py').read_bytes">def test_orchestrator_newline_count_does_not_increase():
+&gt;       assert (ROOT / "uri_core/core/orchestrator.py").read_bytes().count(b"\n") &lt;= 5460
+E       assert 6121 &lt;= 5460
+E        +  where 6121 = &lt;built-in method count of bytes object at 0x00000175D7AD2020&gt;(b'\n')
+E        +    where &lt;built-in method count of bytes object at 0x00000175D7AD2020&gt; = b'import json\r\nimport os\r\n\r\nfrom typing import Any, Dict, Optional\r\n\r\nfrom dataclasses import asdict, is_dat...s":\r\n                    False,\r\n\r\n                "error":\r\n                    str(exc)\r\n            }\r\n'.count
+E        +      where b'import json\r\nimport os\r\n\r\nfrom typing import Any, Dict, Optional\r\n\r\nfrom dataclasses import asdict, is_dat...s":\r\n                    False,\r\n\r\n                "error":\r\n                    str(exc)\r\n            }\r\n' = read_bytes()
+E        +        where read_bytes = (WindowsPath('C:/Users/cheta/.codex/worktrees/m36-baseline-check/_V1') / 'uri_core/core/orchestrator.py').read_bytes
+
+test_usage_import_boundary.py:32: AssertionError</failure></testcase><testcase classname="test_workflow_restart_recovery.TestWorkflowRestartRecovery" name="test_workflow_survives_restart_and_resumes" time="0.005"><failure message="AssertionError: 'unavailable' != 'waiting_for_input'&#10;- unavailable&#10;+ waiting_for_input">self = &lt;test_workflow_restart_recovery.TestWorkflowRestartRecovery testMethod=test_workflow_survives_restart_and_resumes&gt;
+
+    def test_workflow_survives_restart_and_resumes(
+        self
+    ):
+
+        # -----------------------------------------
+        # FIRST APPLICATION INSTANCE
+        # -----------------------------------------
+
+        orchestrator_one = UriOrchestrator()
+
+        session_one = (
+            orchestrator_one.session_manager
+            .get_session(self.session_id)
+        )
+
+        workflow = {
+            "workflow_id": "restart-workflow",
+            "status": "pending",
+            "steps": [
+                {
+                    "step_id": "step_1",
+                    "capability": "clarify",
+                    "status": "pending",
+                    "depends_on": []
+                }
+            ]
+        }
+
+        orchestrator_one.workflow_executor = (
+            self._create_executor(session_one)
+        )
+
+        orchestrator_one.workflow_planner.create_workflow = (
+            lambda semantic_result, request_text: {
+                "workflow": workflow
+            }
+        )
+
+        orchestrator_one.capability_planner.plan = (
+            lambda semantic_result: {
+                "status": "planning_required"
+            }
+        )
+
+        first_result = (
+            orchestrator_one.process_user_input(
+                self.session_id,
+                "Continue insurance renewal"
+            )
+        )
+
+&gt;       self.assertEqual(
+            first_result["execution"]["status"],
+            "waiting_for_input"
+        )
+E       AssertionError: 'unavailable' != 'waiting_for_input'
+E       - unavailable
+E       + waiting_for_input
+
+test_workflow_restart_recovery.py:118: AssertionError</failure></testcase></testsuite></testsuites>

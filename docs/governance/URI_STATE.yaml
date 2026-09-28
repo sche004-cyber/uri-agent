@@ -166,32 +166,36 @@ product_milestones:
 
   - id: "M36"
     title: "URI-Memory Minimum (pre-Office demonstrator)"
-    status: "PLAN_A4_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK"
-    currently_active: false
-    implementation_authorized: false
+    status: "M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT"
+    currently_active: true
+    implementation_authorized: true
     plan: "docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md"
     state: "docs/plans/M36_STATE.md"
     component: "URI-Memory"
+    implementation_baseline: "23f5cd9a5f1ac5d17d431c7a76a15533e5c570a4"
+    implementation_report: "docs/plans/M36_IMPLEMENTATION_REPORT.md"
+    closing_audit: "REQUIRED_NOT_PERFORMED"
+    integration_authorized: false
     planned_at_commit: "291c9daa48435200c4b56857d0e3bc630016e82a"
-    note: "Added 2026-09-28 (planning only). Minimum Memory slice before the isolated URI Office vertical demonstrator (sequence: M33.3 CLOSED_FROZEN -> Memory minimum -> Edge minimum -> Office demonstrator). Gates: PG-M1 independent plan pre-audit, PG-M2 explicit User implementation authorization. No S13, no INT-* event, no uri_core wiring; S9 stays deferred under D4-R1."
-    pg_m1_readiness: "M36_A4_READY_FOR_FINAL_PG_M1_RECHECK"
+    note: "Implemented 2026-09-28 per direct User task package; self-qualified and awaiting independent closing audit. Minimum Memory slice before the isolated URI Office vertical demonstrator (sequence: M33.3 CLOSED_FROZEN -> Memory minimum -> Edge minimum -> Office demonstrator). Gates: PG-M1 independent plan pre-audit, PG-M2 explicit User implementation authorization. No S13, no INT-* event, no uri_core wiring; S9 stays deferred under D4-R1."
+    pg_m1_readiness: "PG_M1_ACCEPTED_PER_USER_IMPLEMENTATION_PACKAGE"
     amendment_note: "Updated 2026-09-28 (additive): plan amendment A1 (plan section 16) records the effect of User rulings D-A, OD-2..OD-5, VG-1, LF-1. No structural change; harness_run_ref deferred with name and constraints reserved; exit criterion E-6 added; PG-M1 brief in plan section 16.5. Status unchanged; implementation not authorized."
-    pg_m1_verdict: "PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS"
+    pg_m1_verdict: "PG_M1_ACCEPTED"
     pg_m1_report: "docs/plans/M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md"
     pg_m1_required_findings: "F-1, F-2, F-3, F-4, F-5, F-6, F-7, F-8, F-9, F-10, F-11"
     amendment_a2_status: "F-1..F-11_HOLD_PER_FOCUSED_RECHECK"
     amendment_a2_scope: "Bounded plan/governance repair only; plan section 17 controls superseded draft wording and maps F-1..F-11 to Q-A2-1..Q-A2-11. Memory boundary unchanged; no code, frozen M33.3, M31, Edge, harness, Office or INT-* work."
     pg_m1_focused_recheck: "COMPLETED: PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS; all F-1..F-11 hold; N-1 remains required"
-    pg_m2_status: "BLOCKED_PENDING_FINAL_PG_M1_FOCUSED_RECHECK"
-    amendment_a2_limitations: "harness_run_ref deferral accepted and preserved; Edge sufficiency unverified because no Edge plan exists; E-6 conditional on future OD-3 output representation; future implementation qualification still required."
+    pg_m2_status: "GRANTED_BY_USER"
+    amendment_a2_limitations: "harness_run_ref deferral accepted and preserved; Edge sufficiency unverified because no Edge plan exists; E-6 conditional on future OD-3 output representation; M36 self-qualification recorded in implementation report; independent closing audit remains required."
     pg_m1_a2_focused_report: "docs/plans/M36_PG_M1_A2_FOCUSED_RECHECK_REPORT.md"
-    pg_m1_remaining_finding: "N-1 clarification FREE_INPUT: A4 plan repaired, awaiting final focused acceptance"
+    pg_m1_remaining_finding: "None per User-supplied accepted planning state; A3/A4 implementation self-qualification recorded; closing audit required"
     amendment_a3_status: "INITIAL_PROJECTION_ACCEPTED_PER_USER_SUPPLIED_FOCUSED_FINDING"
     amendment_a3_scope: "Documentation only; plan section 18 adds raw-turn grounding to projection, preserves all A2 repairs and source IDs, and adds Q-A3-1 A-G. No Memory implementation or boundary expansion."
-    pg_m1_final_focused_recheck: "BLOCKED_PENDING_FINAL_FOCUSED_RECHECK; PG-M1 not fully accepted; exact prompt in plan section 19.5"
+    pg_m1_final_focused_recheck: "PG_M1_ACCEPTED per direct User implementation package; no separate final A4 report supplied/located"
     amendment_a3_advisories: "A-1..A-4 retained for implementation/qualification without repair; no wider scope"
     amendment_a4_baseline: "9a01a4e72b4b3862fb047f3618aad7cac7a4c44e"
-    amendment_a4_status: "FREE_INPUT_REPAIRED_AWAITING_FINAL_FOCUSED_ACCEPTANCE"
+    amendment_a4_status: "ACCEPTED_PER_USER_IMPLEMENTATION_PACKAGE"
     amendment_a4_scope: "Documentation only; section 19 requires current trusted raw-answer grounding before every FREE_INPUT respond() call; Q-A3-1 H1-H3 added; A2/A3 preserved; PG-M2 blocked."
     pg_m1_latest_finding_source: "User-supplied A4 task instruction, recorded in plan section 19.1; no separate A3 report file located. A2 holds; A3 initial projection accepted; sole blocker FREE_INPUT."
 queued_initiatives:
@@ -577,12 +581,12 @@ reusable_components:
     note: "Research evidence only (see rar_identity_map above); not integrated into uri_core/ production routing. EXPERIMENTAL, not QUALIFIED_WITH_LIMITATIONS, because the A9 evidence-transport factorial line closed with documented limitations rather than a clean qualification."
 
   - id: "URI-Memory"
-    status: "NOT_STARTED"
+    status: "EXPERIMENTAL"
     cross_agent_portable: false
     portability_validated_via: null
-    architecture_defined: false
-    planning_note: "Added 2026-09-28: minimum architecture proposed in docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md (not accepted, not frozen, not implemented). architecture_defined stays false until the plan passes PG-M1."
-    note: "Explicitly designated a future separate reusable-subsystem track; no existing code claims this identity yet. This normalization does not define URI-Memory's architecture, per task scope."
+    architecture_defined: true
+    planning_note: "PG_M1_ACCEPTED and PG_M2 granted per direct User M36 implementation package; accepted plan includes A2/A3/A4."
+    note: "Core and thin URI adapter implemented under uri_v1/memory; self-qualification evidence in docs/plans/M36_IMPLEMENTATION_REPORT.md. Independent closing audit required; no freeze, production integration, portability qualification, or demonstrator-readiness claim."
 
   - id: "URI-Eval"
     status: "NOT_STARTED"

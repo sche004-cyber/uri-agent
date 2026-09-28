@@ -1,24 +1,25 @@
 # M36 State — URI-Memory Minimum (pre-Office demonstrator)
 
-STATE: PLAN_A4_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK
-READINESS: M36_A4_READY_FOR_FINAL_PG_M1_RECHECK (plan amendment A4, 2026-09-28)
+STATE: M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT
+READINESS: INDEPENDENT_CLOSING_AUDIT_REQUIRED
 Plan: docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md (§17 = A2 repairs preserved; §18 preserves accepted initial projection grounding; §19 repairs FREE_INPUT; earlier history retained)
-Component: `URI-Memory` (status unchanged: `NOT_STARTED`)
-Starting HEAD: `291c9daa48435200c4b56857d0e3bc630016e82a` (`m35-uri-v1-parallel-architecture`, local = origin)
+Component: `URI-Memory` (implemented; independently unaudited, not frozen or production integrated)
+Implementation starting HEAD: `23f5cd9a5f1ac5d17d431c7a76a15533e5c570a4` (`m35-uri-v1-parallel-architecture`)
+Frozen M33.3 baseline: `291c9daa48435200c4b56857d0e3bc630016e82a`
 Plan commit: `1f3ec48`
-Implementation authorized: NO
-Independent plan pre-audit (PG-M1): PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS — A2 repairs hold; A3 initial projection accepted; A4 FREE_INPUT final focused acceptance pending, not fully accepted
+Implementation authorized: YES — direct User M36 implementation task package, 2026-09-28
+Independent plan pre-audit (PG-M1): PG_M1_ACCEPTED — current verdict supplied by User in implementation task package; no separate final A4 report supplied/located
 Audit report: docs/plans/M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md (unchanged)
 Required findings: F-1 through F-11; plan §17.1–§17.11, qualification mapping §17.12
 Amendment A2: F-1…F-11 HOLD per independent focused report; no rollback of the original repairs
 Focused A2 report: docs/plans/M36_PG_M1_A2_FOCUSED_RECHECK_REPORT.md (supplied attachment preserved unchanged)
-Remaining blocking finding: N-1 clarification FREE_INPUT — A4 plan repaired, final focused acceptance pending
+Remaining implementation blocker: none found in self-qualification; independent closing audit required
 Amendment A3: INITIAL_PROJECTION_ACCEPTED per latest User-supplied focused finding; qualification Q-A3-1 A–G preserved
-Amendment A4: FREE_INPUT_REPAIRED_AWAITING_FINAL_FOCUSED_ACCEPTANCE; extends Q-A3-1 with H1–H3
+Amendment A4: ACCEPTED_PER_USER_IMPLEMENTATION_PACKAGE; implemented and self-qualified, including H1–H3
 Amendment A4 baseline: 9a01a4e72b4b3862fb047f3618aad7cac7a4c44e
 Amendment A3 baseline: cc4d7bc8eb122bc196891edb39de49ab0a48816b
 Planning/governance repair baseline: e26d98c5b6827946c3e546663758a94bf1be7033
-User implementation authorization (PG-M2): NOT GIVEN — BLOCKED_PENDING_FINAL_PG_M1_FOCUSED_RECHECK; do not request/start
+User implementation authorization (PG-M2): GRANTED_BY_USER — attached M36 implementation task package supersedes prior pending-authorization handoffs
 INT-* event: NONE. S13: not authorized. S9: remains deferred.
 
 ## Decisions
@@ -33,9 +34,9 @@ INT-* event: NONE. S13: not authorized. S9: remains deferred.
 
 | Gate | Requirement | Status |
 |---|---|---|
-| PG-M1 | Final focused N-1 FREE_INPUT/A4 re-check plus preservation of A2/A3 (plan §19.5 prompt) | PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS; BLOCKED_PENDING_FINAL_FOCUSED_RECHECK; not fully accepted |
-| PG-M2 | Explicit User implementation authorization after final PG-M1 acceptance | BLOCKED_PENDING_FINAL_PG_M1_FOCUSED_RECHECK; authorization not given |
-| Freeze | Plan §12 item 4 | OPEN |
+| PG-M1 | Final focused N-1 FREE_INPUT/A4 re-check plus preservation of A2/A3 | PG_M1_ACCEPTED per User-supplied current planning state; separate final report unavailable |
+| PG-M2 | Explicit User implementation authorization | GRANTED_BY_USER in current attached task package |
+| Freeze | Plan §12 item 4 | OPEN — independent closing audit not performed |
 
 ## History log
 
@@ -127,3 +128,9 @@ PG-M1 still awaits final focused acceptance; PG-M2 remains blocked and must not 
 | Dirty-worktree preservation | All 219 pre-existing dirty/untracked individual files retain their baseline hashes; only five authorized documentation/governance/handoff files changed |
 
 These are planning checks, not independent PG-M1 acceptance or future H/Memory live qualification. One bounded docs/governance commit is authorized; its hash is returned after creation. No push.
+
+## Implementation handoff — 2026-09-28
+
+Direct User implementation package authorized all nine waves and supplies PG_M1_ACCEPTED/PG_M2. No separate final A4 audit report was supplied or found; this is recorded as supplied authority, not an independently obtained verdict. Earlier planning handoffs above are historical.
+
+State: M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT. Implementation and self-qualification evidence: [M36 implementation report](M36_IMPLEMENTATION_REPORT.md), [qualification matrix](M36_QUALIFICATION_MATRIX.md), machine telemetry and JUnit artifacts listed there. No independent closing audit, frozen promotion, INT-* event, S13/Brain/production/UI integration, release or push. Next action: a separate independent closing-audit session using the exact report prompt.

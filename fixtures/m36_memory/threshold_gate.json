@@ -1,0 +1,12 @@
+{
+  "schema_version": "m36.qualification.v1",
+  "minimum_reference_cases": 40,
+  "maximum_wrong_confirmed": 0,
+  "maximum_invented_ids": 0,
+  "maximum_private_leaks": 0,
+  "minimum_session_skip_rate": 0.95,
+  "maximum_context_bytes": 8192,
+  "required_gates": ["Q-1", "Q-2", "Q-3", "Q-4", "Q-5", "Q-6", "Q-7", "Q-8", "Q-9", "Q-10", "Q-11", "Q-12", "Q-E2E", "Q-DET", "Q-A2-1", "Q-A2-2", "Q-A2-3", "Q-A2-4", "Q-A2-5", "Q-A2-6", "Q-A2-7", "Q-A2-8", "Q-A2-9", "Q-A2-10", "Q-A2-11", "Q-A3-1", "Q-A4-H"],
+  "latency": "REPORTED_NOT_GATED",
+  "decision": "Predeclared before the first qualification run; no threshold relaxation permitted. Unit and integration tests supplement the real-flow driver."
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": "m36.reference-battery.v1",
+  "files": ["budget.xlsx", "invoice.xlsx", "worker.py", "helper.py", "report.docx", "letter.docx", "rules.pdf", "memo.pdf", "notes.md"],
+  "case_forms": ["literal_title", "explicit_id", "raw_phrase", "model_normalized_title", "negated_title"],
+  "expectation": {
+    "literal_title": "CONFIRMED_CORRECT",
+    "explicit_id": "CONFIRMED_CORRECT",
+    "raw_phrase": "NO_CONFIRMED",
+    "model_normalized_title": "NO_CONFIRMED",
+    "negated_title": "NO_CONFIRMED"
+  },
+  "additional_cases": ["duplicate_title_across_roots", "incomplete_collision_scope", "candidate_subset_narrowing", "copied_context_id", "rewritten_FREE_INPUT_title", "rewritten_FREE_INPUT_id", "typed_FREE_INPUT_title", "negated_FREE_INPUT_subspan", "source_changed_during_round", "source_changed_after_binding", "stable_two_reference_snapshot", "paused_task_unknown_id_restart", "correction_A_B_C", "interrupted_pair", "registered_verifier", "tampered_receipt", "junction_escape", "reparse_escape", "hash_size_cap", "torn_tail", "readback_fault", "cross_user", "task_context_isolation", "calendar_boundaries"]
+}

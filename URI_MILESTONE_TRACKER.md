@@ -1,5 +1,8 @@
 # URI Milestone Tracker
 
+**Current implementation handoff — 2026-09-28: M36 URI-Memory Minimum.**
+State: `M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT`. The direct User task package supplies accepted PG-M1 and grants PG-M2; no separate final A4 report supplied/located. All nine implementation waves are delivered and self-qualified; independent closing audit remains required. See [implementation report](docs/plans/M36_IMPLEMENTATION_REPORT.md), [qualification matrix](docs/plans/M36_QUALIFICATION_MATRIX.md) and [M36 state](docs/plans/M36_STATE.md). No freeze, production agent-loop/UI wiring, INT-* event, Office/Harness/Edge implementation or push. Prior planning handoffs below are historical.
+
 **Planning handoff — 2026-09-28: M36 A4 ready for final PG-M1 re-check.**
 A2 repairs hold; A3 initial projection grounding is accepted per the latest
 User-supplied focused finding. [A4 plan §19](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md)
