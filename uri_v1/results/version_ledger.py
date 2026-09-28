@@ -55,6 +55,14 @@ class ResultVersion:
     trace_id: Optional[str]
     created_at: str
 
+    def __post_init__(self) -> None:
+        if self.origin not in {origin.value for origin in VersionOrigin}:
+            raise ResultVersionError("unknown version origin")
+        if type(self.version) is not int or self.version < 1:
+            raise ResultVersionError("invalid version number")
+        if not isinstance(self.content_sha256, str) or not re.fullmatch(r"[0-9a-f]{64}", self.content_sha256):
+            raise ResultVersionError("invalid content hash")
+
 
 def sha256(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
@@ -67,7 +75,7 @@ class ResultVersionLedger:
 
     # -- storage ---------------------------------------------------------------
     def _path(self, result_id: str) -> Path:
-        if not isinstance(result_id, str) or not _RESULT_ID.match(result_id):
+        if not isinstance(result_id, str) or not _RESULT_ID.fullmatch(result_id):
             raise ResultVersionError("invalid result_id")
         return self._dir / f"{result_id}.json"
 
@@ -84,6 +92,8 @@ class ResultVersionLedger:
         return digest
 
     def blob(self, digest: str) -> bytes:
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise ResultVersionError("invalid content hash")
         data = (self._blobs / digest).read_bytes()
         if sha256(data) != digest:
             raise ResultVersionError("blob integrity failure")

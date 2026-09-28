@@ -1,0 +1,6 @@
+{
+ "rows": 1020,
+ "aggregate_exact_match": true,
+ "gate_exact_match": true,
+ "raw_output_revalidation_mismatches": []
+}

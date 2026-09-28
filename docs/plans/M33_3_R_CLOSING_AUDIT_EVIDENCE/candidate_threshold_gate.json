@@ -1,0 +1,56 @@
+{
+ "schema_version": "m33.3-r.s5.threshold-gate.v1",
+ "frozen_at": "2026-09-27",
+ "frozen_before_final_run": true,
+ "decided_by": "User at the M33.3-R S5 touchpoint (2026-09-27); recorded exactly in docs/plans/M33_3_R_STATE.md section 6",
+ "user_decisions": {
+  "validator": "Reopen S1 allowlist: bounded amendment S1-A1 (closed-class function words and generic clarification verbs only)",
+  "latency_tolerance": "warm p95 <= 1.5 s for model-worded clarifications",
+  "fallback_tolerance": "a model tier counts as qualified only if its fallback rate is <= 25%",
+  "wording_preference": "Template is fine: template wording is acceptable as primary; no noticeable-improvement gate"
+ },
+ "production_config": {
+  "decoding": "constrained",
+  "prompt_variant": "allowlist",
+  "prompt_version": "m33.3-r.s5.prompt.v3",
+  "edge_model": "qwen3.5-2b",
+  "capable_model": "qwen3.5-9b",
+  "selection_basis": "best overall exploratory round-2 acceptance under the amended validator (constrained decoding: 0 invented slots, 100% schema-valid); chosen before the final run"
+ },
+ "inputs": {
+  "battery_lf_sha256": "6e28cd3023a43ba8790d5999da6586fd4d81c56f704995106eec3bb62f5a7801",
+  "validator_lf_sha256": "4a29cc25381668a1a10cef81f39165f0f49e0709d0b40366e99c0fb08b6a29f3",
+  "need_class_policy_version": "m33.3-r.s5.need-class.v1",
+  "route_policy_version": "m33.3-r.s6.v1"
+ },
+ "frozen_required": [
+  "template_valid_on_every_contract",
+  "zero_policy_violations_in_deterministic_grid",
+  "live_no_cold_load_probe_passed",
+  "zero_candidate_id_leaks_in_raw_model_output",
+  "zero_invented_slots_after_validation",
+  "presented_output_always_valid"
+ ],
+ "tier_gates": {
+  "EXPLAIN": {"arm": "edge"},
+  "REASONING": {"arm": "capable"}
+ },
+ "qualification_rule": {
+  "max_fallback_rate": 0.25,
+  "max_latency_ms_p95": 1500,
+  "max_provider_errors": 0,
+  "rows": "production_config rows of the tier's arm for that need class, all repeats"
+ },
+ "simple_class_rule": "SIMPLE is always the validated template (Plan A R2.5); no model tier is gated for SIMPLE",
+ "unqualified_tier_rule": "a need class whose tier fails keeps the validated template (EXPLAIN) or a template limitation/hand-off statement (REASONING); nothing is weakened",
+ "s8_parameters": {
+  "route_version": "m33.3-r.s6.v1|m33.3-r.s5.prompt.v3|m33.3-r.s5.need-class.v1|s5-final",
+  "latency_penalty_per_s": 0.667,
+  "latency_penalty_basis": "reward falls by 1.0 at the User's 1.5 s tolerance",
+  "fixed_routing": {"SIMPLE": "template", "EXPLAIN": "template_unless_edge_qualified", "REASONING": "template_unless_capable_qualified"}
+ },
+ "disclosures": [
+  "REASONING has 3 contracts (6 rows with 2 repeats); a verdict on it is statistically weak and is reported as such.",
+  "The S1-A1 allowlist and the prompt v3 choice used exploratory evidence; the thresholds above are the User's, not derived from final results."
+ ]
+}

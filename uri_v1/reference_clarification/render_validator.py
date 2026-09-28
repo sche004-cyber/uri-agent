@@ -29,7 +29,9 @@ _ALLOW |= {
     # pronouns addressing the reader
     "your", "it", "its", "ones", "me", "my", "we",
     # auxiliaries and copula
-    "is", "was", "were", "be", "does", "would", "will", "may", "might", "have", "has",
+    # Audit correction: May (month/name) and Will (name) must be grounded,
+    # rather than admitted globally through their auxiliary-verb homonyms.
+    "is", "was", "were", "be", "does", "would", "might", "have", "has",
     # generic clarification verbs and words
     "meant", "refer", "referring", "want", "like", "choose", "select", "pick", "confirm", "match",
     "please", "option", "options", "here", "listed", "yes", "no",

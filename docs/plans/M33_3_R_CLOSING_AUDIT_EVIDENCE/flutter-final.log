@@ -1,0 +1,225 @@
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.0.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.1.2 available)
+  file_picker_linux 1.1.0 (2.0.1 available)
+  file_picker_platform_interface 3.3.0 (4.0.0 available)
+  file_picker_web 3.1.0 (4.0.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  test_api 0.7.12 (0.7.14 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.0 available)
+Got dependencies!
+14 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart
+00:00 +0: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +1: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +2: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +3: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +4: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +5: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +6: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +7: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +8: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +9: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +10: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +11: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +12: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +13: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +14: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +15: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:00 +16: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +17: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +18: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +19: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +20: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +21: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +22: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +23: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +24: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +25: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +26: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +27: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +28: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +29: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +30: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +31: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +32: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +33: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +34: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +35: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +36: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +37: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +38: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +39: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +40: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +41: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +42: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:01 +43: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +44: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +45: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +46: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +47: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +48: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +49: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +50: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +51: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +52: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +53: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +54: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +55: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +56: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +57: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +58: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +59: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +60: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +61: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +62: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +63: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +64: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +65: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +66: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +67: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +68: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +69: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +70: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +71: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +72: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +73: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +74: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +75: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +76: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +77: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +78: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +79: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +80: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:02 +81: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:02 +82: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:02 +83: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:03 +84: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
+00:03 +85: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
+00:03 +86: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/bootstrap_screen_test.dart: once authenticated, Settings > URI server still works exactly as before
+00:03 +87: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +88: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +89: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +90: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +91: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +92: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +93: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +94: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +95: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +96: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:03 +97: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:04 +98: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:04 +99: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:04 +100: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:04 +101: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:04 +102: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m18_history_memory_test.dart: a URI-proposed memory shows Confirm/Reject and confirming works
+00:04 +103: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +104: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +105: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +106: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +107: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +108: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +109: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +110: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +111: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +112: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +113: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +114: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +115: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +116: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +117: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +118: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +119: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +120: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +121: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:04 +122: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:05 +123: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:05 +124: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +125: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +126: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +127: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +128: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +129: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +130: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +131: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +132: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +133: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +134: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +135: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:05 +136: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +137: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +138: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +139: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +140: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +141: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +142: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +143: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +144: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +145: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:06 +146: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:06 +147: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:06 +148: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:06 +149: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:06 +150: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:06 +151: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:06 +152: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:06 +153: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +154: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +155: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +156: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +157: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +158: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +159: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +160: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +161: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +162: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +163: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:07 +164: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +165: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +166: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +167: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +168: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +169: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +170: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +171: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +172: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +173: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +174: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +175: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +176: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +177: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:07 +178: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:07 +179: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:07 +180: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:08 +181: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:08 +182: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:08 +183: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:08 +184: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:08 +185: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:08 +186: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:08 +187: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:08 +188: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:08 +189: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:08 +190: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:08 +191: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:08 +192: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:08 +193: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:08 +194: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:08 +195: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:08 +196: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:09 +197: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:09 +198: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:09 +199: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:09 +200: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:10 +201: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Connections: Google Workspace access is open to every authenticated user (2026-09-12) a non-admin sees enabled connect/reconnect controls and no admin-only notice
+00:10 +202: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/compact_overlay_test.dart: the selected conversation model survives Compact <-> Workspace, same as the draft/session
+00:10 +203: C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m22_ui_parity_test.dart: Connections: Google Workspace access is open to every authenticated user (2026-09-12) an admin sees enabled connect/reconnect controls and no notice
+00:10 +204: All tests passed!

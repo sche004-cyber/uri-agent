@@ -1,5 +1,24 @@
 # M33.3 — Cross-Plan State: URI-REFERENCE-CLARIFICATION × URI Brain Architecture
 
+**Current state (2026-09-28): `CLOSED_FROZEN`.** Independent closing verdict:
+`ACCEPT_WITH_DOCUMENTED_LIMITATIONS`, under the User's one-session audit,
+bounded-repair, requalification and release authorization. Evidence:
+`docs/plans/M33_3_R_INDEPENDENT_CLOSING_AUDIT_REPORT.md`.
+
+S1 (including corrected S1-A1), S2, S3, S4, S5, S6, S7, S8, S10, S11 and
+S12 are accepted/frozen within their documented offline/fixture-backed scope.
+S9 is excluded and re-homed to URI-Memory/D4; S13 is excluded and requires a
+future INT-* authorization. M33.3 is complete within this explicit boundary.
+No model wording tier qualified; template is primary. S8 has one qualified
+route; S12 remains fixture-only. No production adoption, model/residency-policy
+freeze, research promotion, or next-slice authorization is created.
+
+Final clean LF regression: 3,261 passed, 9 baseline failures, 66 skipped, 218 subtests passed; no new failures.
+Flutter 204 passed; S12 analysis clean; one baseline full-app analyzer INFO.
+Historical records below remain evidence of their dates, not current authority.
+
+## Historical cross-plan state
+
 **[Added 2026-09-27, M33.3-R]** Current state: `M33_3_R_IMPLEMENTATION_CANDIDATE_AWAITING_INDEPENDENT_CLOSING_AUDIT` — the User authorized S5, S6, S7, S8, S10, S11 and S12 as one continuous milestone (S9 re-homed to URI-Memory / D4; S13 a separate INT-* milestone). S1 was reopened only for User-authorized amendment S1-A1. See `docs/plans/M33_3_R_STATE.md` and `docs/plans/M33_3_R_IMPLEMENTATION_REPORT.md`. The slice table in §4 and the NEXT_SLICE_AUTHORIZED lines below are history as of S4.
 
 **Current state:** `S4_CLOSED_FROZEN` (2026-09-27 independent recovery audit, bounded tracked-only replay repair, and requalification; evidence `docs/plans/M33_3_S4_RECOVERY_INDEPENDENT_AUDIT_REQUALIFICATION_REPORT.md`). Historical recovery-candidate and failed-audit states remain below in the S4 row and S4 state file.

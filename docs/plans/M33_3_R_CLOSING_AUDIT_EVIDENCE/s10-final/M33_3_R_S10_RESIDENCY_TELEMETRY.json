@@ -1,0 +1,772 @@
+{
+ "started_at": "2026-09-28T01:28:17.571048+00:00",
+ "anchors_before": {
+  "ok": true,
+  "changed": [],
+  "s4_anchor_count": 8,
+  "frozen_lf_anchor_count": 24,
+  "current_rar_sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95"
+ },
+ "configs": {
+  "R1_edge_resident": {
+   "model": "qwen3.5-2b",
+   "instance": "uri-lease-92919aa7974b",
+   "cold_load_ms": 3307.7,
+   "warm": {
+    "n": 20,
+    "errors": 0,
+    "p50_ms": 379.2,
+    "p95_ms": 548.6,
+    "mean_ms": 409.3,
+    "valid_rate": 0.05
+   },
+   "rows": [
+    {
+     "case_id": "L3A-01",
+     "latency_ms": 392.6,
+     "error": null,
+     "completion_tokens": 54,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-02",
+     "latency_ms": 439.8,
+     "error": null,
+     "completion_tokens": 67,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-03",
+     "latency_ms": 508.9,
+     "error": null,
+     "completion_tokens": 80,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-16",
+     "latency_ms": 365.9,
+     "error": null,
+     "completion_tokens": 52,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-17",
+     "latency_ms": 427.4,
+     "error": null,
+     "completion_tokens": 65,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-18",
+     "latency_ms": 504.4,
+     "error": null,
+     "completion_tokens": 78,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-24",
+     "latency_ms": 548.6,
+     "error": null,
+     "completion_tokens": 85,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-25",
+     "latency_ms": 554.6,
+     "error": null,
+     "completion_tokens": 85,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-26",
+     "latency_ms": 355.6,
+     "error": null,
+     "completion_tokens": 49,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-27",
+     "latency_ms": 316.4,
+     "error": null,
+     "completion_tokens": 49,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-30",
+     "latency_ms": 364.5,
+     "error": null,
+     "completion_tokens": 51,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-31",
+     "latency_ms": 317.8,
+     "error": null,
+     "completion_tokens": 51,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-32",
+     "latency_ms": 315.0,
+     "error": null,
+     "completion_tokens": 51,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-01",
+     "latency_ms": 379.2,
+     "error": null,
+     "completion_tokens": 59,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-02",
+     "latency_ms": 351.1,
+     "error": null,
+     "completion_tokens": 50,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-03",
+     "latency_ms": 472.4,
+     "error": null,
+     "completion_tokens": 75,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-04",
+     "latency_ms": 360.1,
+     "error": null,
+     "completion_tokens": 50,
+     "valid": true
+    },
+    {
+     "case_id": "L3B-06",
+     "latency_ms": 529.1,
+     "error": null,
+     "completion_tokens": 87,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-08",
+     "latency_ms": 355.1,
+     "error": null,
+     "completion_tokens": 50,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-09",
+     "latency_ms": 326.8,
+     "error": null,
+     "completion_tokens": 49,
+     "valid": false
+    }
+   ],
+   "gpu_dedicated_bytes_loaded": 4218986496,
+   "ram_available_loaded": 10142461952
+  },
+  "R2_capable_resident": {
+   "model": "qwen3.5-9b",
+   "instance": "uri-lease-51e3fd5b6f66",
+   "cold_load_ms": 7661.2,
+   "warm": {
+    "n": 20,
+    "errors": 0,
+    "p50_ms": 913.8,
+    "p95_ms": 1203.8,
+    "mean_ms": 924.0,
+    "valid_rate": 0.7
+   },
+   "rows": [
+    {
+     "case_id": "L3A-01",
+     "latency_ms": 908.0,
+     "error": null,
+     "completion_tokens": 55,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-02",
+     "latency_ms": 820.5,
+     "error": null,
+     "completion_tokens": 49,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-03",
+     "latency_ms": 960.6,
+     "error": null,
+     "completion_tokens": 58,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-16",
+     "latency_ms": 990.5,
+     "error": null,
+     "completion_tokens": 60,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-17",
+     "latency_ms": 888.1,
+     "error": null,
+     "completion_tokens": 53,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-18",
+     "latency_ms": 966.0,
+     "error": null,
+     "completion_tokens": 57,
+     "valid": false
+    },
+    {
+     "case_id": "L3A-24",
+     "latency_ms": 1211.1,
+     "error": null,
+     "completion_tokens": 72,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-25",
+     "latency_ms": 1197.7,
+     "error": null,
+     "completion_tokens": 72,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-26",
+     "latency_ms": 842.6,
+     "error": null,
+     "completion_tokens": 47,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-27",
+     "latency_ms": 686.9,
+     "error": null,
+     "completion_tokens": 47,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-30",
+     "latency_ms": 698.7,
+     "error": null,
+     "completion_tokens": 38,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-31",
+     "latency_ms": 569.9,
+     "error": null,
+     "completion_tokens": 38,
+     "valid": true
+    },
+    {
+     "case_id": "L3A-32",
+     "latency_ms": 579.7,
+     "error": null,
+     "completion_tokens": 38,
+     "valid": true
+    },
+    {
+     "case_id": "L3B-01",
+     "latency_ms": 1027.0,
+     "error": null,
+     "completion_tokens": 61,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-02",
+     "latency_ms": 881.6,
+     "error": null,
+     "completion_tokens": 49,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-03",
+     "latency_ms": 913.8,
+     "error": null,
+     "completion_tokens": 49,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-04",
+     "latency_ms": 1203.8,
+     "error": null,
+     "completion_tokens": 70,
+     "valid": true
+    },
+    {
+     "case_id": "L3B-06",
+     "latency_ms": 1138.9,
+     "error": null,
+     "completion_tokens": 69,
+     "valid": false
+    },
+    {
+     "case_id": "L3B-08",
+     "latency_ms": 878.3,
+     "error": null,
+     "completion_tokens": 51,
+     "valid": true
+    },
+    {
+     "case_id": "L3B-09",
+     "latency_ms": 1117.0,
+     "error": null,
+     "completion_tokens": 67,
+     "valid": false
+    }
+   ],
+   "gpu_dedicated_bytes_loaded": 8547639296,
+   "ram_available_loaded": 5500182528
+  },
+  "R3_coresident": {
+   "edge": {
+    "n": 20,
+    "errors": 0,
+    "p50_ms": 374.0,
+    "p95_ms": 544.4,
+    "mean_ms": 408.2,
+    "valid_rate": 0.05
+   },
+   "capable": {
+    "n": 20,
+    "errors": 0,
+    "p50_ms": 929.2,
+    "p95_ms": 1207.3,
+    "mean_ms": 924.8,
+    "valid_rate": 0.7
+   },
+   "load_ms": {
+    "edge": 2177.8,
+    "capable": 4999.7
+   },
+   "gpu_dedicated_bytes_loaded": 10284978176,
+   "ram_available_loaded": 4309966848,
+   "rows": {
+    "edge": [
+     {
+      "case_id": "L3A-01",
+      "latency_ms": 387.4,
+      "error": null,
+      "completion_tokens": 54,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-02",
+      "latency_ms": 444.7,
+      "error": null,
+      "completion_tokens": 67,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-03",
+      "latency_ms": 512.5,
+      "error": null,
+      "completion_tokens": 80,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-16",
+      "latency_ms": 368.9,
+      "error": null,
+      "completion_tokens": 52,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-17",
+      "latency_ms": 425.5,
+      "error": null,
+      "completion_tokens": 65,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-18",
+      "latency_ms": 493.4,
+      "error": null,
+      "completion_tokens": 78,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-24",
+      "latency_ms": 544.4,
+      "error": null,
+      "completion_tokens": 85,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-25",
+      "latency_ms": 567.0,
+      "error": null,
+      "completion_tokens": 85,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-26",
+      "latency_ms": 364.8,
+      "error": null,
+      "completion_tokens": 49,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-27",
+      "latency_ms": 313.5,
+      "error": null,
+      "completion_tokens": 49,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-30",
+      "latency_ms": 351.4,
+      "error": null,
+      "completion_tokens": 51,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-31",
+      "latency_ms": 315.8,
+      "error": null,
+      "completion_tokens": 51,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-32",
+      "latency_ms": 315.4,
+      "error": null,
+      "completion_tokens": 51,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-01",
+      "latency_ms": 371.3,
+      "error": null,
+      "completion_tokens": 59,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-02",
+      "latency_ms": 332.8,
+      "error": null,
+      "completion_tokens": 50,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-03",
+      "latency_ms": 464.3,
+      "error": null,
+      "completion_tokens": 75,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-04",
+      "latency_ms": 374.0,
+      "error": null,
+      "completion_tokens": 50,
+      "valid": true
+     },
+     {
+      "case_id": "L3B-06",
+      "latency_ms": 537.4,
+      "error": null,
+      "completion_tokens": 87,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-08",
+      "latency_ms": 354.1,
+      "error": null,
+      "completion_tokens": 50,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-09",
+      "latency_ms": 326.2,
+      "error": null,
+      "completion_tokens": 49,
+      "valid": false
+     }
+    ],
+    "capable": [
+     {
+      "case_id": "L3A-01",
+      "latency_ms": 917.2,
+      "error": null,
+      "completion_tokens": 55,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-02",
+      "latency_ms": 821.1,
+      "error": null,
+      "completion_tokens": 49,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-03",
+      "latency_ms": 958.8,
+      "error": null,
+      "completion_tokens": 58,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-16",
+      "latency_ms": 990.3,
+      "error": null,
+      "completion_tokens": 60,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-17",
+      "latency_ms": 906.1,
+      "error": null,
+      "completion_tokens": 53,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-18",
+      "latency_ms": 947.6,
+      "error": null,
+      "completion_tokens": 57,
+      "valid": false
+     },
+     {
+      "case_id": "L3A-24",
+      "latency_ms": 1207.3,
+      "error": null,
+      "completion_tokens": 72,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-25",
+      "latency_ms": 1223.7,
+      "error": null,
+      "completion_tokens": 72,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-26",
+      "latency_ms": 850.3,
+      "error": null,
+      "completion_tokens": 47,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-27",
+      "latency_ms": 702.7,
+      "error": null,
+      "completion_tokens": 47,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-30",
+      "latency_ms": 707.5,
+      "error": null,
+      "completion_tokens": 38,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-31",
+      "latency_ms": 575.0,
+      "error": null,
+      "completion_tokens": 38,
+      "valid": true
+     },
+     {
+      "case_id": "L3A-32",
+      "latency_ms": 576.5,
+      "error": null,
+      "completion_tokens": 38,
+      "valid": true
+     },
+     {
+      "case_id": "L3B-01",
+      "latency_ms": 1026.5,
+      "error": null,
+      "completion_tokens": 61,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-02",
+      "latency_ms": 886.1,
+      "error": null,
+      "completion_tokens": 49,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-03",
+      "latency_ms": 929.2,
+      "error": null,
+      "completion_tokens": 49,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-04",
+      "latency_ms": 1134.0,
+      "error": null,
+      "completion_tokens": 70,
+      "valid": true
+     },
+     {
+      "case_id": "L3B-06",
+      "latency_ms": 1139.6,
+      "error": null,
+      "completion_tokens": 69,
+      "valid": false
+     },
+     {
+      "case_id": "L3B-08",
+      "latency_ms": 869.0,
+      "error": null,
+      "completion_tokens": 51,
+      "valid": true
+     },
+     {
+      "case_id": "L3B-09",
+      "latency_ms": 1126.9,
+      "error": null,
+      "completion_tokens": 67,
+      "valid": false
+     }
+    ]
+   }
+  },
+  "R4_on_demand": {
+   "qwen3.5-2b": {
+    "load_ms": 2168.8,
+    "first_request_ms": 383.9,
+    "demand_total_ms": 2917.0
+   },
+   "qwen3.5-9b": {
+    "load_ms": 4531.1,
+    "first_request_ms": 940.1,
+    "demand_total_ms": 5817.3
+   }
+  },
+  "R5_idle_ttl": {
+   "ttl_s": 20,
+   "unloaded_after_idle_s": 21.4,
+   "provider_released": true
+  },
+  "R6_external_respect": {
+   "classification": {
+    "external-sim-qwen3.5-2b": "EXTERNAL",
+    "uri-lease-f3ce103366cf": "URI"
+   },
+   "uri_refused_external": true,
+   "external_still_loaded_after_uri_cleanup": true,
+   "passed": true
+  }
+ },
+ "snapshots": [
+  {
+   "timestamp": "2026-09-28T01:28:17.745965+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 11663273984,
+   "cpu_percent": 0.3,
+   "gpu_dedicated_bytes": 2496851968,
+   "loaded_models": [],
+   "tag": "preflight"
+  },
+  {
+   "timestamp": "2026-09-28T01:28:25.092138+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 10142461952,
+   "cpu_percent": 2.1,
+   "gpu_dedicated_bytes": 4218986496,
+   "loaded_models": [
+    {
+     "identifier": "uri-lease-92919aa7974b",
+     "modelKey": "qwen3.5-2b",
+     "sizeBytes": 1274396608
+    }
+   ],
+   "tag": "R1_edge_resident_loaded"
+  },
+  {
+   "timestamp": "2026-09-28T01:28:44.002684+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 11632541696,
+   "cpu_percent": 2.3,
+   "gpu_dedicated_bytes": 2496851968,
+   "loaded_models": [],
+   "tag": "R1_edge_resident_unloaded"
+  },
+  {
+   "timestamp": "2026-09-28T01:28:54.529431+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 5500182528,
+   "cpu_percent": 6.0,
+   "gpu_dedicated_bytes": 8547639296,
+   "loaded_models": [
+    {
+     "identifier": "uri-lease-51e3fd5b6f66",
+     "modelKey": "qwen3.5-9b",
+     "sizeBytes": 5629109056
+    }
+   ],
+   "tag": "R2_capable_resident_loaded"
+  },
+  {
+   "timestamp": "2026-09-28T01:29:24.401204+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 11636563968,
+   "cpu_percent": 1.2,
+   "gpu_dedicated_bytes": 2498686976,
+   "loaded_models": [],
+   "tag": "R2_capable_resident_unloaded"
+  },
+  {
+   "timestamp": "2026-09-28T01:29:34.442137+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 4309966848,
+   "cpu_percent": 0.7,
+   "gpu_dedicated_bytes": 10284978176,
+   "loaded_models": [
+    {
+     "identifier": "uri-lease-a53b3ef2598a",
+     "modelKey": "qwen3.5-2b",
+     "sizeBytes": 1274396608
+    },
+    {
+     "identifier": "uri-lease-745fd5c9b0ed",
+     "modelKey": "qwen3.5-9b",
+     "sizeBytes": 5629109056
+    }
+   ],
+   "tag": "R3_coresident_loaded"
+  },
+  {
+   "timestamp": "2026-09-28T01:30:20.575699+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 11703365632,
+   "cpu_percent": 2.0,
+   "gpu_dedicated_bytes": 2483744768,
+   "loaded_models": [],
+   "tag": "R3_unloaded"
+  },
+  {
+   "timestamp": "2026-09-28T01:31:08.624682+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 11703283712,
+   "cpu_percent": 1.3,
+   "gpu_dedicated_bytes": 2498686976,
+   "loaded_models": [],
+   "tag": "postflight"
+  }
+ ],
+ "limits": {
+  "ram_floor": 1610612736,
+  "gpu_ceiling": 16106127360
+ },
+ "simulated_external_release_returncode": 0,
+ "anchors_after": {
+  "ok": true,
+  "changed": [],
+  "s4_anchor_count": 8,
+  "frozen_lf_anchor_count": 24,
+  "current_rar_sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95"
+ },
+ "finished_at": "2026-09-28T01:31:11.462671+00:00"
+}

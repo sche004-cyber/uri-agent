@@ -1,5 +1,15 @@
 # M33.3 — S1 State: Reference-Clarification Deterministic Core (frozen scope)
 
+**Additive S1-A1 closure correction, 2026-09-28:** S1 remains `S1_CLOSED_FROZEN`
+after the authorized amendment's independent bounded repair and requalification.
+Ungrounded May/Will were removed from the global allowlist; grounded uses and
+ordinary grammar remain allowed. Corrected validator LF SHA-256:
+`7f9294ea34160f3b2806f7d8c686dc24101db04344746aaad7d82af167157642`.
+S3 82/82, S4 2,466 replay rows, fresh S5 six required gates and downstream
+regression pass. Original/candidate pins remain in the amendment history.
+M33.3 closure and exclusions are governed by `docs/plans/M33_3_R_INDEPENDENT_CLOSING_AUDIT_REPORT.md`;
+older scope/authorization statements below are historical.
+
 **Current state:** `S1_CLOSED_FROZEN` (bounded repair and requalification accepted, 2026-09-26).
 **S1_IMPLEMENTATION_AUDITED:** YES. **S1_REPAIRS_REQUIRED:** YES. **S1_REPAIRS_VERIFIED:** YES. **S1_CLOSED_FROZEN:** YES. **M33_3_COMPLETE:** NO. **LATER_SLICE_IMPLEMENTATION_AUTHORIZED:** NO.
 **Closure evidence:** `docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md`. This freezes only S1; Batch A and the RAR anchors remain frozen, and S2–S13 require separate authorization.

@@ -110,7 +110,7 @@ class EvaluationEvent:
 
 
 def _ident(value: Optional[str], name: str, pattern: re.Pattern = _IDENT) -> None:
-    if value is not None and (not isinstance(value, str) or not pattern.match(value)):
+    if value is not None and (not isinstance(value, str) or not pattern.fullmatch(value)):
         raise EvaluationEventError(f"{name} must be a bounded identifier")
 
 
@@ -121,6 +121,8 @@ def validate_event(event: EvaluationEvent) -> None:
         raise EvaluationEventError(str(exc)) from exc
     if event.schema_version != EVALUATION_SCHEMA_VERSION:
         raise EvaluationEventError("unsupported evaluation schema version")
+    if not event.event_id:
+        raise EvaluationEventError("event_id is required")
     if not isinstance(event.event_type, EvaluationEventType) or not isinstance(event.category, EvaluationCategory) \
             or not isinstance(event.redo_outcome, RedoOutcome):
         raise EvaluationEventError("closed-vocabulary field has an unknown value")

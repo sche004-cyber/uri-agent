@@ -1,0 +1,19 @@
+{
+  "docs/governance/URI_ACTIVE_MILESTONE.md": "b8d2bb20266d7ba0268f9bec34c6fa374be44a46337f3e0d1a6785beebbb4f5e",
+  "docs/governance/URI_STATE.yaml": "c939bf87484210b7c12e5adcf63e9b0fe0c8316e4d5a54c7692e1ebfa719d6c6",
+  "docs/plans/M33_3_R_S1_A1_VALIDATOR_AMENDMENT.md": "22ec8fec7a1d840173bbb0dd83ac0f772a2a29200e153052bcc5c8929d5008dd",
+  "docs/plans/M33_3_R_STATE.md": "a6b1c587e3aa7acb37d84746e517a7c1f9b9a27d595e06bd84b82bdf3b3ba058",
+  "fixtures/m33_3_s5/threshold_gate.json": "2f4c5e3e2de95bead19d9c22f798982fa046875c0d2d6307e498e2904bbe7969",
+  "scripts/m33_3_r_anchors.py": "2a19217d44233c72520a936ad0d9e58f07a74cf77ffc112aa33cf51ae88c55eb",
+  "scripts/m33_3_r_s8_replay.py": "217a32b6cc8e24a0cafae15de4ce73f26a9592dfbd0ba5ab28e59fc3f479bd04",
+  "uri_core/core/edge/lease_ownership.py": "09d2cff9a4b8081c89dfe8207545e71a4befb991347b5d8283431db22fff10be",
+  "uri_ui/lib/widgets/clarification_card.dart": "5c01cf73135f24eb83a785a175663a9b2ee78394b473dedc23f20ba85e75deb7",
+  "uri_ui/test/m33_3_s12_clarification_card_test.dart": "ed259f6e35e08c83d1bd0552e98f1725e82f6eff038fb2fc997181c736012400",
+  "uri_v1/evaluation/events.py": "9d4c13b78238ef458e4c82e5df40fc8ab0aab5a851c16de8bf45a1178f059244",
+  "uri_v1/evaluation/route_performance.py": "8d5b3eb0535e89b6bf4aa08efa070a79c9f8856ad9dff1317921437da154731c",
+  "uri_v1/evaluation/trace_context.py": "697ac1a8ef65c13fc937393ecbdbeb3e34e4b68e982e06faeb8415c70ff16300",
+  "uri_v1/reference_clarification/render_validator.py": "7f9294ea34160f3b2806f7d8c686dc24101db04344746aaad7d82af167157642",
+  "uri_v1/results/version_ledger.py": "3f0f9f9bf806df9a16d1f9392142c3fbd81482686946761933839265c3e9b5c4",
+  "uri_v1/wording/renderer_port.py": "bb3a38bb7c50a1bc0e775f69eea94ced37df7c953864aa036af4367af50a5d57",
+  "tests/test_m33_3_r_closing_audit.py": "d788cdcb7c72ac354b24e9df26095068f1e658c5a06c389e2ca5b5ea4713c528"
+}

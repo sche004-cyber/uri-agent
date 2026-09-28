@@ -120,4 +120,21 @@ void main() {
     expect(() => ClarificationRequest.fromJson(Map<String, dynamic>.from(base)..['kind'] = 'FREE_INPUT_ONLY'),
         throwsFormatException);
   });
+
+  testWidgets('a new round unlocks a reused card, the same round stays locked', (tester) async {
+    final card = cards.firstWhere((c) => (c['options'] as List).isNotEmpty);
+    final emitted = await pump(tester, card);
+    final optionKey = (card['options'] as List).first['option_key'];
+    await tester.tap(find.byKey(Key('clarification-option-$optionKey')));
+    await tester.pump();
+    expect(emitted.length, 1);
+    await pump(tester, card);
+    expect(find.byKey(const Key('clarification-answered')), findsOneWidget);
+    final next = Map<String, dynamic>.from(card)..['ambiguity_id'] = 'next-round';
+    final nextEmitted = await pump(tester, next);
+    expect(find.byKey(const Key('clarification-answered')), findsNothing);
+    await tester.tap(find.byKey(Key('clarification-option-$optionKey')));
+    await tester.pump();
+    expect(nextEmitted.single['ambiguity_id'], 'next-round');
+  });
 }

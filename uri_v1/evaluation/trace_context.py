@@ -31,11 +31,11 @@ def new_span_id() -> str:
 
 
 def is_valid_trace_id(value: object) -> bool:
-    return isinstance(value, str) and bool(_TRACE_ID.match(value)) and value != _INVALID_TRACE_ID
+    return isinstance(value, str) and bool(_TRACE_ID.fullmatch(value)) and value != _INVALID_TRACE_ID
 
 
 def is_valid_span_id(value: object) -> bool:
-    return isinstance(value, str) and bool(_SPAN_ID.match(value)) and value != _INVALID_SPAN_ID
+    return isinstance(value, str) and bool(_SPAN_ID.fullmatch(value)) and value != _INVALID_SPAN_ID
 
 
 def require_trace_id(value: object) -> str:

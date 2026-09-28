@@ -31,6 +31,16 @@ class _ClarificationCardState extends State<ClarificationCard> {
   String? _answeredLabel;
 
   @override
+  void didUpdateWidget(covariant ClarificationCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.request.ambiguityId != widget.request.ambiguityId) {
+      _controller.clear();
+      _answeredLabel = null;
+      _freeInputOpen = widget.request.kind == ClarificationKind.freeInputOnly;
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();

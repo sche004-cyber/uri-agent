@@ -959,6 +959,27 @@ blueprint, not a new decision invented here.
 
 ## 1c. Roadmap Reservations, 2026-09-18: M32.1, M34, M35
 
+**Current state (2026-09-28): `CLOSED_FROZEN`.** Independent closing verdict:
+`ACCEPT_WITH_DOCUMENTED_LIMITATIONS`, under the User's one-session audit,
+bounded-repair, requalification and release authorization. Evidence:
+`docs/plans/M33_3_R_INDEPENDENT_CLOSING_AUDIT_REPORT.md`.
+
+S1 (including corrected S1-A1), S2, S3, S4, S5, S6, S7, S8, S10, S11 and
+S12 are accepted/frozen within their documented offline/fixture-backed scope.
+S9 is excluded and re-homed to URI-Memory/D4; S13 is excluded and requires a
+future INT-* authorization. M33.3 is complete within this explicit boundary.
+No model wording tier qualified; template is primary. S8 has one qualified
+route; S12 remains fixture-only. No production adoption, model/residency-policy
+freeze, research promotion, or next-slice authorization is created.
+
+Final clean LF regression: 3,261 passed, 9 baseline failures, 66 skipped, 218 subtests passed; no new failures.
+Flutter 204 passed; S12 analysis clean; one baseline full-app analyzer INFO.
+Historical records below remain evidence of their dates, not current authority.
+
+M33.3 identity: Edge Intelligence Qualification & Integration; this supersedes
+the stale Hybrid UI reservation below. Canonical machine state: `URI_STATE.yaml`.
+
+
 Recorded per direct User instruction ("Approve the consolidated
 governance/planning proposal... Apply the pending roadmap items").
 All three are reservations/scope records only — **none is started,

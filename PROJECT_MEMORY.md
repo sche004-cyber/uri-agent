@@ -1,5 +1,15 @@
 # URI Project Memory
 
+**Latest delivery checkpoint — 2026-09-28: M33.3 `CLOSED_FROZEN`,
+`ACCEPT_WITH_DOCUMENTED_LIMITATIONS`.** Independent audit of `d1feaf7`, bounded
+repairs and requalification completed under the User's direct session authority.
+3,261 passed, 9 baseline failures, 66 skipped, 218 subtests passed; no new regression. Flutter 204 passed.
+Template-only wording; S8 one-route replay; S12 fixture-only. S9 remains
+URI-Memory/D4, S13 a future INT-* milestone; neither is authorized here.
+Full evidence, scope and limitations: `docs/plans/M33_3_R_INDEPENDENT_CLOSING_AUDIT_REPORT.md`.
+The commit containing this checkpoint is the closure release; older entries
+retain their historical meaning. No next milestone is automatically opened.
+
 ## Resume point
 
 - **M33.1 — Real Integrations / Acquire & Manage Abilities:** **CLOSED /

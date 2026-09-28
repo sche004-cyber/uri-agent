@@ -38,3 +38,27 @@ No number, date, name, file extension or domain noun was added. All other checks
 | S5 deterministic grid | 0 violations; template valid on 60/60 |
 | S12 fixtures | unchanged (template wording does not depend on the allowlist) |
 | Protected anchors | OK after the recorded re-pin |
+
+## 5. Independent closing-audit correction (2026-09-27)
+
+The candidate widening was user-authorized (state section 6), but its safety
+claim was too strong. Fresh falsification accepted both `Which document from
+May do you mean?` and `Which file from Will do you mean?` with no such facts
+in the contract. The global auxiliary entries `may` and `will` also admitted
+month/name homonyms after case folding. Under the closing task package's
+explicit bounded-amendment correction authority, those two additions are
+removed. Grounded occurrences remain permitted through contract facts.
+Ordinary `or`, `of`, `is` grammar remains allowed. This tightens the original
+no-invented-dates/names intent; it changes no acceptance criterion.
+
+Audited corrected validator LF SHA-256:
+`7f9294ea34160f3b2806f7d8c686dc24101db04344746aaad7d82af167157642`.
+The prior `4a29cc25...` candidate and original `903ef9fe...` baseline remain
+in Git and in the history above. Only this existing amendment's anchor is
+re-pinned. Prompt v4 reflects the smaller allowlist. The old threshold gate
+is preserved in `M33_3_R_CLOSING_AUDIT_EVIDENCE/candidate_threshold_gate.json`;
+its numeric gates remain unchanged in the current gate. Audit qualification
+results are recorded in the independent closing report, not asserted here.
+The lexical validator is a conservative fact-token check, not a general
+semantic entailment proof; homonyms/allowed-word recombinations remain a
+limitation of the frozen design, and no model route is promoted by this fix.

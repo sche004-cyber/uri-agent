@@ -1,0 +1,17 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_ ProductionCompositionTests.test_context_completion_callback_enqueues_one_brain_visible_projection _
+test_m33_batch_c_durable_primitives.py:147: in test_context_completion_callback_enqueues_one_brain_visible_projection
+    context = self.server._build_user_context(USER_A)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_core\app\server.py:535: in _build_user_context
+    external_credential_store = ExternalCredentialStore(root=_USER_STATE_ROOT)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_core\external\credentials.py:88: in __init__
+    raise ValueError(
+E   ValueError: URI_EXTERNAL_CREDENTIAL_SECRET environment variable must be set before ExternalCredentialStore can be used.
+---------------------------- Captured stdout call -----------------------------
+warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
+=========================== short test summary info ===========================
+FAILED test_m33_batch_c_durable_primitives.py::ProductionCompositionTests::test_context_completion_callback_enqueues_one_brain_visible_projection
+1 failed, 12 deselected in 9.83s

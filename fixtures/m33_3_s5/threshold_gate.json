@@ -12,14 +12,14 @@
  "production_config": {
   "decoding": "constrained",
   "prompt_variant": "allowlist",
-  "prompt_version": "m33.3-r.s5.prompt.v3",
+  "prompt_version": "m33.3-r.s5.prompt.v4",
   "edge_model": "qwen3.5-2b",
   "capable_model": "qwen3.5-9b",
   "selection_basis": "best overall exploratory round-2 acceptance under the amended validator (constrained decoding: 0 invented slots, 100% schema-valid); chosen before the final run"
  },
  "inputs": {
   "battery_lf_sha256": "6e28cd3023a43ba8790d5999da6586fd4d81c56f704995106eec3bb62f5a7801",
-  "validator_lf_sha256": "4a29cc25381668a1a10cef81f39165f0f49e0709d0b40366e99c0fb08b6a29f3",
+  "validator_lf_sha256": "7f9294ea34160f3b2806f7d8c686dc24101db04344746aaad7d82af167157642",
   "need_class_policy_version": "m33.3-r.s5.need-class.v1",
   "route_policy_version": "m33.3-r.s6.v1"
  },
@@ -32,8 +32,12 @@
   "presented_output_always_valid"
  ],
  "tier_gates": {
-  "EXPLAIN": {"arm": "edge"},
-  "REASONING": {"arm": "capable"}
+  "EXPLAIN": {
+   "arm": "edge"
+  },
+  "REASONING": {
+   "arm": "capable"
+  }
  },
  "qualification_rule": {
   "max_fallback_rate": 0.25,
@@ -44,13 +48,22 @@
  "simple_class_rule": "SIMPLE is always the validated template (Plan A R2.5); no model tier is gated for SIMPLE",
  "unqualified_tier_rule": "a need class whose tier fails keeps the validated template (EXPLAIN) or a template limitation/hand-off statement (REASONING); nothing is weakened",
  "s8_parameters": {
-  "route_version": "m33.3-r.s6.v1|m33.3-r.s5.prompt.v3|m33.3-r.s5.need-class.v1|s5-final",
+  "route_version": "m33.3-r.s6.v1|m33.3-r.s5.prompt.v4|m33.3-r.s5.need-class.v1|s5-final",
   "latency_penalty_per_s": 0.667,
   "latency_penalty_basis": "reward falls by 1.0 at the User's 1.5 s tolerance",
-  "fixed_routing": {"SIMPLE": "template", "EXPLAIN": "template_unless_edge_qualified", "REASONING": "template_unless_capable_qualified"}
+  "fixed_routing": {
+   "SIMPLE": "template",
+   "EXPLAIN": "template_unless_edge_qualified",
+   "REASONING": "template_unless_capable_qualified"
+  }
  },
  "disclosures": [
   "REASONING has 3 contracts (6 rows with 2 repeats); a verdict on it is statistically weak and is reported as such.",
   "The S1-A1 allowlist and the prompt v3 choice used exploratory evidence; the thresholds above are the User's, not derived from final results."
- ]
+ ],
+ "audit_input_repin": {
+  "reason": "Closing-audit S1-A1 correction excludes ungrounded May/Will. Numeric acceptance criteria unchanged. Fresh final run required.",
+  "previous_gate_lf_sha256": "ea471fd8fd3b282dfd370edcd916785e61696af727a4e1a47af859166e2aed5b",
+  "historical_gate": "docs/plans/M33_3_R_CLOSING_AUDIT_EVIDENCE/candidate_threshold_gate.json"
+ }
 }

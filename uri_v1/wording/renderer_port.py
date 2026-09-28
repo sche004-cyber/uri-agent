@@ -1,4 +1,4 @@
-"""Provider-neutral renderer port and adapters (Plan A §12.5, §5).
+"""Provider-neutral renderer port and adapters (Plan A Â§12.5, Â§5).
 
 Every adapter receives only the slot-keyed `RenderRequest` (no candidate IDs,
 no RAR internals, no history) and returns raw text. Validation, fallback and
@@ -29,7 +29,8 @@ from uri_v1.turn.rar_clarification_contract import ClarificationContract, Clarif
 # v2 names the real axis, addresses the reader as "you", and forbids slot keys.
 # v3: identical wording to v2; the allowlist note now lists the S1-A1 widened
 # validator allowlist (it is generated from the validator itself).
-PROMPT_VERSION = "m33.3-r.s5.prompt.v3"
+# v4: closing-audit S1-A1 correction excludes ungrounded May/Will homonyms.
+PROMPT_VERSION = "m33.3-r.s5.prompt.v4"
 
 SYSTEM_PROMPT = (
     "You word one short clarification question, addressed to the reader as \"you\". Use only the facts given. "

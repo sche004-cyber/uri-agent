@@ -1,0 +1,114 @@
+[
+  {
+    "test": "test_capability_directory.PrivacyTests::test_no_credentials_tokens_or_secrets_appear_in_serialized_output",
+    "candidate_also_failed": true,
+    "category": "standing behavioral assertion",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing: independently reproduced in clean baseline and candidate. No blanket passing claim.",
+    "final_LF_failure": true
+  },
+  {
+    "test": "test_m20_feasibility_validation.UnavailableCapabilityIsNotPromotedTests::test_strict_single_action_proposal_for_unavailable_capability_falls_back",
+    "candidate_also_failed": true,
+    "category": "standing behavioral assertion",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing: independently reproduced in clean baseline and candidate. No blanket passing claim.",
+    "final_LF_failure": true
+  },
+  {
+    "test": "test_m20_recovery_loop.LearnedSkillFailureReachesRecoveryTests::test_learned_skill_failure_reaches_recovery_loop",
+    "candidate_also_failed": true,
+    "category": "standing behavioral assertion",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing: independently reproduced in clean baseline and candidate. No blanket passing claim.",
+    "final_LF_failure": true
+  },
+  {
+    "test": "test_m20_recovery_loop.CapabilityPlannerFailureReachesRecoveryTests::test_capability_planner_failure_reaches_recovery_loop",
+    "candidate_also_failed": true,
+    "category": "standing behavioral assertion",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing: independently reproduced in clean baseline and candidate. No blanket passing claim.",
+    "final_LF_failure": true
+  },
+  {
+    "test": "test_m20_semantic_interpreter_resilience.SemanticInterpreterFailureDegradesHonestlyTests::test_capability_planner_gets_the_degraded_result_without_raising",
+    "candidate_also_failed": true,
+    "category": "standing behavioral assertion",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing: independently reproduced in clean baseline and candidate. No blanket passing claim.",
+    "final_LF_failure": true
+  },
+  {
+    "test": "test_m20_semantic_interpreter_resilience.SemanticInterpreterFailureDegradesHonestlyTests::test_raising_interpreter_does_not_fail_the_whole_turn",
+    "candidate_also_failed": true,
+    "category": "standing behavioral assertion",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing: independently reproduced in clean baseline and candidate. No blanket passing claim.",
+    "final_LF_failure": true
+  },
+  {
+    "test": "test_m33_2_batch_b2_perception_benchmark::test_perception_corpus_schema_and_sha256_are_frozen[vision-categories0]",
+    "candidate_also_failed": true,
+    "category": "CRLF raw hash mismatch",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing CRLF byte-hash failure in both clean original checkouts; passes in explicit LF export. Raw hash semantics were not weakened.",
+    "final_LF_failure": false
+  },
+  {
+    "test": "test_m33_2_batch_b2_perception_benchmark::test_perception_corpus_schema_and_sha256_are_frozen[audio-categories1]",
+    "candidate_also_failed": true,
+    "category": "CRLF raw hash mismatch",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing CRLF byte-hash failure in both clean original checkouts; passes in explicit LF export. Raw hash semantics were not weakened.",
+    "final_LF_failure": false
+  },
+  {
+    "test": "test_orchestrator_session_workflow.TestOrchestratorSessionWorkflow::test_session_facts_are_used_for_clarification",
+    "candidate_also_failed": true,
+    "category": "standing behavioral assertion",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing: independently reproduced in clean baseline and candidate. No blanket passing claim.",
+    "final_LF_failure": true
+  },
+  {
+    "test": "test_usage_import_boundary::test_orchestrator_newline_count_does_not_increase",
+    "candidate_also_failed": true,
+    "category": "standing behavioral assertion",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing: independently reproduced in clean baseline and candidate. No blanket passing claim.",
+    "final_LF_failure": true
+  },
+  {
+    "test": "test_workflow_restart_recovery.TestWorkflowRestartRecovery::test_workflow_survives_restart_and_resumes",
+    "candidate_also_failed": true,
+    "category": "standing behavioral assertion",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing: independently reproduced in clean baseline and candidate. No blanket passing claim.",
+    "final_LF_failure": true
+  },
+  {
+    "test": "tests.test_m33_3_s3_battery::test_fixture_manifest_is_canonical_and_portable",
+    "candidate_also_failed": true,
+    "category": "CRLF raw hash mismatch",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing CRLF byte-hash failure in both clean original checkouts; passes in explicit LF export. Raw hash semantics were not weakened.",
+    "final_LF_failure": false
+  },
+  {
+    "test": "tests.test_m33_3_s4_replay::test_replay_runs_without_untracked_a2_8f_harness",
+    "candidate_also_failed": true,
+    "category": "CRLF raw hash mismatch",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing CRLF byte-hash failure in both clean original checkouts; passes in explicit LF export. Raw hash semantics were not weakened.",
+    "final_LF_failure": false
+  },
+  {
+    "test": "tests.test_m33_3_s4_replay::test_frozen_corpus_projection_and_replay_gate",
+    "candidate_also_failed": true,
+    "category": "CRLF raw hash mismatch",
+    "test_source_unchanged_in_candidate": true,
+    "adjudication": "Pre-existing CRLF byte-hash failure in both clean original checkouts; passes in explicit LF export. Raw hash semantics were not weakened.",
+    "final_LF_failure": false
+  }
+]

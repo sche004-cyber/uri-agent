@@ -1,0 +1,44 @@
+{
+ "exact_values": {
+  "fixed": 1.0,
+  "learned_final": 1.0,
+  "per_case_oracle": 1.0
+ },
+ "learned_final_policy": {
+  "EXPLAIN": "template",
+  "REASONING": "template",
+  "SIMPLE": "template"
+ },
+ "replay": {
+  "accepted_events": 3000,
+  "mean_reward": 1.0
+ },
+ "estimators": {
+  "ips": 1.0,
+  "snips": 1.0,
+  "abs_error_ips": 0.0,
+  "abs_error_snips": 0.0
+ },
+ "guards": {
+  "off_uses_fixed": true,
+  "off_writes_nothing": true,
+  "version_bump_invalidates": true,
+  "unqualified_never_chosen": true,
+  "reset_returns_fixed": true
+ },
+ "guards_passed": true,
+ "method_validation": {
+  "label": "METHOD_VALIDATION_SYNTHETIC_NOT_ROUTE_EVIDENCE",
+  "true_value_B": 0.9,
+  "ips_estimate_B": 0.8775,
+  "abs_error": 0.0225,
+  "training_events": 1000,
+  "held_out_events": 4000,
+  "snips_estimate": 0.89,
+  "replay_accepted": 1972,
+  "replay_mean_reward": 0.8899594320486816,
+  "limitation": "Seeded preference plus held-out fixed-policy evaluation; no unseeded exploration claim.",
+  "learner_chose": "B",
+  "passed": true
+ }
+}

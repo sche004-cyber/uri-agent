@@ -1,0 +1,57 @@
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.0.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.1.2 available)
+  file_picker_linux 1.1.0 (2.0.1 available)
+  file_picker_platform_interface 3.3.0 (4.0.0 available)
+  file_picker_web 3.1.0 (4.0.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  test_api 0.7.12 (0.7.14 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.0 available)
+Got dependencies!
+14 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/cheta/Development/Uri/_V1/uri_ui/test/m33_3_s12_clarification_card_test.dart
+00:00 +0: fixture is fixture-only and every card parses
+00:00 +1: L3B-01: shows exactly the grounded options, no padding
+00:00 +2: L3B-01: s1 emits the grounded payload, not the label
+00:00 +3: L3B-01: s2 emits the grounded payload, not the label
+00:00 +4: L3B-01: s3 emits the grounded payload, not the label
+00:00 +5: L3B-01: free input is authoritative and emitted verbatim
+00:00 +6: L3B-08: shows exactly the grounded options, no padding
+00:00 +7: L3B-08: a1 emits the grounded payload, not the label
+00:00 +8: L3B-08: a2 emits the grounded payload, not the label
+00:01 +9: L3B-08: free input is authoritative and emitted verbatim
+00:01 +10: L3B-13: shows exactly the grounded options, no padding
+00:01 +11: L3B-13: s1 emits the grounded payload, not the label
+00:01 +12: L3B-13: s2 emits the grounded payload, not the label
+00:01 +13: L3B-13: free input is authoritative and emitted verbatim
+00:01 +14: L3B-15: shows exactly the grounded options, no padding
+00:01 +15: L3B-15: a1 emits the grounded payload, not the label
+00:01 +16: L3B-15: a2 emits the grounded payload, not the label
+00:01 +17: L3B-15: a3 emits the grounded payload, not the label
+00:01 +18: L3B-15: a4 emits the grounded payload, not the label
+00:01 +19: L3B-15: a5 emits the grounded payload, not the label
+00:01 +20: L3B-15: free input is authoritative and emitted verbatim
+00:01 +21: L3B-22: shows exactly the grounded options, no padding
+00:01 +22: L3B-22: free input is authoritative and emitted verbatim
+00:01 +23: L3B-23: shows exactly the grounded options, no padding
+00:01 +24: L3B-23: s1 emits the grounded payload, not the label
+00:01 +25: L3B-23: free input is authoritative and emitted verbatim
+00:01 +26: L3B-17: shows exactly the grounded options, no padding
+00:01 +27: L3B-17: a1 emits the grounded payload, not the label
+00:01 +28: L3B-17: a2 emits the grounded payload, not the label
+00:01 +29: L3B-17: free input is authoritative and emitted verbatim
+00:01 +30: L3B-07: shows exactly the grounded options, no padding
+00:01 +31: L3B-07: s1 emits the grounded payload, not the label
+00:01 +32: L3B-07: s2 emits the grounded payload, not the label
+00:01 +33: L3B-07: free input is authoritative and emitted verbatim
+00:01 +34: malformed or padded cards fail closed
+00:01 +35: a new round unlocks a reused card, the same round stays locked
+00:01 +36: All tests passed!

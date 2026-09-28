@@ -30,7 +30,7 @@ FROZEN_LF_ANCHORS = {
     "uri_v1/reference_clarification/render_contracts.py": "119da8516b343078a7fa23835f9169b438dbe178f811db52aa523a934d1b9024",
     # Re-pinned 2026-09-27 by amendment S1-A1 (User decision at the S5 touchpoint: bounded
     # function-word allowlist widening). Baseline c2f5839 value: 903ef9fe...3e0e.
-    "uri_v1/reference_clarification/render_validator.py": "4a29cc25381668a1a10cef81f39165f0f49e0709d0b40366e99c0fb08b6a29f3",
+    "uri_v1/reference_clarification/render_validator.py": "7f9294ea34160f3b2806f7d8c686dc24101db04344746aaad7d82af167157642",
     "uri_v1/reference_clarification/safeguards.py": "5a4e66494303160304ddb1707f9c7b125471134cf8cbbbb2218cbb77fb9ff88c",
     "uri_v1/reference_clarification/session_adjunct.py": "ff59a5a6025011478006dd57657d5156b0a9810223f31e3833f29433ec9b7955",
     "uri_v1/reference_clarification/store.py": "928a972a6ef71e9dabe1e7bbf9980d2caa8f25a1753dd00509e0fe3f804ccf43",

@@ -1,0 +1,58 @@
+{
+ "violations": 0,
+ "need_classes": {
+  "EXPLAIN": 26,
+  "SIMPLE": 31,
+  "REASONING": 3
+ },
+ "rows": 1020,
+ "probe": true,
+ "gate": {
+  "gate_sha256": "2f4c5e3e2de95bead19d9c22f798982fa046875c0d2d6307e498e2904bbe7969",
+  "inputs_match": {
+   "battery": true,
+   "validator": true,
+   "prompt_version": true,
+   "need_class_policy": true
+  },
+  "frozen_required": {
+   "template_valid_on_every_contract": true,
+   "zero_policy_violations_in_deterministic_grid": true,
+   "live_no_cold_load_probe_passed": true,
+   "zero_candidate_id_leaks_in_raw_model_output": true,
+   "zero_invented_slots_after_validation": true,
+   "presented_output_always_valid": true
+  },
+  "frozen_required_passed": true,
+  "tiers": {
+   "EXPLAIN": {
+    "arm": "edge",
+    "rows": 52,
+    "fallback_rate": 0.7692,
+    "latency_ms_p95": 524.3,
+    "provider_errors": 0,
+    "qualified": false
+   },
+   "REASONING": {
+    "arm": "capable",
+    "rows": 6,
+    "fallback_rate": 0.6667,
+    "latency_ms_p95": 1208.3,
+    "provider_errors": 0,
+    "qualified": false
+   }
+  },
+  "qualified_routes": {
+   "SIMPLE": [
+    "template"
+   ],
+   "EXPLAIN": [
+    "template"
+   ],
+   "REASONING": [
+    "template"
+   ]
+  },
+  "verdict": "S5_FINAL_REQUALIFIED"
+ }
+}

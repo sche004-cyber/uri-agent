@@ -55,6 +55,9 @@ class LeaseOwnershipLedger:
             return bool(provider_instance_id) and provider_instance_id in self._active
 
     def may_unload(self, lease_or_instance: RuntimeLease | str) -> bool:
+        if isinstance(lease_or_instance, RuntimeLease):
+            with self._lock:
+                return self._active.get(lease_or_instance.provider_instance_id) == lease_or_instance
         instance = lease_or_instance.provider_instance_id if isinstance(lease_or_instance, RuntimeLease) else lease_or_instance
         return self.owns(instance)
 
@@ -85,7 +88,13 @@ class LeaseOwnershipLedger:
         for instance_id, model_id in observed:
             with self._lock:
                 owned = self._active.get(instance_id or "")
-            if owned is not None:
+                if owned is not None and owned.runtime_id == runtime_id and owned.model_id != model_id:
+                    # The provider identifier has been reused or its provenance
+                    # is now unknown. Retire the old permission as well as
+                    # reporting EXTERNAL; later cleanup must not unload it.
+                    self._active.pop(instance_id, None)
+                    owned = None
+            if owned is not None and owned.runtime_id == runtime_id and owned.model_id == model_id:
                 out.append(owned)
             elif instance_id:
                 orphan = instance_id.startswith(URI_INSTANCE_PREFIX)

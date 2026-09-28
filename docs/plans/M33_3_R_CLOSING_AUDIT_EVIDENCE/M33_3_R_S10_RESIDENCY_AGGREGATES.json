@@ -1,0 +1,202 @@
+{
+ "started_at": "2026-09-27T14:02:21.526700+00:00",
+ "anchors_before": {
+  "ok": true,
+  "changed": [],
+  "s4_anchor_count": 8,
+  "frozen_lf_anchor_count": 24,
+  "current_rar_sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95"
+ },
+ "configs": {
+  "R1_edge_resident": {
+   "model": "qwen3.5-2b",
+   "instance": "uri-lease-072bd5c2f7d2",
+   "cold_load_ms": 3060.2,
+   "warm": {
+    "n": 20,
+    "errors": 0,
+    "p50_ms": 406.0,
+    "p95_ms": 574.2,
+    "mean_ms": 427.6,
+    "valid_rate": 0.05
+   },
+   "gpu_dedicated_bytes_loaded": 3011678208,
+   "ram_available_loaded": 11524452352
+  },
+  "R2_capable_resident": {
+   "model": "qwen3.5-9b",
+   "instance": "uri-lease-2cbd03f82d72",
+   "cold_load_ms": 4537.0,
+   "warm": {
+    "n": 20,
+    "errors": 0,
+    "p50_ms": 949.2,
+    "p95_ms": 1238.7,
+    "mean_ms": 942.1,
+    "valid_rate": 0.7
+   },
+   "gpu_dedicated_bytes_loaded": 7313854464,
+   "ram_available_loaded": 7011172352
+  },
+  "R3_coresident": {
+   "edge": {
+    "n": 20,
+    "errors": 0,
+    "p50_ms": 379.0,
+    "p95_ms": 559.1,
+    "mean_ms": 413.7,
+    "valid_rate": 0.05
+   },
+   "capable": {
+    "n": 20,
+    "errors": 0,
+    "p50_ms": 928.0,
+    "p95_ms": 1210.2,
+    "mean_ms": 932.3,
+    "valid_rate": 0.7
+   },
+   "load_ms": {
+    "edge": 2448.1,
+    "capable": 4977.2
+   },
+   "gpu_dedicated_bytes_loaded": 9056174080,
+   "ram_available_loaded": 5741637632
+  },
+  "R4_on_demand": {
+   "qwen3.5-2b": {
+    "load_ms": 2411.4,
+    "first_request_ms": 387.5,
+    "demand_total_ms": 3149.5
+   },
+   "qwen3.5-9b": {
+    "load_ms": 4268.6,
+    "first_request_ms": 936.4,
+    "demand_total_ms": 5567.5
+   }
+  },
+  "R5_idle_ttl": {
+   "ttl_s": 20,
+   "unloaded_after_idle_s": 21.4,
+   "provider_released": true
+  },
+  "R6_external_respect": {
+   "classification": {
+    "external-sim-qwen3.5-2b": "EXTERNAL",
+    "uri-lease-1dfa43c02659": "URI"
+   },
+   "uri_refused_external": true,
+   "external_still_loaded_after_uri_cleanup": true,
+   "passed": true
+  }
+ },
+ "snapshots": [
+  {
+   "timestamp": "2026-09-27T14:02:21.531366+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 13027119104,
+   "cpu_percent": 6.9,
+   "gpu_dedicated_bytes": 1269358592,
+   "loaded_models": [],
+   "tag": "preflight"
+  },
+  {
+   "timestamp": "2026-09-27T14:02:27.560700+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 11524452352,
+   "cpu_percent": 7.7,
+   "gpu_dedicated_bytes": 3011678208,
+   "loaded_models": [
+    {
+     "identifier": "uri-lease-072bd5c2f7d2",
+     "modelKey": "qwen3.5-2b",
+     "sizeBytes": 1274396608
+    }
+   ],
+   "tag": "R1_edge_resident_loaded"
+  },
+  {
+   "timestamp": "2026-09-27T14:02:47.123716+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 13000486912,
+   "cpu_percent": 5.8,
+   "gpu_dedicated_bytes": 1269358592,
+   "loaded_models": [],
+   "tag": "R1_edge_resident_unloaded"
+  },
+  {
+   "timestamp": "2026-09-27T14:02:54.591558+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 7011172352,
+   "cpu_percent": 6.3,
+   "gpu_dedicated_bytes": 7313854464,
+   "loaded_models": [
+    {
+     "identifier": "uri-lease-2cbd03f82d72",
+     "modelKey": "qwen3.5-9b",
+     "sizeBytes": 5629109056
+    }
+   ],
+   "tag": "R2_capable_resident_loaded"
+  },
+  {
+   "timestamp": "2026-09-27T14:03:24.797656+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 13109927936,
+   "cpu_percent": 15.9,
+   "gpu_dedicated_bytes": 1269358592,
+   "loaded_models": [],
+   "tag": "R2_capable_resident_unloaded"
+  },
+  {
+   "timestamp": "2026-09-27T14:03:35.128774+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 5741637632,
+   "cpu_percent": 16.0,
+   "gpu_dedicated_bytes": 9056174080,
+   "loaded_models": [
+    {
+     "identifier": "uri-lease-5318a567dc4c",
+     "modelKey": "qwen3.5-2b",
+     "sizeBytes": 1274396608
+    },
+    {
+     "identifier": "uri-lease-5a7a8bada302",
+     "modelKey": "qwen3.5-9b",
+     "sizeBytes": 5629109056
+    }
+   ],
+   "tag": "R3_coresident_loaded"
+  },
+  {
+   "timestamp": "2026-09-27T14:04:21.776593+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 13171867648,
+   "cpu_percent": 3.5,
+   "gpu_dedicated_bytes": 1269358592,
+   "loaded_models": [],
+   "tag": "R3_unloaded"
+  },
+  {
+   "timestamp": "2026-09-27T14:05:10.078967+00:00",
+   "ram_total": 25690996736,
+   "ram_available": 13085917184,
+   "cpu_percent": 2.2,
+   "gpu_dedicated_bytes": 1269358592,
+   "loaded_models": [],
+   "tag": "postflight"
+  }
+ ],
+ "limits": {
+  "ram_floor": 1610612736,
+  "gpu_ceiling": 16106127360
+ },
+ "simulated_external_release_returncode": 0,
+ "anchors_after": {
+  "ok": true,
+  "changed": [],
+  "s4_anchor_count": 8,
+  "frozen_lf_anchor_count": 24,
+  "current_rar_sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95"
+ },
+ "finished_at": "2026-09-27T14:05:12.968012+00:00"
+}

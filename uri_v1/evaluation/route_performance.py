@@ -24,6 +24,7 @@ import threading
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 from uri_v1.user_storage import locked_append as _locked_append, user_scoped_path
+from .trace_context import require_trace_id
 
 
 STORE_SCHEMA_VERSION = "m33.3-r.s8.route-performance.v1"
@@ -42,8 +43,10 @@ class RouteKey:
 
     def __post_init__(self) -> None:
         for name in ("task_class", "route_target", "model_id", "route_version"):
-            if not _IDENT.match(getattr(self, name) or ""):
+            if not isinstance(getattr(self, name), str) or not _IDENT.fullmatch(getattr(self, name)):
                 raise ValueError(f"{name} must be a bounded identifier")
+        if self.route_target not in {"DETERMINISTIC", "EDGE", "CAPABLE"}:
+            raise ValueError("unknown route target")
 
     @property
     def route_id(self) -> str:
@@ -61,11 +64,18 @@ class RoutePerformanceRecord:
     schema_version: str = STORE_SCHEMA_VERSION
 
     def __post_init__(self) -> None:
+        if not isinstance(self.route, RouteKey) or self.schema_version != STORE_SCHEMA_VERSION:
+            raise ValueError("invalid route or schema")
         if self.outcome not in _OUTCOMES or self.feedback not in _FEEDBACK:
             raise ValueError("closed-vocabulary field has an unknown value")
-        if not isinstance(self.latency_ms, (int, float)) or self.latency_ms < 0 or math.isnan(self.latency_ms):
+        if type(self.latency_ms) not in (int, float) or self.latency_ms < 0 or not math.isfinite(self.latency_ms):
             raise ValueError("latency_ms must be a non-negative number")
-        datetime.fromisoformat(self.timestamp.replace("Z", "+00:00"))
+        if not isinstance(self.timestamp, str):
+            raise ValueError("timestamp must be timezone-aware")
+        if datetime.fromisoformat(self.timestamp.replace("Z", "+00:00")).tzinfo is None:
+            raise ValueError("timestamp must be timezone-aware")
+        if self.trace_id is not None:
+            require_trace_id(self.trace_id)
 
     def to_json(self) -> dict:
         data = asdict(self)
@@ -92,7 +102,7 @@ class RoutePerformanceStore:
             return True  # durable learning defaults ON
         except (OSError, json.JSONDecodeError):
             return False
-        return raw.get("enabled") is True and raw.get("schema_version") == STORE_SCHEMA_VERSION
+        return isinstance(raw, dict) and raw.get("enabled") is True and raw.get("schema_version") == STORE_SCHEMA_VERSION
 
     def set_enabled(self, enabled: bool) -> None:
         if type(enabled) is not bool:
@@ -148,6 +158,8 @@ def record_reward(record: RoutePerformanceRecord, config: PreferenceConfig) -> T
     base = {"SUCCESS": 1.0, "FALLBACK": 0.3, "FAILURE": 0.0, "CORRECTED": 0.0}[record.outcome]
     if record.feedback == "positive":
         base = min(1.0, base + 0.2)
+    elif record.feedback == "negative":
+        base = 0.0
     reward = max(0.0, base - config.latency_penalty_per_s * record.latency_ms / 1000.0)
     weight = config.negative_weight if (record.feedback == "negative" or record.outcome == "CORRECTED") else 1.0
     return reward, weight
