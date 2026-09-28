@@ -1,19 +1,21 @@
 # M36 State — URI-Memory Minimum (pre-Office demonstrator)
 
-STATE: PLAN_A3_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK
-READINESS: M36_A3_READY_FOR_FINAL_PG_M1_FOCUSED_RECHECK (plan amendment A3, 2026-09-28)
-Plan: docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md (§17 = A2 repairs preserved; §18 adds N-1 grounding precondition; earlier history retained)
+STATE: PLAN_A4_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK
+READINESS: M36_A4_READY_FOR_FINAL_PG_M1_RECHECK (plan amendment A4, 2026-09-28)
+Plan: docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md (§17 = A2 repairs preserved; §18 preserves accepted initial projection grounding; §19 repairs FREE_INPUT; earlier history retained)
 Component: `URI-Memory` (status unchanged: `NOT_STARTED`)
 Starting HEAD: `291c9daa48435200c4b56857d0e3bc630016e82a` (`m35-uri-v1-parallel-architecture`, local = origin)
 Plan commit: `1f3ec48`
 Implementation authorized: NO
-Independent plan pre-audit (PG-M1): PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS — A2 focused re-check complete; final N-1/A3 re-check pending, not fully accepted
+Independent plan pre-audit (PG-M1): PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS — A2 repairs hold; A3 initial projection accepted; A4 FREE_INPUT final focused acceptance pending, not fully accepted
 Audit report: docs/plans/M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md (unchanged)
 Required findings: F-1 through F-11; plan §17.1–§17.11, qualification mapping §17.12
 Amendment A2: F-1…F-11 HOLD per independent focused report; no rollback of the original repairs
 Focused A2 report: docs/plans/M36_PG_M1_A2_FOCUSED_RECHECK_REPORT.md (supplied attachment preserved unchanged)
-Remaining blocking finding: N-1 — model-produced exact filename/ID expression can confer certainty without raw-user grounding
-Amendment A3: N-1_ONLY_REPAIRED_AWAITING_FINAL_FOCUSED_RECHECK; qualification Q-A3-1 A–G
+Remaining blocking finding: N-1 clarification FREE_INPUT — A4 plan repaired, final focused acceptance pending
+Amendment A3: INITIAL_PROJECTION_ACCEPTED per latest User-supplied focused finding; qualification Q-A3-1 A–G preserved
+Amendment A4: FREE_INPUT_REPAIRED_AWAITING_FINAL_FOCUSED_ACCEPTANCE; extends Q-A3-1 with H1–H3
+Amendment A4 baseline: 9a01a4e72b4b3862fb047f3618aad7cac7a4c44e
 Amendment A3 baseline: cc4d7bc8eb122bc196891edb39de49ab0a48816b
 Planning/governance repair baseline: e26d98c5b6827946c3e546663758a94bf1be7033
 User implementation authorization (PG-M2): NOT GIVEN — BLOCKED_PENDING_FINAL_PG_M1_FOCUSED_RECHECK; do not request/start
@@ -31,7 +33,7 @@ INT-* event: NONE. S13: not authorized. S9: remains deferred.
 
 | Gate | Requirement | Status |
 |---|---|---|
-| PG-M1 | Final focused N-1/A3 re-check plus preservation of A2 (plan §18.5 prompt) | PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS; BLOCKED_PENDING_FINAL_FOCUSED_RECHECK; not fully accepted |
+| PG-M1 | Final focused N-1 FREE_INPUT/A4 re-check plus preservation of A2/A3 (plan §19.5 prompt) | PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS; BLOCKED_PENDING_FINAL_FOCUSED_RECHECK; not fully accepted |
 | PG-M2 | Explicit User implementation authorization after final PG-M1 acceptance | BLOCKED_PENDING_FINAL_PG_M1_FOCUSED_RECHECK; authorization not given |
 | Freeze | Plan §12 item 4 | OPEN |
 
@@ -99,3 +101,29 @@ No Memory implementation tests, new test files, full architecture audit or live 
 | Dirty-worktree preservation | All 219 pre-existing dirty/untracked individual files retain their baseline hashes; no unrelated files included |
 
 Q-A3-1 is future implementation qualification, not a claim that Memory was implemented or live-verified. Evidence qualification for the untracked LFM research decoder is in plan §18.1. Final independent PG-M1 acceptance remains pending.
+
+
+## A4 history and handoff — 2026-09-28
+
+Latest focused finding supplied in the User's A4 instruction (no separate report file located): PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS; all A2 repairs hold; A3 initial projection path accepted; sole remaining blocker N-1 clarification FREE_INPUT. The A3 handoff/status above is historical; plan §19.5 is now the exact final re-check prompt.
+
+Codex, explicitly authorized bounded planning-repair implementer: PLAN_A3_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK → PLAN_A4_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK. Plan §19 requires current trusted raw-answer grounding before every FREE_INPUT respond() call, extends Q-A3-1 with H1/H2 negative and H3 positive cases, and preserves A2/A3. Baseline: 9a01a4e72b4b3862fb047f3618aad7cac7a4c44e. Frozen baseline: 291c9daa48435200c4b56857d0e3bc630016e82a.
+
+PG-M1 still awaits final focused acceptance; PG-M2 remains blocked and must not be begun/requested. Memory remains NOT_STARTED. D-A, OD-2…OD-5, VG-1, LF-1, harness_run_ref deferral and disclosed Edge limitations remain unchanged; no advisory repairs. The User authorizes one bounded docs/governance commit, no push. Readiness: M36_A4_READY_FOR_FINAL_PG_M1_RECHECK.
+
+
+## A4 planning validation — 2026-09-28
+
+| Check | Observed result |
+|---|---|
+| Defect reproduction | Frozen real pending-round FREE_INPUT → RAR → authority → binding confirmed both ungrounded filename/ID examples; genuine typed controls also confirmed. Contract-boundary evidence only; details and empty-scope control in plan §19.1 |
+| Governance validator | `python scripts/governance/uri_state_validator.py`: VALID; no DCL violations |
+| Relevant governance tests | `python -m pytest tests/governance -q`: 37 passed |
+| Frozen anchor checker | `python scripts/m33_3_r_anchors.py`: ok=True, changed=[], 8 S4 and 24 LF anchors |
+| Frozen/code/test diff check | No tracked differences from 291c9daa48435200c4b56857d0e3bc630016e82a in uri_v1, uri_core, uri_ui, tests, scripts, fixtures or root test*.py |
+| Preservation consistency | Entire pre-A4 plan body from §0 onward unchanged, including all A2/A3 rules and qualification rows; non-M36 parsed governance/decisions and prior corrections unchanged; both independent report files unchanged |
+| Focused certainty-path consistency | Pre-call current-answer grounding covers every FREE_INPUT: first/later answers, retry, fallback/rebuild, attribute-round free text and Change/rebind. No text rewrite may bypass via synthetic selection or new exact query; actual explicit selection retains frozen validation. H1–H3 and all required state clauses present |
+| Whitespace | A4-scoped git diff --check clean; repository-wide check reports only pre-existing SKILL.md trailing whitespace at lines 581/582, preserved untouched |
+| Dirty-worktree preservation | All 219 pre-existing dirty/untracked individual files retain their baseline hashes; only five authorized documentation/governance/handoff files changed |
+
+These are planning checks, not independent PG-M1 acceptance or future H/Memory live qualification. One bounded docs/governance commit is authorized; its hash is returned after creation. No push.

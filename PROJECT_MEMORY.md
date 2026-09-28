@@ -1,5 +1,16 @@
 # URI Project Memory
 
+**Planning resume point — 2026-09-28: M36 A4 ready for final PG-M1 re-check.**
+A2 repairs hold; A3 initial projection grounding is accepted per the latest
+User-supplied focused finding. [A4 plan §19](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md)
+repairs only clarification FREE_INPUT grounding before BindingService.respond(),
+with Q-A3-1 H1–H3. Status: PLAN_A4_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK.
+Readiness: M36_A4_READY_FOR_FINAL_PG_M1_RECHECK. PG-M1 still awaits final focused
+acceptance; PG-M2 remains blocked. No Memory implementation or push.
+Exact re-check prompt: plan §19.5; evidence/validation: [M36 state](docs/plans/M36_STATE.md).
+A2/A3, frozen M33.3, Memory boundary and all preserved rulings/deferrals/Edge
+limitations remain unchanged. Earlier A2/A3 handoffs below are historical.
+
 **Planning resume point — 2026-09-28: M36 A3.**
 [Focused A2 re-check](docs/plans/M36_PG_M1_A2_FOCUSED_RECHECK_REPORT.md):
 F-1…F-11 hold; sole blocker N-1. [M36 plan](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md)
