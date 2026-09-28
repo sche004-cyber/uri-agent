@@ -164,6 +164,16 @@ product_milestones:
     parent_milestone_status: "ARN milestone PAUSED after ARN.1; ARN.2 NOT authorized"
     evidence: "docs/governance/URI_AGENT_RELAY.md (CLOSED: ARN.1 DETERMINISTIC NARROWING CORE — VERIFIED)"
 
+  - id: "M36"
+    title: "URI-Memory Minimum (pre-Office demonstrator)"
+    status: "PLAN_DRAFTED_AWAITING_INDEPENDENT_PREAUDIT"
+    currently_active: false
+    implementation_authorized: false
+    plan: "docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md"
+    state: "docs/plans/M36_STATE.md"
+    component: "URI-Memory"
+    planned_at_commit: "291c9daa48435200c4b56857d0e3bc630016e82a"
+    note: "Added 2026-09-28 (planning only). Minimum Memory slice before the isolated URI Office vertical demonstrator (sequence: M33.3 CLOSED_FROZEN -> Memory minimum -> Edge minimum -> Office demonstrator). Gates: PG-M1 independent plan pre-audit, PG-M2 explicit User implementation authorization. No S13, no INT-* event, no uri_core wiring; S9 stays deferred under D4-R1."
 queued_initiatives:
   - id: "hybrid_ui"
     title: "URI Hybrid UI Implementation (\"Compact Chat Mode\")"
@@ -341,6 +351,12 @@ architecture_decisions:
     date: "2026-09-26"
     status: "DEFERRED"
     decision: "Durable cross-session learned reference evidence is deferred to URI-Memory (NOT_STARTED). Allowed now: session-authoritative selections, session-local reference evidence, structured Change/correction events, rank/display effects from valid session evidence. Not authorized: an ad-hoc durable reference-memory subsystem, or durable learned tie-breaking without URI-Memory qualification."
+  - id: "D4-R1"
+    date: "2026-09-28"
+    status: "DECIDED"
+    refines: "D4"
+    decision: "History yes, learning no. Once URI-Memory exists, durable factual task/outcome/correction history may feed cross-session reference resolution as grounded candidates and factual recency metadata (via the evidence envelope and RARQuery projection). Learned preference or tie-break weights, frequency-based preference, and repetition-based auto-promotion remain deferred (S9, correction-rate experiment). Memory never binds a reference; RAR, D5 and S1 keep binding authority."
+    recorded_in: "docs/plans/M36_STATE.md; docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md section 2.5"
   - id: "D5"
     date: "2026-09-26"
     status: "DECIDED"
@@ -491,6 +507,7 @@ reusable_components:
     cross_agent_portable: false
     portability_validated_via: null
     architecture_defined: false
+    planning_note: "Added 2026-09-28: minimum architecture proposed in docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md (not accepted, not frozen, not implemented). architecture_defined stays false until the plan passes PG-M1."
     note: "Explicitly designated a future separate reusable-subsystem track; no existing code claims this identity yet. This normalization does not define URI-Memory's architecture, per task scope."
 
   - id: "URI-Eval"
