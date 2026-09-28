@@ -1,5 +1,16 @@
 # URI Project Memory
 
+**Planning resume point — 2026-09-28: M36 A3.**
+[Focused A2 re-check](docs/plans/M36_PG_M1_A2_FOCUSED_RECHECK_REPORT.md):
+F-1…F-11 hold; sole blocker N-1. [M36 plan](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md)
+§18 adds raw-user grounding before exact-title/ID certainty-bearing projection.
+Current status: PLAN_A3_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK.
+Readiness: M36_A3_READY_FOR_FINAL_PG_M1_FOCUSED_RECHECK. Next step is the final
+independent focused N-1/A3 re-check using §18.5, preserving A2.
+PG-M1 is not fully accepted; PG-M2 remains blocked; no implementation.
+Source IDs/context usability, Memory boundary, harness_run_ref deferral and
+unverified Edge sufficiency remain. The A2 resume point below is historical.
+
 **Planning resume point — 2026-09-28: M36 A2.**
 User-authorized bounded plan/governance repairs follow
 PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS (F-1…F-11). Current status:

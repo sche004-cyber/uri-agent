@@ -1,6 +1,6 @@
 # M36 — URI-Memory Minimum (pre-Office demonstrator)
 
-**Status:** `PLAN_A2_REPAIRED_AWAITING_PG_M1_FOCUSED_RECHECK`. PG-M1 verdict: `PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS`; A2 is ready for focused independent re-check, not fully accepted. Implementation is **not** authorized by this document.
+**Status:** PLAN_A3_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK. PG-M1 verdict: PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS; the focused A2 report confirms F-1…F-11 hold and identifies N-1. A3 repairs N-1 only; final independent focused re-check remains pending. Implementation is **not** authorized by this document.
 **Date:** 2026-09-28.
 **Author:** Claude Code (Opus 5.5), Architect / Pre-Auditor role. Not independent of this plan.
 **Starting HEAD:** `291c9daa48435200c4b56857d0e3bc630016e82a` on `m35-uri-v1-parallel-architecture` (local = `origin`, 0/0).
@@ -11,6 +11,8 @@
 Intended sequence (User, 2026-09-28): M33.3 CLOSED_FROZEN → **Memory minimum (this plan)** → Edge minimum → isolated URI Office vertical demonstrator → iterate from real evidence.
 
 **A2 reading rule (2026-09-28):** §17 is the controlling repair specification for F-1…F-11 in `M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md`. Draft wording retained below is historical wherever expressly superseded by §17. The original §15/§16 self-review claims are not evidence of current acceptance. No Memory implementation or PG-M2 work is authorized.
+
+**A3 reading rule (2026-09-28):** §18 adds the raw-turn grounding precondition to §17.1 and the MemoryQuery/projection contract (§7.5–§7.6). A2 collision completeness remains necessary but is insufficient alone for exact-title certainty. A2 repair specifications and Q-A2 gates remain intact. §17's status/readiness and re-check prompt are historical; current handoff is §18.5.
 
 ---
 
@@ -298,6 +300,8 @@ No record stores document or email body text. Derivative text lives in the S11 b
 
 ### 7.5 Retrieval path (`retrieval.py`) — session-first
 
+**A3 additional precondition:** raw user input/span provenance travels with MemoryQuery transiently; the adapter verifies it under §18.2–§18.3 before any certainty-bearing exact-title/ID projection. A decoder expression alone is not a trusted reference expression.
+
 **A2 supersession notice:** the numbered draft retrieval algorithm and ranking below are replaced by §17.1, §17.3, §17.5, §17.9 and §17.10. In particular, changed live sources are rediscovered, temporal/task filters are defined, exact names require collision completeness, and clarification snapshots cannot be re-ranked.
 
 Input `MemoryQuery(user_id, session_id, reference_expression, type_hint?, task_id?, turn_attachment_source_ids, session_working_set, max_candidates=16, max_bytes=16384)`. `session_working_set` is supplied by the caller (from `ActiveContext` or the demonstrator session); memory does not own session state.
@@ -313,6 +317,8 @@ Order is tier order, then last-used time. `recency_rank` = position in that orde
 
 ### 7.6 Interaction with RAR / ARN / S1 (`uri_adapter/envelope.py`)
 
+**A3 additional precondition:** project() must enforce §18.2–§18.3, including on fallback and clarified free input; collision evidence alone does not ground an expression. No frozen S1 change or new exact-ID/title anchor is introduced.
+
 **A2 supersession notice:** attachment anchor production is governed by §17.4; candidate eligibility by §17.1/§17.3; binding capture and source revalidation by §17.9/§17.10. The draft "one attachment matching the type hint" rule is withdrawn. RAR/ARN/S1 remain read-only consumers.
 
 - `MemoryEvidenceEnvelope`: immutable; `candidates` (tuple of `{source_id, SourceRef, tier, last_used_at, provenance_locator}`), `authorized_ids`, `current_turn_attachment_ids`, `authorization_basis = "memory_authorized_roots"`, `stale`, `telemetry_ref`.
@@ -322,6 +328,8 @@ Order is tier order, then last-used time. `recency_rank` = position in that orde
 - After binding, the demonstrator calls `recorder.task_state(...)` with the bound `source_id`, content hash, and the `BindingTier` returned by S1. Memory copies the tier; it never computes one.
 
 ### 7.7 Context package (`context_package.py`)
+
+**A3 clarification:** source IDs remain visible in the package and URI internal structures. A Brain/model copying one into an expression does not establish user intent or certainty; the Memory/S1 adapter owns the raw-turn check (§18.2–§18.3).
 
 `MemoryContextPackage` (frozen, JSON-serializable, ≤ 8 KiB default):
 
@@ -421,6 +429,8 @@ Per standing roles: Claude plans and audits; implementation is routed (Codex pre
 ---
 
 ## 11. Tests and qualification gates
+
+**A3 addition:** N-1 maps to Q-A3-1 fixtures A–G in §18.4, in addition to every existing Q-A2 gate. The pass bar remains 0 wrong CONFIRMED bindings; fixtures A/B also require 0 CONFIRMED before any new explicit user clarification.
 
 **A2 qualification rule:** §17.12 adds mandatory objective cases for every F-1…F-11 repair. It replaces the draft stale-source exclusion test and strengthens Q-3/Q-5/Q-6/Q-7/Q-8/Q-9/Q-10. Original gates remain mandatory with the corrected pass criteria in §17.12; no new implementation tests are written by this planning repair.
 
@@ -626,6 +636,8 @@ Unverified: whether the Harness Execution minimum will register scratch workspac
 This is an additive text/specification repair within the existing §7.1 modules. Where A2 differs from §0–§16, A2 governs; the in-place notices above identify superseded draft rules. No Memory, Edge, harness, Office, S13, INT-*, M31 or frozen M33.3 implementation is changed or authorized. D-A, OD-2…OD-5, VG-1, LF-1, D3/D5 and D4-R1 retain their accepted meaning. The remaining low-severity PG-M1 findings F-12…F-19 are not silently declared repaired; the scope here is the eleven required repairs (with historical acceptance claims corrected and frozen scope checked).
 
 ### 17.1 F-1 — exact-name completeness before Memory-to-S1 projection
+
+**A3 additional precondition (N-1):** all collision protections below remain controlling. Their exact-title eligibility claim now also requires raw-turn grounding under §18.2–§18.3. An exact source ID likewise requires raw-turn grounding before it may be projected as the expression.
 
 **Interpretation:** frozen S1 can grade one exact verbatim title as CERTAINTY within the supplied candidate set (authority.py:35–43). That set does not establish uniqueness across the searched authorized scope. No change to S1 is needed or permitted.
 
@@ -888,3 +900,96 @@ Governance records the audit verdict, F-1…F-11 repair mapping, A2 readiness an
 > You are the independent focused PG-M1 re-checker for URI M36 Amendment A2 in C:\Users\cheta\Development\Uri\_V1 on branch m35-uri-v1-parallel-architecture. Planning baseline e26d98c5b6827946c3e546663758a94bf1be7033; frozen M33.3 baseline 291c9daa48435200c4b56857d0e3bc630016e82a. Read M36_URI_MEMORY_MINIMUM_PLAN.md §17 and its in-place supersession notices, M36_STATE.md, URI_STATE.yaml, and the unchanged M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md §4/§6. Independently inspect the cited frozen S1/S4/RAR/storage code as needed. Re-check only required F-1…F-11 / R-1…R-11 for presence, consistency, buildability and objective Q-A2-1…Q-A2-11 coverage. Confirm exact-name completeness cannot create false certainty; authorized task heads cannot be model/timestamp-selected; edited sources remain discoverable with stale claims separated; anchors use deterministic per-slot evidence; temporal and paused-task discovery are achievable without semantic retrieval; only registered URI invocations attest verifier results; junction/reparse escape fails closed; persisted=True requires parseable read-back; clarification IDs remain stable; and paired corrections retain history and recover safely. Verify no frozen/code/test changes, Memory boundary or accepted D-A/OD-2…OD-5/VG-1/LF-1 changes. Preserve harness_run_ref deferral and disclose Edge sufficiency as unverified. Do not implement, repeat the full PG-M1 audit, begin/request PG-M2, commit or push. Return each finding's determination, any concrete remaining bounded defect, and a focused verdict: PG_M1_ACCEPTED if all required repairs hold, PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS if concrete required defects remain, or PG_M1_REJECTED with reasons. Report actual checks and limitations; do not trust the repairer's self-review.
 
 **Readiness:** M36_A2_READY_FOR_PG_M1_FOCUSED_RECHECK.
+
+---
+
+## 18. Amendment A3 (2026-09-28): N-1 exact-expression provenance
+
+**Status:** PLAN_A3_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK.
+**Scope:** one bounded documentation-only repair, N-1; no implementation.
+**Repair baseline:** cc4d7bc8eb122bc196891edb39de49ab0a48816b on m35-uri-v1-parallel-architecture.
+**Frozen baseline:** 291c9daa48435200c4b56857d0e3bc630016e82a.
+**Input:** [A2 focused PG-M1 re-check report](M36_PG_M1_A2_FOCUSED_RECHECK_REPORT.md), verdict PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS. It confirms all F-1…F-11 / R-1…R-11 hold and identifies N-1 as the sole remaining blocker. The supplied report is preserved unchanged from the “Audit closure summary” chat attachment, Pasted markdown(20260928-071147).md (SHA-256 23641d98b6c042a97c428d4f53ae9841027bbd17de328a5769230513b6083d91). This repairer's review is not independent PG-M1 acceptance.
+
+### 18.1 Independent verification of N-1
+
+Frozen uri_v1/reference_clarification/authority.py:29–30 grants EXACT_ID certainty; :35–43 grants unique verbatim-title certainty without checking raw user text. Frozen rar_deterministic.py:299–309 resolves an expression equal to a candidate ID; :355–384 resolves/ambiguates exact titles. builder.py:45–48 can directly build CONFIRMED, and BindingService.register rechecks RAR certainty rather than raw-turn provenance.
+
+The cited local uri_v1/turn/lfm_semantic_decoder.py:345–352 copies cand_ref.expression into RARQuery without a raw-text check. **Evidence qualification:** that decoder is untracked research in this checkout, not a verified frozen production file. Its default TurnFrame is deterministically built before the model call (:153–155); the cited lines alone therefore do not prove a currently deployed model-output-to-S1 path. The same research decoder's model response is normalized through lfm_wire.py:normalize_lfm_wire, which preserves wire references[].expression in DecodedRequest.references without raw-span grounding. No Memory production path exists yet. A3 repairs the proposed Memory boundary for any decoder/Brain, not this research code.
+
+Read-only reproduction before editing: feed model wire expressions through normalize_lfm_wire, then pass the resulting expression to actual frozen RAR, classify_authority, build_clarification and BindingService.register with CONSEQUENTIAL impact. One candidate is a live-shaped budget.xlsx with source ID a repeated 32 times:
+
+| Raw user text | Supplied expression | Observed frozen result without A3 |
+|---|---|---|
+| update the budget sheet | budget.xlsx | EXACT_TITLE / CERTAINTY / CONFIRMED, although expression is absent from raw text |
+| update the spreadsheet | candidate source_id copied from context | EXACT_ID / CERTAINTY / CONFIRMED, although ID is absent from raw text |
+| update budget.xlsx | budget.xlsx | EXACT_TITLE / CERTAINTY / CONFIRMED; legitimate exact-expression control |
+| update the budget sheet | budget sheet (raw span) | TERM_DISCRIMINATION / HEURISTIC / PENDING; no confirmed binding |
+| update budget.xlsx | budget.xlsx, with two same-title candidates | AMBIGUOUS / HEURISTIC |
+
+This verifies N-1 at the contract boundary, without claiming a live Memory flow or invoking a model/network. The reproduction added no code/test/fixture file.
+
+### 18.2 Normative grounding rule and comparison semantics
+
+**Memory projection may expose an expression to frozen S1 as an exact-title or exact-ID certainty-bearing expression only when URI has deterministically verified that the exact expression is grounded in the raw user turn rather than introduced or normalized by a model/decoder. A model-generated rewrite must never increase binding authority.**
+
+Raw evidence comes from an immutable snapshot captured by the URI-controlled request intake (or the authorized qualification driver) **before** decoder/Brain/context assembly. MemoryQuery carries this original raw_user_turn, its URI-owned turn/trace identity, ref_key and candidate raw reference-span offsets transiently to the URI adapter. It must not take the model's echoed raw_text, a summary, prior-turn text, an attachment name, a context package or a caller-declared provenance enum as original user evidence. Models may propose span offsets/expressions, but the adapter re-slices and checks the actual intake snapshot; those proposals are not grounding receipts.
+
+The adapter owns the check in the existing uri_adapter/envelope.py; no new module, record kind, parser service or frozen S1 field is introduced. An immutable expression_grounding receipt records turn/trace identity, ref_key, validated original-text offsets and RAW_VERBATIM or UNESTABLISHED status. It is local validation evidence, not a binding grant. It accompanies the turn/clarification snapshot (§17.9), with no raw text/expression added to durable Memory, context packages or ids-only telemetry.
+
+Verbatim-enough grounding has these deterministic rules:
+
+1. For a whole-reference equality test, strip only leading/trailing Unicode whitespace and compare case-insensitively with casefold. For an expression embedded in a longer raw turn, require equality under that same comparison with an actual **contiguous substring of the original text**, using original-text offsets rather than offsets into a length-changing casefolded string.
+2. The match must fall within the verified raw reference span associated with this ref_key. A model's choice of a different occurrence/slot is not proof; conflicting or unestablished span association fails closed to clarification. Existing negation and reference validation still apply. A3 does not add a multi-slot parser or reinterpret user intent.
+3. Substring boundaries must be start/end of the span or Unicode whitespace or an outer delimiter: quotation marks/backticks, parentheses/brackets/braces, comma, semicolon, colon, exclamation/question marks. A sentence-terminal period may delimit only when followed by end/whitespace; it cannot cut another filename component. Never match budget.xlsx inside old-budget.xlsx, budget.xlsx.bak, a path component or a longer identifier.
+4. Outer quotes, brackets or punctuation are outside the selected substring, not deleted from its contents. Internal whitespace, dots, extensions, underscores, hyphens, separators and identifier characters must be present exactly as typed (case aside). No internal whitespace collapsing, punctuation removal, extension insertion, basename/path rewrite, abbreviation expansion, synonym replacement, decoding or Unicode compatibility substitution may establish exact-expression grounding.
+5. Project the verified raw substring itself (boundary whitespace trimmed), not a model-normalized replacement. Normalization above is **comparison only**. If a proposed expression cannot match safely, do not invent a matching span or use candidate titles/IDs to fill gaps.
+
+For M36 source_id, the entire identifier must be explicitly present in the current raw span as a standalone, valid authorized identifier. A prefix, guessed ID, model referent_hint/target_id, ID supplied only by prior task history or ID merely visible in the context package fails this condition. Candidate IDs are preserved in URI structures and may be inspected by Brains/models; copying one does not establish user intent. Explicit user IDs remain subject to existing source-ID syntax, candidate membership, per-user authorization and live identity checks; A3 introduces no new identifier alias or authority.
+
+### 18.3 Projection/fallback and preservation of A2
+
+Before constructing a RARQuery, the adapter checks whether the expression would lexically match any supplied candidate ID, title or stem using the frozen matching semantics by lineage. If that could expose an exact-title or exact-ID certainty path, require the valid raw-turn receipt first; do not rely on an ignored query flag or post-hoc downgrade, because frozen S1 has no such provenance gate.
+
+- **Exact title:** raw-turn grounding **AND** COMPLETE authorized-scope collision evidence (§17.1) are necessary before exact-title certainty is possible. Include all live matching names/stems; duplicates remain ambiguous. Missing/incomplete/filtered/stale/hidden collision evidence still withholds projection. Both preconditions are necessary, not a guarantee of binding.
+- **Exact ID:** raw-turn grounding is mandatory before frozen S1 may see the ID as the expression, in addition to authorization, syntax and source identity. No full-root title scan is substituted for this check. A3 does not add an exact_id anchor; frozen literal-ID handling stays available for an eligible explicitly typed ID.
+- **Ungrounded model rewrite:** for raw “update the budget sheet” plus decoder budget.xlsx, withhold that rewritten expression. Use the verified raw reference span “budget sheet” instead, re-running retrieval/projection against it under A2; otherwise request clarification. Apply the same rule to a copied context source_id when raw text says only “update the spreadsheet”.
+- **Missing provenance:** if the original raw turn, span association or grounding cannot be established, return degraded=EXPRESSION_GROUNDING_UNESTABLISHED and no certainty-bearing query. A grounded safe non-exact span may follow existing tentative/ambiguous handling; consequential actions require clarification/confirmation under unchanged S1. Never send the rejected exact expression with a “tentative” label and expect S1 to downgrade it.
+
+Repeat the check after any fallback, rewritten free input or fresh clarification query. Direct user option selection through an existing stable S1 contract remains that explicit user's selection; a model cannot impersonate it. A subsequent exact filename/ID typed by the user is verified against that new raw user input, not against the earlier model output.
+
+F-1 collision completeness and every F-2…F-11 specification/gate remain intact. exact_aliases=() is unchanged; no model-supplied exact_id/unique_title_match anchor is admitted. The original A2 “only a collision-checked match is eligible” statement is now a **necessary but insufficient** condition, with this additional raw-turn precondition. §7.5–§7.7 and §11 carry explicit A3 pointers; A2 history is preserved.
+
+### 18.4 N-1 qualification — Q-A3-1 (extends Q-A2-1 / Q-3)
+
+Future qualification must exercise the actual Memory adapter → frozen RAR → real S1 builder/BindingService path, with real authorized temp files and predeclared raw-turn/proposed-expression inputs. Receipt/status assertions alone are insufficient. No Memory implementation or new executable tests are written by A3.
+
+Use CONSEQUENTIAL impact, no independent attachment/UI certainty anchors and no user option selection for these initial-projection fixtures. This isolates exact-expression authority; legitimate explicit user clarification is a separate subsequent input and is not counted as an unsafe model confirmation.
+
+| Fixture | Raw user turn / proposed decoder expression | Source/collision setup | Objective expected result before any additional user answer |
+|---|---|---|---|
+| A — model-normalized filename | update the budget sheet / budget.xlsx | One live budget.xlsx; COMPLETE collision receipt, no independent attachment/UI anchor | 0 CONFIRMED; rewritten budget.xlsx is withheld, raw span used or clarification; exact-title certainty cannot originate from the rewrite |
+| B — model-copied ID | update the spreadsheet / actual source_id copied from the package | One live authorized spreadsheet; package retains its ID, no independent attachment/UI anchor | 0 CONFIRMED; copied ID is not projected as exact-ID; raw span or clarification |
+| C — genuine filename | update budget.xlsx / budget.xlsx | One live match across COMPLETE authorized scope | RAW_VERBATIM receipt and exact-title path remain eligible; real frozen S1 retains legitimate certainty behaviour |
+| D — genuine filename, duplicate | update budget.xlsx / budget.xlsx | Two live budget.xlsx files in different folders/roots | All live matches exposed; ambiguity/clarification, no automatic CONFIRMED or wrong binding |
+| E — genuine identifier | update <entire valid source_id> / same ID | Valid authorized live source, ID explicitly typed in this turn | Exact-ID path remains eligible after grounding and identity checks; mere model origin does not invalidate independently proven raw evidence |
+| F — lexical boundary/normalization | budget.xlsx.bak, old-budget.xlsx, budget xlsx, or truncated ID / proposed exact title/ID | Target exact candidate exists; otherwise valid authorization | No substring/extension/punctuation/prefix invention creates RAW_VERBATIM; no confirmed binding from the rejected expression; quoted/case-varied literal positive controls remain eligible |
+| G — unavailable/forged raw evidence | Original intake snapshot missing, model echoes “raw_text”, or supplied offsets do not match it / exact filename or ID | Target candidate exists | Grounding fails closed; caller-supplied provenance/offsets cannot manufacture certainty |
+
+Pass bar: **0 wrong CONFIRMED bindings across all A3 fixtures**, plus **0 CONFIRMED in A/B** prior to any new explicit user answer, legitimate C/E certainty eligibility retained, and all Q-A2-1 collision negative cases still passing. Fixtures also assert raw IDs remain in the context package, exact_aliases stays empty, and grounding receipts are immutable with the clarification snapshot. Existing Q-12 isolation, Q-DET determinism, Q-9 restart, Q-1 frozen integrity and Q-E2E real-flow evidence gates are unchanged.
+
+### 18.5 State, self-review, advisories and final handoff
+
+Focused self-review: the additional precondition applies to exact IDs as well as titles, validates original raw text independently of decoder strings, bounds substring matches, uses comparison normalization without invention, and withholds unsafe projection rather than attaching a flag S1 ignores. Explicit user exact expressions remain eligible under A2 safety rules. Every original F-1…F-11 repair and qualification row is retained.
+
+No Memory boundary expansion: existing core/thin adapter, source IDs/context usability, local deterministic retrieval and append-only history remain. D-A, OD-2…OD-5, VG-1, LF-1, D3/D5 and D4-R1 are unchanged; no frozen/code/test/fixture edits. harness_run_ref remains DEFERRED under §16.2. Edge sufficiency remains unverified; E-6 remains conditional on future OD-3 representation.
+
+The focused report's non-blocking advisories remain disclosed for implementation/qualification, without A3 repairs: A-1 Windows FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS constant handling; A-2 additional multi-slot hardening; A-3 shared-lock contention; A-4 exact-name full-root scan usability/latency. F-12…F-18 remain disclosed as before. No code, domain mechanism or broader redesign is introduced to address them.
+
+State: focused A2 re-check confirms F-1…F-11 and found N-1; A3 is repaired awaiting **final independent focused PG-M1 re-check**. PG-M1 is not fully accepted, and PG-M2 remains blocked; do not begin or request it. A2 readiness/prompt are historical handoffs superseded by this one.
+
+**Exact final focused PG-M1 re-check prompt:**
+
+> You are the independent final focused PG-M1 re-checker for URI M36 Amendment A3 in C:\Users\cheta\Development\Uri\_V1 on branch m35-uri-v1-parallel-architecture. A3 repair baseline is cc4d7bc8eb122bc196891edb39de49ab0a48816b; frozen M33.3 baseline is 291c9daa48435200c4b56857d0e3bc630016e82a. Read M36_URI_MEMORY_MINIMUM_PLAN.md §18 and its A3 pointers, M36_STATE.md, URI_STATE.yaml, M36_PG_M1_A2_FOCUSED_RECHECK_REPORT.md (N-1 and advisories), and original PG-M1 report as needed. Independently inspect frozen authority.py/RAR/builder/binding contracts and distinguish tracked production evidence from the untracked LFM research decoder. Re-check N-1 only plus preservation of the accepted A2 repairs: can a model-normalized budget.xlsx or a source_id copied from context reach exact-title/ID certainty without deterministically verified current raw-user-span grounding? Verify comparison/boundary rules, trusted original-text provenance, fail-closed fallback, retained source IDs, exact_aliases=(), and raw-turn grounding AND complete collision evidence for exact titles. Confirm Q-A3-1 A–G objectively cover the two negative cases, genuine typed filename/ID eligibility, duplicate ambiguity and missing/forged provenance. Confirm F-1…F-11/Q-A2 gates, frozen code/tests/fixtures, Memory boundary, D-A/OD-2…OD-5/VG-1/LF-1, harness_run_ref deferral and disclosed Edge limitation are preserved. Do not implement, repeat the full audit, repair advisories, begin/request PG-M2, commit or push. Return N-1's determination, any concrete remaining bounded defect, checks/limitations and PG_M1_ACCEPTED if N-1 is closed with A2 preserved, otherwise PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS or PG_M1_REJECTED with reasons. Do not trust the repairer's self-review.
+
+**Readiness:** M36_A3_READY_FOR_FINAL_PG_M1_FOCUSED_RECHECK.

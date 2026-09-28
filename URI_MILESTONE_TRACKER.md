@@ -1,5 +1,13 @@
 # URI Milestone Tracker
 
+**Planning handoff — 2026-09-28: M36 A3 ready for final focused PG-M1 re-check.**
+The [A2 focused report](docs/plans/M36_PG_M1_A2_FOCUSED_RECHECK_REPORT.md)
+confirms F-1…F-11 hold and identifies N-1 as the sole remaining blocker.
+[A3](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md) §18 repairs exact-expression
+provenance only. Status: PLAN_A3_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK.
+PG-M1 is not fully accepted; PG-M2 remains blocked. The A2 handoff below is
+historical. No implementation, boundary expansion or milestone completion.
+
 **Planning handoff — 2026-09-28: M36 A2 ready for focused PG-M1 re-check.**
 PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS (F-1…F-11); bounded documentation repairs
 recorded in [M36 plan §17](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md) and
