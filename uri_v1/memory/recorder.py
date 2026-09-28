@@ -8,7 +8,7 @@ import uuid
 
 from .contracts import (MemoryRecord, RecordKind as K, Provenance as P, TaskStatus as S,
                         VerificationStatus as V, WriteResult, TrustedInput, BoundReference,
-                        IdentityStatus as I, canonical, digest, plain, utc_now)
+                        IdentityStatus as I, canonical, digest, plain, utc_now, negated)
 
 # Populated only by trusted bootstrap in this module; no public registration API.
 _VERIFIERS = MappingProxyType({})
@@ -115,7 +115,8 @@ class Recorder:
                     actor,prov = "USER",P.USER_PROVIDED
                     allowed = {S.PAUSED:("pause",),S.OPEN:("resume","continue"),S.COMPLETED:("complete","completed","done"),
                                S.FAILED:("failed","failure"),S.ABANDONED:("cancel","abandon"),S.WAITING_USER:()}
-                    if not set(re.findall(r"\w+",intake.raw_text.casefold())).intersection(allowed[new]):
+                    # A negated keyword ("not done yet") is not an explicit declaration (audit F-2).
+                    if negated(intake.raw_text) or not set(re.findall(r"\w+",intake.raw_text.casefold())).intersection(allowed[new]):
                         raise ValueError("EXPLICIT_USER_TRANSITION_REQUIRED")
                 if new == S.OPEN: prov = P.URI_RECORDED  # URI accepts the user resume event.
             p["status"] = new; p["transition_evidence_ids"] = (eid,)

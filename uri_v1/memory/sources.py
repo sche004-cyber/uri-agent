@@ -53,6 +53,10 @@ class ScanResult:
     snapshot_digest: str
     complete: bool
     reason: str | None = None
+    # Hidden/system *files* are never locators, but their names are kept so an
+    # exact-name request can still fail closed on them (audit F-6). Hidden
+    # directories remain whole-scan exclusions.
+    hidden_names: tuple[str, ...] = ()
 
 
 class SourceRegistry:
@@ -101,7 +105,7 @@ class SourceRegistry:
         return resolved
 
     def scan(self, root_id=None, *, extensions=None):
-        locators, exclusions = [], []
+        locators, exclusions, hidden = [], [], []
         try: roots = self.roots()
         except (OSError, ValueError): return ScanResult((),(),"",False,"REGISTRY_UNAVAILABLE")
         if root_id is not None:
@@ -128,7 +132,9 @@ class SourceRegistry:
                     if (entry.is_symlink() or (hasattr(entry,"is_junction") and entry.is_junction()) or attrs & REPARSE):
                         exclusions.append("REPARSE_EXCLUDED"); continue
                     if entry.name.startswith(".") or attrs & HIDDEN_SYSTEM:
-                        exclusions.append("HIDDEN_EXCLUDED"); continue
+                        if entry.is_file(follow_symlinks=False): hidden.append(entry.name)
+                        else: exclusions.append("HIDDEN_EXCLUDED")
+                        continue
                     safe = self._safe_path(root,path)
                     if entry.is_dir(follow_symlinks=False):
                         if depth >= self.max_depth: exclusions.append("DEPTH_EXCLUDED")
@@ -143,9 +149,9 @@ class SourceRegistry:
             except (OSError, ValueError): exclusions.append("UNAVAILABLE_ENTRY")
         for rid,p in sorted(roots.items()): walk(rid,Path(p),Path(p),0)
         locators.sort(key=lambda l:l.source_id)
-        snap = digest({"roots":roots,"locators":locators,"exclusions":sorted(exclusions)})
+        snap = digest({"roots":roots,"locators":locators,"exclusions":sorted(exclusions),"hidden":sorted(hidden)})
         return ScanResult(tuple(locators),tuple(sorted(roots)),snap,not exclusions,
-                          sorted(set(exclusions))[0] if exclusions else None)
+                          sorted(set(exclusions))[0] if exclusions else None,tuple(sorted(hidden)))
 
     def locate(self, source_id, scan=None):
         return next((l for l in (scan or self.scan()).locators if l.source_id == source_id),None)

@@ -1,5 +1,8 @@
 # URI Milestone Tracker
 
+**Current handoff — 2026-09-28: M36 closing audit performed; bounded repairs applied.**
+State: `M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION`. Claude performed the independent closing audit of Codex commit `be4451c` ([report](docs/plans/M36_INDEPENDENT_CLOSING_AUDIT_REPORT.md)): verdict REPAIRS_REQUIRED with six code findings (F-1 negation cropping could yield wrong CONFIRMED; F-2 negated status keywords; F-3 verifier-registry mismatch on reload; F-4 forget could hide verdicts; F-5 stem regex diverged from frozen RAR; F-6 hidden files blocked all exact-title certainty) and D-1 (URI_STATE.yaml PG-M1 verdict overwritten). The User authorized the repairs, commit and push, not freeze. Repairs are confined to `uri_v1/memory/`, M36 tests, the M36 driver/battery and governance. The focused re-verification was performed by the same session that made the repairs, so it is not independent. Freeze requires a User decision. No S13, INT-*, Office/Edge/Harness or frozen-file change. The entry below is historical.
+
 **Current implementation handoff — 2026-09-28: M36 URI-Memory Minimum.**
 State: `M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT`. The direct User task package supplies accepted PG-M1 and grants PG-M2; no separate final A4 report supplied/located. All nine implementation waves are delivered and self-qualified; independent closing audit remains required. See [implementation report](docs/plans/M36_IMPLEMENTATION_REPORT.md), [qualification matrix](docs/plans/M36_QUALIFICATION_MATRIX.md) and [M36 state](docs/plans/M36_STATE.md). No freeze, production agent-loop/UI wiring, INT-* event, Office/Harness/Edge implementation or push. Prior planning handoffs below are historical.
 

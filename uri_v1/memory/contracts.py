@@ -212,6 +212,20 @@ def bounded(value, limit=512):
     return value
 
 
+# Closed deterministic negation cues (audit F-1/F-2). Apostrophes are removed
+# before tokenizing so "don't" is the token "dont". Vocabulary expansion needs
+# later qualification; any hit fails closed to clarification.
+NEGATION_WORDS = frozenset(("not", "no", "never", "skip", "except", "excluding", "exclude", "without", "avoid",
+                            "dont", "doesnt", "didnt", "isnt", "wont", "cant", "cannot", "shouldnt"))
+NEGATION_PHRASES = ("other than", "instead of", "rather than", "apart from")
+
+
+def negated(text: str) -> bool:
+    tokens = re.findall(r"\w+", re.sub(r"['’]", "", text.casefold()))
+    joined = " " + " ".join(tokens) + " "
+    return bool(NEGATION_WORDS.intersection(tokens)) or any(" " + p + " " in joined for p in NEGATION_PHRASES)
+
+
 def opaque_link(value):
     if not isinstance(value,str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:\-]{0,127}",value):
         raise ValueError("identifier-only link required")

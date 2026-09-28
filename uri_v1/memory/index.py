@@ -4,6 +4,14 @@ from __future__ import annotations
 from .contracts import RecordKind as K, Provenance as P, TaskStatus as S, VerificationStatus as V, canonical, digest
 
 _TERMINAL = {S.COMPLETED, S.FAILED, S.ABANDONED}
+
+
+class VerifierRegistryMismatch(OSError):
+    """A receipted verdict needs a verifier/version this process has not bootstrapped.
+
+    Quarantining it would un-supersede the claim it assessed and re-open work
+    that depended on it, so the whole store is unavailable instead (audit F-3).
+    """
 _TRANSITIONS = {
     S.OPEN: {S.PAUSED, S.WAITING_USER, S.COMPLETED, S.FAILED, S.ABANDONED},
     S.WAITING_USER: {S.OPEN, S.PAUSED, S.COMPLETED, S.FAILED, S.ABANDONED},
@@ -145,7 +153,11 @@ class MemoryIndex:
             else:
                 from .recorder import _VERIFIERS
                 registered = _VERIFIERS.get(r.payload.get("verifier_id"))
-                if not registered or registered[:2] != (r.payload.get("verifier_type"),r.payload.get("verifier_version")): raise ValueError("UNREGISTERED_VERIFIER")
+                if not registered or registered[:2] != (r.payload.get("verifier_type"),r.payload.get("verifier_version")):
+                    receipt = self.protected("attestations", r.payload.get("attestation_ref", ""))
+                    if not writing and receipt and receipt.get("record_digest") == digest(r.to_dict()) and receipt.get("producer") == r.payload.get("verifier_id"):
+                        raise VerifierRegistryMismatch("VERIFIER_REGISTRY_MISMATCH")
+                    raise ValueError("UNREGISTERED_VERIFIER")
                 assessed = self.records.get(r.payload.get("assessed_outcome_record_id"))
                 if (not assessed or assessed.kind != K.OUTCOME or assessed.provenance != P.EXECUTION_OUTCOME
                         or assessed.task_id != r.task_id or assessed.payload["attempt_id"] != r.payload["attempt_id"]
@@ -164,6 +176,9 @@ class MemoryIndex:
             if any(p.kind != K.CORRECTION or p.payload["target"] != r.payload["target"] for p in parents): raise ValueError("INCOMPATIBLE_CORRECTION")
         elif r.kind == K.TOMBSTONE:
             if r.supersedes or any(t not in self.records for t in r.payload["target_record_ids"]): raise ValueError("INVALID_HIDE_TARGET")
+            # A user cannot hide a verifier verdict or strand a task without a head (audit F-4).
+            if any(self.records[t].kind == K.TASK_STATE or self.records[t].provenance == P.VERIFIER_RESULT
+                   for t in r.payload["target_record_ids"]): raise ValueError("INVALID_HIDE_TARGET")
             if not all(e["actor"] == "USER" and e["action"] == "FORGET" for e in events): raise ValueError("USER_FORGET_REQUIRED")
         elif r.kind == K.DERIVATIVE:
             if r.supersedes or r.task_id not in self.openings: raise ValueError("INVALID_DERIVATIVE")

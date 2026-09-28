@@ -8,7 +8,8 @@ from uri_v1.turn.rar_contracts import RARQuery, RARCandidate, RAREvidence, RARDe
 from uri_v1.turn.rar_clarification_contract import ClarificationResponse, ResponseKind, BindingState
 from uri_v1.reference_clarification.binding import BindingResult
 from ..contracts import (TrustedInput, _INTAKE_AUTHORITY, IdentityStatus as I, require_trace_id,
-                         RetrievalResult, canonical, AttachmentManifest, _ATTACHMENT_AUTHORITY, authorized_attachments)
+                         RetrievalResult, canonical, AttachmentManifest, _ATTACHMENT_AUTHORITY, authorized_attachments,
+                         negated)
 from ..retrieval import raw_span, exact_name, TYPE_WORDS, words
 
 
@@ -61,9 +62,10 @@ def ground(intake, ref_key, proposed, *, whole_answer=False):
     start,end = spans[0]; raw = intake.raw_text
     if not 0 <= start < end <= len(raw): return None
     span = raw[start:end]
-    # Conservative A4-1 guard: a decoder cannot elide a negation into positive certainty.
-    negation_text = raw if whole_answer else span
-    if words(negation_text)&{"not","no","except","exclude","without"}:
+    # Conservative A4-1 guard: a decoder cannot elide a negation into positive
+    # certainty. The whole trusted turn is checked, so a span that crops the
+    # cue away cannot hide it (audit F-1).
+    if negated(raw):
         return ExpressionGrounding(intake.turn_id,intake.trace_id,ref_key,None,"NEGATED_REFERENCE",None)
     comparison = proposed.strip().casefold()
     possible = []
@@ -103,7 +105,8 @@ class MemoryAdapter:
         if exact_titles:
             scan = self.sources.scan()
             all_matches = tuple(sorted(l.source_id for l in scan.locators if exact_name(expression,l.relpath.split("/")[-1])))
-            if not scan.complete or not set(all_matches)<=ids: return "COLLISION_SCOPE_INCOMPLETE"
+            hidden_match = any(exact_name(expression,name) for name in scan.hidden_names)
+            if not scan.complete or hidden_match or not set(all_matches)<=ids: return "COLLISION_SCOPE_INCOMPLETE"
             if result.collision and scan.snapshot_digest != result.collision.snapshot_digest: return "SNAPSHOT_INVALIDATED"
         if any(c.source.identity_status != I.HASH_VERIFIED for c in candidates): return "HASH_IDENTITY_DEGRADED"
         for c in candidates:

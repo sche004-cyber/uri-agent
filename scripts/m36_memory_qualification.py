@@ -116,7 +116,10 @@ def run_one(directory,battery):
         locator=locators[name]; stem=Path(name).stem
         for form in battery["case_forms"]:
             raw={"literal_title":name,"explicit_id":locator.source_id,"raw_phrase":f"the {stem} file",
-                 "model_normalized_title":f"the {stem} file","negated_title":f"not {name}"}[form]
+                 "model_normalized_title":f"the {stem} file","negated_title":f"not {name}",
+                 # Closing-audit F-1: negation cues beyond the literal word "not".
+                 "negated_dont_title":f"don't use {name}","negated_skip_title":f"skip {name}",
+                 "negated_other_than_title":f"anything other than {name}"}[form]
             result=retrieve(raw,proposal=name if form=="model_normalized_title" else None)
             latencies.append(result.telemetry["retrieval_us"])
             projected,b=register(result)

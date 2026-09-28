@@ -111,7 +111,9 @@ def test_correction_pairs_full_history_interruption_and_retry(tmp_path):
 def test_hide_and_cross_user(tmp_path):
     log,sources,rec,root=setup(tmp_path)
     task,head=opened(rec)
-    assert rec.forget((head.record_id,),intake=intake("forget")).persisted
+    # Audit F-4: hiding the current head alone would strand the task; hide the task via its opening.
+    assert rec.forget((head.record_id,),intake=intake("forget")).reason=="INVALID_HIDE_TARGET"
+    assert rec.forget((log.load().openings[task],),intake=intake("forget")).persisted
     assert log.load().task(task) is None
     other=MemoryLog(str(uuid.UUID(int=2)),log.root)
     assert other.load().records=={}

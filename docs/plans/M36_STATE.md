@@ -1,7 +1,8 @@
 # M36 State — URI-Memory Minimum (pre-Office demonstrator)
 
-STATE: M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT
-READINESS: INDEPENDENT_CLOSING_AUDIT_REQUIRED
+STATE: M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION
+READINESS: FREEZE_DECISION_REQUIRED (closing audit performed; repairs re-verified by the repairing session, not independently)
+Prior state (historical): M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT
 Plan: docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md (§17 = A2 repairs preserved; §18 preserves accepted initial projection grounding; §19 repairs FREE_INPUT; earlier history retained)
 Component: `URI-Memory` (implemented; independently unaudited, not frozen or production integrated)
 Implementation starting HEAD: `23f5cd9a5f1ac5d17d431c7a76a15533e5c570a4` (`m35-uri-v1-parallel-architecture`)
@@ -36,7 +37,7 @@ INT-* event: NONE. S13: not authorized. S9: remains deferred.
 |---|---|---|
 | PG-M1 | Final focused N-1 FREE_INPUT/A4 re-check plus preservation of A2/A3 | PG_M1_ACCEPTED per User-supplied current planning state; separate final report unavailable |
 | PG-M2 | Explicit User implementation authorization | GRANTED_BY_USER in current attached task package |
-| Freeze | Plan §12 item 4 | OPEN — independent closing audit not performed |
+| Freeze | Plan §12 item 4 | OPEN — closing audit performed 2026-09-28 (REPAIRS_REQUIRED); F-1..F-6 and D-1 repaired; freeze requires User decision |
 
 ## History log
 
@@ -134,3 +135,10 @@ These are planning checks, not independent PG-M1 acceptance or future H/Memory l
 Direct User implementation package authorized all nine waves and supplies PG_M1_ACCEPTED/PG_M2. No separate final A4 audit report was supplied or found; this is recorded as supplied authority, not an independently obtained verdict. Earlier planning handoffs above are historical.
 
 State: M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT. Implementation and self-qualification evidence: [M36 implementation report](M36_IMPLEMENTATION_REPORT.md), [qualification matrix](M36_QUALIFICATION_MATRIX.md), machine telemetry and JUnit artifacts listed there. No independent closing audit, frozen promotion, INT-* event, S13/Brain/production/UI integration, release or push. Next action: a separate independent closing-audit session using the exact report prompt.
+
+## Closing audit and bounded repair — 2026-09-28
+
+| Actor / stage | Transition / finding |
+|---|---|
+| Claude, independent closing auditor (not the implementer) | M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT → REPAIRS_REQUIRED. Audited `be4451c` on a clean Linux clone and the User's Windows `_V1` checkout. Frozen boundary, anchors, governance and test counts reproduced; six code findings F-1..F-6 and docs finding D-1. Report: [M36_INDEPENDENT_CLOSING_AUDIT_REPORT.md](M36_INDEPENDENT_CLOSING_AUDIT_REPORT.md). |
+| Claude, same session, User-authorized bounded repairer | REPAIRS_REQUIRED → M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION. Repairs in `uri_v1/memory/` only; regression tests in `tests/test_m36_memory_audit_repairs.py`; three negation forms added to the predeclared battery (thresholds unchanged); D-1 restored `pg_m1_verdict` and appended `pg_m1_final_verdict`. Re-verification evidence: [M36_REPAIR_VERIFICATION.md](M36_REPAIR_VERIFICATION.md). The re-verification was performed by the session that made the repairs and is therefore not an independent audit. Freeze not authorized. |

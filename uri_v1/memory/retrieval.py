@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from .contracts import (MemoryQuery, RetrievedCandidate, RetrievalResult, CollisionReceipt,
                         TrustedInput, RecordKind as K, IdentityStatus as I, Freshness as F,
                         canonical, timestamp, authorized_attachments)
+from .index import VerifierRegistryMismatch
 
 TYPE_WORDS = {"spreadsheet":"spreadsheet","workbook":"spreadsheet","script":"script","document":"document"}
 STOPWORDS = set("the a an from of in on my task tasks file files this that yesterday today last week resume continue paused".split()) | set(TYPE_WORDS)
@@ -33,7 +34,7 @@ def raw_span(query):
 def stem_title(title):
     # Lineage: frozen uri_v1/turn/rar_deterministic.py stem_title; no import.
     stem = re.sub(r"\.(pdf|docx|xlsx|csv|txt|mp4|mov|zip|json|mp3|wav|m4a|ogg|html|pptx)$", "", title,flags=re.I)
-    stem = re.sub(r"[_\-]", " ", stem)
+    stem = re.sub(r"[_\.\-\/]", " ", stem)
     return " ".join(stem.lower().split())
 
 
@@ -82,7 +83,10 @@ class Retriever:
         # Exact names always use the full authorized collision scope, independent of filters.
         expressions = {query.reference_expression.strip(), span.strip()}
         collision_ids = tuple(sorted(l.source_id for l in scan.locators if any(exact_name(e,PurePosixPath(l.relpath).name) for e in expressions)))
-        receipt = CollisionReceipt(scan.root_ids,scan.snapshot_digest,collision_ids,scan.complete,scan.reason)
+        # A hidden file can only break completeness for a name it could collide with.
+        hidden_match = any(exact_name(e,name) for e in expressions for name in scan.hidden_names)
+        receipt = CollisionReceipt(scan.root_ids,scan.snapshot_digest,collision_ids,scan.complete and not hidden_match,
+                                   "HIDDEN_NAME_MATCH" if hidden_match and scan.complete else scan.reason)
         found, stale = {}, []
         def add(sid,tier,used,task_ids=(),baseline=None):
             if sid not in locators:
@@ -107,8 +111,8 @@ class Retriever:
             try:
                 before = time.perf_counter_ns(); index = self.log.load(); stats["load_us"] = (time.perf_counter_ns()-before)//1000
                 stats["durable_reads"] = 1; stats["quarantine_count"] = len(index.recovery_ids)
-            except (OSError,ValueError):
-                return finish(tuple(found.values()),receipt,degraded="STORE_UNAVAILABLE")
+            except (OSError,ValueError) as e:
+                return finish(tuple(found.values()),receipt,degraded="VERIFIER_REGISTRY_MISMATCH" if isinstance(e,VerifierRegistryMismatch) else "STORE_UNAVAILABLE")
             if len(index.openings) > query.max_tasks: return finish(collision=receipt,degraded="BUDGET_EXCEEDED")
             task_search = bool(words(span)&{"task","tasks","resume","continue"}) or window is not None
             resume = bool(words(span)&{"resume","continue"})
