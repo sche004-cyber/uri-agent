@@ -26,6 +26,41 @@ http.Response _json(Map<String, dynamic> body, {int statusCode = 200}) {
 
 void main() {
   group('ask()', () {
+    test('uses the existing SSE endpoint and exposes provisional text', () async {
+      final partials = <String>[];
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          expect(request.url.path, '/ask/stream');
+          final requestBody = jsonDecode(request.body) as Map<String, dynamic>;
+          expect(requestBody['attached_file_ids'], ['file-1']);
+          final finalBody = {
+            'status': 'success',
+            'session_id': 's1',
+            'execution': {'status': 'success'},
+            'response': {'message': 'Hello world'},
+            'narrative': 'Hello world',
+          };
+          return http.Response(
+            'event: content\ndata: {"text":"Hello "}\n\n'
+            'event: content\ndata: {"text":"world"}\n\n'
+            'event: done\ndata: ${jsonEncode({'response': finalBody, 'narrative_interrupted': false})}\n\n',
+            200,
+            headers: {'content-type': 'text/event-stream'},
+          );
+        }),
+      );
+
+      final turn = await client.ask(
+        'say hello',
+        attachedFileIds: const ['file-1'],
+        onPartialText: partials.add,
+      );
+
+      expect(partials, ['Hello ', 'Hello world']);
+      expect(turn.stage, TurnStage.completed);
+      expect(turn.understanding, 'Hello world');
+    });
+
     test('a successful direct execution with narrative uses the narrative as the result summary', () async {
       final client = HttpUriClient(
         httpClient: MockClient((request) async {
@@ -54,64 +89,58 @@ void main() {
       expect(turn.result!.summary, isNot(contains('RAW DOCUMENT TEXT')));
     });
 
-    test(
-      'Live UX Repair §8: real serving metadata (model, duration, tokens) reaches the turn',
-      () async {
-        final client = HttpUriClient(
-          httpClient: MockClient((request) async {
-            return _json({
-              'status': 'success',
-              'session_id': 's1',
-              'semantic_analysis': {'goal': 'say hello'},
-              'execution': {'status': 'success'},
-              'response': {'message': 'Hello there.'},
-              'narrative': 'Hello there.',
-              'serving_provider': 'ollama',
-              'serving_model': 'gemma4:12b',
-              'serving_prompt_tokens': 120,
-              'serving_eval_tokens': 40,
-              'serving_duration_seconds': 2.5,
-            });
-          }),
-        );
+    test('Live UX Repair §8: real serving metadata (model, duration, tokens) reaches the turn', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          return _json({
+            'status': 'success',
+            'session_id': 's1',
+            'semantic_analysis': {'goal': 'say hello'},
+            'execution': {'status': 'success'},
+            'response': {'message': 'Hello there.'},
+            'narrative': 'Hello there.',
+            'serving_provider': 'ollama',
+            'serving_model': 'gemma4:12b',
+            'serving_prompt_tokens': 120,
+            'serving_eval_tokens': 40,
+            'serving_duration_seconds': 2.5,
+          });
+        }),
+      );
 
-        final turn = await client.ask('say hello');
+      final turn = await client.ask('say hello');
 
-        expect(turn.servingModel, 'gemma4:12b');
-        expect(turn.promptTokens, 120);
-        expect(turn.evalTokens, 40);
-        expect(turn.durationSeconds, 2.5);
-      },
-    );
+      expect(turn.servingModel, 'gemma4:12b');
+      expect(turn.promptTokens, 120);
+      expect(turn.evalTokens, 40);
+      expect(turn.durationSeconds, 2.5);
+    });
 
-    test(
-      'Live UX Repair §8: an unmeasured field stays null - never a fabricated 0',
-      () async {
-        final client = HttpUriClient(
-          httpClient: MockClient((request) async {
-            return _json({
-              'status': 'success',
-              'session_id': 's1',
-              'semantic_analysis': {'goal': 'say hello'},
-              'execution': {'status': 'success'},
-              'response': {'message': 'Hello there.'},
-              'narrative': 'Hello there.',
-              'serving_provider': 'openai',
-              'serving_model': 'gpt-4o',
-              // No token/duration keys at all - the real shape returned
-              // when UsageMeter never measured this turn.
-            });
-          }),
-        );
+    test('Live UX Repair §8: an unmeasured field stays null - never a fabricated 0', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          return _json({
+            'status': 'success',
+            'session_id': 's1',
+            'semantic_analysis': {'goal': 'say hello'},
+            'execution': {'status': 'success'},
+            'response': {'message': 'Hello there.'},
+            'narrative': 'Hello there.',
+            'serving_provider': 'openai',
+            'serving_model': 'gpt-4o',
+            // No token/duration keys at all - the real shape returned
+            // when UsageMeter never measured this turn.
+          });
+        }),
+      );
 
-        final turn = await client.ask('say hello');
+      final turn = await client.ask('say hello');
 
-        expect(turn.servingModel, 'gpt-4o');
-        expect(turn.promptTokens, isNull);
-        expect(turn.evalTokens, isNull);
-        expect(turn.durationSeconds, isNull);
-      },
-    );
+      expect(turn.servingModel, 'gpt-4o');
+      expect(turn.promptTokens, isNull);
+      expect(turn.evalTokens, isNull);
+      expect(turn.durationSeconds, isNull);
+    });
 
     test('a successful execution with no narrative and no message never dumps raw JSON', () async {
       final client = HttpUriClient(
@@ -640,21 +669,18 @@ void main() {
       expect(connections.first.status, ConnectionStatus.notConnected);
     });
 
-    test(
-      'a network error throws ConnectionsFetchException rather than falling back to mock data',
-      () async {
-        final client = HttpUriClient(
-          httpClient: MockClient((request) async {
-            throw Exception('connection refused');
-          }),
-        );
+    test('a network error throws ConnectionsFetchException rather than falling back to mock data', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          throw Exception('connection refused');
+        }),
+      );
 
-        expect(
-          () => client.listConnections(),
-          throwsA(isA<ConnectionsFetchException>()),
-        );
-      },
-    );
+      expect(
+        () => client.listConnections(),
+        throwsA(isA<ConnectionsFetchException>()),
+      );
+    });
   });
 
   group('saveGoogleCredentials()', () {
@@ -666,27 +692,30 @@ void main() {
         }),
       );
 
-      final error = await client.saveGoogleCredentials(rawJson: '{"installed":{"client_id":"x","client_secret":"y"}}');
+      final error = await client.saveGoogleCredentials(
+        rawJson: '{"installed":{"client_id":"x","client_secret":"y"}}',
+      );
 
       expect(error, isNull);
     });
 
-    test(
-      'a 400 response surfaces the backend\'s own detail message verbatim',
-      () async {
-        final client = HttpUriClient(
-          httpClient: MockClient((request) async {
-            return _json({
-              'detail': 'raw_json must be valid Google OAuth client credentials JSON.',
-            }, statusCode: 400);
-          }),
-        );
+    test('a 400 response surfaces the backend\'s own detail message verbatim', () async {
+      final client = HttpUriClient(
+        httpClient: MockClient((request) async {
+          return _json({
+            'detail':
+                'raw_json must be valid Google OAuth client credentials JSON.',
+          }, statusCode: 400);
+        }),
+      );
 
-        final error = await client.saveGoogleCredentials(rawJson: 'not json');
+      final error = await client.saveGoogleCredentials(rawJson: 'not json');
 
-        expect(error, 'raw_json must be valid Google OAuth client credentials JSON.');
-      },
-    );
+      expect(
+        error,
+        'raw_json must be valid Google OAuth client credentials JSON.',
+      );
+    });
 
     test('a network failure returns a real error message, not null', () async {
       final client = HttpUriClient(

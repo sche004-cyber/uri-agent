@@ -7,6 +7,7 @@ import '../models/system_performance.dart';
 import '../models/task_item.dart';
 import '../models/user_preferences.dart';
 import '../models/uri_turn.dart';
+import '../models/edge_intelligence.dart';
 import '../theme/uri_theme.dart' show UriThemeChoice;
 import 'preferences_store.dart';
 import 'server_address_store.dart';
@@ -510,6 +511,17 @@ class AppState extends ChangeNotifier {
       text,
       turnId: pendingId,
       modelOverride: conversationModelOverride,
+      attachedFileIds: sentAttachments.map((item) => item.fileId).toList(),
+      onPartialText: (partial) {
+        final index = conversation.indexWhere((item) => item.id == pendingId);
+        if (index < 0) return;
+        conversation[index] = conversation[index].copyWith(
+          understanding: partial.isEmpty
+              ? 'URI is validating a proposed actionâ€¦'
+              : partial,
+        );
+        notifyListeners();
+      },
     );
     final turn = response.copyWith(attachments: sentAttachments);
     _replacePendingTurn(pendingId, turn);
@@ -1087,5 +1099,87 @@ class AppState extends ChangeNotifier {
   Future<void> cancelTask(String actionId) async {
     await _client.cancel(actionId);
     await loadTasks();
+  }
+
+  // ---------------------------------------------------------------
+  // M33.2 / M31: Edge Brain, Routing Traces, and Edge Lab.
+  // ---------------------------------------------------------------
+
+  EdgeSettings? edgeSettings;
+  EdgeEffectiveStatus? edgeStatus;
+  EdgeLabOverview? edgeLabOverview;
+  List<EdgeRoutingEvent> edgeTrace = const [];
+  List<ExperimentalCandidate> experimentalCandidates = const [];
+  bool isDiscoveringCandidates = false;
+  bool isLoadingEdge = false;
+  String? edgeError;
+
+  Future<void> loadEdgeIntelligence() async {
+    isLoadingEdge = true;
+    edgeError = null;
+    notifyListeners();
+    try {
+      final results = await Future.wait([
+        _client.getIntelligenceSettings(),
+        _client.getIntelligenceStatus(),
+        _client.getIntelligenceTrace(limit: 50),
+        _client.getEdgeLabOverview(),
+      ]);
+      edgeSettings = results[0] as EdgeSettings?;
+      edgeStatus = results[1] as EdgeEffectiveStatus?;
+      edgeTrace = results[2] as List<EdgeRoutingEvent>? ?? const [];
+      edgeLabOverview = results[3] as EdgeLabOverview?;
+    } catch (e) {
+      edgeError = e.toString();
+    } finally {
+      isLoadingEdge = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateEdgeSettings(EdgeSettings settings) async {
+    final ok = await _client.updateIntelligenceSettings(settings);
+    if (ok) {
+      await loadEdgeIntelligence();
+    }
+    return ok;
+  }
+
+  Future<EdgeProbeResult?> probeEdge(String query) async {
+    final result = await _client.probeEdge(query);
+    try {
+      final events = await _client.getIntelligenceTrace(limit: 50);
+      edgeTrace = events;
+      notifyListeners();
+    } catch (_) {}
+    return result;
+  }
+
+  Future<void> discoverExperimentalCandidates() async {
+    isDiscoveringCandidates = true;
+    notifyListeners();
+    experimentalCandidates = await _client.discoverExperimentalCandidates();
+    isDiscoveringCandidates = false;
+    notifyListeners();
+  }
+
+  Future<void> qualifyExperimentalCandidate(
+    ExperimentalCandidate candidate,
+  ) async {
+    final result = await _client.qualifyExperimentalCandidate(
+      candidate.runtime,
+      candidate.modelId,
+    );
+    if (result == null) return;
+    experimentalCandidates = experimentalCandidates
+        .map(
+          (item) =>
+              item.runtime == candidate.runtime &&
+                  item.modelId == candidate.modelId
+              ? item.withQualification(result)
+              : item,
+        )
+        .toList(growable: false);
+    notifyListeners();
   }
 }

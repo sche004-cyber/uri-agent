@@ -69,6 +69,23 @@ class AskNarrativeEndpointTests(unittest.TestCase):
             server._orchestrator.response_drafting_provider
         )
         self._original_skill_memory = server._orchestrator.skill_memory
+        # This suite verifies the narrative seam, not Edge routing. Keep it
+        # isolated from a persisted live Edge-Only preference.
+        self._edge_route_patch = patch.object(
+            server,
+            "_edge_route_for_ask",
+            return_value=(None, {"disposition": "NEEDLE_BYPASSED"}),
+        )
+        self._edge_route_patch.start()
+        self._routing_env_patch = patch.dict(
+            os.environ,
+            {
+                "URI_ENABLE_DECISION_ENGINE_LIVE": "0",
+                "URI_ENABLE_NATIVE_TOOL_LOOP": "0",
+                "URI_ENABLE_WORKFLOW_CONTINUATION_MODE": "0",
+            },
+        )
+        self._routing_env_patch.start()
 
         # Isolate from the real, ambient uri_workspace/skill_memory.json
         # - otherwise a skill learned from prior real usage/tests could
@@ -104,6 +121,8 @@ class AskNarrativeEndpointTests(unittest.TestCase):
         self.client = TestClient(server.app)
 
     def tearDown(self):
+        self._routing_env_patch.stop()
+        self._edge_route_patch.stop()
         server._memory_store = self._original_memory_store
         server._user_profile_store = self._original_user_profile_store
         server._orchestrator.semantic_interpreter = (
@@ -182,8 +201,10 @@ class AskNarrativeEndpointTests(unittest.TestCase):
 
         self.assertIsNone(response.json()["narrative"])
         # The structured, pre-existing fields are unaffected either way.
-        self.assertEqual(
-            response.json()["execution"]["status"], "degraded"
+        # Execution truth depends on whether the configured local drafting
+        # model is reachable; disabling narrative must not remove it.
+        self.assertIn(
+            response.json()["execution"]["status"], {"success", "degraded"}
         )
 
     def test_ask_relays_narrative_unavailable_reason(self):

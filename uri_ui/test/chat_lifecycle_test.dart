@@ -28,7 +28,13 @@ class _ControllableUriClient extends MockUriClient {
   var _completer = Completer<UriTurn>();
 
   @override
-  Future<UriTurn> ask(String text, {String? turnId, Object? modelOverride}) {
+  Future<UriTurn> ask(
+    String text, {
+    String? turnId,
+    Object? modelOverride,
+    List<String> attachedFileIds = const [],
+    void Function(String text)? onPartialText,
+  }) {
     _completer = Completer<UriTurn>();
     return _completer.future;
   }

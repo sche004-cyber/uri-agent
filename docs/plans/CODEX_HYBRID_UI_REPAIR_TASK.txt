@@ -1,0 +1,136 @@
+=== URI HYBRID UI — CODEX IMPLEMENTATION DIRECTIVE ===
+
+Role: Codex (Preferred Specialist Implementer)
+Coordinator: Antigravity (Loop Manager / Harness)
+Authority: User instruction (2026-09-21)
+Baseline: e8e3b65 (master)
+Working Tree: Contains uncommitted Hybrid UI implementation + bounded repairs + Antigravity Live Acceptance Remediation repairs.
+State: IMPLEMENTING -> Target: VERIFICATION_READY
+
+CRITICAL BOUNDARIES:
+- Do NOT commit.
+- Do NOT push.
+- Do NOT declare VERIFIED.
+- Do NOT start M31.1A Companion Mode, ARN.2, or M35.
+- Stop at VERIFICATION_READY.
+- Do NOT ask the User routine implementation questions. Use repository evidence and existing architecture.
+
+STEP 0: RECOVER REAL CURRENT STATE BEFORE EDITING
+Inspect:
+- git status --short
+- git diff --stat
+- temp_evidence/m31_visual_review/LIVE_ACCEPTANCE_REMEDIATION_REPORT.md
+- temp_evidence/m31_visual_review/m31_working_tree.patch
+- docs/plans/UI_HYBRID_FROZEN_BLUEPRINT.md
+- docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md
+- docs/plans/M33_2_BATCH_B4_COMPLETION_REPORT.md and scripts/m33_2_needle_bridge.py
+- docs/plans/ARN_1_COMPLETION_REPORT.md
+
+Classify each issue below as:
+- ALREADY_FIXED
+- REPRODUCED
+- NOT_REPRODUCED
+- REQUIRES_REPAIR
+
+================================================================================
+THE 11 REMAINING WORK ITEMS TO RESOLVE
+================================================================================
+
+1. REAL CHAT RESPONSIVENESS
+- Prove whether Flutter uses the optimized M32 path.
+- Inspect /ask vs /ask/stream.
+- Measure context/routing/model/post-processing/UI latency.
+- Compare qwen3.5:9b, gemma4:12b and URI Auto.
+- Wire existing streaming support into Flutter if it is not currently used.
+- Do not invent a second streaming architecture.
+
+2. NEEDLE CANONICAL CHAT WIRING
+- Edge Lab now proves the diagnostic Needle bridge works. This does NOT yet prove normal /ask uses Needle.
+- Prove or repair the complete flow:
+  request -> Edge eligibility -> Needle invoked/bypassed/escalated ->
+  deterministic URI validation -> tool/capability -> execution/escalation ->
+  trace -> response
+- Developer evidence must clearly show NEEDLE_INVOKED / BYPASSED / ESCALATED.
+- Do not force every turn through Needle.
+- Do not grant Needle execution authority.
+
+3. PDF -> DOCX FALSE SUCCESS
+- Live Word inspection proved the claimed editable DOCX contained a raster image.
+- Text PDFs must produce real editable paragraphs/tables/lists where feasible.
+- Scanned/image PDFs must NOT claim editable conversion while OCR remains unavailable.
+- Validate output before saying "editable".
+- Do not add/qualify a new OCR backend here.
+
+4. CAPABILITIES RUNTIME TRUTHFULNESS
+- Live Ollama inventory is: qwen3.5:9b, gemma4:12b. qwen3:14b is NOT installed.
+- Fix any UI/capability state claiming qwen3:14b is locally available.
+- Remove capability descriptions that advertise unavailable OCR behavior.
+
+5. LM STUDIO CONNECTION / MODEL DISCOVERY
+- Live LM Studio server was tested at: http://127.0.0.1:1234
+- URI saved credentials but failed with: "No configured model could be verified."
+- Repair LM Studio as a dynamic local runtime:
+  reachability -> determine auth -> authenticate if needed -> discover models ->
+  verify discovered model -> allow Active Brain selection.
+- API key must not be mandatory when LM Studio auth is disabled.
+- All localhost/runtime probes must have explicit short timeouts (e.g. 3-5 seconds).
+
+6. EDGE LAB EXPERIMENTAL CANDIDATES
+- Current Edge Lab cannot add a new model for benchmark-only testing.
+- Using existing B.3 lifecycle infrastructure, add an Experimental Candidates surface where a user can import/discover a test candidate and run qualification.
+- Show truthful fields where known:
+  exact model id, runtime, quantization, file size, loaded state, RAM/VRAM,
+  qualification state, tested capabilities, benchmark evidence.
+- Critical: ADD TEST MODEL != PRODUCTION PROMOTION.
+  No admin/system-wide install, drivers, PATH/registry changes or automatic promotion.
+
+7. DUPLICATE URI.BAT
+- Two URI.bat launchers exist in the workspace.
+- Inspect before deleting anything:
+  exact paths, contents, references, timestamps, intended canonical launcher.
+- Keep one canonical launcher, migrate references if needed, remove only the verified redundant copy, and retest one-click startup.
+
+8. LIVE VALIDATION OF PRIOR REPAIRS
+- Independently recheck the current Antigravity fixes where relevant:
+  Compact first activation after clean process start, 3 clean restart trials,
+  routing trace persistence, Chat Developer tab, EDGE_ONLY semantics,
+  truthful total/model latency display, active-model propagation.
+
+9. PRESERVE WORKING LIVE BEHAVIOR
+- Do not regress:
+  gemma4:12b, qwen3.5:9b, model switching, Home Brain tile, normal Main Brain chat,
+  institutional drafting, Result cards, Developer tab, Edge qualification matrix,
+  ARN.1 boundaries, Compact session preservation, explicit failure explanations.
+
+10. TESTING & REGRESSION
+- Run focused tests during repair.
+- Before handoff run:
+  flutter analyze
+  full flutter test
+  M32 latency/streaming tests
+  Edge/Needle tests
+  LM Studio/provider tests
+  document conversion tests
+  capability truthfulness tests
+  launcher tests
+  ARN.1 regression
+  relevant route/security tests
+- Run full Python regression and classify every remaining failure against accepted baseline.
+
+11. OUTPUT REPORT
+Produce:
+POST_LIVE_CONSOLIDATED_REPAIR_REPORT.md
+
+For every issue include:
+- disposition (ALREADY_FIXED / REPRODUCED / NOT_REPRODUCED / REQUIRES_REPAIR)
+- reproduction
+- root cause
+- exact repair
+- files changed
+- tests
+- live validation
+- before/after latency where relevant
+- residual limitations
+
+Final state must be: VERIFICATION_READY.
+Do not commit or push.

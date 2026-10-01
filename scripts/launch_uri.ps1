@@ -169,11 +169,54 @@ if ($existing) {
     exit 0
 }
 
+$UiDir = Join-Path $RepoRoot "uri_ui"
+$LibDir = Join-Path $UiDir "lib"
+$WindowsDir = Join-Path $UiDir "windows"
+$AssetsDir = Join-Path $UiDir "assets"
+$PubspecPath = Join-Path $UiDir "pubspec.yaml"
+$PubspecLockPath = Join-Path $UiDir "pubspec.lock"
+
+$NeedsBuild = $false
 if (-not (Test-Path $ExePath)) {
-    Show-FailureAndExit (
-        "The URI desktop app has not been built yet (expected at " +
-        "$ExePath). From uri_ui\, run: flutter build windows --release"
-    )
+    $NeedsBuild = $true
+} else {
+    $ExeTime = (Get-Item $ExePath).LastWriteTime
+    $SourceDirs = @($LibDir, $WindowsDir)
+    if (Test-Path $AssetsDir) {
+        $SourceDirs += $AssetsDir
+    }
+    $NewestSource = Get-ChildItem -Path $SourceDirs -Recurse -File -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if ($NewestSource -and $NewestSource.LastWriteTime -gt $ExeTime) {
+        $NeedsBuild = $true
+    }
+    if ((Test-Path $PubspecPath) -and (Get-Item $PubspecPath).LastWriteTime -gt $ExeTime) {
+        $NeedsBuild = $true
+    }
+    if ((Test-Path $PubspecLockPath) -and (Get-Item $PubspecLockPath).LastWriteTime -gt $ExeTime) {
+        $NeedsBuild = $true
+    }
+}
+
+if ($NeedsBuild) {
+    Write-Step "URI desktop executable is missing or older than sources. Building release binary..."
+    $flutterCmd = Get-Command flutter -ErrorAction SilentlyContinue
+    if (-not $flutterCmd) {
+        Show-FailureAndExit (
+            "The URI desktop app needs to be built, but 'flutter' was not found in PATH. " +
+            "Please ensure Flutter is on PATH or run 'flutter build windows --release' from uri_ui\."
+        )
+    }
+    Push-Location $UiDir
+    try {
+        & flutter build windows --release
+        if ($LASTEXITCODE -ne 0) {
+            Show-FailureAndExit "Flutter build failed with exit code $LASTEXITCODE."
+        }
+    }
+    finally {
+        Pop-Location
+    }
 }
 
 Write-Step "Starting the URI desktop app."

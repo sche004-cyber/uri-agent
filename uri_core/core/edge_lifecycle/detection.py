@@ -63,7 +63,17 @@ def _ollama_models(payload: Dict[str, Any]) -> Tuple[DetectedModelRecord, ...]:
         tag = name.rsplit(":", 1)[1] if ":" in name else None
         size = item.get("size") if isinstance(item.get("size"), int) else None
         digest = item.get("digest") if isinstance(item.get("digest"), str) else None
-        models.append(DetectedModelRecord(name, tag=tag, byte_size=size, digest=digest))
+        details = item.get("details") if isinstance(item.get("details"), dict) else {}
+        quantization = details.get("quantization_level")
+        parameter_size = details.get("parameter_size")
+        models.append(DetectedModelRecord(
+            name,
+            tag=tag,
+            byte_size=size,
+            digest=digest,
+            quantization=quantization if isinstance(quantization, str) else None,
+            parameter_size=parameter_size if isinstance(parameter_size, str) else None,
+        ))
     return tuple(models)
 
 

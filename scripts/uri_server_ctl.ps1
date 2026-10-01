@@ -67,6 +67,11 @@ function Install-UriServerTask {
 
     $taskTrigger = New-ScheduledTaskTrigger -AtLogOn
 
+    # Windows Task Scheduler defaults StopOnIdleEnd to True with a 10-minute
+    # idle threshold. When the machine wakes or changes idle state, Windows sends
+    # a console close/CTRL_C event to cmd.exe, causing exit code 3221225786
+    # (0xC000013A / STATUS_CONTROL_C_EXIT) and a graceful uvicorn shutdown.
+    # -DontStopOnIdleEnd ensures the backend server persists continuously.
     $taskSettings = New-ScheduledTaskSettingsSet `
         -Hidden `
         -RestartCount 999 `
@@ -74,6 +79,7 @@ function Install-UriServerTask {
         -ExecutionTimeLimit ([TimeSpan]::Zero) `
         -AllowStartIfOnBatteries `
         -DontStopIfGoingOnBatteries `
+        -DontStopOnIdleEnd `
         -MultipleInstances IgnoreNew
 
     Register-ScheduledTask `

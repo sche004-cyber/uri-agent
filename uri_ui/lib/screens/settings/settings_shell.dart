@@ -8,6 +8,7 @@ import 'admin_grants_screen.dart';
 import 'appearance_settings_screen.dart';
 import 'capabilities_settings_screen.dart';
 import 'diagnostics_settings_screen.dart';
+import 'edge_lab_screen.dart';
 import 'memory_context_settings_screen.dart';
 import 'memory_settings_screen.dart';
 import 'preferences_settings_screen.dart';
@@ -95,6 +96,13 @@ final _categories = <_SettingsCategory>[
     subtitle: 'Connection health and this device\'s identifiers.',
     icon: Icons.monitor_heart_outlined,
     builder: (_) => const DiagnosticsSettingsScreen(),
+  ),
+  _SettingsCategory(
+    group: _SettingsGroup.system,
+    label: 'Edge Brain Lab',
+    subtitle: 'Truthful qualification matrix, live reflex tester, and runtime traces.',
+    icon: Icons.hub_outlined,
+    builder: (_) => const EdgeLabScreen(),
   ),
   _SettingsCategory(
     group: _SettingsGroup.system,

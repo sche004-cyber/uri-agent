@@ -16,9 +16,10 @@
 library;
 
 import 'dart:io' show Platform;
-import 'dart:ui' show Rect, Size;
+import 'dart:ui' show Offset, Rect, Size;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/widgets.dart' show Alignment;
 import 'package:window_manager/window_manager.dart';
 
 bool get _supportsWindowControl => !kIsWeb && Platform.isWindows;
@@ -40,36 +41,93 @@ Future<void> ensurePlatformWindowManagerInitialized() async {
   await windowManager.ensureInitialized();
 }
 
+bool _wasMaximized = false;
 Rect? _preCompactBounds;
 
 /// Shrinks the real OS window to a fixed, non-resizable Compact size,
 /// remembering the Workspace window's current bounds (size AND position)
-/// so [exitCompactWindow] can restore them. Keeps the window's current
-/// top-left corner rather than moving it, so Compact opens as a small
-/// companion window right where the Workspace window already was.
+/// so [exitCompactWindow] can restore them.
+///
+/// Handles maximized windows by unmaximizing first so Windows doesn't push the
+/// window off-screen. Positions the compact window strictly within the active
+/// monitor's visible work area (clamped against taskbar and display edges).
 Future<void> enterCompactWindow() async {
   if (!_supportsWindowControl) return;
+
+  _wasMaximized = await windowManager.isMaximized();
   _preCompactBounds = await windowManager.getBounds();
+
+  // If the window is maximized, unmaximize first so Win32 WS_MAXIMIZE styles
+  // do not force the window to off-screen or negative coordinates.
+  if (_wasMaximized) {
+    await windowManager.unmaximize();
+    await Future.delayed(const Duration(milliseconds: 50));
+  }
+
+  // Calculate target position within the active monitor's visible work area.
+  Offset targetPos;
+  try {
+    // calcWindowPosition computes coordinates using the active display's visibleSize and visiblePosition.
+    final calculated = await calcWindowPosition(
+      compactWindowSize,
+      Alignment.topRight,
+    );
+    targetPos = Offset(
+      (calculated.dx - 24).clamp(20.0, double.infinity),
+      (calculated.dy + 24).clamp(20.0, double.infinity),
+    );
+  } catch (_) {
+    // Fallback if display calculation fails: clamp existing bounds
+    final currentLeft = _preCompactBounds?.left ?? 100.0;
+    final currentTop = _preCompactBounds?.top ?? 100.0;
+    targetPos = Offset(
+      currentLeft < 0 ? 50.0 : currentLeft,
+      currentTop < 0 ? 50.0 : currentTop,
+    );
+  }
+
   await windowManager.setMinimumSize(compactWindowSize);
   await windowManager.setMaximumSize(compactWindowSize);
-  await windowManager.setSize(compactWindowSize);
+  await windowManager.setBounds(
+    Rect.fromLTWH(
+      targetPos.dx,
+      targetPos.dy,
+      compactWindowSize.width,
+      compactWindowSize.height,
+    ),
+  );
   await windowManager.setResizable(false);
+  await windowManager.show();
+  await windowManager.focus();
 }
 
-/// Restores the Workspace window's previous size/position where known;
-/// falls back to simply lifting the Compact-locked size constraints
-/// (leaving the window at its current, already-Compact size) if Compact
-/// was somehow entered without ever capturing bounds first.
+/// Restores the Workspace window's previous size/position where known.
+/// If the window was previously maximized, restores the maximized state.
 Future<void> exitCompactWindow() async {
   if (!_supportsWindowControl) return;
   await windowManager.setResizable(true);
   await windowManager.setMinimumSize(Size.zero);
   await windowManager.setMaximumSize(_unconstrainedMax);
-  final bounds = _preCompactBounds;
-  if (bounds != null) {
-    await windowManager.setBounds(bounds);
+
+  if (_wasMaximized) {
+    await windowManager.maximize();
+  } else if (_preCompactBounds != null) {
+    final b = _preCompactBounds!;
+    final safeLeft = b.left < 0 ? 50.0 : b.left;
+    final safeTop = b.top < 0 ? 50.0 : b.top;
+    final safeWidth = b.width < 400 ? 1280.0 : b.width;
+    final safeHeight = b.height < 400 ? 900.0 : b.height;
+    await windowManager.setBounds(
+      Rect.fromLTWH(safeLeft, safeTop, safeWidth, safeHeight),
+    );
+  } else {
+    await windowManager.setSize(const Size(1280, 900));
+    await windowManager.setAlignment(Alignment.center);
   }
   _preCompactBounds = null;
+  _wasMaximized = false;
+  await windowManager.show();
+  await windowManager.focus();
 }
 
 /// The single hook app.dart's [UriHome] calls on every Compact/Workspace

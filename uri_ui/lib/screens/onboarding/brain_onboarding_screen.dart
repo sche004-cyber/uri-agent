@@ -187,10 +187,7 @@ class _BrainOnboardingScreenState extends State<BrainOnboardingScreen> {
                         // adapt to all 4 themes) is what actually makes
                         // the mark consistent across every screen.
                         const Expanded(
-                          child: UriWordmark(
-                            markSize: 40,
-                            showDesktopCompanion: true,
-                          ),
+                          child: UriWordmark(markSize: 40, showTagline: true),
                         ),
                         // Brain setup is optional, not a hard gate - a
                         // clear escape hatch on every step, never buried

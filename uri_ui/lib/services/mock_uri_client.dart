@@ -210,7 +210,9 @@ class MockUriClient implements UriClient {
   Future<List<ServiceConnection>> listConnections() async {
     await _latency();
     if (shouldFailConnections) {
-      throw const ConnectionsFetchException('Mock injected connections failure');
+      throw const ConnectionsFetchException(
+        'Mock injected connections failure',
+      );
     }
     return List.unmodifiable(_connections);
   }
@@ -277,6 +279,8 @@ class MockUriClient implements UriClient {
     String text, {
     String? turnId,
     Object? modelOverride,
+    List<String> attachedFileIds = const [],
+    void Function(String text)? onPartialText,
   }) async {
     await _latency();
     final id = turnId ?? _nextId('turn');
@@ -623,13 +627,13 @@ class MockUriClient implements UriClient {
     final pending = shouldFailTasks
         ? null
         : _turns.values
-            .where((t) => t.stage == TurnStage.awaitingApproval)
-            .length;
+              .where((t) => t.stage == TurnStage.awaitingApproval)
+              .length;
     final connected = shouldFailConnections
         ? null
         : _connections
-            .where((c) => c.status == ConnectionStatus.connected)
-            .length;
+              .where((c) => c.status == ConnectionStatus.connected)
+              .length;
     final recent = _turns.values.toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
@@ -778,7 +782,7 @@ class MockUriClient implements UriClient {
     await _latency();
     return const ModelStatus(
       providerName: 'Ollama',
-      modelName: 'qwen3:14b',
+      modelName: 'qwen3.5:9b',
       location: 'local',
       available: true,
     );
@@ -1036,7 +1040,7 @@ class MockUriClient implements UriClient {
   final Map<String, Map<String, String>> _mockProviderOverrides =
       <String, Map<String, String>>{};
   String _activeBrainProviderId = 'ollama';
-  String _activeBrainModel = 'qwen3:14b';
+  String _activeBrainModel = 'qwen3.5:9b';
 
   @override
   Future<List<ProviderEntry>> listProviders() async {
@@ -1052,7 +1056,7 @@ class MockUriClient implements UriClient {
         lastFour: null,
         available: true,
         models: const [
-          ModelInfo(modelId: 'qwen3:14b', displayName: 'Qwen 3 14B'),
+          ModelInfo(modelId: 'qwen3.5:9b', displayName: 'Qwen 3.5 9B'),
         ],
         activeBrain: _activeBrainProviderId == 'ollama',
         activeModel: _activeBrainProviderId == 'ollama'
@@ -1217,6 +1221,205 @@ class MockUriClient implements UriClient {
             (clientSecret?.trim().isNotEmpty ?? false));
     return ok ? null : 'Provide raw_json or both client_id and client_secret.';
   }
+
+  EdgeSettings _mockEdgeSettings = const EdgeSettings(
+    enabled: true,
+    intelligenceMode: 'HYBRID',
+    replyConfidenceThresholdPercent: 90,
+    runtimeId: 'needle-3',
+    modelId: 'needle-3',
+  );
+
+  @override
+  Future<EdgeSettings?> getIntelligenceSettings() async {
+    return _mockEdgeSettings;
+  }
+
+  @override
+  Future<bool> updateIntelligenceSettings(EdgeSettings settings) async {
+    _mockEdgeSettings = settings;
+    return true;
+  }
+
+  @override
+  Future<EdgeEffectiveStatus?> getIntelligenceStatus() async {
+    return const EdgeEffectiveStatus(
+      status: 'ready',
+      enabled: true,
+      deploymentEnabled: true,
+      effectiveEdgeEnabled: true,
+      runtimeId: 'needle-3',
+      modelId: 'needle-3',
+    );
+  }
+
+  @override
+  Future<List<EdgeRoutingEvent>> getIntelligenceTrace({int limit = 50}) async {
+    return const [
+      EdgeRoutingEvent(
+        timestamp: '2026-09-20T21:40:00Z',
+        decision: 'EDGE_REPLY',
+        intelligenceLayer: 'edge_reflex',
+        reasonCodes: ['LOCAL_REFLEX_GREETING_MATCH'],
+        latencyMs: 14,
+        candidate: 'needle-3',
+      ),
+      EdgeRoutingEvent(
+        timestamp: '2026-09-20T21:41:10Z',
+        decision: 'ESCALATE',
+        intelligenceLayer: 'edge_reflex',
+        reasonCodes: ['COMPLEX_INTENT_DETECTED', 'ESCALATE_TO_MAIN_BRAIN'],
+        latencyMs: 18,
+        candidate: 'needle-3',
+      ),
+    ];
+  }
+
+  @override
+  Future<EdgeLabOverview?> getEdgeLabOverview() async {
+    return const EdgeLabOverview(
+      status: 'active',
+      runtimeLifecycle: {
+        'state': 'RESIDENT',
+        'managed_storage': 'user-space (.venv-needle / edge assets)',
+        'elevation': 'none',
+        'active_runtime_id': 'needle-3',
+      },
+      candidates: [
+        EdgeCandidateInfo(
+          id: 'needle-3',
+          name: 'Needle 3',
+          role: 'Reflex Routing & Structured Extraction',
+          status: 'RESIDENT',
+          qualified: true,
+          argumentTrusted: false,
+          reflexAccuracyPct: 100,
+          structuredExtractionPct: 100,
+          argumentAccuracyPct: 50,
+          p50LatencyMs: 14,
+          ramMb: 1250,
+          detail: 'Resident local worker for deterministic fast reflex and structured JSON extraction. Unrestricted argument evaluation untrusted and confined.',
+        ),
+        EdgeCandidateInfo(
+          id: 'smollm2-135m-instruct',
+          name: 'SmolLM2-135M',
+          role: 'Micro-Reasoner',
+          status: 'BYPASSED',
+          qualified: false,
+          argumentTrusted: false,
+          reflexAccuracyPct: 32,
+          structuredExtractionPct: 41,
+          argumentAccuracyPct: 18,
+          p50LatencyMs: 48,
+          ramMb: 280,
+          detail: 'Bypassed / redundant. Sub-threshold quality; Main Brain handles general reasoning.',
+        ),
+        EdgeCandidateInfo(
+          id: 'qwen2.5-0.5b-instruct',
+          name: 'Qwen2.5-0.5B',
+          role: 'Micro-Reasoner',
+          status: 'BYPASSED',
+          qualified: false,
+          argumentTrusted: false,
+          reflexAccuracyPct: 54,
+          structuredExtractionPct: 62,
+          argumentAccuracyPct: 36,
+          p50LatencyMs: 72,
+          ramMb: 610,
+          detail: 'Bypassed / redundant. Exceeds latency budget for reflex; superseded by Main Brain.',
+        ),
+        EdgeCandidateInfo(
+          id: 'faster-whisper',
+          name: 'Faster-Whisper (STT)',
+          role: 'Speech-to-Text Perception',
+          status: 'UNAVAILABLE',
+          qualified: false,
+          argumentTrusted: false,
+          detail: 'Unqualified / not installed for production routing.',
+        ),
+        EdgeCandidateInfo(
+          id: 'tesseract-ocr',
+          name: 'Tesseract OCR',
+          role: 'Document OCR Perception',
+          status: 'UNAVAILABLE',
+          qualified: false,
+          argumentTrusted: false,
+          detail: 'Unqualified / not installed for production routing.',
+        ),
+        EdgeCandidateInfo(
+          id: 'vlm-edge',
+          name: 'Vision-Language Model',
+          role: 'Multimodal Perception',
+          status: 'UNAVAILABLE',
+          qualified: false,
+          argumentTrusted: false,
+          detail: 'Unqualified / not installed for production routing.',
+        ),
+      ],
+      routingPolicy: {
+        'bypass_rule':
+            'Stronger active Main Brain always bypasses weaker edge worker.',
+        'untrusted_proposals': 'Edge proposals never gain execution authority; runtime validates all actions.',
+        'intelligence_mode': 'HYBRID',
+        'threshold_percent': 90,
+      },
+    );
+  }
+
+  @override
+  Future<EdgeProbeResult?> probeEdge(String query, {String? kind}) async {
+    final isReflex = const {
+      'hello',
+      'hi',
+      'hey',
+      'ping',
+      'status',
+      'help',
+      'who are you',
+      'what can you do',
+    }.contains(query.trim().toLowerCase());
+
+    return EdgeProbeResult(
+      timestamp: DateTime.now().toUtc().toIso8601String(),
+      decision: isReflex ? 'EDGE_REPLY' : 'ESCALATE',
+      intelligenceLayer: 'edge_reflex',
+      reasonCodes: isReflex
+          ? const ['LOCAL_REFLEX_GREETING_MATCH', 'HIGH_CONFIDENCE_TEMPLATE']
+          : const ['COMPLEX_INTENT_DETECTED', 'ESCALATE_TO_MAIN_BRAIN'],
+      confidence: isReflex ? 0.98 : 0.42,
+      latencyMs: isReflex ? 14 : 18,
+      candidate: 'Needle 3',
+      thresholdPercent: 90,
+      querySample: query.length > 40 ? query.substring(0, 40) : query,
+    );
+  }
+
+  @override
+  Future<List<ExperimentalCandidate>> discoverExperimentalCandidates() async =>
+      const [
+        ExperimentalCandidate(
+          modelId: 'qwen3.5:9b',
+          runtime: 'ollama',
+          loadedState: 'discovered',
+          qualificationState: 'NOT_TESTED',
+          testedCapabilities: [],
+          productionPromoted: false,
+          quantization: 'unknown',
+        ),
+      ];
+
+  @override
+  Future<Map<String, dynamic>?> qualifyExperimentalCandidate(
+    String runtime,
+    String modelId,
+  ) async => {
+    'runtime': runtime,
+    'model_id': modelId,
+    'qualification_state': 'QUALIFIED',
+    'tested_capabilities': ['text_completion'],
+    'benchmark_evidence': {'latency_ms': 42, 'non_empty_response': true},
+    'production_promoted': false,
+  };
 }
 
 class _Analysis {

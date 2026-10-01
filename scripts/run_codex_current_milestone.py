@@ -40,7 +40,7 @@ def get_current_milestone_and_state(content: str):
 
 def get_current_relay_handoff(content: str):
     """Parse the CURRENT HANDOFF section from URI_AGENT_RELAY.md."""
-    match = re.search(r"## CURRENT HANDOFF\s*\n(.*?)(?:\n---|\n## PREVIOUS HANDOFF|\Z)", content, re.DOTALL)
+    match = re.search(r"## CURRENT HANDOFF[^\n]*\n(.*?)(?:\n---|\n## PREVIOUS HANDOFF|\Z)", content, re.DOTALL)
     if not match:
         raise ValueError("Could not locate ## CURRENT HANDOFF in URI_AGENT_RELAY.md")
     section = match.group(1)

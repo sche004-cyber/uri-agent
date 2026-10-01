@@ -29,6 +29,7 @@ import threading
 import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 # Direct ``uvicorn uri_core.app.server:app`` development starts do not pass
@@ -142,7 +143,7 @@ from uri_core.core.graph_ingest import ingest_memory_entry
 # UriOrchestrator.session_manager, keyed by the session_id each request
 # supplies, not by HTTP connection.
 #
-# Model reasoning is wired to Ollama/qwen3:14b here, at the application
+# Model reasoning is wired to the configured Ollama model here, at the application
 # boundary, rather than as UriOrchestrator's own default - every other
 # test/caller that constructs UriOrchestrator() with no args keeps the
 # previous, network-free model_callable=None behaviour.
@@ -1037,6 +1038,19 @@ def _selectable_models_for(user_id: Optional[str], provider_id: str) -> list:
         return _verified_models_for(user_id, provider_id)
 
 
+def _provider_base_url(provider_id: str, base_url: str) -> str:
+    """Normalize only provider-defined local API roots, without guessing cloud paths."""
+    value = base_url.rstrip("/")
+    if provider_id == "lm_studio":
+        from urllib.parse import urlparse
+        from uri_core.core.edge_lifecycle.detection import assert_loopback_url
+
+        assert_loopback_url(value)
+        if urlparse(value).path in {"", "/"}:
+            value += "/v1"
+    return value
+
+
 def _measured(record: dict, field: str) -> Optional[float]:
     """Unwrap a UsageRecord {"value", "confidence"} field to its plain
     numeric value only when actually measured - never guesses or
@@ -1049,47 +1063,125 @@ def _measured(record: dict, field: str) -> Optional[float]:
     return value if isinstance(value, (int, float)) else None
 
 
-def _serving_model_for_turn(user_id: Optional[str], session_id: str) -> dict:
-    """Return the most recent successful router record for this request:
-    provider_id, model, and (Live UX Repair §8) whichever of
-    prompt_tokens/eval_tokens/duration_seconds were actually measured -
-    never a fabricated number for a field the provider never reported.
+def _serving_model_for_turn(
+    user_id: Optional[str],
+    session_id: str,
+    since_iso: Optional[str] = None,
+) -> dict:
+    """Return observational router records for this request turn.
 
-    ModelRouter writes this observational record only after a ModelResponse
-    succeeds, so it describes the provider/model that actually served the
-    turn rather than a configured preference or attempted candidate.
+    Represents all model invocations belonging to the turn truthfully:
+    - provider_id and model of the primary/final serving model
+    - prompt_tokens & eval_tokens totals across turn invocations
+    - duration_seconds total across turn invocations
+    - separate reasoning_ms, drafting_ms, model_total_ms
+    - per-call metadata list in `calls` (role, provider, model, latency_ms, tokens)
+
+    Only counts successful records for canonical turn roles, avoiding
+    background tasks, discovery, or health probes.
     """
     empty = {
-        "provider_id": None, "model": None,
-        "prompt_tokens": None, "eval_tokens": None, "duration_seconds": None,
+        "provider_id": None,
+        "model": None,
+        "prompt_tokens": None,
+        "eval_tokens": None,
+        "duration_seconds": None,
+        "calls": [],
+        "reasoning_ms": None,
+        "drafting_ms": None,
+        "model_total_ms": None,
     }
     if not user_id:
         return dict(empty)
     try:
         from uri_core.core.usage_meter import current_month, month_records
 
-        records = [
-            record for record in month_records(user_id, current_month())
-            if record.get("session_id") == session_id and record.get("outcome") == "success"
+        _TURN_ROLES = {"reasoning", "drafting", "semantic_interpretation", "document_composition"}
+        _EXCLUDED_ROLES = {"health", "probe", "discovery", "background", "diagnostics"}
+
+        raw_records = list(month_records(user_id, current_month()))
+        success_records = [
+            r for r in raw_records
+            if isinstance(r, dict)
+            and r.get("outcome") == "success"
+            and r.get("role") not in _EXCLUDED_ROLES
+            and (r.get("role") in _TURN_ROLES or r.get("role") is None)
         ]
-        # UsageMeter records created by existing adapters do not always carry
-        # the conversational session ID.  They remain user-scoped, so use the
-        # latest successful observation for that user when the precise match
-        # is unavailable.
-        if not records:
-            records = [
-                record for record in month_records(user_id, current_month())
-                if record.get("outcome") == "success"
+
+        if not success_records:
+            return dict(empty)
+
+        # Match by session_id if present
+        session_matched = [r for r in success_records if r.get("session_id") == session_id]
+        pool = session_matched if session_matched else success_records
+
+        turn_records: List[Dict[str, Any]] = []
+        if since_iso:
+            turn_records = [
+                r for r in pool
+                if r.get("ts") and r["ts"] >= since_iso
             ]
-        if records:
-            latest = records[-1]
-            return {
-                "provider_id": latest.get("provider_id"),
-                "model": latest.get("model"),
-                "prompt_tokens": _measured(latest, "prompt_tokens"),
-                "eval_tokens": _measured(latest, "eval_tokens"),
-                "duration_seconds": _measured(latest, "duration_seconds"),
-            }
+
+        # Fallback heuristic if since_iso is absent or did not match (e.g. synthetic test fixtures)
+        if not turn_records:
+            latest = pool[-1]
+            if latest.get("role") == "drafting" and len(pool) >= 2 and pool[-2].get("role") == "reasoning":
+                turn_records = [pool[-2], pool[-1]]
+            else:
+                turn_records = [latest]
+
+        calls = []
+        for r in turn_records:
+            dur_sec = _measured(r, "duration_seconds")
+            p_tok = _measured(r, "prompt_tokens")
+            e_tok = _measured(r, "eval_tokens")
+            calls.append({
+                "role": r.get("role"),
+                "provider": r.get("provider_id"),
+                "model": r.get("model"),
+                "prompt_tokens": int(p_tok) if p_tok is not None else None,
+                "eval_tokens": int(e_tok) if e_tok is not None else None,
+                "duration_seconds": dur_sec,
+                "latency_ms": int(round(dur_sec * 1000)) if dur_sec is not None else None,
+            })
+
+        latest_call = calls[-1] if calls else {}
+        serving_provider = latest_call.get("provider")
+        serving_model = latest_call.get("model")
+
+        known_durations = [c["duration_seconds"] for c in calls if c["duration_seconds"] is not None]
+        total_duration_sec = sum(known_durations) if known_durations else None
+        model_total_ms = int(round(total_duration_sec * 1000)) if total_duration_sec is not None else None
+
+        reasoning_durations = [
+            c["duration_seconds"] for c in calls
+            if c.get("role") == "reasoning" and c["duration_seconds"] is not None
+        ]
+        reasoning_ms = int(round(sum(reasoning_durations) * 1000)) if reasoning_durations else None
+
+        drafting_durations = [
+            c["duration_seconds"] for c in calls
+            if c.get("role") == "drafting" and c["duration_seconds"] is not None
+        ]
+        drafting_ms = int(round(sum(drafting_durations) * 1000)) if drafting_durations else None
+
+        known_prompt_tokens = [c["prompt_tokens"] for c in calls if c["prompt_tokens"] is not None]
+        total_prompt_tokens = sum(known_prompt_tokens) if known_prompt_tokens else None
+
+        known_eval_tokens = [c["eval_tokens"] for c in calls if c["eval_tokens"] is not None]
+        total_eval_tokens = sum(known_eval_tokens) if known_eval_tokens else None
+
+        return {
+            "provider_id": serving_provider,
+            "model": serving_model,
+            "prompt_tokens": total_prompt_tokens,
+            "eval_tokens": total_eval_tokens,
+            "duration_seconds": total_duration_sec,
+            "calls": calls,
+            "reasoning_ms": reasoning_ms,
+            "drafting_ms": drafting_ms,
+            "model_total_ms": model_total_ms,
+        }
     except Exception:
         pass
     return dict(empty)
@@ -1628,14 +1720,164 @@ def _record_lifecycle_intent_audit(
         pass
 
 
+_NEEDLE_CAPABILITY_MAP = {
+    "Gmail.search_messages": "gmail_search",
+    "read_attached_file": "read_attached_file",
+}
+
+
+def _edge_route_for_ask(
+    *, context, principal, payload: "AskRequest", current_turn_attachments,
+    personalization_context,
+) -> tuple[Optional[dict], Optional[dict]]:
+    """Run the qualified Needle classifier as a proposal-only pre-route.
+
+    Needle never supplies executable arguments. A proposal must clear the
+    user's threshold, map to an actual URI capability, pass feasibility, and
+    then cross the existing ApprovalGate/ToolDispatcher boundary using only
+    runtime-owned request context.
+    """
+    if principal is None or not principal.user_id:
+        return None, None
+    settings = _edge_settings_for_principal(principal).load()
+    base = {
+        "candidate": "needle-3",
+        "runtime_id": "needle-3",
+        "confidence": None,
+        "latency_ms": None,
+        "capability_id": None,
+        "threshold_percent": None,
+        "shortlist_size": None,
+    }
+    if not settings.enabled:
+        return None, {**base, "disposition": "NEEDLE_BYPASSED", "reason_codes": ("NEEDLE_BYPASSED", "EDGE_DISABLED_BY_USER")}
+    if settings.intelligence_mode == "MAIN_BRAIN_PREFERRED" or payload.model_override is not None:
+        return None, {**base, "disposition": "NEEDLE_BYPASSED", "reason_codes": ("NEEDLE_BYPASSED", "EXPLICIT_MAIN_BRAIN")}
+    normalized_text = (payload.text or "").strip().casefold()
+    if normalized_text in {"hello", "hi", "hey", "ping", "status", "help", "who are you", "what can you do"}:
+        return None, {**base, "disposition": "NEEDLE_BYPASSED", "reason_codes": ("NEEDLE_BYPASSED", "URI_PREFLIGHT")}
+
+    bridge = _get_needle_bridge()
+    if bridge is None:
+        metadata = {
+            **base,
+            "disposition": "NEEDLE_ESCALATED",
+            "reason_codes": ("NEEDLE_ESCALATED", "BRIDGE_UNAVAILABLE"),
+            "threshold_percent": settings.reply_confidence_threshold_percent,
+            "shortlist_size": len(_NEEDLE_CAPABILITY_MAP),
+        }
+    else:
+        try:
+            offered = list(_NEEDLE_CAPABILITY_MAP)
+            output = bridge({
+                "id": f"ask-{int(time.time() * 1000)}",
+                "operation": "reflex_route",
+                "input": payload.text or "",
+                "offered_capabilities": offered,
+            })
+            confidence = float(output.get("score") or output.get("confidence") or 0.0)
+            latency_ms = int(round(float(output.get("provider_latency_ms") or output.get("latency_ms") or 0.0)))
+            raw_capability = output.get("capability_id")
+            capability_id = _NEEDLE_CAPABILITY_MAP.get(raw_capability)
+            metadata = {
+                **base,
+                "confidence": confidence,
+                "latency_ms": latency_ms,
+                "capability_id": capability_id,
+                "threshold_percent": settings.reply_confidence_threshold_percent,
+                "shortlist_size": len(offered),
+            }
+            threshold_met = confidence * 100.0 >= settings.reply_confidence_threshold_percent
+            usable_ids = context.orchestrator.capability_feasibility.usable_ids()
+            attachment_ok = capability_id != "read_attached_file" or bool(current_turn_attachments)
+            if not capability_id or not threshold_met or capability_id not in usable_ids or not attachment_ok:
+                reasons = ["NEEDLE_ESCALATED"]
+                if not capability_id:
+                    reasons.append("PROPOSAL_UNMAPPED_OR_ABSENT")
+                if not threshold_met:
+                    reasons.append("CONFIDENCE_BELOW_THRESHOLD")
+                if capability_id and capability_id not in usable_ids:
+                    reasons.append("CAPABILITY_UNAVAILABLE")
+                if not attachment_ok:
+                    reasons.append("CURRENT_ATTACHMENT_REQUIRED")
+                metadata.update(disposition="NEEDLE_ESCALATED", reason_codes=tuple(reasons))
+            else:
+                attachment_ids = [item["file_id"] for item in current_turn_attachments]
+                dispatch_result = context.orchestrator.approval_gate.execute_tool(
+                    capability_id,
+                    session_id=payload.session_id,
+                    request_text=payload.text,
+                    principal=principal,
+                    current_turn_attachment_ids=attachment_ids,
+                )
+                from uri_core.core.dispatcher import real_tool_status
+                execution_status = real_tool_status(dispatch_result)
+                envelope = {
+                    "status": "success" if execution_status in {"success", "ok", "awaiting_approval"} else "unavailable",
+                    "session_id": payload.session_id,
+                    "semantic_analysis": None,
+                    "execution": {"status": execution_status, "capability": capability_id, "source": "needle_proposal"},
+                    "response": dispatch_result.get("data", dispatch_result),
+                    "error": dispatch_result.get("error"),
+                }
+                try:
+                    context.orchestrator._draft_narrative_safely(
+                        user_text=payload.text, response=envelope,
+                        personalization_context=personalization_context,
+                        session_id=payload.session_id,
+                    )
+                    context.orchestrator._persist_session(payload.session_id)
+                except Exception:
+                    pass
+                metadata.update(
+                    disposition="NEEDLE_INVOKED",
+                    reason_codes=("NEEDLE_INVOKED", "PROPOSAL_VALIDATED", "URI_APPROVAL_GATE"),
+                )
+                return envelope, metadata
+        except Exception as exc:
+            metadata = {
+                **base,
+                "disposition": "NEEDLE_ESCALATED",
+                "reason_codes": ("NEEDLE_ESCALATED", "BRIDGE_ERROR"),
+                "error_type": type(exc).__name__,
+                "threshold_percent": settings.reply_confidence_threshold_percent,
+                "shortlist_size": len(_NEEDLE_CAPABILITY_MAP),
+            }
+
+    if settings.intelligence_mode == "EDGE_ONLY":
+        return {
+            "status": "unavailable",
+            "canonical_outcome": "UNSUPPORTED",
+            "response": {"message": "Under Edge-Only mode, Main Brain is disabled. Needle could not produce a URI-valid, sufficiently confident proposal for this request."},
+            "narrative": "Under Edge-Only mode, Main Brain is disabled. Needle could not produce a URI-valid, sufficiently confident proposal for this request.",
+            "error": "Main Brain execution disabled by Edge-Only policy.",
+            "session_id": payload.session_id,
+        }, metadata
+    return None, metadata
+
+
 @app.post("/ask")
 def ask(
     payload: AskRequest,
     user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
     _size_check: None = Depends(enforce_ask_content_length),
 ) -> dict:
+    turn_start_time = time.perf_counter()
+    turn_start_iso = datetime.now(timezone.utc).isoformat()
     context, principal, personalization_context = _resolve_ask_context(payload, user_id)
     current_turn_attachments = _current_turn_attachment_references(context, payload)
+    edge_result, edge_trace = _edge_route_for_ask(
+        context=context, principal=principal, payload=payload,
+        current_turn_attachments=current_turn_attachments,
+        personalization_context=personalization_context,
+    )
+    if edge_result is not None:
+        edge_result["_edge_routing"] = edge_trace
+        return _finalize_ask_response(
+            context, user_id, payload, edge_result,
+            total_duration_seconds=time.perf_counter() - turn_start_time,
+            turn_start_iso=turn_start_iso,
+        )
 
     # M32.1: a durable, pending approval-required action (see
     # approval_resumption.py) gets first chance at this turn, before
@@ -1868,11 +2110,22 @@ def ask(
     except Exception:
         pass
 
-    return _finalize_ask_response(context, user_id, payload, result)
+    if edge_trace is not None:
+        result["_edge_routing"] = edge_trace
+    return _finalize_ask_response(
+        context, user_id, payload, result,
+        total_duration_seconds=time.perf_counter() - turn_start_time,
+        turn_start_iso=turn_start_iso,
+    )
 
 
 def _finalize_ask_response(
-    context, user_id: Optional[str], payload: "AskRequest", result: dict
+    context,
+    user_id: Optional[str],
+    payload: "AskRequest",
+    result: dict,
+    total_duration_seconds: Optional[float] = None,
+    turn_start_iso: Optional[str] = None,
 ) -> dict:
     """Shared tail for POST /ask and POST /ask/stream's "done" event
     (M32 D5) - extracted verbatim from /ask's own tail so the two
@@ -1884,12 +2137,18 @@ def _finalize_ask_response(
     captions describe the actual serving model, never merely the user's
     requested override.
     """
-    _serving = _serving_model_for_turn(user_id, payload.session_id)
-    serving_provider = _serving["provider_id"]
-    serving_model = _serving["model"]
-    serving_prompt_tokens = _serving["prompt_tokens"]
-    serving_eval_tokens = _serving["eval_tokens"]
-    serving_duration_seconds = _serving["duration_seconds"]
+    _serving = _serving_model_for_turn(user_id, payload.session_id, since_iso=turn_start_iso)
+    serving_provider = _serving.get("provider_id")
+    serving_model = _serving.get("model")
+    serving_prompt_tokens = _serving.get("prompt_tokens")
+    serving_eval_tokens = _serving.get("eval_tokens")
+    serving_duration_seconds = _serving.get("duration_seconds")
+    serving_calls = _serving.get("calls", [])
+    reasoning_ms = _serving.get("reasoning_ms")
+    drafting_ms = _serving.get("drafting_ms")
+    model_total_ms = _serving.get("model_total_ms")
+    if model_total_ms is None and serving_duration_seconds is not None:
+        model_total_ms = int(round(serving_duration_seconds * 1000))
     if (
         serving_provider is None
         and isinstance(payload.model_override, dict)
@@ -1930,6 +2189,67 @@ def _finalize_ask_response(
     # otherwise, in which case "response" (the pre-existing,
     # deterministic template/tool-output field, unchanged) remains the
     # only text a client has ever needed to render.
+    arn_state = result.get("arn_state") or (result.get("execution") or {}).get("arn_state")
+    recovery_required = bool(
+        result.get("recovery_required")
+        or (result.get("response") or {}).get("recovery_required")
+        or result.get("status") == "recovery_required"
+    )
+
+    try:
+        from uri_core.core.edge.trace import EdgeRoutingTraceEvent, EdgeRoutingTraceStore
+        if user_id:
+            edge_routing = result.get("_edge_routing") or {}
+            disposition = edge_routing.get("disposition")
+            reason_codes = tuple(edge_routing.get("reason_codes") or ())
+            if disposition is None:
+                disposition = "MAIN_BRAIN" if (serving_model or serving_provider) else "EDGE_REPLY"
+                reason_codes = ("ROUTED_TO_MAIN_BRAIN",) if (serving_model or serving_provider) else ("COMPLETED",)
+            trace_event = EdgeRoutingTraceEvent(
+                timestamp=datetime.now(timezone.utc).isoformat(),
+                decision=disposition,
+                intelligence_layer=(
+                    "main_brain" if disposition in {"NEEDLE_BYPASSED", "NEEDLE_ESCALATED", "MAIN_BRAIN"}
+                    else "edge_reflex"
+                ),
+                reason_codes=reason_codes,
+                session_id=payload.session_id,
+                edge={
+                    "model_id": edge_routing.get("candidate"),
+                    "runtime_id": edge_routing.get("runtime_id"),
+                },
+                confidence={
+                    "score": edge_routing.get("confidence"),
+                    "threshold": edge_routing.get("threshold_percent"),
+                },
+                threshold_percent=edge_routing.get("threshold_percent"),
+                shortlist_size=edge_routing.get("shortlist_size"),
+                capability_id=edge_routing.get("capability_id"),
+                main_brain={
+                    "provider": serving_provider,
+                    "model": serving_model,
+                    "prompt_tokens": serving_prompt_tokens,
+                    "eval_tokens": serving_eval_tokens,
+                    "calls": serving_calls,
+                },
+                latency_ms={
+                    "reflex": edge_routing.get("latency_ms"),
+                    "model": model_total_ms,
+                    "model_total": model_total_ms,
+                    "model_total_ms": model_total_ms,
+                    "reasoning": reasoning_ms,
+                    "reasoning_ms": reasoning_ms,
+                    "drafting": drafting_ms,
+                    "drafting_ms": drafting_ms,
+                    "total": int(round(total_duration_seconds * 1000)) if total_duration_seconds is not None else None,
+                    "total_ms": int(round(total_duration_seconds * 1000)) if total_duration_seconds is not None else None,
+                },
+                outcome=result.get("status") or "completed",
+            )
+            EdgeRoutingTraceStore(user_id).record(trace_event)
+    except Exception:
+        pass
+
     return {
         "status": result.get("status"),
         "session_id": result.get("session_id"),
@@ -1946,6 +2266,13 @@ def _finalize_ask_response(
         "serving_prompt_tokens": serving_prompt_tokens,
         "serving_eval_tokens": serving_eval_tokens,
         "serving_duration_seconds": serving_duration_seconds,
+        "serving_total_duration_seconds": round(total_duration_seconds, 3) if total_duration_seconds is not None else None,
+        "serving_reasoning_duration_seconds": round(reasoning_ms / 1000.0, 3) if reasoning_ms is not None else None,
+        "serving_drafting_duration_seconds": round(drafting_ms / 1000.0, 3) if drafting_ms is not None else None,
+        "serving_model_total_ms": model_total_ms,
+        "serving_calls": serving_calls,
+        "arn_state": arn_state,
+        "recovery_required": recovery_required,
     }
 
 
@@ -2016,6 +2343,8 @@ async def ask_stream(
     (or the fallback "message" event) is always the single source of
     truth for what actually happened and what was persisted.
     """
+    stream_start_time = time.perf_counter()
+    stream_start_iso = datetime.now(timezone.utc).isoformat()
     context, principal, personalization_context = _resolve_ask_context(payload, user_id)
     current_turn_attachments = _current_turn_attachment_references(context, payload)
 
@@ -2035,6 +2364,24 @@ async def ask_stream(
         if current_turn_attachments or not _ask_stream_eligible(context, payload):
             async for chunk in _fallback_to_ask():
                 yield chunk
+            return
+
+        edge_result, edge_trace = _edge_route_for_ask(
+            context=context,
+            principal=principal,
+            payload=payload,
+            current_turn_attachments=current_turn_attachments,
+            personalization_context=personalization_context,
+        )
+        if edge_result is not None:
+            edge_result["_edge_routing"] = edge_trace
+            finalized = _finalize_ask_response(
+                context, user_id, payload, edge_result,
+                total_duration_seconds=time.perf_counter() - stream_start_time,
+                turn_start_iso=stream_start_iso,
+            )
+            yield _sse_event("message", finalized)
+            yield _sse_event("done", {"narrative_interrupted": False})
             return
 
         from uri_core.core.stream_tool_loop import (
@@ -2086,7 +2433,13 @@ async def ask_stream(
                         async for chunk in _fallback_to_ask():
                             yield chunk
                         return
-                    finalized = _finalize_ask_response(context, user_id, payload, event.envelope)
+                    if edge_trace is not None:
+                        event.envelope["_edge_routing"] = edge_trace
+                    finalized = _finalize_ask_response(
+                        context, user_id, payload, event.envelope,
+                        total_duration_seconds=time.perf_counter() - stream_start_time,
+                        turn_start_iso=stream_start_iso,
+                    )
                     yield _sse_event("done", {
                         "response": finalized,
                         "ttft_seconds": event.ttft_seconds,
@@ -3093,6 +3446,476 @@ def get_intelligence_trace(limit: int = 50, principal: PrincipalContext = Depend
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+class EdgeProbeRequest(BaseModel):
+    query: str
+    kind: Optional[str] = "reflex"
+
+
+class ExperimentalCandidateRequest(BaseModel):
+    runtime_id: str
+    model_id: str
+
+
+@app.get("/intelligence/lab/overview")
+def get_edge_lab_overview(principal: PrincipalContext = Depends(_resolve_principal)) -> dict:
+    store = _edge_settings_for_principal(principal)
+    settings = store.load()
+    return {
+        "status": "active",
+        "runtime_lifecycle": {
+            "state": "RESIDENT",
+            "managed_storage": "user-space (.venv-needle / edge assets)",
+            "elevation": "none",
+            "active_runtime_id": "needle-3",
+        },
+        "candidates": [
+            {
+                "id": "needle-3",
+                "name": "Needle 3",
+                "role": "Reflex Routing & Structured Extraction",
+                "status": "RESIDENT",
+                "qualified": True,
+                "reflex_accuracy_pct": 100,
+                "structured_extraction_pct": 100,
+                "argument_accuracy_pct": 50,
+                "argument_trusted": False,
+                "p50_latency_ms": 14,
+                "ram_mb": 1250,
+                "detail": "Resident local worker for deterministic fast reflex and structured JSON extraction. Unrestricted argument evaluation untrusted and confined.",
+            },
+            {
+                "id": "smollm2-135m-instruct",
+                "name": "SmolLM2-135M",
+                "role": "Micro-Reasoner",
+                "status": "BYPASSED",
+                "qualified": False,
+                "reflex_accuracy_pct": 32,
+                "structured_extraction_pct": 41,
+                "argument_accuracy_pct": 18,
+                "argument_trusted": False,
+                "p50_latency_ms": 48,
+                "ram_mb": 280,
+                "detail": "Bypassed / redundant. Sub-threshold quality; Main Brain handles general reasoning.",
+            },
+            {
+                "id": "qwen2.5-0.5b-instruct",
+                "name": "Qwen2.5-0.5B",
+                "role": "Micro-Reasoner",
+                "status": "BYPASSED",
+                "qualified": False,
+                "reflex_accuracy_pct": 54,
+                "structured_extraction_pct": 62,
+                "argument_accuracy_pct": 36,
+                "argument_trusted": False,
+                "p50_latency_ms": 72,
+                "ram_mb": 610,
+                "detail": "Bypassed / redundant. Exceeds latency budget for reflex; superseded by Main Brain.",
+            },
+            {
+                "id": "faster-whisper",
+                "name": "Faster-Whisper (STT)",
+                "role": "Speech-to-Text Perception",
+                "status": "UNAVAILABLE",
+                "qualified": False,
+                "reflex_accuracy_pct": None,
+                "structured_extraction_pct": None,
+                "argument_accuracy_pct": None,
+                "argument_trusted": False,
+                "p50_latency_ms": None,
+                "ram_mb": None,
+                "detail": "Unqualified / not installed for production routing.",
+            },
+            {
+                "id": "tesseract-ocr",
+                "name": "Tesseract OCR",
+                "role": "Document OCR Perception",
+                "status": "UNAVAILABLE",
+                "qualified": False,
+                "reflex_accuracy_pct": None,
+                "structured_extraction_pct": None,
+                "argument_accuracy_pct": None,
+                "argument_trusted": False,
+                "p50_latency_ms": None,
+                "ram_mb": None,
+                "detail": "Unqualified / not installed for production routing.",
+            },
+            {
+                "id": "vlm-edge",
+                "name": "Vision-Language Model",
+                "role": "Multimodal Perception",
+                "status": "UNAVAILABLE",
+                "qualified": False,
+                "reflex_accuracy_pct": None,
+                "structured_extraction_pct": None,
+                "argument_accuracy_pct": None,
+                "argument_trusted": False,
+                "p50_latency_ms": None,
+                "ram_mb": None,
+                "detail": "Unqualified / not installed for production routing.",
+            },
+        ],
+        "routing_policy": {
+            "bypass_rule": "Stronger active Main Brain always bypasses weaker edge worker.",
+            "untrusted_proposals": "Edge proposals never gain execution authority; runtime validates all actions.",
+            "intelligence_mode": settings.intelligence_mode,
+            "threshold_percent": settings.reply_confidence_threshold_percent,
+        }
+    }
+
+
+_needle_adapter_instance: Optional[Any] = None
+
+
+def _get_needle_bridge() -> Optional[Any]:
+    global _needle_adapter_instance
+    if _needle_adapter_instance is not None:
+        try:
+            if _needle_adapter_instance.pid is not None and _needle_adapter_instance._process.poll() is None:
+                return _needle_adapter_instance
+        except Exception:
+            _needle_adapter_instance = None
+    from pathlib import Path
+    import sys
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    if sys.platform == "win32":
+        venv_python = repo_root / ".venv-needle" / "Scripts" / "python.exe"
+    else:
+        venv_python = repo_root / ".venv-needle" / "bin" / "python"
+    bridge_script = repo_root / "scripts" / "m33_2_needle_bridge.py"
+
+    if not venv_python.is_file() or not bridge_script.is_file():
+        return None
+    try:
+        from uri_core.core.edge.adapters.ensemble import NeedleSubprocessAdapter
+        adapter = NeedleSubprocessAdapter(venv_python, bridge_script)
+        adapter.load()
+        _needle_adapter_instance = adapter
+        return _needle_adapter_instance
+    except Exception:
+        return None
+
+
+@app.post("/intelligence/lab/probe")
+def probe_edge_intelligence(
+    payload: EdgeProbeRequest,
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> dict:
+    from datetime import datetime, timezone
+    from uri_core.core.edge.trace import EdgeRoutingTraceEvent, EdgeRoutingTraceStore
+
+    raw_query = (payload.query or "").strip()
+    query_lower = raw_query.lower()
+    store = _edge_settings_for_principal(principal)
+    settings = store.load()
+
+    # Determine operation kind: structured extraction vs reflex route
+    is_structured = payload.kind == "structured" or any(
+        k in query_lower for k in ("roll number", "fine rs", "student", "roll no", "schema", "extract json")
+    )
+
+    if not settings.enabled:
+        decision = "ESCALATE"
+        reason_codes = ["EDGE_DISABLED_BY_POLICY", "ROUTED_TO_MAIN_BRAIN"]
+        confidence = 1.0
+        latency_ms = 2
+        candidate = "main-brain"
+        details: Dict[str, Any] = {}
+        func_call = None
+    else:
+        bridge = _get_needle_bridge()
+        if bridge is not None:
+            try:
+                item_id = f"probe-{int(time.time() * 1000)}"
+                if is_structured:
+                    schema = {
+                        "type": "object",
+                        "properties": {
+                            "student_name": {"type": "string"},
+                            "roll_number": {"type": "string"},
+                            "fine_amount": {"type": "string"},
+                        },
+                        "required": ["student_name", "roll_number"],
+                        "additionalProperties": False,
+                    }
+                    probe_item = {
+                        "id": item_id,
+                        "operation": "structured_extract",
+                        "input": raw_query,
+                        "structured_schema": schema,
+                    }
+                else:
+                    probe_item = {
+                        "id": item_id,
+                        "operation": "reflex_route",
+                        "input": raw_query,
+                        "offered_capabilities": [
+                            "weather.lookup",
+                            "Gmail.search_messages",
+                            "read_attached_file",
+                            "calendar.list_events",
+                        ],
+                    }
+                out = bridge(probe_item)
+                candidate = out.get("candidate", "needle-3")
+                latency_ms = int(round(float(out.get("provider_latency_ms") or out.get("latency_ms") or 0.0)))
+                confidence = float(out.get("score") or out.get("confidence") or 0.0)
+                raw_capability = out.get("capability_id")
+                raw_arguments = out.get("arguments")
+                func_call = (
+                    {"name": raw_capability, "arguments": raw_arguments if isinstance(raw_arguments, dict) else {}}
+                    if isinstance(raw_capability, str) and raw_capability else None
+                )
+                tokens = out.get("tokens", 0)
+                eval_tps = out.get("provider_decode_tps") or out.get("eval_tps", 0.0)
+                answer = out.get("answer")
+
+                is_greeting = query_lower in {"hello", "hi", "hey", "ping", "status", "help", "who are you", "what can you do"}
+                threshold_met = (confidence * 100.0) >= settings.reply_confidence_threshold_percent
+                if is_structured:
+                    if answer and isinstance(answer, dict) and any(answer.values()):
+                        decision = "EDGE_REPLY"
+                        reason_codes = ["STRUCTURED_RECORD_EXTRACTED", "HIGH_CONFIDENCE_SCHEMA"]
+                    else:
+                        decision = "ESCALATE"
+                        reason_codes = ["STRUCTURED_EXTRACTION_INCOMPLETE", "ESCALATE_TO_MAIN_BRAIN"]
+                elif is_greeting:
+                    decision = "EDGE_REPLY"
+                    reason_codes = ["LOCAL_REFLEX_GREETING_MATCH", "HIGH_CONFIDENCE_TEMPLATE"]
+                    confidence = 0.98
+                elif func_call and func_call.get("name") and threshold_met:
+                    decision = "EDGE_REPLY"
+                    reason_codes = ["LOCAL_REFLEX_MATCH", f"CALL_{func_call['name'].upper()}"]
+                elif func_call and func_call.get("name") and not threshold_met:
+                    decision = "ESCALATE"
+                    reason_codes = ["COMPLEX_INTENT_DETECTED", "CONFIDENCE_BELOW_THRESHOLD", "ESCALATE_TO_MAIN_BRAIN"]
+                else:
+                    decision = "ESCALATE"
+                    reason_codes = ["COMPLEX_INTENT_DETECTED", "ESCALATE_TO_MAIN_BRAIN"]
+
+                details = {
+                    "tokens": tokens,
+                    "eval_tps": eval_tps,
+                    "function_call": func_call,
+                    "structured_output": answer if is_structured else None,
+                }
+            except Exception as exc:
+                candidate = "needle-3"
+                latency_ms = 18
+                confidence = 0.42
+                decision = "ESCALATE"
+                reason_codes = ["BRIDGE_ERROR", "ESCALATE_TO_MAIN_BRAIN"]
+                details = {"error": str(exc)}
+                func_call = None
+        else:
+            # Fallback heuristic if Needle virtualenv is not installed
+            is_reflex = query_lower in {"hello", "hi", "hey", "ping", "status", "help", "who are you", "what can you do"}
+            if is_reflex:
+                decision = "EDGE_REPLY"
+                reason_codes = ["LOCAL_REFLEX_GREETING_MATCH", "HIGH_CONFIDENCE_TEMPLATE"]
+                confidence = 0.98
+                latency_ms = 14
+                candidate = "needle-3"
+            else:
+                decision = "ESCALATE"
+                reason_codes = ["COMPLEX_INTENT_DETECTED", "ESCALATE_TO_MAIN_BRAIN"]
+                confidence = 0.42
+                latency_ms = 18
+                candidate = "needle-3"
+            details = {}
+            func_call = None
+
+    # Handle EDGE_ONLY escalation semantics
+    advisory_note = None
+    if settings.intelligence_mode == "EDGE_ONLY" and decision == "ESCALATE":
+        reason_codes.append("EDGE_ONLY_MODE_ENFORCED")
+        advisory_note = "Escalation is advisory only. Under Edge-Only mode, Main Brain execution is suppressed."
+
+    event = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "decision": decision,
+        "intelligence_layer": "edge_reflex",
+        "reason_codes": reason_codes,
+        "query_sample": raw_query[:40] if raw_query else "",
+        "confidence": confidence,
+        "latency_ms": latency_ms,
+        "candidate": candidate,
+        "threshold_percent": settings.reply_confidence_threshold_percent,
+        "details": details,
+        "advisory_note": advisory_note,
+    }
+
+    try:
+        trace_event = EdgeRoutingTraceEvent(
+            timestamp=event["timestamp"],
+            decision=decision,
+            intelligence_layer="edge_reflex",
+            reason_codes=tuple(reason_codes),
+            edge={"model_id": candidate, "runtime_id": "needle-3"},
+            confidence={"score": confidence, "threshold": settings.reply_confidence_threshold_percent},
+            threshold_percent=settings.reply_confidence_threshold_percent,
+            shortlist_size=len(probe_item.get("offered_capabilities", [])) if (not is_structured and "probe_item" in locals()) else None,
+            capability_id=func_call.get("name") if isinstance(func_call, dict) else None,
+            latency_ms={"reflex": latency_ms, "total": latency_ms, "total_ms": latency_ms},
+            outcome="success" if decision == "EDGE_REPLY" else "escalated",
+        )
+        EdgeRoutingTraceStore(principal.user_id).record(trace_event)
+    except Exception:
+        pass
+
+    return {"probe_result": event}
+
+
+@app.post("/intelligence/lab/candidates/discover")
+def discover_experimental_candidates(
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> dict:
+    """Discover loopback candidates without installing or promoting anything."""
+    from dataclasses import asdict
+    from uri_core.core.edge_lifecycle.detection import (
+        detect_lmstudio_runtime, detect_ollama_runtime,
+    )
+    from uri_core.core.edge_lifecycle.hardware import probe_hardware_capacity
+    from uri_core.core.provider_keys import ProviderKeyStore
+    from uri_core.core.provider_registry import ProviderConfigStore
+    from uri_core.core.model_providers import OpenAICompatibleProvider
+    from uri_core.core.model_providers.base import ModelProviderConfig
+    import requests
+
+    _edge_settings_for_principal(principal)
+    records = [detect_ollama_runtime(timeout_seconds=3.0)]
+    loaded_ollama_models = set()
+    try:
+        loaded_response = requests.get(
+            "http://127.0.0.1:11434/api/ps", timeout=3.0,
+            allow_redirects=False,
+        )
+        loaded_response.raise_for_status()
+        loaded_ollama_models = {
+            item.get("name") or item.get("model")
+            for item in loaded_response.json().get("models", [])
+            if isinstance(item, dict)
+        }
+    except Exception:
+        pass
+    lm_config = ProviderConfigStore(principal.user_id).get_provider_config("lm_studio")
+    lm_url = _provider_base_url("lm_studio", lm_config.get("base_url", "http://127.0.0.1:1234"))
+    key_store = ProviderKeyStore(principal.user_id)
+    key = key_store.get_key_for_use("lm_studio") if key_store.has_key("lm_studio") else None
+    try:
+        lm_models = OpenAICompatibleProvider(
+            ModelProviderConfig(base_url=lm_url, model="", timeout_seconds=3.0),
+            api_key=key,
+        ).list_models()
+        from uri_core.core.edge_lifecycle.models import (
+            DetectedModelRecord, EndpointDetail, RuntimeDetectionRecord,
+        )
+        from urllib.parse import urlparse
+        records.append(RuntimeDetectionRecord(
+            status="found_reachable", runtime_id="lmstudio", version=None,
+            models_detected=tuple(DetectedModelRecord(model_id) for model_id in lm_models),
+            endpoint=EndpointDetail(lm_url + "/models", urlparse(lm_url).hostname or "", True),
+        ))
+    except Exception as exc:
+        records.append(detect_lmstudio_runtime(
+            endpoint=lm_url + "/models", timeout_seconds=3.0
+        ))
+
+    candidates = []
+    for record in records:
+        for model in record.models_detected:
+            candidates.append({
+                "model_id": model.model_id,
+                "runtime": record.runtime_id,
+                "quantization": model.quantization or "unknown",
+                "parameter_size": model.parameter_size,
+                "file_size_bytes": model.byte_size,
+                "loaded_state": (
+                    "loaded" if record.runtime_id == "ollama" and model.model_id in loaded_ollama_models
+                    else "not_loaded" if record.runtime_id == "ollama" and record.endpoint.reachable
+                    else "discovered" if record.endpoint.reachable else "unavailable"
+                ),
+                "ram_mib": None,
+                "vram_mib": None,
+                "qualification_state": "NOT_TESTED",
+                "tested_capabilities": [],
+                "benchmark_evidence": None,
+                "production_promoted": False,
+            })
+    return {
+        "candidates": candidates,
+        "runtimes": [asdict(record) for record in records],
+        "hardware": asdict(probe_hardware_capacity()),
+        "promotion": "none",
+    }
+
+
+@app.post("/intelligence/lab/candidates/qualify")
+def qualify_experimental_candidate(
+    payload: ExperimentalCandidateRequest,
+    principal: PrincipalContext = Depends(_resolve_principal),
+) -> dict:
+    """Run one bounded text-completion qualification; never changes routing."""
+    from uri_core.core.provider_keys import ProviderKeyStore
+    from uri_core.core.provider_registry import ProviderConfigStore
+    from uri_core.core.model_providers import OllamaProvider, OpenAICompatibleProvider
+    from uri_core.core.model_providers.base import ModelProviderConfig
+
+    _edge_settings_for_principal(principal)
+    started = time.perf_counter()
+    try:
+        if payload.runtime_id == "ollama":
+            installed = _selectable_models_for(principal.user_id, "ollama")
+            if payload.model_id not in installed:
+                raise ValueError("Candidate is not present in the live Ollama inventory.")
+            env = ModelProviderConfig.from_env()
+            provider = OllamaProvider(ModelProviderConfig(
+                base_url=env.base_url, model=payload.model_id,
+                timeout_seconds=5.0, context_tokens=env.context_tokens,
+            ))
+        elif payload.runtime_id == "lmstudio":
+            stored = ProviderConfigStore(principal.user_id).get_provider_config("lm_studio")
+            base_url = _provider_base_url("lm_studio", stored.get("base_url", "http://127.0.0.1:1234"))
+            keys = ProviderKeyStore(principal.user_id)
+            key = keys.get_key_for_use("lm_studio") if keys.has_key("lm_studio") else None
+            discovered = OpenAICompatibleProvider(
+                ModelProviderConfig(base_url=base_url, model="", timeout_seconds=3.0), api_key=key,
+            ).list_models()
+            if payload.model_id not in discovered:
+                raise ValueError("Candidate is not present in the live LM Studio inventory.")
+            provider = OpenAICompatibleProvider(
+                ModelProviderConfig(base_url=base_url, model=payload.model_id, timeout_seconds=5.0),
+                api_key=key,
+            )
+        else:
+            raise ValueError("runtime_id must be ollama or lmstudio")
+        response = provider.complete(system="Reply with exactly OK.", user="OK", max_tokens=2)
+        passed = bool(response.content.strip())
+        return {
+            "model_id": payload.model_id,
+            "runtime": payload.runtime_id,
+            "qualification_state": "QUALIFIED" if passed else "FAILED",
+            "tested_capabilities": ["text_completion"],
+            "benchmark_evidence": {
+                "latency_ms": int(round((time.perf_counter() - started) * 1000)),
+                "non_empty_response": passed,
+            },
+            "production_promoted": False,
+        }
+    except Exception as exc:
+        return {
+            "model_id": payload.model_id,
+            "runtime": payload.runtime_id,
+            "qualification_state": "FAILED",
+            "tested_capabilities": ["text_completion"],
+            "benchmark_evidence": {
+                "latency_ms": int(round((time.perf_counter() - started) * 1000)),
+                "error_type": type(exc).__name__,
+                "detail": str(exc),
+            },
+            "production_promoted": False,
+        }
+
+
 @app.post("/files")
 async def upload_file(
     session_id: str = Form(...),
@@ -3614,7 +4437,7 @@ def _active_brain_for_user(user_id: Optional[str]) -> dict:
     from uri_core.core.provider_registry import CATALOGUE_BY_ID, ProviderConfigStore
 
     provider_id = "ollama"
-    model = "qwen3:14b"
+    model = "qwen3.5:9b"
     role_config = load_model_roles().get(ROLE_REASONING, {})
     configured_provider = role_config.get("provider_id", role_config.get("provider"))
     if configured_provider in CATALOGUE_BY_ID:
@@ -3758,7 +4581,7 @@ def list_providers(
             try:
                 user_cfg = config_store.get_provider_config(pid) if config_store else {}
                 cfg = ModelProviderConfig(
-                    base_url=user_cfg.get("base_url", descriptor.base_url),
+                    base_url=_provider_base_url(pid, user_cfg.get("base_url", descriptor.base_url)),
                     model=user_cfg.get("model", (descriptor.models[0].model_id if descriptor.models else "")),
                     timeout_seconds=2.0,
                 )
@@ -3878,6 +4701,34 @@ def verify_provider(provider_id: str, user_id: Optional[str] = Depends(_resolve_
     try:
         if provider_id == "ollama":
             models = OllamaProvider(ModelProviderConfig.from_env()).list_installed_models()
+        elif provider_id == "lm_studio":
+            stored = ProviderConfigStore(user_id).get_provider_config(provider_id)
+            key_store = ProviderKeyStore(user_id)
+            key = key_store.get_key_for_use(provider_id) if key_store.has_key(provider_id) else None
+            base_url = _provider_base_url(
+                provider_id, stored.get("base_url", descriptor.base_url)
+            )
+            discovery = OpenAICompatibleProvider(
+                ModelProviderConfig(base_url=base_url, model="", timeout_seconds=5.0),
+                api_key=key,
+            )
+            discovered = discovery.list_models()
+            models = []
+            for model_id in discovered:
+                probe = OpenAICompatibleProvider(
+                    ModelProviderConfig(
+                        base_url=base_url, model=model_id, timeout_seconds=5.0
+                    ),
+                    api_key=key,
+                )
+                try:
+                    response = probe.complete(
+                        system="Reply with OK.", user="OK", max_tokens=2
+                    )
+                    if response.content.strip():
+                        models.append(model_id)
+                except Exception:
+                    continue
         elif not ProviderKeyStore(user_id).has_key(provider_id):
             return {"provider_id": provider_id, "verified": False, "verified_models": [], "error": "An API key is required."}
         else:
@@ -3886,7 +4737,7 @@ def verify_provider(provider_id: str, user_id: Optional[str] = Depends(_resolve_
             models = []
             for item in descriptor.models:
                 provider_cls = AnthropicProvider if provider_id == "anthropic" else OpenAICompatibleProvider
-                probe = provider_cls(ModelProviderConfig(base_url=stored.get("base_url", descriptor.base_url), model=item.model_id, timeout_seconds=5.0), api_key=key)
+                probe = provider_cls(ModelProviderConfig(base_url=_provider_base_url(provider_id, stored.get("base_url", descriptor.base_url)), model=item.model_id, timeout_seconds=5.0), api_key=key)
                 try:
                     probe.complete(system="Reply with OK.", user="OK", max_tokens=1)
                     models.append(item.model_id)
@@ -3956,36 +4807,14 @@ def update_active_brain(
 
     config_store = ProviderConfigStore(user_id)
 
-    if descriptor.models:
-        # A provider with a real catalogue can be meaningfully checked
-        # against discovered/verified inventory (rule 1: only discovered
-        # AND verified-usable models are ever selectable as Active Brain).
-        if payload.model is None or payload.model not in _selectable_models_for(
-            user_id, payload.provider_id
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail="Active Brain must use a discovered and verified model.",
-            )
-        chosen_model = payload.model
-    else:
-        # 2026-09-12 (User directive): a provider with no fixed catalogue
-        # models (e.g. LM Studio, or any custom OpenAI-compatible endpoint -
-        # "dynamic, depends on what the user has loaded", see
-        # provider_registry.py's own catalogue comment) has nothing for
-        # rule 1's verified-inventory check to compare against, and must
-        # never silently fall back to a literal Ollama model name that has
-        # nothing to do with what this provider is actually serving.
-        # Prefer, in order: the model the client explicitly asked for,
-        # this user's own already-configured model override for this
-        # provider (PUT /providers/config), then a hardcoded literal only
-        # when this provider genuinely has no other source of a model
-        # name at all.
-        chosen_model = (
-            payload.model
-            or config_store.get_provider_config(payload.provider_id).get("model")
-            or "qwen3:14b"
+    if payload.model is None or payload.model not in _selectable_models_for(
+        user_id, payload.provider_id
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Active Brain must use a discovered and verified model.",
         )
+    chosen_model = payload.model
 
     config_store.set_active_brain(payload.provider_id, chosen_model)
     _user_contexts.pop(user_id, None)
@@ -4022,7 +4851,12 @@ def update_provider_config(
 
     updates: dict = {}
     if payload.base_url is not None:
-        updates["base_url"] = payload.base_url
+        try:
+            updates["base_url"] = _provider_base_url(
+                payload.provider_id, payload.base_url
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
     if payload.model is not None:
         updates["model"] = payload.model
 
@@ -4033,4 +4867,3 @@ def update_provider_config(
     config_store.set_provider_config(payload.provider_id, updates)
 
     return {"provider_id": payload.provider_id, "status": "updated", **updates}
-

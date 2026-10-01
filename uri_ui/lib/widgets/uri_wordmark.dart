@@ -10,6 +10,7 @@ class UriWordmark extends StatelessWidget {
     this.markSize = 30,
     this.showWordmark = true,
     this.showTagline = false,
+    @Deprecated('Use showTagline instead for consistent branding')
     this.showDesktopCompanion = false,
   });
 

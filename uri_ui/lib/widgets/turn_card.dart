@@ -14,9 +14,18 @@ import 'status_pill.dart';
 /// didn't report is simply omitted from the caption, never shown as a
 /// fabricated 0 or guess.
 String _metadataCaption(UriTurn turn) {
-  final parts = <String>['Conversation model: ${turn.servingModel ?? 'URI Auto'}'];
+  final parts = <String>[
+    'Conversation model: ${turn.servingModel ?? 'URI Auto'}',
+  ];
   final duration = turn.durationSeconds;
-  if (duration != null) {
+  final totalDuration = turn.totalDurationSeconds;
+  if (totalDuration != null && duration != null) {
+    parts.add(
+      '${totalDuration.toStringAsFixed(1)}s total (${duration.toStringAsFixed(1)}s model)',
+    );
+  } else if (totalDuration != null) {
+    parts.add('${totalDuration.toStringAsFixed(1)}s total');
+  } else if (duration != null) {
     parts.add('${duration.toStringAsFixed(1)}s');
   }
   final promptTokens = turn.promptTokens;
@@ -206,6 +215,9 @@ class TurnCard extends StatelessWidget {
                   turn.understanding == null)) ...[
             const SizedBox(height: UriSpace.md),
             _ResultBlock(turn: turn, onOpenAttachment: onOpenAttachment),
+          ],
+          if (turn.arnState != null || turn.recoveryRequired) ...[
+            _ArnRecoveryCard(arnState: turn.arnState),
           ],
           if (turn.stage != TurnStage.understanding) ...[
             const SizedBox(height: UriSpace.xs),
@@ -707,6 +719,164 @@ class _CopyMessageActionState extends State<_CopyMessageAction> {
           color: _copied ? colors.success : colors.inkFaint,
         ),
         onPressed: _copy,
+      ),
+    );
+  }
+}
+
+class _ArnRecoveryCard extends StatefulWidget {
+  const _ArnRecoveryCard({required this.arnState});
+  final Map<String, dynamic>? arnState;
+
+  @override
+  State<_ArnRecoveryCard> createState() => _ArnRecoveryCardState();
+}
+
+class _ArnRecoveryCardState extends State<_ArnRecoveryCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
+    final theme = Theme.of(context);
+    final state = widget.arnState ?? const {};
+    final candidates =
+        (state['active_candidates'] as List<dynamic>? ?? const []);
+    final eliminated =
+        (state['eliminated_candidates'] as List<dynamic>? ?? const []);
+    final sources = (state['searched_sources'] as List<dynamic>? ?? const []);
+    final recommendation =
+        state['clarification_recommendation'] as Map<String, dynamic>?;
+
+    return Container(
+      margin: const EdgeInsets.only(top: UriSpace.sm),
+      decoration: BoxDecoration(
+        color: colors.surfaceSunken,
+        borderRadius: BorderRadius.circular(UriRadius.sm),
+        border: Border.all(color: colors.accent.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(UriRadius.sm),
+            child: Padding(
+              padding: const EdgeInsets.all(UriSpace.sm),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isNarrow = constraints.maxWidth < 460;
+                  if (isNarrow) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.filter_alt_outlined,
+                              color: colors.accent,
+                              size: 18,
+                            ),
+                            const SizedBox(width: UriSpace.xs),
+                            Expanded(
+                              child: Text(
+                                'Adaptive Retrieval Narrowing (ARN)',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colors.accent,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              _expanded ? Icons.expand_less : Icons.expand_more,
+                              size: 18,
+                              color: colors.inkFaint,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 18.0 + UriSpace.xs,
+                          ),
+                          child: Text(
+                            '${candidates.length} active · ${eliminated.length} eliminated',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: colors.inkFaint,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      Icon(
+                        Icons.filter_alt_outlined,
+                        color: colors.accent,
+                        size: 18,
+                      ),
+                      const SizedBox(width: UriSpace.xs),
+                      Expanded(
+                        child: Text(
+                          'Adaptive Retrieval Narrowing (ARN)',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colors.accent,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: UriSpace.sm),
+                      Text(
+                        '${candidates.length} active · ${eliminated.length} eliminated',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.inkFaint,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        _expanded ? Icons.expand_less : Icons.expand_more,
+                        size: 18,
+                        color: colors.inkFaint,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          if (_expanded) ...[
+            Divider(height: 1, color: colors.border),
+            Padding(
+              padding: const EdgeInsets.all(UriSpace.sm),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (sources.isNotEmpty) ...[
+                    Text(
+                      'Sources Searched: ${sources.join(", ")}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.inkSoft,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  if (recommendation != null) ...[
+                    Text(
+                      'Suggested Clarification: ${recommendation["question"] ?? recommendation["axis"] ?? "Refine query criteria"}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colors.ink,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

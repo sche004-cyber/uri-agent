@@ -112,6 +112,9 @@ class UriTurn {
     this.promptTokens,
     this.evalTokens,
     this.durationSeconds,
+    this.totalDurationSeconds,
+    this.arnState,
+    this.recoveryRequired = false,
   });
 
   final String id;
@@ -150,6 +153,12 @@ class UriTurn {
   final int? promptTokens;
   final int? evalTokens;
   final double? durationSeconds;
+  final double? totalDurationSeconds;
+
+  /// ARN.1: Adaptive Retrieval Narrowing state packet returned when
+  /// recovery is required (empty lookup narrowing).
+  final Map<String, dynamic>? arnState;
+  final bool recoveryRequired;
 
   UriTurn copyWith({
     TurnStage? stage,
@@ -165,6 +174,9 @@ class UriTurn {
     int? promptTokens,
     int? evalTokens,
     double? durationSeconds,
+    double? totalDurationSeconds,
+    Map<String, dynamic>? arnState,
+    bool? recoveryRequired,
   }) {
     return UriTurn(
       id: id,
@@ -184,6 +196,9 @@ class UriTurn {
       promptTokens: promptTokens ?? this.promptTokens,
       evalTokens: evalTokens ?? this.evalTokens,
       durationSeconds: durationSeconds ?? this.durationSeconds,
+      totalDurationSeconds: totalDurationSeconds ?? this.totalDurationSeconds,
+      arnState: arnState ?? this.arnState,
+      recoveryRequired: recoveryRequired ?? this.recoveryRequired,
     );
   }
 
@@ -202,6 +217,9 @@ class UriTurn {
     'serving_prompt_tokens': promptTokens,
     'serving_eval_tokens': evalTokens,
     'serving_duration_seconds': durationSeconds,
+    'serving_total_duration_seconds': totalDurationSeconds,
+    if (arnState != null) 'arn_state': arnState,
+    'recovery_required': recoveryRequired,
   };
 
   factory UriTurn.fromJson(Map<String, dynamic> json) {
@@ -223,6 +241,10 @@ class UriTurn {
       promptTokens: json['serving_prompt_tokens'] as int?,
       evalTokens: json['serving_eval_tokens'] as int?,
       durationSeconds: (json['serving_duration_seconds'] as num?)?.toDouble(),
+      totalDurationSeconds: (json['serving_total_duration_seconds'] as num?)
+          ?.toDouble(),
+      arnState: json['arn_state'] as Map<String, dynamic>?,
+      recoveryRequired: json['recovery_required'] as bool? ?? false,
     );
   }
 }

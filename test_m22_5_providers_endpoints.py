@@ -220,13 +220,10 @@ class TestProviderEndpoints(unittest.TestCase):
             msg="User B should not see User A''s key as configured.",
         )
 
-    def test_active_brain_for_provider_with_no_catalogue_models_uses_config_override(
+    def test_dynamic_provider_model_override_is_not_active_until_verified(
         self,
     ):
-        """2026-09-12: a provider with an empty catalogue models list
-        (e.g. lm_studio - "dynamic, depends on what the user has
-        loaded") must use this user's own configured model override,
-        never silently fall back to a hardcoded Ollama model name."""
+        """Saved text is configuration, not proof a dynamic model exists."""
         token = self._login("lm_studio_model_user")
         headers = {"Authorization": f"Bearer {token}"}
 
@@ -241,17 +238,13 @@ class TestProviderEndpoints(unittest.TestCase):
             json={"provider_id": "lm_studio"},
             headers=headers,
         )
-        self.assertEqual(resp.status_code, 200, resp.text)
-        self.assertEqual(
-            resp.json()["active_brain"]["model"], "my-local-model-7b"
-        )
+        self.assertEqual(resp.status_code, 400, resp.text)
+        self.assertIn("discovered and verified", resp.json()["detail"])
 
-    def test_active_brain_for_provider_with_no_model_anywhere_falls_back_honestly(
+    def test_dynamic_provider_without_discovered_model_fails_closed(
         self,
     ):
-        """No client-supplied model, no stored config override - the
-        hardcoded literal fallback is the last resort only, never the
-        first one."""
+        """No discovered model means no fabricated Ollama fallback."""
         token = self._login("lm_studio_no_model_user")
         headers = {"Authorization": f"Bearer {token}"}
 
@@ -260,8 +253,8 @@ class TestProviderEndpoints(unittest.TestCase):
             json={"provider_id": "lm_studio"},
             headers=headers,
         )
-        self.assertEqual(resp.status_code, 200, resp.text)
-        self.assertEqual(resp.json()["active_brain"]["model"], "qwen3:14b")
+        self.assertEqual(resp.status_code, 400, resp.text)
+        self.assertIn("discovered and verified", resp.json()["detail"])
 
 
 if __name__ == "__main__":

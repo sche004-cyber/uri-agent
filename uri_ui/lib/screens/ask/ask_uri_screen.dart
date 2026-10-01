@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../models/edge_intelligence.dart';
 import '../../services/app_state.dart';
 import '../../services/app_state_scope.dart';
 import '../../services/attachment_opener_service.dart';
@@ -9,15 +12,14 @@ import '../../services/uri_client.dart' show Attachment, ProviderEntry;
 import '../../theme/uri_theme.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/status_pill.dart';
 import '../../widgets/turn_card.dart';
 import '../activity/activity_screen.dart';
 import '../history/history_screen.dart';
 
 /// The canonical Chat destination (§4.3). Hosts the live conversation
-/// (Conversation tab) plus two internal, non-navigational tabs —
-/// History and Activity — reusing [HistoryScreen]/[ActivityScreen] as
-/// they are, per COMPONENT_MAPPING.md's "Internal history/activity
-/// views" row: neither is a separate top-level destination.
+/// (Conversation tab) plus internal views: History, Activity, and Developer
+/// (runtime evidence and routing traces).
 class AskUriScreen extends StatefulWidget {
   const AskUriScreen({super.key, this.filePicker, this.attachmentOpener});
 
@@ -35,7 +37,7 @@ class _AskUriScreenState extends State<AskUriScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -61,6 +63,7 @@ class _AskUriScreenState extends State<AskUriScreen>
               Tab(text: 'Conversation'),
               Tab(text: 'History'),
               Tab(text: 'Activity'),
+              Tab(text: 'Developer'),
             ],
           ),
         ),
@@ -80,6 +83,7 @@ class _AskUriScreenState extends State<AskUriScreen>
               ),
               HistoryScreen(onResumed: _backToConversation),
               const ActivityScreen(),
+              const UriChatDeveloperPane(),
             ],
           ),
         ),
@@ -459,9 +463,7 @@ class _ComposerBody extends StatelessWidget {
                     keyboardType: TextInputType.multiline,
                     textInputAction: TextInputAction.newline,
                     enabled: !sending,
-                    decoration: const InputDecoration(
-                      hintText: 'Message URI…',
-                    ),
+                    decoration: const InputDecoration(hintText: 'Message URI…'),
                   ),
                 ),
               ),
@@ -485,18 +487,21 @@ class _ComposerBody extends StatelessWidget {
                   value: modelOverride,
                   providers: providers,
                   onChanged: onChooseModel,
-                  onOpen: () => AppStateScope.of(context).loadProviderInventory(),
+                  onOpen: () =>
+                      AppStateScope.of(context).loadProviderInventory(),
                 ),
               ),
-              const SizedBox(width: UriSpace.sm),
-              Tooltip(
-                message: 'Voice input is not available yet',
-                child: Icon(
-                  Icons.mic_none,
-                  color: isDark ? const Color(0xffaac5d8) : colors.inkFaint,
-                  size: 22,
+              if (!compact) ...[
+                const SizedBox(width: UriSpace.sm),
+                Tooltip(
+                  message: 'Voice input is not available yet',
+                  child: Icon(
+                    Icons.mic_none,
+                    color: isDark ? const Color(0xffaac5d8) : colors.inkFaint,
+                    size: 22,
+                  ),
                 ),
-              ),
+              ],
               const SizedBox(width: UriSpace.sm),
               Tooltip(
                 message: 'Send to URI',
@@ -603,63 +608,61 @@ class _ModelSelectorChip extends StatelessWidget {
   Widget build(BuildContext context) => Listener(
     onPointerDown: (_) => onOpen(),
     child: PopupMenuButton<Object?>(
-    tooltip: 'Choose conversation model',
-    onSelected: onChanged,
-    itemBuilder: (context) => [
-      const PopupMenuItem<Object?>(
-        value: 'auto',
-        child: _ModelChoice(
-          label: 'URI Auto',
-          detail: 'Auto routing',
-          enabled: true,
+      tooltip: 'Choose conversation model',
+      onSelected: onChanged,
+      itemBuilder: (context) => [
+        const PopupMenuItem<Object?>(
+          value: 'auto',
+          child: _ModelChoice(
+            label: 'URI Auto',
+            detail: 'Auto routing',
+            enabled: true,
+          ),
         ),
-      ),
-      const PopupMenuDivider(),
-      const PopupMenuItem<Object?>(
-        enabled: false,
-        child: Text(
-          'Model choice can be changed from conversation without rewriting global defaults.',
+        const PopupMenuDivider(),
+        const PopupMenuItem<Object?>(
+          enabled: false,
+          child: Text(
+            'Model choice can be changed from conversation without rewriting global defaults.',
+          ),
         ),
-      ),
-      for (final provider in providers)
-        for (final model in provider.models)
-          PopupMenuItem<Object?>(
-            value: model.verified
-                ? {'provider_id': provider.providerId, 'model': model.modelId}
-                : null,
-            enabled: model.verified,
-            child: _ModelChoice(
-              label: model.displayName,
-              detail: model.verified ? provider.displayName : 'Not verified',
+        for (final provider in providers)
+          for (final model in provider.models)
+            PopupMenuItem<Object?>(
+              value: model.verified
+                  ? {'provider_id': provider.providerId, 'model': model.modelId}
+                  : null,
               enabled: model.verified,
+              child: _ModelChoice(
+                label: model.displayName,
+                detail: model.verified ? provider.displayName : 'Not verified',
+                enabled: model.verified,
+              ),
             ),
-          ),
-    ],
-    // RawChip (not Chip) so this control has a distinct widget type from
-    // the attachment strip's Chip widgets below — attachment_ui_test.dart
-    // asserts on find.byType(Chip) as a regression guard for the attach
-    // flow, and this selector must never be counted as an attachment chip.
-    // Hybrid composer spec (§4.3): "label + chevron, opens a dropdown
-    // menu" — RawChip (not Chip) so attachment_ui_test.dart's
-    // find.byType(Chip) regression guard for the attach strip still
-    // counts only attachment chips, never this selector.
-    child: RawChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Flexible, not a bare Text: an unbounded-width Row gives its
-          // children their full natural size regardless of `overflow`,
-          // so without this the ellipsis above never actually had
-          // anything to clip against - the label just kept demanding
-          // its full width and overflowed once this chip was measured
-          // inside the Compact window's narrower composer (§4.4).
-          Flexible(
-            child: Text(_label, overflow: TextOverflow.ellipsis),
-          ),
-          const Icon(Icons.expand_more_rounded, size: 16),
-        ],
+      ],
+      // RawChip (not Chip) so this control has a distinct widget type from
+      // the attachment strip's Chip widgets below — attachment_ui_test.dart
+      // asserts on find.byType(Chip) as a regression guard for the attach
+      // flow, and this selector must never be counted as an attachment chip.
+      // Hybrid composer spec (§4.3): "label + chevron, opens a dropdown
+      // menu" — RawChip (not Chip) so attachment_ui_test.dart's
+      // find.byType(Chip) regression guard for the attach strip still
+      // counts only attachment chips, never this selector.
+      child: RawChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Flexible, not a bare Text: an unbounded-width Row gives its
+            // children their full natural size regardless of `overflow`,
+            // so without this the ellipsis above never actually had
+            // anything to clip against - the label just kept demanding
+            // its full width and overflowed once this chip was measured
+            // inside the Compact window's narrower composer (§4.4).
+            Flexible(child: Text(_label, overflow: TextOverflow.ellipsis)),
+            const Icon(Icons.expand_more_rounded, size: 16),
+          ],
+        ),
       ),
-    ),
     ),
   );
 }
@@ -718,4 +721,339 @@ class _AttachmentError extends StatelessWidget {
       ],
     ),
   );
+}
+
+class UriChatDeveloperPane extends StatefulWidget {
+  const UriChatDeveloperPane({super.key});
+
+  @override
+  State<UriChatDeveloperPane> createState() => _UriChatDeveloperPaneState();
+}
+
+class _UriChatDeveloperPaneState extends State<UriChatDeveloperPane> {
+  List<EdgeRoutingEvent> _events = const [];
+  bool _loading = false;
+  String? _error;
+  String _filter = 'All'; // All, Edge Reflex, Main Brain, Escalations, Failed
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refresh());
+  }
+
+  Future<void> _refresh() async {
+    final state = AppStateScope.of(context);
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final events = await state.client.getIntelligenceTrace(limit: 50);
+      if (mounted) {
+        setState(() {
+          _events = events.reversed.toList(); // newest first
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  List<EdgeRoutingEvent> get _filteredEvents {
+    if (_filter == 'All') return _events;
+    if (_filter == 'Edge Reflex') {
+      return _events
+          .where(
+            (e) =>
+                e.decision == 'EDGE_REPLY' ||
+                e.intelligenceLayer == 'edge_reflex',
+          )
+          .toList();
+    }
+    if (_filter == 'Main Brain') {
+      return _events
+          .where(
+            (e) =>
+                e.decision == 'MAIN_BRAIN' ||
+                e.intelligenceLayer == 'main_brain',
+          )
+          .toList();
+    }
+    if (_filter == 'Escalations') {
+      return _events
+          .where(
+            (e) => e.decision == 'ESCALATE' || e.decision.contains('ESCALAT'),
+          )
+          .toList();
+    }
+    if (_filter == 'Failed') {
+      return _events
+          .where((e) => e.outcome == 'failed' || e.outcome == 'unavailable')
+          .toList();
+    }
+    return _events;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: UriSpace.md,
+            vertical: UriSpace.sm,
+          ),
+          decoration: BoxDecoration(
+            color: colors.surfaceSunken,
+            border: Border(bottom: BorderSide(color: colors.border)),
+          ),
+          child: Row(
+            children: [
+              Wrap(
+                spacing: UriSpace.xs,
+                children:
+                    [
+                      'All',
+                      'Edge Reflex',
+                      'Main Brain',
+                      'Escalations',
+                      'Failed',
+                    ].map((f) {
+                      final selected = _filter == f;
+                      return ChoiceChip(
+                        label: Text(f),
+                        selected: selected,
+                        onSelected: (_) => setState(() => _filter = f),
+                      );
+                    }).toList(),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: _loading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.refresh_rounded, size: 20),
+                onPressed: _loading ? null : _refresh,
+                tooltip: 'Refresh Evidence Trace',
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _loading && _events.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : _filteredEvents.isEmpty
+              ? EmptyState(
+                  icon: Icons.developer_mode_outlined,
+                  title: 'No routing trace events',
+                  message: _error ?? 'No events match the selected filter. Chat turns and Edge Lab probes record here automatically.',
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.all(UriSpace.md),
+                  itemCount: _filteredEvents.length,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: UriSpace.sm),
+                  itemBuilder: (context, i) =>
+                      _TraceEventCard(event: _filteredEvents[i]),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TraceEventCard extends StatefulWidget {
+  const _TraceEventCard({required this.event});
+
+  final EdgeRoutingEvent event;
+
+  @override
+  State<_TraceEventCard> createState() => _TraceEventCardState();
+}
+
+class _TraceEventCardState extends State<_TraceEventCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = UriColors.of(context);
+    final theme = Theme.of(context);
+    final event = widget.event;
+
+    Color pillColor;
+    if (event.decision == 'EDGE_REPLY') {
+      pillColor = Colors.green;
+    } else if (event.decision == 'MAIN_BRAIN') {
+      pillColor = colors.accent;
+    } else if (event.decision == 'ESCALATE') {
+      pillColor = Colors.amber;
+    } else {
+      pillColor = Colors.red;
+    }
+
+    final rawJsonStr = event.rawJson != null
+        ? const JsonEncoder.withIndent('  ').convert(event.rawJson)
+        : '';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(UriRadius.sm),
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(UriSpace.sm),
+            child: Row(
+              children: [
+                StatusPill(
+                  label: event.decision,
+                  foreground: pillColor,
+                  background: pillColor.withValues(alpha: 0.15),
+                ),
+                const SizedBox(width: UriSpace.sm),
+                Text(
+                  event.intelligenceLayer,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.inkSoft,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (event.candidate != null) ...[
+                  const SizedBox(width: UriSpace.xs),
+                  Text(
+                    '· ${event.candidate}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.inkFaint,
+                    ),
+                  ),
+                ],
+                const Spacer(),
+                if (event.latencyMs != null)
+                  Text(
+                    '${event.latencyMs} ms',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (event.reasonCodes.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: UriSpace.sm),
+              child: Text(
+                'Reasons: ${event.reasonCodes.join(', ')}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.inkSoft,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          if (event.sessionId != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: UriSpace.sm,
+                vertical: UriSpace.xs / 2,
+              ),
+              child: Text(
+                'Session: ${event.sessionId}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.inkFaint,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.all(UriSpace.xs),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _expanded ? 'Hide Details' : 'Inspect Raw Event',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.accent,
+                    ),
+                  ),
+                  Icon(
+                    _expanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    size: 16,
+                    color: colors.accent,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_expanded && rawJsonStr.isNotEmpty)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(UriSpace.xs),
+              padding: const EdgeInsets.all(UriSpace.sm),
+              decoration: BoxDecoration(
+                color: colors.surfaceSunken,
+                borderRadius: BorderRadius.circular(UriRadius.sm),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Raw Event JSON',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.copy, size: 12),
+                        label: const Text(
+                          'Copy',
+                          style: TextStyle(fontSize: 11),
+                        ),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: rawJsonStr));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Copied trace event JSON to clipboard',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  SelectableText(
+                    rawJsonStr,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

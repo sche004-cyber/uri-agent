@@ -67,9 +67,9 @@ class LargeContextModelTests(unittest.TestCase):
         ctx = resolve_model_context_tokens(model="gemma4:12b")
         self.assertEqual(ctx, 262144)
 
-    def test_qwen3_14b_resolves_to_40k_tokens(self):
-        ctx = resolve_model_context_tokens(model="qwen3:14b")
-        self.assertEqual(ctx, 40960)
+    def test_qwen3_5_9b_resolves_to_262k_tokens(self):
+        ctx = resolve_model_context_tokens(model="qwen3.5:9b")
+        self.assertEqual(ctx, 262144)
 
     def test_live_probe_overrides_catalogue_if_different(self):
         fake_response = MagicMock()

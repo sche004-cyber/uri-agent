@@ -31,9 +31,7 @@ class AboutSettingsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              const UriWordmark(markSize: 34, showWordmark: false),
-              const SizedBox(width: UriSpace.sm),
-              Text('URI', style: theme.textTheme.titleMedium),
+              const UriWordmark(markSize: 28),
               const SizedBox(width: UriSpace.sm),
               Text('v$kUriAppVersion', style: theme.textTheme.bodyMedium),
             ],

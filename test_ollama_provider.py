@@ -57,7 +57,7 @@ class ModelProviderConfigTests(unittest.TestCase):
             config = ModelProviderConfig.from_env()
 
         self.assertEqual(config.base_url, "http://localhost:11434")
-        self.assertEqual(config.model, "qwen3:14b")
+        self.assertEqual(config.model, "qwen3.5:9b")
 
     def test_reads_overrides_from_env(self):
         with patch.dict(
@@ -77,12 +77,13 @@ class ModelProviderConfigTests(unittest.TestCase):
 
     def test_context_tokens_default_when_env_unset(self):
         # M32: With no role config and no OLLAMA_NUM_CTX, a provider built
-        # for a model whose real window is known/discoverable uses that window (40960 for qwen3:14b),
+        # for a model whose real window is known/discoverable uses that window
+        # (262144 for the installed qwen3.5:9b),
         # not the legacy stale 8192.
         with patch.dict("os.environ", {}, clear=True):
             config = ModelProviderConfig.from_env()
 
-        self.assertEqual(config.context_tokens, 40960)
+        self.assertEqual(config.context_tokens, 262144)
 
     def test_context_tokens_fallback_when_model_unknown(self):
         # M32: When provider metadata is unavailable (unknown model, no probe),

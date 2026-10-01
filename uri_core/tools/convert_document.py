@@ -177,6 +177,20 @@ class ConvertDocumentTool:
                 ),
             }
 
+        if extraction.get("method") == "OCR":
+            return {
+                "status": "unavailable",
+                "message": (
+                    "This PDF appears to be scanned or image-only. URI cannot "
+                    "truthfully produce an editable Word conversion until an "
+                    "OCR backend is available and qualified. No output file was created."
+                ),
+                "source_filename": source.filename,
+                "output_format": output_format,
+                "editable": False,
+                "ocr_required": True,
+            }
+
         text = extraction.get("text") or ""
 
         if not text.strip():

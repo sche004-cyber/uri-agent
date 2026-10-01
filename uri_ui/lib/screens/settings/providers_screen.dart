@@ -124,6 +124,29 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
     );
   }
 
+  Future<void> _verifyLocalProvider(ProviderEntry provider) async {
+    final state = _state ?? AppStateScope.of(context);
+    setState(() {
+      _errorMessage = null;
+      _successMessage = null;
+    });
+    final result = await state.verifyProvider(provider.providerId);
+    if (!mounted) return;
+    if (result?.verified == true) {
+      setState(() {
+        _successMessage =
+            '${provider.displayName}: verified ${result!.models.length} model(s).';
+      });
+      await _loadProviders();
+    } else {
+      setState(() {
+        _errorMessage =
+            result?.error ??
+            '${provider.displayName} could not discover and verify a model.';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
@@ -259,6 +282,7 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
                     tag: 'OpenAI, Anthropic, Gemini, Groq, OpenRouter',
                     providers: apiProviders,
                     onConfigureKey: _showKeyDialog,
+                    onVerifyLocal: _verifyLocalProvider,
                     onEditConfig: _showConfigDialog,
                     onSetActiveBrain: _confirmActiveBrain,
                   ),
@@ -270,6 +294,7 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
                     tag: 'Ollama, LM Studio',
                     providers: localProviders,
                     onConfigureKey: _showKeyDialog,
+                    onVerifyLocal: _verifyLocalProvider,
                     onEditConfig: _showConfigDialog,
                     onSetActiveBrain: _confirmActiveBrain,
                   ),
@@ -385,15 +410,13 @@ class _ConnectProviderOverview extends StatelessWidget {
           const _ConnectionMethodCard(
             title: 'Subscription',
             tag: 'OAuth account',
-            detail:
-                'OpenAI, Claude, Gemini\nNot currently available — no officially supported direct connection exists yet.',
+            detail: 'OpenAI, Claude, Gemini\nNot currently available — no officially supported direct connection exists yet.',
             enabled: false,
           ),
           _ConnectionMethodCard(
             title: 'API Key',
             tag: 'Encrypted credential',
-            detail:
-                'Groq, OpenAI API, Anthropic API, Gemini API, OpenRouter',
+            detail: 'Groq, OpenAI API, Anthropic API, Gemini API, OpenRouter',
             enabled: true,
             onContinue: onContinueApiKey,
           ),
@@ -477,6 +500,7 @@ class _ProviderConnectionGroup extends StatelessWidget {
     required this.tag,
     required this.providers,
     required this.onConfigureKey,
+    required this.onVerifyLocal,
     required this.onEditConfig,
     required this.onSetActiveBrain,
   });
@@ -485,6 +509,7 @@ class _ProviderConnectionGroup extends StatelessWidget {
   final String tag;
   final List<ProviderEntry> providers;
   final ValueChanged<ProviderEntry> onConfigureKey;
+  final ValueChanged<ProviderEntry> onVerifyLocal;
   final ValueChanged<ProviderEntry> onEditConfig;
   final void Function(ProviderEntry, String?) onSetActiveBrain;
 
@@ -556,7 +581,12 @@ class _ProviderConnectionGroup extends StatelessWidget {
                     onPressed: () => onEditConfig(provider),
                     child: const Text('Endpoint'),
                   ),
-                  if (provider.adapter != 'ollama')
+                  if (provider.providerId == 'lm_studio')
+                    FilledButton(
+                      onPressed: () => onVerifyLocal(provider),
+                      child: const Text('Discover & verify'),
+                    )
+                  else if (provider.adapter != 'ollama')
                     FilledButton(
                       onPressed: () => onConfigureKey(provider),
                       child: Text(
@@ -727,7 +757,7 @@ class _FallbackRoutingDialogState extends State<_FallbackRoutingDialog> {
     bool allowAuto = false,
     bool allowNone = false,
   }) => DropdownButtonFormField<String>(
-    value:
+    initialValue:
         models.any((model) => model.value == value) ||
             (allowAuto && value == _auto)
         ? value

@@ -311,32 +311,20 @@ class HttpUriClient implements UriClient {
     String text, {
     String? turnId,
     Object? modelOverride,
+    List<String> attachedFileIds = const [],
+    void Function(String text)? onPartialText,
   }) async {
     final id = turnId ?? 'turn-${DateTime.now().microsecondsSinceEpoch}';
     final timestamp = DateTime.now();
 
-    http.Response response;
+    _AskStreamResponse response;
     try {
-      response = await _askOnce(text, modelOverride);
-    } on http.ClientException {
-      // A pooled keep-alive connection that went idle (e.g. over a
-      // Tailscale relay) dies with exactly this exception on its next
-      // reuse, before the request ever reaches the server - confirmed
-      // by the backend's access log never showing the attempt at all.
-      // A single retry opens a fresh connection; since the prior
-      // attempt provably never reached the server, this cannot result
-      // in the same ask being processed twice.
-      try {
-        response = await _askOnce(text, modelOverride);
-      } catch (error) {
-        return UriTurn(
-          id: id,
-          userText: text,
-          timestamp: timestamp,
-          stage: TurnStage.failed,
-          failureReason: 'Could not reach the URI backend: $error',
-        );
-      }
+      response = await _askStreamOnce(
+        text,
+        modelOverride,
+        attachedFileIds,
+        onPartialText,
+      );
     } catch (error) {
       return UriTurn(
         id: id,
@@ -347,12 +335,7 @@ class HttpUriClient implements UriClient {
       );
     }
 
-    Map<String, dynamic>? responseBody;
-    try {
-      responseBody = jsonDecode(response.body) as Map<String, dynamic>;
-    } catch (_) {
-      // The status branch below retains its useful HTTP failure message.
-    }
+    final responseBody = response.body;
     final requestedModel = _requestedModel(modelOverride);
     final servingModel =
         responseBody?['serving_model'] as String? ?? requestedModel;
@@ -390,29 +373,94 @@ class HttpUriClient implements UriClient {
     return turn;
   }
 
-  Future<http.Response> _askOnce(String text, Object? modelOverride) {
-    return _http
-        .post(
-          Uri.parse('$baseUrl/ask'),
-          headers: _jsonHeaders,
-          body: jsonEncode({
-            'session_id': _sessionId,
-            'text': text,
-            'model_override': ?modelOverride,
-          }),
-        )
-        // The backend runs a multi-step reasoning chain against a
-        // local LLM for every /ask (semantic analysis, planning,
-        // drafting are each a separate model call) - confirmed to take
-        // ~20s on its own even for a request that ends up failing, and
-        // Ollama reloading the model after ~5 minutes idle (its
-        // default keep_alive) adds several seconds more on top of
-        // that. 30s was tuned for a network problem (a dead pooled
-        // connection - see the retry above), not for how long this
-        // endpoint can legitimately take to answer; 120s leaves real
-        // headroom for a cold model load plus relay latency without
-        // that answer never even having a chance to arrive.
+  Future<_AskStreamResponse> _askStreamOnce(
+    String text,
+    Object? modelOverride,
+    List<String> attachedFileIds,
+    void Function(String text)? onPartialText,
+  ) async {
+    final request = http.Request('POST', Uri.parse('$baseUrl/ask/stream'))
+      ..headers.addAll(_jsonHeaders)
+      ..body = jsonEncode({
+        'session_id': _sessionId,
+        'text': text,
+        'model_override': ?modelOverride,
+        'attached_file_ids': attachedFileIds,
+      });
+    final streamed = await _http
+        .send(request)
         .timeout(const Duration(seconds: 120));
+    if (streamed.statusCode != 200) {
+      final raw = await streamed.stream.bytesToString();
+      Map<String, dynamic>? body;
+      try {
+        body = jsonDecode(raw) as Map<String, dynamic>;
+      } catch (_) {}
+      return _AskStreamResponse(streamed.statusCode, body);
+    }
+    if (!(streamed.headers['content-type'] ?? '').contains(
+      'text/event-stream',
+    )) {
+      final raw = await streamed.stream.bytesToString();
+      try {
+        return _AskStreamResponse(
+          streamed.statusCode,
+          jsonDecode(raw) as Map<String, dynamic>,
+        );
+      } catch (_) {
+        return _AskStreamResponse(streamed.statusCode, null);
+      }
+    }
+
+    String? eventName;
+    final dataLines = <String>[];
+    Map<String, dynamic>? terminal;
+    final partial = StringBuffer();
+
+    void consumeEvent() {
+      if (eventName == null || dataLines.isEmpty) return;
+      final decoded = jsonDecode(dataLines.join('\n')) as Map<String, dynamic>;
+      switch (eventName) {
+        case 'content':
+          final chunk = decoded['text']?.toString() ?? '';
+          partial.write(chunk);
+          onPartialText?.call(partial.toString());
+          break;
+        case 'tool_call_detected':
+          partial.clear();
+          onPartialText?.call('');
+          break;
+        case 'message':
+          terminal = decoded;
+          break;
+        case 'done':
+          final response = decoded['response'];
+          if (response is Map) {
+            terminal = Map<String, dynamic>.from(response);
+          }
+          break;
+        case 'error':
+          throw StateError(decoded['error']?.toString() ?? 'Streaming failed.');
+      }
+    }
+
+    await for (final line
+        in streamed.stream
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .timeout(const Duration(seconds: 120))) {
+      if (line.isEmpty) {
+        consumeEvent();
+        eventName = null;
+        dataLines.clear();
+      } else if (line.startsWith('event:')) {
+        eventName = line.substring(6).trim();
+      } else if (line.startsWith('data:')) {
+        dataLines.add(line.substring(5).trimLeft());
+      }
+    }
+    consumeEvent();
+    return _AskStreamResponse(streamed.statusCode, terminal);
   }
 
   UriTurn _turnFromResponse({
@@ -429,6 +477,10 @@ class HttpUriClient implements UriClient {
     final evalTokens = body['serving_eval_tokens'] as int?;
     final durationSeconds = (body['serving_duration_seconds'] as num?)
         ?.toDouble();
+    final totalDurationSeconds =
+        (body['serving_total_duration_seconds'] as num?)?.toDouble();
+    final arnState = body['arn_state'] as Map<String, dynamic>?;
+    final recoveryRequired = body['recovery_required'] as bool? ?? false;
 
     if (body['status'] == 'failed' || body['status'] == 'unavailable') {
       // Post-Launch Brain Setup Repair: with onboarding now skippable, a
@@ -441,9 +493,23 @@ class HttpUriClient implements UriClient {
       // values this checks.
       final unavailableReason = body['narrative_unavailable_reason']
           ?.toString();
-      final failureReason = body['error']?.toString() ??
-          (const {'no_brain_configured', 'drafting_provider_unreachable'}
-                  .contains(unavailableReason)
+      final explicitExplanation =
+          (body['narrative'] as String?)?.trim().isNotEmpty == true
+          ? (body['narrative'] as String).trim()
+          : (body['response'] is Map &&
+                    (body['response']['message'] as String?)
+                            ?.trim()
+                            .isNotEmpty ==
+                        true
+                ? (body['response']['message'] as String).trim()
+                : null);
+      final failureReason =
+          explicitExplanation ??
+          body['error']?.toString() ??
+          (const {
+                'no_brain_configured',
+                'drafting_provider_unreachable',
+              }.contains(unavailableReason)
               ? "URI's Brain isn't configured or is unreachable — set an Active Brain in Model Providers."
               : 'URI could not process this request.');
       return UriTurn(
@@ -456,6 +522,9 @@ class HttpUriClient implements UriClient {
         promptTokens: promptTokens,
         evalTokens: evalTokens,
         durationSeconds: durationSeconds,
+        totalDurationSeconds: totalDurationSeconds,
+        arnState: arnState,
+        recoveryRequired: recoveryRequired,
       );
     }
 
@@ -524,6 +593,9 @@ class HttpUriClient implements UriClient {
         promptTokens: promptTokens,
         evalTokens: evalTokens,
         durationSeconds: durationSeconds,
+        totalDurationSeconds: totalDurationSeconds,
+        arnState: arnState,
+        recoveryRequired: recoveryRequired,
       );
     }
 
@@ -552,6 +624,9 @@ class HttpUriClient implements UriClient {
         promptTokens: promptTokens,
         evalTokens: evalTokens,
         durationSeconds: durationSeconds,
+        totalDurationSeconds: totalDurationSeconds,
+        arnState: arnState,
+        recoveryRequired: recoveryRequired,
       );
     }
 
@@ -591,6 +666,9 @@ class HttpUriClient implements UriClient {
       promptTokens: promptTokens,
       evalTokens: evalTokens,
       durationSeconds: durationSeconds,
+      totalDurationSeconds: totalDurationSeconds,
+      arnState: arnState,
+      recoveryRequired: recoveryRequired,
       result: ActionResult(
         summary: summary,
         // Only ever shown when a real tool was actually involved (e.g.
@@ -807,7 +885,9 @@ class HttpUriClient implements UriClient {
     }
 
     if (response.statusCode != 200) {
-      throw TasksFetchException('Server returned ${response.statusCode} fetching tasks');
+      throw TasksFetchException(
+        'Server returned ${response.statusCode} fetching tasks',
+      );
     }
 
     final Map<String, dynamic> body;
@@ -847,18 +927,24 @@ class HttpUriClient implements UriClient {
           .get(Uri.parse('$baseUrl/connections'), headers: _jsonHeaders)
           .timeout(const Duration(seconds: 30));
     } catch (e) {
-      throw ConnectionsFetchException('Failed to connect to connections service: $e');
+      throw ConnectionsFetchException(
+        'Failed to connect to connections service: $e',
+      );
     }
 
     if (response.statusCode != 200) {
-      throw ConnectionsFetchException('Server returned ${response.statusCode} fetching connections');
+      throw ConnectionsFetchException(
+        'Server returned ${response.statusCode} fetching connections',
+      );
     }
 
     final Map<String, dynamic> body;
     try {
       body = jsonDecode(response.body) as Map<String, dynamic>;
     } catch (e) {
-      throw ConnectionsFetchException('Malformed JSON in connections response: $e');
+      throw ConnectionsFetchException(
+        'Malformed JSON in connections response: $e',
+      );
     }
 
     return _connectionsFrom(body['connections']);
@@ -2144,4 +2230,161 @@ class HttpUriClient implements UriClient {
       return null;
     }
   }
+
+  @override
+  Future<EdgeSettings?> getIntelligenceSettings() async {
+    try {
+      final response = await _http
+          .get(
+            Uri.parse('$baseUrl/intelligence/settings'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final settingsJson = body['settings'] as Map<String, dynamic>?;
+      if (settingsJson == null) return null;
+      return EdgeSettings.fromJson(settingsJson);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> updateIntelligenceSettings(EdgeSettings settings) async {
+    try {
+      final response = await _http
+          .put(
+            Uri.parse('$baseUrl/intelligence/settings'),
+            headers: _jsonHeaders,
+            body: jsonEncode(settings.toJson()),
+          )
+          .timeout(const Duration(seconds: 30));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<EdgeEffectiveStatus?> getIntelligenceStatus() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$baseUrl/intelligence/status'), headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return EdgeEffectiveStatus.fromJson(body);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<List<EdgeRoutingEvent>> getIntelligenceTrace({int limit = 50}) async {
+    try {
+      final response = await _http
+          .get(
+            Uri.parse('$baseUrl/intelligence/trace?limit=$limit'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return const [];
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final eventsJson = body['events'] as List<dynamic>? ?? const [];
+      return eventsJson
+          .map((e) => EdgeRoutingEvent.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
+  Future<EdgeLabOverview?> getEdgeLabOverview() async {
+    try {
+      final response = await _http
+          .get(
+            Uri.parse('$baseUrl/intelligence/lab/overview'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return EdgeLabOverview.fromJson(body);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<EdgeProbeResult?> probeEdge(String query, {String? kind}) async {
+    try {
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/intelligence/lab/probe'),
+            headers: _jsonHeaders,
+            body: jsonEncode({'query': query, 'kind': ?kind}),
+          )
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final resultJson = body['probe_result'] as Map<String, dynamic>?;
+      if (resultJson == null) return null;
+      return EdgeProbeResult.fromJson(resultJson);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<List<ExperimentalCandidate>> discoverExperimentalCandidates() async {
+    try {
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/intelligence/lab/candidates/discover'),
+            headers: _jsonHeaders,
+          )
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode != 200) return const [];
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return (body['candidates'] as List? ?? const [])
+          .whereType<Map>()
+          .map(
+            (item) =>
+                ExperimentalCandidate.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .toList(growable: false);
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> qualifyExperimentalCandidate(
+    String runtime,
+    String modelId,
+  ) async {
+    try {
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/intelligence/lab/candidates/qualify'),
+            headers: _jsonHeaders,
+            body: jsonEncode({'runtime_id': runtime, 'model_id': modelId}),
+          )
+          .timeout(const Duration(seconds: 15));
+      return response.statusCode == 200
+          ? jsonDecode(response.body) as Map<String, dynamic>
+          : null;
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+class _AskStreamResponse {
+  const _AskStreamResponse(this.statusCode, this.body);
+
+  final int statusCode;
+  final Map<String, dynamic>? body;
 }

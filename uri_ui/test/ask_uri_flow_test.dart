@@ -151,4 +151,25 @@ void main() {
       expect(find.text('Needs authorization'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'Chat screen displays Developer tab alongside Conversation, History, and Activity',
+    (tester) async {
+      await pumpPostOnboardingApp(tester);
+
+      expect(find.text('Conversation'), findsOneWidget);
+      expect(find.text('History'), findsOneWidget);
+      expect(find.text('Activity'), findsOneWidget);
+      expect(find.text('Developer'), findsOneWidget);
+
+      await tester.tap(find.text('Developer'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('EDGE_REPLY'), findsOneWidget);
+      expect(find.text('ESCALATE'), findsOneWidget);
+      expect(find.text('Edge Reflex'), findsOneWidget);
+      expect(find.text('edge_reflex'), findsNWidgets(2));
+      expect(find.text('Main Brain'), findsOneWidget);
+    },
+  );
 }

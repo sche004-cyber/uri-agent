@@ -242,3 +242,47 @@ class OpenAICompatibleProvider(ModelProvider):
             available=available,
             detail=detail,
         )
+
+    def list_models(self) -> List[str]:
+        """Return model ids advertised by the provider's ``/models`` API.
+
+        This is discovery only. Callers must still verify a discovered model
+        with a real completion before making it selectable. The configured
+        short timeout and optional bearer header are reused unchanged.
+        """
+        headers: dict = {}
+        if self._api_key:
+            headers["Authorization"] = f"Bearer {self._api_key}"
+        try:
+            response = requests.get(
+                f"{self._config.base_url.rstrip('/')}/models",
+                headers=headers,
+                timeout=self._config.timeout_seconds,
+            )
+        except requests.exceptions.Timeout as exc:
+            raise ProviderTimeoutError(
+                f"Model discovery at {self._config.base_url} timed out."
+            ) from exc
+        except requests.exceptions.RequestException as exc:
+            raise ProviderUnavailableError(
+                f"Could not discover models at {self._config.base_url}."
+            ) from exc
+        if response.status_code in (401, 403):
+            raise ProviderAuthenticationError(
+                f"Provider at {self._config.base_url} requires or rejected credentials."
+            )
+        if response.status_code != 200:
+            raise ProviderResponseError(
+                f"Model discovery returned HTTP {response.status_code}."
+            )
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise ProviderResponseError("Model discovery returned invalid JSON.") from exc
+        data = payload.get("data") if isinstance(payload, dict) else None
+        if not isinstance(data, list):
+            raise ProviderResponseError("Model discovery returned no model list.")
+        return list(dict.fromkeys(
+            item["id"] for item in data
+            if isinstance(item, dict) and isinstance(item.get("id"), str) and item["id"]
+        ))

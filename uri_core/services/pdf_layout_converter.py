@@ -29,7 +29,65 @@ this module is for born-digital PDFs with a real text/graphics layer.
 from __future__ import annotations
 
 import os
+import zipfile
+from xml.etree import ElementTree
 from typing import Any, Dict
+
+
+def inspect_docx_editability(docx_path: str) -> Dict[str, Any]:
+    """Inspect the produced package for real editable Word structure.
+
+    A valid OOXML container is not enough: ``pdf2docx`` can successfully
+    create a document whose page is only a raster image.  Count text-bearing
+    paragraphs/table cells in ``word/document.xml`` so callers never label
+    that output editable merely because conversion returned without raising.
+    """
+    try:
+        with zipfile.ZipFile(docx_path) as archive:
+            document_xml = archive.read("word/document.xml")
+            media_files = [
+                name for name in archive.namelist() if name.startswith("word/media/")
+            ]
+        root = ElementTree.fromstring(document_xml)
+    except (OSError, KeyError, zipfile.BadZipFile, ElementTree.ParseError) as error:
+        return {
+            "editable": False,
+            "editable_text_chars": 0,
+            "paragraphs": 0,
+            "table_cells": 0,
+            "list_paragraphs": 0,
+            "images": 0,
+            "error": f"Invalid DOCX package: {type(error).__name__}",
+        }
+
+    namespace = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+    paragraphs = 0
+    list_paragraphs = 0
+    text_parts = []
+    for paragraph in root.findall(".//w:p", namespace):
+        text = "".join(
+            node.text or "" for node in paragraph.findall(".//w:t", namespace)
+        ).strip()
+        if not text:
+            continue
+        paragraphs += 1
+        text_parts.append(text)
+        if paragraph.find("./w:pPr/w:numPr", namespace) is not None:
+            list_paragraphs += 1
+    table_cells = sum(
+        1
+        for cell in root.findall(".//w:tc", namespace)
+        if "".join(node.text or "" for node in cell.findall(".//w:t", namespace)).strip()
+    )
+    editable_text_chars = len("".join(text_parts))
+    return {
+        "editable": editable_text_chars > 0 and paragraphs > 0,
+        "editable_text_chars": editable_text_chars,
+        "paragraphs": paragraphs,
+        "table_cells": table_cells,
+        "list_paragraphs": list_paragraphs,
+        "images": len(media_files),
+    }
 
 
 def convert_pdf_to_docx_preserving_layout(pdf_path: str, docx_path: str) -> Dict[str, Any]:
@@ -84,6 +142,18 @@ def convert_pdf_to_docx_preserving_layout(pdf_path: str, docx_path: str) -> Dict
             "message": "The converter did not produce an output file.",
         }
 
+    validation = inspect_docx_editability(docx_path)
+    if not validation["editable"]:
+        return {
+            "status": "error",
+            "error_code": "no_editable_content",
+            "message": (
+                "The converter produced no editable Word text or table content; "
+                "the PDF appears image-only or unsupported."
+            ),
+            "validation": validation,
+        }
+
     return {
         "status": "success",
         "docx_path": docx_path,
@@ -100,4 +170,5 @@ def convert_pdf_to_docx_preserving_layout(pdf_path: str, docx_path: str) -> Dict
             "this path - see read_attached_file.py/pdf_reader.py for "
             "OCR text extraction instead)",
         ],
+        "validation": validation,
     }

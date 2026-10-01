@@ -147,12 +147,12 @@ class StreamChunk:
 
 
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
-DEFAULT_OLLAMA_MODEL = "qwen3:14b"
+DEFAULT_OLLAMA_MODEL = "qwen3.5:9b"
 DEFAULT_TIMEOUT_SECONDS = 60.0
 
 # M21: the actual runtime context window Ollama loads a model with when a
 # request does not otherwise specify options.num_ctx - measured during the
-# M21 audit at 4096 (Ollama's own hardcoded default), far below qwen3:14b's
+# M21 audit at 4096 (Ollama's own hardcoded default), far below the selected
 # real 40960-token trained context. Every URI Brain call was silently
 # truncated to this window (prompt_eval_count == ~num_ctx/2 on a prompt
 # almost 5000 tokens long) with no error, no log, and no field anywhere
@@ -160,7 +160,7 @@ DEFAULT_TIMEOUT_SECONDS = 60.0
 # previously hardcoded to None. 8192 is a deliberate, conservative default:
 # comfortably larger than URI's real measured reasoning (~4935 tok) and
 # drafting (~4595 tok) prompts even before the M21 request-shrinking work,
-# while staying far under qwen3:14b's 40960-token ceiling so ordinary
+# while staying conservative enough that ordinary
 # hardware is not forced to allocate a window it will rarely use.
 # Overridable per deployment via OLLAMA_NUM_CTX - see ModelProviderConfig.
 DEFAULT_CONTEXT_TOKENS = 8192

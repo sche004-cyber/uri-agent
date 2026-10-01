@@ -168,7 +168,7 @@ void main() {
       await _pumpPostOnboardingApp(tester);
       await _openSettingsCategory(tester, 'Capabilities');
 
-      expect(find.text('Ollama · qwen3:14b'), findsOneWidget);
+      expect(find.text('Ollama · qwen3.5:9b'), findsOneWidget);
 
       // Humanized, not the raw snake_case identifier.
       expect(find.text('Draft Institutional Note'), findsOneWidget);

@@ -5,8 +5,10 @@ import '../models/connection.dart';
 import '../models/memory_entry.dart';
 import '../models/task_item.dart';
 import '../models/uri_turn.dart';
+import '../models/edge_intelligence.dart';
 
 export '../models/attachment.dart' show Attachment;
+export '../models/edge_intelligence.dart';
 
 /// The boundary between this Flutter client and URI's runtime.
 ///
@@ -121,7 +123,13 @@ abstract class UriClient {
   /// conversation before this call resolves, then update that exact
   /// same turn in place once it does, rather than the pending turn and
   /// the final result ever being two separate list entries.
-  Future<UriTurn> ask(String text, {String? turnId, Object? modelOverride});
+  Future<UriTurn> ask(
+    String text, {
+    String? turnId,
+    Object? modelOverride,
+    List<String> attachedFileIds = const [],
+    void Function(String text)? onPartialText,
+  });
 
   /// Approve a previously proposed action, moving it through execution.
   /// Returns the final turn once execution completes.
@@ -399,6 +407,35 @@ abstract class UriClient {
     String? clientId,
     String? clientSecret,
   });
+
+  // ---------------------------------------------------------------
+  // M33.2 / M31 Parity: Edge Brain, Routing Traces, and Edge Lab.
+  // ---------------------------------------------------------------
+
+  /// Fetches the authenticated user's Edge intelligence routing preferences.
+  Future<EdgeSettings?> getIntelligenceSettings();
+
+  /// Updates Edge intelligence preferences (mode, threshold, edge models).
+  Future<bool> updateIntelligenceSettings(EdgeSettings settings);
+
+  /// Fetches effective Edge intelligence status (resident, bypassed, disabled).
+  Future<EdgeEffectiveStatus?> getIntelligenceStatus();
+
+  /// Fetches redacted live Edge routing events from the backend trace.
+  Future<List<EdgeRoutingEvent>> getIntelligenceTrace({int limit = 50});
+
+  /// Fetches truthful candidate qualification matrix and runtime state.
+  Future<EdgeLabOverview?> getEdgeLabOverview();
+
+  /// Runs an authenticated edge probe on a test query to verify reflex routing.
+  Future<EdgeProbeResult?> probeEdge(String query, {String? kind});
+
+  Future<List<ExperimentalCandidate>> discoverExperimentalCandidates();
+
+  Future<Map<String, dynamic>?> qualifyExperimentalCandidate(
+    String runtime,
+    String modelId,
+  );
 }
 
 /// The logged-in account's own role/tier/device identity, from GET

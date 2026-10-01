@@ -152,9 +152,16 @@ umbrella plan/state pair was created for the C3.3 or attachment-turn
 slices — see §6g below for the consolidated closure record).
 
 **CURRENT MILESTONE:**  
-PAUSED. **ARN.1 — Adaptive Retrieval Narrowing: Batch ARN.1 — Deterministic Narrowing Core is CLOSED / VERIFIED** (Gemini independent final audit per direct User instruction, 2026-09-20). The ARN milestone is PAUSED after ARN.1. No ARN.2 work is authorized. Next authorized direction: **Resume M31 Hybrid UI after ARN.1 closure**.
-**Prior M33.1 closure correction, 2026-09-20:** M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**.
-None active — M32, M31, M33.2, and M34 are all CLOSED. Per §1a, the Hybrid UI
+M31 — URI Hybrid UI (Post-Live Acceptance Remediation Pass)
+
+**CURRENT STATE:**  
+IMPLEMENTING (Authorized: Codex implementation of remaining 11 Live Acceptance Remediation findings against uncommitted tree; Antigravity coordinator/harness)
+
+**PRIOR MILESTONE (CLOSED):**  
+ARN.1 — Adaptive Retrieval Narrowing: Batch ARN.1 — Deterministic Narrowing Core is **CLOSED / VERIFIED** (Gemini independent final audit per direct User instruction, 2026-09-20). The ARN milestone is PAUSED after ARN.1. No ARN.2 work is authorized. Authorized direction: **Resume M31 Hybrid UI after ARN.1 closure**.
+
+**Prior M33.1 closure correction, 2026-09-20:** M33.1 — Real Integrations / Acquire & Manage Abilities is **CLOSED / ACCEPTED**.  
+Per §1a, the Hybrid UI
 initiative's own hard-dependency gate was already opened by M31's own
 earlier closure, independently of M32/M34 — see that section for the
 initiative's own separate role set and status before any implementation

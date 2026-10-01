@@ -4,7 +4,45 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
-## CURRENT HANDOFF (CLOSED: ARN.1 DETERMINISTIC NARROWING CORE — VERIFIED)
+## CURRENT HANDOFF (M31 — URI HYBRID UI LIVE ACCEPTANCE REMEDIATION TO CODEX)
+
+**FROM:**
+Antigravity (Coordinator / Harness)
+
+**TO:**
+Codex
+
+**MILESTONE:**
+M31 — URI Hybrid UI (Post-Live Acceptance Remediation Pass)
+
+**HANDOFF TYPE:**
+IMPLEMENTATION
+
+**STATUS:**
+IMPLEMENTING
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/CODEX_HYBRID_UI_REPAIR_TASK.txt
+- temp_evidence/m31_visual_review/LIVE_ACCEPTANCE_REMEDIATION_REPORT.md
+- temp_evidence/m31_visual_review/m31_working_tree.patch
+- docs/plans/UI_HYBRID_FROZEN_BLUEPRINT.md
+- docs/plans/M32_POST_BATCH_C_LATENCY_ARCHITECTURE_PLAN.md
+- docs/plans/M33_2_BATCH_B4_COMPLETION_REPORT.md
+- docs/plans/ARN_1_COMPLETION_REPORT.md
+- docs/governance/URI_ACTIVE_MILESTONE.md
+
+**SUMMARY:**
+Antigravity has packaged the working-tree diff, test suites, and primary evidence from the Live Acceptance Remediation pass (all 181 Flutter tests passing, all Python route/regression tests passing).
+Per direct User instruction, implementation of the remaining 11 Live Acceptance Remediation items is delegated to Codex as the specialist coder.
+Antigravity acts solely as coordinator/harness:
+- Preserving current working tree and prior working repairs.
+- Delegating task directive docs/plans/CODEX_HYBRID_UI_REPAIR_TASK.txt to Codex.
+- Codex will inspect the uncommitted tree, resolve the 11 items, perform full regression, and produce POST_LIVE_CONSOLIDATED_REPAIR_REPORT.md.
+- Target state: VERIFICATION_READY. No commit, no push, no declaration of VERIFIED.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: ARN.1 DETERMINISTIC NARROWING CORE — VERIFIED)
 
 **FROM:**
 Gemini (Independent Final Auditor)

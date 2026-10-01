@@ -26,6 +26,8 @@ class DetectedModelRecord:
     tag: Optional[str] = None
     byte_size: Optional[int] = None
     digest: Optional[str] = None
+    quantization: Optional[str] = None
+    parameter_size: Optional[str] = None
 
 
 @dataclass(frozen=True)

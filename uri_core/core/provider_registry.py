@@ -101,9 +101,9 @@ PROVIDER_CATALOGUE: List[ProviderDescriptor] = [
         base_url="http://localhost:11434",
         models=[
             ModelDescriptor(
-                model_id="qwen3:14b",
-                display_name="Qwen3 14B",
-                context_tokens=ConfidenceValue(value=40960, confidence=KNOWN),
+                model_id="qwen3.5:9b",
+                display_name="Qwen 3.5 9B",
+                context_tokens=ConfidenceValue(value=262144, confidence=KNOWN),
             ),
             ModelDescriptor(
                 model_id="gemma4:12b",
